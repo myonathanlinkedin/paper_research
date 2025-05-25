@@ -1,0 +1,194 @@
+\subsection{System Overview}
+CodeSage's architecture is designed around three core components: the Runtime Intelligence Layer, the Model Context Protocol (MCP), and the LM Studio Integration. These components work together to provide intelligent, privacy-preserving error handling in distributed .NET applications. Figure \ref{fig:architecture} illustrates the high-level architecture of the system.
+
+\begin{figure}[!t]
+\centering
+% TODO: Add architecture diagram
+\caption{CodeSage System Architecture}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Runtime Intelligence Layer}
+The Runtime Intelligence Layer serves as the primary interface between the application and CodeSage's error handling capabilities. It consists of several key components:
+
+\subsubsection{Exception Interception}
+The exception interception component uses ASP.NET Core middleware to capture unhandled exceptions. It implements a custom exception filter that:
+
+\begin{itemize}
+    \item Intercepts exceptions before they reach the global error handler
+    \item Captures the complete exception context, including stack traces
+    \item Enriches the error context with runtime metadata
+    \item Determines the appropriate handling strategy based on exception type
+\end{itemize}
+
+\subsubsection{Context Generation}
+The context generation component is responsible for creating rich, structured error contexts that include:
+
+\begin{itemize}
+    \item Exception details and stack traces
+    \item Runtime environment information
+    \item Service and operation metadata
+    \item Correlation IDs for distributed tracing
+    \item Custom application context
+\end{itemize}
+
+\subsubsection{Remediation Engine}
+The remediation engine processes LLM-generated suggestions and implements automated recovery strategies:
+
+\begin{itemize}
+    \item Retry mechanisms with exponential backoff
+    \item Circuit breaker pattern implementation
+    \item Default value substitution
+    \item Service degradation strategies
+    \item Custom remediation actions
+\end{itemize}
+
+\subsection{Model Context Protocol (MCP)}
+MCP provides a standardized way to share and manage context across distributed components. Its key features include:
+
+\subsubsection{Context Schema}
+The MCP context schema defines the structure for error context data:
+
+\begin{lstlisting}[language=json]
+{
+  "errorContext": {
+    "serviceId": "string",
+    "operationId": "string",
+    "timestamp": "datetime",
+    "correlationId": "string",
+    "environment": "string",
+    "metadata": {
+      "key": "value"
+    }
+  },
+  "exceptionData": {
+    "type": "string",
+    "message": "string",
+    "stackTrace": "string",
+    "source": "string"
+  },
+  "remediationContext": {
+    "strategy": "string",
+    "parameters": {},
+    "history": []
+  }
+}
+\end{lstlisting}
+
+\subsubsection{Context Distribution}
+MCP implements a publish-subscribe model for context distribution:
+
+\begin{itemize}
+    \item Context producers publish error events
+    \item Subscribers receive relevant context updates
+    \item Context routing based on service boundaries
+    \item Context persistence for historical analysis
+\end{itemize}
+
+\subsection{LM Studio Integration}
+The LM Studio integration component manages local LLM inference and prompt engineering:
+
+\subsubsection{Model Management}
+\begin{itemize}
+    \item Local model loading and initialization
+    \item Model versioning and updates
+    \item Resource allocation and optimization
+    \item Model performance monitoring
+\end{itemize}
+
+\subsubsection{Prompt Engineering}
+The prompt engineering system generates context-aware prompts for the LLM:
+
+\begin{lstlisting}[language=text]
+System: You are an expert .NET runtime error analyzer. Analyze the following error and provide:
+1. A clear explanation of the error
+2. Possible root causes
+3. Recommended remediation steps
+4. Prevention strategies
+
+Error Context:
+{errorContext}
+
+Exception:
+{exceptionData}
+
+Runtime State:
+{runtimeState}
+\end{lstlisting}
+
+\subsubsection{Response Processing}
+The response processing component:
+
+\begin{itemize}
+    \item Parses LLM-generated responses
+    \item Validates remediation suggestions
+    \item Extracts actionable insights
+    \item Maintains response quality metrics
+\end{itemize}
+
+\subsection{Integration Patterns}
+CodeSage supports multiple integration patterns for different application architectures:
+
+\subsubsection{ASP.NET Core Middleware}
+\begin{lstlisting}[language=csharp]
+public class CodeSageMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ICodeSageService _codeSage;
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        catch (Exception ex)
+        {
+            var errorContext = await _codeSage
+                .ProcessExceptionAsync(ex, context);
+            // Handle or rethrow based on analysis
+        }
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Background Service Integration}
+For background services and worker processes, CodeSage provides a custom exception handler:
+
+\begin{lstlisting}[language=csharp]
+public class CodeSageExceptionHandler : IHostedService
+{
+    private readonly ICodeSageService _codeSage;
+    
+    public Task StartAsync(CancellationToken token)
+    {
+        AppDomain.CurrentDomain.UnhandledException += 
+            async (s, e) => await HandleException(e.ExceptionObject);
+        return Task.CompletedTask;
+    }
+}
+\end{lstlisting}
+
+\subsection{Security and Privacy}
+CodeSage's architecture prioritizes security and privacy through:
+
+\begin{itemize}
+    \item Local LLM inference with no external API calls
+    \item Encrypted context transmission
+    \item Role-based access control
+    \item Audit logging
+    \item Data retention policies
+\end{itemize}
+
+\subsection{Extensibility}
+The system is designed for extensibility through:
+
+\begin{itemize}
+    \item Plugin architecture for custom analyzers
+    \item Custom remediation strategies
+    \item Integration with existing monitoring systems
+    \item Support for additional LLM providers
+    \item Custom context enrichment
+\end{itemize}
+
+This architecture enables CodeSage to provide intelligent, privacy-preserving error handling while maintaining flexibility and extensibility for different application scenarios. 

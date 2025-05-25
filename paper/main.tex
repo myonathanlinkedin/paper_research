@@ -1,0 +1,64 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{subfigure}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{CodeSage: A Local Large Language Model Assisted Runtime Intelligence Layer with Model Context Protocol for Self Healing Application Errors in .NET Environments Using LM Studio API}
+
+\author{\IEEEauthorblockN{Mateus Yonathan}
+\IEEEauthorblockA{Independent Researcher\\
+LinkedIn: \href{https://www.linkedin.com/in/siyoyo/}{siyoyo}}
+
+\maketitle
+
+\begin{abstract}
+This paper presents CodeSage, a novel runtime middleware layer for .NET 9 applications that enhances software reliability through local Large Language Model (LLM) assistance and Model Context Protocol (MCP). CodeSage leverages the LM Studio API to provide real-time, privacy-preserving error analysis and self-healing capabilities. By intercepting unhandled exceptions and generating natural language explanations with actionable suggestions, CodeSage introduces an intelligent AI layer that operates fully offline while maintaining interoperability through standardized MCP communication. The system's architecture combines exception interception middleware, dynamic context generation, and local LLM inference to provide immediate, context-aware support for runtime error resolution. This research demonstrates the practical impact of combining local LLMs with MCP for runtime application error handling, offering a new paradigm in software reliability that shifts AI-assisted debugging from compile-time to runtime while addressing privacy and connectivity constraints critical for edge and enterprise environments.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Runtime Intelligence, Large Language Models, Model Context Protocol, Self-healing Systems, .NET, LM Studio, Error Handling, Middleware
+\end{IEEEkeywords}
+
+\section{Introduction}
+\input{sections/introduction}
+
+\section{Related Work}
+\input{sections/related_work}
+
+\section{System Architecture}
+\input{sections/architecture}
+
+\section{Implementation}
+\input{sections/implementation}
+
+\section{Case Studies}
+\input{sections/case_studies}
+
+\section{Evaluation}
+\input{sections/evaluation}
+
+\section{Limitations and Future Work}
+\input{sections/limitations}
+
+\section{Conclusion}
+\input{sections/conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document} 

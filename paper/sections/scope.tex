@@ -1,0 +1,97 @@
+\section{Scope of Research}
+
+This research outlines the scope for \textit{CodeSage}, a middleware layer designed to enhance software reliability in .NET 9 applications through intelligent runtime error handling. The scope is defined as follows:
+
+\subsection{Project Structure}
+The research is implemented as a .NET solution (\textit{CodeSage.sln}) comprising the following projects:
+
+\begin{itemize}
+    \item \textit{CodeSage.Core} – Contains the core logic and interfaces:
+    \begin{itemize}
+        \item \textit{ICodeSageService} and \textit{CodeSageService} for orchestrating exception processing
+        \item \textit{ILMStudioClient} and \textit{LMStudioClient} for local LLM integration (using \textit{qwen2.5-7b-instruct-1m} via LM Studio at \textit{http://127.0.0.1:1234/v1})
+        \item \textit{IMCPClient} and \textit{MCPClient} for distributed context sharing
+    \end{itemize}
+    \item \textit{CodeSage.Middleware} – Implements the ASP.NET Core middleware (\textit{CodeSageMiddleware}) that:
+    \begin{itemize}
+        \item Intercepts unhandled exceptions
+        \item Enriches error context
+        \item Processes exceptions through the core service
+        \item Applies remediation strategies
+    \end{itemize}
+    \item \textit{CodeSage.Tests} – Contains xUnit tests validating:
+    \begin{itemize}
+        \item Exception interception and context enrichment
+        \item LM Studio client integration
+        \item MCP client functionality
+        \item Middleware behavior
+        \item Operation simulator functionality
+    \end{itemize}
+    \item \textit{CodeSage.Examples} – Provides example endpoints demonstrating CodeSage's capabilities:
+    \begin{itemize}
+        \item Database operations with connection issues
+        \item File operations with resource management
+        \item External service integration
+        \item Resource allocation and management
+    \end{itemize}
+\end{itemize}
+
+\subsection{Research Goals}
+The primary goals of this research are:
+
+\begin{itemize}
+    \item \textbf{Local LLM Integration:}
+    \begin{itemize}
+        \item Implement real-time error analysis using the LM Studio API
+        \item Ensure privacy-preserving inference with the \textit{qwen2.5-7b-instruct-1m} model
+        \item Generate structured error context and remediation suggestions
+        \item Specialize in runtime error patterns and their remediation
+    \end{itemize}
+    \item \textbf{Distributed Context Sharing:}
+    \begin{itemize}
+        \item Implement the Model Context Protocol (MCP) for error context distribution
+        \item Enable context publishing and subscription
+        \item Support historical context retrieval
+        \item Focus on error patterns and their propagation
+    \end{itemize}
+    \item \textbf{Middleware Integration:}
+    \begin{itemize}
+        \item Provide seamless integration with ASP.NET Core applications
+        \item Implement exception interception and context enrichment
+        \item Support automated remediation based on LLM analysis
+        \item Demonstrate practical error handling through example scenarios
+    \end{itemize}
+    \item \textbf{Runtime Error Handling:}
+    \begin{itemize}
+        \item Comprehensive coverage of common runtime errors
+        \item Advanced error pattern recognition
+        \item Intelligent remediation strategies
+        \item Real-time error analysis and recovery
+    \end{itemize}
+\end{itemize}
+
+\subsection{Research Boundaries}
+To maintain focus and ensure practical implementation, this research is bounded by:
+
+\begin{itemize}
+    \item \textbf{Technology Stack:} Limited to .NET 9 applications using ASP.NET Core
+    \item \textbf{LLM Integration:} Focused on LM Studio API with the \textit{qwen2.5-7b-instruct-1m} model
+    \item \textbf{Context Protocol:} Implemented through a basic MCP for error context sharing
+    \item \textbf{Error Handling Scope:}
+    \begin{itemize}
+        \item Database operation errors
+        \item File system operations
+        \item External service integration
+        \item Resource management
+        \item Common runtime exceptions
+    \end{itemize}
+    \item \textbf{Evaluation:} Based on:
+    \begin{itemize}
+        \item Error detection accuracy
+        \item Remediation strategy effectiveness
+        \item System performance impact
+        \item Context sharing efficiency
+    \end{itemize}
+\end{itemize}
+
+The complete source code is open-sourced at \url{https://github.com/myonathanlinkedin/paper_research}, providing a foundation for further research in runtime error handling. The implementation demonstrates CodeSage's capabilities in handling complex error scenarios through intelligent analysis and automated remediation. 
