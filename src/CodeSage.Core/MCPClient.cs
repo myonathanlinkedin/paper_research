@@ -4,6 +4,13 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using CodeSage.Core.Interfaces;
+using CodeSage.Core.Models;
+using CodeSage.Core.Options;
+using System.Collections.Concurrent;
+using CodeSage.Core.Models.Error;
 
 namespace CodeSage.Core
 {
@@ -13,13 +20,24 @@ namespace CodeSage.Core
     /// </summary>
     public class MCPClient : IMCPClient
     {
+        private readonly ILogger<MCPClient> _logger;
         private readonly HttpClient _httpClient;
+        private readonly CodeSageOptions _options;
+        private readonly ConcurrentDictionary<string, ErrorAnalysisResult> _analysisCache;
+        private readonly ConcurrentDictionary<string, DateTime> _lastAnalysisTime;
         private string _endpoint = "http://127.0.0.1:1234/mcp"; // Default MCP endpoint (configurable)
         private Func<ErrorContext, ErrorAnalysisResult, Task>? _subscriptionHandler;
 
-        public MCPClient(HttpClient? httpClient = null)
+        public MCPClient(
+            ILogger<MCPClient> logger,
+            HttpClient httpClient,
+            IOptions<CodeSageOptions> options)
         {
-            _httpClient = httpClient ?? new HttpClient();
+            _logger = logger;
+            _httpClient = httpClient;
+            _options = options.Value;
+            _analysisCache = new();
+            _lastAnalysisTime = new();
         }
 
         public async Task InitializeAsync(string endpoint)
@@ -93,6 +111,29 @@ namespace CodeSage.Core
                     MessagesReceived = 0
                 };
             }
+        }
+
+        public async Task<List<ErrorPattern>> GetErrorPatternsAsync(string serviceName)
+        {
+            var response = await _httpClient.GetAsync($"{_endpoint}/patterns?service={Uri.EscapeDataString(serviceName)}");
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync();
+            var patterns = JsonSerializer.Deserialize<List<ErrorPattern>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return patterns ?? new List<ErrorPattern>();
+        }
+
+        public async Task UpdateErrorPatternsAsync(string serviceName, List<ErrorPattern> patterns)
+        {
+            var payload = new { service = serviceName, patterns };
+            var response = await _httpClient.PostAsync($"{_endpoint}/patterns/update", new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json"));
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task DeleteErrorPatternsAsync(string serviceName, List<string> patternIds)
+        {
+            var payload = new { service = serviceName, patternIds };
+            var response = await _httpClient.PostAsync($"{_endpoint}/patterns/delete", new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json"));
+            response.EnsureSuccessStatusCode();
         }
     }
 } 

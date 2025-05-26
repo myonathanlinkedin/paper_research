@@ -1,32 +1,24 @@
-\subsection{AI-Assisted Programming and Debugging}
-Recent advances in Large Language Models (LLMs) have revolutionized software development practices. Tools like GitHub Copilot \cite{copilot2021} and Amazon CodeWhisperer \cite{codewhisperer2022} have demonstrated the potential of AI-assisted programming, primarily focusing on code generation and completion. However, these tools operate primarily during development time, leaving a gap in runtime error handling and debugging assistance.
+\section{Related Work}\label{sec:related-work}
+Recent advances in Large Language Models (LLMs) have revolutionized software development practices.
 
-Runtime error analysis has traditionally relied on static analysis tools such as SonarQube \cite{sonarqube2023} and static analyzers like Roslyn \cite{roslyn2015}. While effective for detecting potential issues during development, these tools cannot address runtime-specific errors that emerge during execution. Dynamic analysis tools like Application Insights \cite{appinsights2023} and New Relic \cite{newrelic2023} provide runtime monitoring but lack intelligent error analysis and automated remediation capabilities.
+\subsection{Runtime Error Analysis}
+Traditional approaches to runtime error analysis primarily rely on manual inspection of logs and debugging tools, static code analysis to identify potential issues before runtime, and post mortem analysis of crash dumps~\cite{debugging_techniques_survey_2017, static_analysis_overview_2015}. While effective for certain types of errors, these methods often struggle with dynamic runtime phenomena, complex interactions in distributed systems, and require significant human effort and expertise. 
 
-\subsection{Runtime Error Handling and Self-Healing Systems}
-Self-healing systems have been an active area of research, with approaches ranging from simple retry mechanisms to complex autonomic computing systems. The MAPE-K (Monitor-Analyze-Plan-Execute-Knowledge) loop \cite{mapek2003} has been widely adopted in autonomic computing, but its application in runtime error handling has been limited by the complexity of accurate error analysis and remediation planning.
+Automated log analysis techniques~\cite{log_analysis_survey_2016} have been developed to process large volumes of log data, but they typically depend on predefined patterns and lack the ability to reason about novel error scenarios or system specific context without explicit programming.
 
-Microservice architectures have introduced new challenges in error handling, with circuit breakers \cite{hystrix2012} and bulkheads \cite{bulkhead2014} becoming common patterns. However, these patterns often require manual configuration and lack intelligent adaptation to specific error contexts. Recent work in chaos engineering \cite{chaos2017} has focused on resilience testing but does not address real-time error analysis and remediation.
+\subsection{Self Healing Systems}
+Research into self healing or autonomic computing systems has explored architectures and mechanisms for software systems to detect, diagnose, and recover from failures autonomously~\cite{autonomic_computing_overview_2004, self_healing_survey_2012}. These systems often employ feedback loops, such as the Monitor Analyze Plan Execute Knowledge (MAPE-K) loop~\cite{mapek2003}, to manage their own behavior and adapt to changing conditions or failures.
 
-\subsection{Distributed Context Management}
-The Model Context Protocol (MCP) builds upon existing context management approaches in distributed systems. OpenTelemetry \cite{opentelemetry2023} provides standardized instrumentation and observability, while distributed tracing systems like Jaeger \cite{jaeger2019} and Zipkin \cite{zipkin2012} focus on request tracing. However, these systems primarily serve monitoring and debugging purposes rather than enabling intelligent error handling.
+Remediation strategies in these systems can range from simple restarts and reconfigurations to more complex state rollbacks or dynamic code updates. However, many existing self healing solutions require significant a priori knowledge about potential failure modes and corresponding recovery actions, limiting their effectiveness against unforeseen errors. The integration of AI techniques, particularly machine learning, has been explored to enhance the diagnostic and planning capabilities of self healing systems, but leveraging the natural language understanding and reasoning abilities of LLMs for complex error scenarios represents a newer direction.
 
-Context-aware computing has been explored in various domains, from mobile computing \cite{contextaware2001} to IoT systems \cite{iotcontext2018}. The Context Toolkit \cite{contexttoolkit2001} introduced a framework for context management, but its application in runtime error handling has been limited. Recent work in context-aware middleware \cite{contextmiddleware2022} has shown promise in managing distributed context but lacks integration with AI-driven analysis.
+\subsection{Context Aware Computing and Debugging}
+Context aware computing focuses on systems that can perceive their environment and adapt their behavior based on contextual information~\cite{context_aware_computing_survey_2009}. In the realm of software engineering and debugging, context awareness involves utilizing information about the system's state, execution environment, user interactions, and history to aid in understanding and resolving issues~\cite{context-aware-debugging-2023}.
 
-\subsection{Local LLM Inference and Privacy}
-The emergence of local LLM inference through tools like LM Studio \cite{lmstudio2023} and Ollama \cite{ollama2023} has enabled privacy-preserving AI applications. This approach addresses concerns about data privacy and connectivity requirements in production environments. However, the application of local LLMs in runtime error handling remains largely unexplored.
+Techniques include dynamic slicing, state tracing, and environmental monitoring to gather relevant context. While these techniques are powerful for providing visibility into the system, the challenge remains in effectively processing and reasoning about potentially vast and complex contextual data to pinpoint the root cause of an error and devise an appropriate solution. Our work utilizes context management techniques but enhances the analysis capabilities by feeding this context into a powerful LLM.
 
-Federated learning \cite{federated2017} and edge computing \cite{edge2018} have demonstrated the benefits of local processing, but their integration with runtime error handling systems has been limited. The combination of local LLM inference with distributed context management, as proposed in CodeSage, represents a novel approach to privacy-preserving runtime intelligence.
+\subsection{Large Language Models in Software Engineering}
+Large Language Models have rapidly emerged as powerful tools for a variety of software engineering tasks, including code completion~\cite{copilot2021}, code generation~\cite{llm_code_generation_2022}, code summarization, and vulnerability detection~\cite{llm_security_applications_2023}. Their ability to understand and generate human language and code has opened possibilities for more intelligent automated tools.
 
-\subsection{Research Gaps and Opportunities}
-The review of existing work reveals several gaps that CodeSage aims to address:
+However, directly applying general purpose LLMs to real time, performance critical tasks like runtime error remediation requires careful consideration of latency, cost, and data privacy. The use of smaller, specialized, or locally hosted models is an active area of research to address these challenges~\cite{local_llm_deployment_2023, edge_llm_inference_2022}. Our approach specifically investigates the practical application of a locally hosted, instruct tuned model (Qwen 2.5 7B Instruct 1M) for a novel and critical software reliability task.
 
-\begin{itemize}
-    \item The lack of intelligent, real-time error analysis in production environments
-    \item Limited integration between context management and AI-driven error handling
-    \item Absence of privacy-preserving approaches to runtime error analysis
-    \item Need for standardized protocols for distributed error context sharing
-    \item Limited automation in error remediation strategies
-\end{itemize}
-
-CodeSage's novel approach combines local LLM inference with standardized context management to provide intelligent, privacy-preserving runtime error handling. By leveraging the LM Studio API and MCP, it addresses these gaps while maintaining the benefits of existing approaches in distributed systems and error handling. 
+RuntimeErrorSage distinguishes itself from existing work by combining the strengths of local LLM inference, advanced context management, and a formal system model within a practical middleware architecture for automated runtime error remediation. Unlike systems relying on external services or predefined recovery strategies, our system offers a privacy preserving, low latency, and intelligent approach to handling a wide range of runtime errors, including those not previously encountered.

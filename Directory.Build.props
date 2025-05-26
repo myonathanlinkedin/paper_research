@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisMode>All</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)CodeAnalysis.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Common package versions -->
+    <MicrosoftExtensionsVersion>8.0.0</MicrosoftExtensionsVersion>
+    <MicrosoftAspNetCoreVersion>8.0.0</MicrosoftAspNetCoreVersion>
+    <SystemNetHttpJsonVersion>8.0.0</SystemNetHttpJsonVersion>
+    <MicrosoftExtensionsLoggingVersion>8.0.0</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsConfigurationVersion>8.0.0</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>8.0.0</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsOptionsVersion>8.0.0</MicrosoftExtensionsOptionsVersion>
+    <MicrosoftExtensionsHttpVersion>8.0.0</MicrosoftExtensionsHttpVersion>
+    <MicrosoftExtensionsDiagnosticsVersion>8.0.0</MicrosoftExtensionsDiagnosticsVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>8.0.0</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>8.0.0</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>
+    <MicrosoftAspNetCoreOpenApiVersion>8.0.0</MicrosoftAspNetCoreOpenApiVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsVersion>2.2.0</MicrosoftAspNetCoreHttpAbstractionsVersion>
+    <MicrosoftMLVersion>3.0.1</MicrosoftMLVersion>
+    <StackExchangeRedisVersion>2.6.122</StackExchangeRedisVersion>
+    <SwashbuckleVersion>6.5.0</SwashbuckleVersion>
+    <XunitVersion>2.6.6</XunitVersion>
+    <XunitRunnerVisualStudioVersion>2.8.0</XunitRunnerVisualStudioVersion>
+    <MoqVersion>4.20.70</MoqVersion>
+    <MicrosoftNETTestSdkVersion>17.9.0</MicrosoftNETTestSdkVersion>
+    <CoverletCollectorVersion>6.0.0</CoverletCollectorVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Common package references -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics" Version="$(MicrosoftExtensionsDiagnosticsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftAspNetCoreOpenApiVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(MicrosoftAspNetCoreHttpAbstractionsVersion)" />
+  </ItemGroup>
+</Project> 

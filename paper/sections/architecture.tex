@@ -1,69 +1,75 @@
-\subsection{System Overview}
-CodeSage's architecture is designed around three core components: the Runtime Intelligence Layer, the Model Context Protocol (MCP), and the LM Studio Integration. These components work together to provide intelligent, privacy-preserving error handling in distributed .NET applications. Figure \ref{fig:architecture} illustrates the high-level architecture of the system.
+\section{Architecture}\label{sec:architecture}
+RuntimeErrorSage is designed with a modular and layered architecture to facilitate integration, maintainability, and scalability. The system comprises four primary components that interact to intercept, analyze, and remediate runtime errors within a target application.
 
 \begin{figure}[!t]
 \centering
-% TODO: Add architecture diagram
-\caption{CodeSage System Architecture}
-\label{fig:architecture}
+\begin{tikzpicture}[
+    node distance=1.8cm,
+    block/.style={rectangle, draw, text width=3.5cm, text centered, minimum height=0.8cm, font=\footnotesize},
+    arrow/.style={thick,->,>=stealth}
+]
+    % Nodes
+    \node[block] (interceptor) {Runtime Interceptor};
+    \node[block, below=1.8cm of interceptor.south] (context) {Context Manager};
+    \node[block, below=1.8cm of context.south] (llm) {LLM Orchestrator};
+    \node[block, below=1.8cm of llm.south] (remediation) {Remediation Engine};
+    
+    % Arrows
+    \draw[arrow] (interceptor) -- (context);
+    \draw[arrow] (context) -- (llm);
+    \draw[arrow] (llm) -- (remediation);
+    \draw[arrow] (remediation) to[bend left=45] (interceptor);
+    
+    % Labels
+    \node[right=1.5cm of interceptor.east, text width=3cm, anchor=west, font=\tiny] {Intercepts runtime errors};
+    \node[right=1.5cm of context.east, text width=3cm, anchor=west, font=\tiny] {Manages error context};
+    \node[right=1.5cm of llm.east, text width=3cm, anchor=west, font=\tiny] {Analyzes errors using local LLM};
+    \node[right=1.5cm of remediation.east, text width=3cm, anchor=west, font=\tiny] {Executes remediation actions};
+\end{tikzpicture}
+\caption{System Architecture of RuntimeErrorSage showing the four main components and their interactions.}
+\label{fig:system-architecture}
 \end{figure}
 
-\subsection{Runtime Intelligence Layer}
-The Runtime Intelligence Layer serves as the primary interface between the application and CodeSage's error handling capabilities. It consists of several key components:
+\subsection{Runtime Interceptor}
+The Runtime Interceptor module operates as a crucial middle\-ware layer directly integrated into the target .NET application's run\-time environ\-ment. Its primary responsi\-bilities include exception and event inter\-cep\-tion by cap\-turing run\-time ex\-cep\-tions and other sig\-nif\-i\-cant events as they oc\-cur within the ap\-pli\-ca\-tion pro\-cess. The mod\-ule per\-forms stack trace anal\-y\-sis by pars\-ing and ana\-lyz\-ing the call stack at the point of er\-ror to un\-der\-stand the ex\-e\-cu\-tion path lead\-ing to the fail\-ure. It con\-ducts real\-time state mon\-i\-tor\-ing by col\-lect\-ing rel\-e\-vant ap\-pli\-ca\-tion state in\-for\-ma\-tion, in\-clud\-ing var\-i\-a\-ble val\-ues, ob\-ject states, and thread in\-for\-ma\-tion, with\-out caus\-ing sig\-nif\-i\-cant dis\-rup\-tion to the ap\-pli\-ca\-tion's ex\-e\-cu\-tion. Ad\-di\-tion\-ally, it pro\-vides log\-ging sys\-tem in\-te\-gra\-tion by in\-ter\-fac\-ing with ex\-ist\-ing ap\-pli\-ca\-tion log\-ging frame\-works to en\-rich er\-ror con\-text with his\-tor\-i\-cal log data and ap\-pli\-ca\-tion spe\-cific di\-ag\-nos\-tics. The in\-ter\-cep\-tor is de\-signed for low over\-head ex\-e\-cu\-tion to min\-i\-mize its im\-pact on the ap\-pli\-ca\-tion's per\-for\-mance dur\-ing nor\-mal op\-er\-a\-tion.
 
-\subsubsection{Exception Interception}
-The exception interception component uses ASP.NET Core middleware to capture unhandled exceptions. It implements a custom exception filter that:
+\subsection{Context Manager}
+The Context Manager is responsible for aggregating, organizing, and maintaining the contextual information relevant to a runtime error. It implements a sophisticated mechanism to build a comprehensive view of the system state at the time of the error, which is crucial for accurate LLM analysis. Key functions include context aggregation by collecting data streams from the Runtime Interceptor and other potential sources within a distributed environment. It performs dynamic context graph management by constructing and updating a graph representation of the context, capturing relationships between different pieces of information such as method calls, object dependencies, and environmental factors. The system employs relevance-based context pruning using algorithms to prioritize and filter context information based on its relevance to the specific error, reducing the amount of data processed by the LLM. It also handles state persistence and versioning by optionally persisting context snapshots for post-mortem analysis and maintaining versions of the context graph to track changes over time.
 
-\begin{itemize}
-    \item Intercepts exceptions before they reach the global error handler
-    \item Captures the complete exception context, including stack traces
-    \item Enriches the error context with runtime metadata
-    \item Determines the appropriate handling strategy based on exception type
-\end{itemize}
+\subsection{LLM Orchestrator}
+The LLM Orchestrator is the core intelligence component of RuntimeErrorSage. It is responsible for interacting with the local Large Language Model to perform error classification, root cause analysis, and propose remediation strategies. This component is specifically designed to communicate with a locally hosted LLM via a standard HTTP API interface, allowing flexibility in the choice of the underlying model. In our implementation, we utilize the Qwen 2.5 7B Instruct 1M model hosted locally.
 
-\subsubsection{Context Generation}
-The context generation component is responsible for creating rich, structured error contexts that include:
+Its key functions include model initialization and state management for loading and managing the state of the local LLM. It performs prompt engineering and context formatting by translating the structured context information from the Context Manager into appropriately formatted prompts for the LLM. This involves careful design to maximize the LLM's understanding of the error scenario. The component handles inference management by sending inference requests to the local LLM via the HTTP API and managing the response flow. It conducts response parsing and validation by interpreting the LLM's output, which may include identified error patterns, root cause hypotheses, and proposed remediation actions. This involves parsing the free-form text response into a structured format and validating the feasibility of the proposed actions. Finally, it provides a standardized API interface for consistent communication with the LLM, abstracting the specifics of the underlying model server.
 
-\begin{itemize}
-    \item Exception details and stack traces
-    \item Runtime environment information
-    \item Service and operation metadata
-    \item Correlation IDs for distributed tracing
-    \item Custom application context
-\end{itemize}
+\subsection{Remediation Engine}
+The Remediation Engine is responsible for safely executing the remediation actions proposed by the LLM Orchestrator. It acts as a safeguard and execution layer to apply fixes or workarounds to the running application. Its key responsibilities include action validation and safety checks by performing pre-execution checks to ensure that a proposed remediation action is safe to apply in the current application state. This might involve analyzing the potential impact on system stability or data integrity. It manages execution scheduling by controlling the timing and order of remediation actions, especially in scenarios involving multiple potential fixes. The engine implements state rollback and recovery mechanisms to revert the system state if a remediation action fails or introduces new issues. It performs success verification by monitoring the application after a remediation action is applied to confirm that the error is resolved and no new problems have arisen. The system maintains a feedback loop where the outcome of the remediation attempt is fed back into the system, potentially updating the historical success rates of patterns and actions or informing future decisions by the LLM.
 
-\subsubsection{Remediation Engine}
-The remediation engine processes LLM-generated suggestions and implements automated recovery strategies:
+\subsection{System Integration}
+RuntimeErrorSage's architecture is designed around three core components: the Runtime Intelligence Layer, the Model Context Protocol (MCP), and the LM Studio Integration. These components work together to provide intelligent, privacy-preserving error handling in distributed .NET applications.
 
-\begin{itemize}
-    \item Retry mechanisms with exponential backoff
-    \item Circuit breaker pattern implementation
-    \item Default value substitution
-    \item Service degradation strategies
-    \item Custom remediation actions
-\end{itemize}
+\subsubsection{Runtime Intelligence Layer}
+The Runtime Intelligence Layer serves as the primary interface between the application and RuntimeErrorSage's error handling capabilities. The exception interception component uses ASP.NET Core middleware to capture unhandled exceptions. It implements a custom exception filter that intercepts exceptions before they reach the global error handler, captures the complete exception context including stack traces, enriches the error context with runtime metadata, and determines the appropriate handling strategy based on exception type.
 
-\subsection{Model Context Protocol (MCP)}
-MCP provides a standardized way to share and manage context across distributed components. Its key features include:
+The context generation component creates rich, structured error contexts that include exception details and stack traces, runtime environment information, service and operation metadata, correlation IDs for distributed tracing, and custom application context.
 
-\subsubsection{Context Schema}
-The MCP context schema defines the structure for error context data:
+The remediation engine processes LLM-generated suggestions and implements automated recovery strategies including retry mechanisms with exponential backoff, circuit breaker pattern implementation, default value substitution, service degradation strategies, and custom remediation actions.
 
-\begin{lstlisting}[language=json]
+\subsubsection{Model Context Protocol}
+MCP provides a standardized way to share and manage context across distributed components. MCP context schema defines the structure for error context data as shown in the following JSON structure:
+
+\begin{lstlisting}[style=jsonstyle,caption={MCP Context Schema},label=lst:mcp-schema]
 {
   "errorContext": {
     "serviceId": "string",
-    "operationId": "string",
+    "operationId": "string", 
     "timestamp": "datetime",
     "correlationId": "string",
     "environment": "string",
-    "metadata": {
-      "key": "value"
-    }
+    "metadata": {"key": "value"}
   },
   "exceptionData": {
     "type": "string",
-    "message": "string",
+    "message": "string", 
     "stackTrace": "string",
     "source": "string"
   },
@@ -75,63 +81,18 @@ The MCP context schema defines the structure for error context data:
 }
 \end{lstlisting}
 
-\subsubsection{Context Distribution}
-MCP implements a publish-subscribe model for context distribution:
+MCP implements a publish-subscribe model for context distribution where context producers publish error events, subscribers receive relevant context updates, context routing is based on service boundaries, and context persistence enables historical analysis.
 
-\begin{itemize}
-    \item Context producers publish error events
-    \item Subscribers receive relevant context updates
-    \item Context routing based on service boundaries
-    \item Context persistence for historical analysis
-\end{itemize}
+\subsubsection{LM Studio Integration}
+The LM Studio integration component manages local LLM inference and prompt engineering. Model management includes local model loading and initialization, model versioning and updates, resource allocation and optimization, and model performance monitoring.
 
-\subsection{LM Studio Integration}
-The LM Studio integration component manages local LLM inference and prompt engineering:
-
-\subsubsection{Model Management}
-\begin{itemize}
-    \item Local model loading and initialization
-    \item Model versioning and updates
-    \item Resource allocation and optimization
-    \item Model performance monitoring
-\end{itemize}
-
-\subsubsection{Prompt Engineering}
-The prompt engineering system generates context-aware prompts for the LLM:
-
-\begin{lstlisting}[language=text]
-System: You are an expert .NET runtime error analyzer. Analyze the following error and provide:
-1. A clear explanation of the error
-2. Possible root causes
-3. Recommended remediation steps
-4. Prevention strategies
-
-Error Context:
-{errorContext}
-
-Exception:
-{exceptionData}
-
-Runtime State:
-{runtimeState}
-\end{lstlisting}
-
-\subsubsection{Response Processing}
-The response processing component:
-
-\begin{itemize}
-    \item Parses LLM-generated responses
-    \item Validates remediation suggestions
-    \item Extracts actionable insights
-    \item Maintains response quality metrics
-\end{itemize}
+The prompt engineering system generates context-aware prompts for the LLM. Response processing involves parsing LLM-generated responses, validating remediation suggestions, extracting actionable insights, and maintaining response quality metrics.
 
 \subsection{Integration Patterns}
-CodeSage supports multiple integration patterns for different application architectures:
+RuntimeErrorSage supports multiple integration patterns for different application architectures. For ASP.NET Core applications, it provides middleware integration:
 
-\subsubsection{ASP.NET Core Middleware}
-\begin{lstlisting}[language=csharp]
-public class CodeSageMiddleware
+\begin{lstlisting}[style=csharpstyle,caption={ASP.NET Core Middleware Integration},label=lst:middleware-architecture]
+public class RuntimeErrorSageMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ICodeSageService _codeSage;
@@ -152,11 +113,10 @@ public class CodeSageMiddleware
 }
 \end{lstlisting}
 
-\subsubsection{Background Service Integration}
-For background services and worker processes, CodeSage provides a custom exception handler:
+For background services and worker processes, RuntimeErrorSage provides a custom exception handler:
 
-\begin{lstlisting}[language=csharp]
-public class CodeSageExceptionHandler : IHostedService
+\begin{lstlisting}[style=csharpstyle,caption={Background Service Integration},label=lst:background]
+public class RuntimeErrorSageExceptionHandler : IHostedService
 {
     private readonly ICodeSageService _codeSage;
     
@@ -170,25 +130,9 @@ public class CodeSageExceptionHandler : IHostedService
 \end{lstlisting}
 
 \subsection{Security and Privacy}
-CodeSage's architecture prioritizes security and privacy through:
-
-\begin{itemize}
-    \item Local LLM inference with no external API calls
-    \item Encrypted context transmission
-    \item Role-based access control
-    \item Audit logging
-    \item Data retention policies
-\end{itemize}
+RuntimeErrorSage's architecture prioritizes security and privacy through local LLM inference with no external API calls, encrypted context transmission, role-based access control, audit logging, and data retention policies.
 
 \subsection{Extensibility}
-The system is designed for extensibility through:
+The system is designed for extensibility through a plugin architecture for custom analyzers, custom remediation strategies, integration with existing monitoring systems, support for additional LLM providers, and custom context enrichment.
 
-\begin{itemize}
-    \item Plugin architecture for custom analyzers
-    \item Custom remediation strategies
-    \item Integration with existing monitoring systems
-    \item Support for additional LLM providers
-    \item Custom context enrichment
-\end{itemize}
-
-This architecture enables CodeSage to provide intelligent, privacy-preserving error handling while maintaining flexibility and extensibility for different application scenarios. 
+This architecture enables RuntimeErrorSage to provide intelligent, privacy-preserving error handling while maintaining flexibility and extensibility for different application scenarios.

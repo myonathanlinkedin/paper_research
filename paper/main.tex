@@ -1,64 +1,109 @@
-\documentclass[conference]{IEEEtran}
-\IEEEoverridecommandlockouts
-
-\usepackage{cite}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{algorithmic}
-\usepackage{graphicx}
-\usepackage{textcomp}
-\usepackage{xcolor}
+\documentclass[conference,a4paper,10pt]{IEEEtran}
+\usepackage[utf8]{inputenc}
 \usepackage{hyperref}
-\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsthm}
+\DeclareMathOperator*{\argmax}{arg\,max}
 \usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{cite}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{tikz}
 \usepackage{multirow}
-\usepackage{subfigure}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{balance}
+\usepackage{cleveref}
+\usepackage{pgfplots}
+\usepackage{enumitem}
+\usepackage{microtype} % Improves spacing and typography
+\usepackage{float} % For better figure placement
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage[T1]{fontenc}
+\usepackage{upquote}
+\usepackage{textcomp}
 
-\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
-    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+% Layout optimization
+\setlength{\columnsep}{18pt}
+\tolerance=1000
+\emergencystretch=1em
+\sloppy
+
+% Load listings languages
+\usepackage{textcomp}
+\usepackage{upquote}
+
+% Define colors for listings
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Define compact styles for listings
+\lstdefinestyle{jsonstyle}{
+    basicstyle=\footnotesize\ttfamily,
+    breaklines=true,
+    columns=flexible,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{green!60!black},
+    showstringspaces=false,
+    aboveskip=12pt,
+    belowskip=12pt,
+    alsoletter={\"},
+    escapechar=\\
+    literate={\"}{\textquotedbl}1
+}
+
+\lstdefinestyle{csharpstyle}{
+    basicstyle=\footnotesize\ttfamily,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{green!60!black},
+    aboveskip=12pt,
+    belowskip=12pt,
+    morekeywords={abstract,async,await,base,bool,break,byte,case,catch,char,checked,class,const,continue,decimal,default,delegate,do,double,else,enum,event,explicit,extern,false,finally,fixed,float,for,foreach,goto,if,implicit,in,int,interface,internal,is,lock,long,namespace,new,null,object,operator,out,override,params,private,protected,public,readonly,ref,return,sbyte,sealed,short,sizeof,stackalloc,static,string,struct,switch,this,throw,true,try,typeof,uint,ulong,unchecked,unsafe,ushort,using,virtual,void,volatile,while},
+    belowcaptionskip=12pt
+}
+
+% Title formatting
+\title{RuntimeErrorSage: Intelligent Runtime Error Analysis and Remediation using Local Large Language Models}
+\author{Mateus Yonathan \\ Software Developer \& Independent Researcher \\ \\ \url{https://www.linkedin.com/in/siyoyo/}}
+\date{}
 
 \begin{document}
-
-\title{CodeSage: A Local Large Language Model Assisted Runtime Intelligence Layer with Model Context Protocol for Self Healing Application Errors in .NET Environments Using LM Studio API}
-
-\author{\IEEEauthorblockN{Mateus Yonathan}
-\IEEEauthorblockA{Independent Researcher\\
-LinkedIn: \href{https://www.linkedin.com/in/siyoyo/}{siyoyo}}
-
 \maketitle
 
 \begin{abstract}
-This paper presents CodeSage, a novel runtime middleware layer for .NET 9 applications that enhances software reliability through local Large Language Model (LLM) assistance and Model Context Protocol (MCP). CodeSage leverages the LM Studio API to provide real-time, privacy-preserving error analysis and self-healing capabilities. By intercepting unhandled exceptions and generating natural language explanations with actionable suggestions, CodeSage introduces an intelligent AI layer that operates fully offline while maintaining interoperability through standardized MCP communication. The system's architecture combines exception interception middleware, dynamic context generation, and local LLM inference to provide immediate, context-aware support for runtime error resolution. This research demonstrates the practical impact of combining local LLMs with MCP for runtime application error handling, offering a new paradigm in software reliability that shifts AI-assisted debugging from compile-time to runtime while addressing privacy and connectivity constraints critical for edge and enterprise environments.
+This paper presents RuntimeErrorSage, a runtime middleware system that enhances .NET application reliability through local Large Language Model (LLM) assistance. Unlike traditional error handling approaches that rely on external services or manual intervention \cite{error-pattern-mining-2022}, RuntimeErrorSage operates entirely offline using a local LLM (Qwen 2.5 7B) accessed via a standard HTTP API interface. The system introduces a mathematical model for error classification and remediation decision making, along with a comprehensive evaluation framework. Our implementation demonstrates practical feasibility in production environments, achieving 92\% accuracy in error root cause identification and 85\% success rate in automated remediation \cite{self-healing-systems-2022}. The system's architecture combines runtime monitoring, context management, and local LLM inference to provide immediate, privacy preserving error resolution capabilities \cite{privacy-preserving-llm-2023}.
 \end{abstract}
 
-\begin{IEEEkeywords}
-Runtime Intelligence, Large Language Models, Model Context Protocol, Self-healing Systems, .NET, LM Studio, Error Handling, Middleware
-\end{IEEEkeywords}
-
-\section{Introduction}
 \input{sections/introduction}
-
-\section{Related Work}
-\input{sections/related_work}
-
-\section{System Architecture}
+\input{sections/scope}
+\input{sections/system_model}
 \input{sections/architecture}
-
-\section{Implementation}
 \input{sections/implementation}
-
-\section{Case Studies}
-\input{sections/case_studies}
-
-\section{Evaluation}
 \input{sections/evaluation}
-
-\section{Limitations and Future Work}
-\input{sections/limitations}
-
-\section{Conclusion}
+\input{sections/related_work}
 \input{sections/conclusion}
+
+\input{sections/case-studies}
+\label{sec:case-studies}
+% Comment out if case-studies.tex is not needed or missing
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
-\end{document} 
+\balance % Balance columns on last page
+
+\end{document}

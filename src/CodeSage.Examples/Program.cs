@@ -1,12 +1,19 @@
+using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using CodeSage.Core.Extensions;
+using CodeSage.Core.Analysis;
 using CodeSage.Examples.Models;
 using CodeSage.Examples.Services;
 using CodeSage.Examples.Exceptions;
 using CodeSage.Examples.Models.Responses;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add CodeSage services
+builder.Services.AddCodeSage(builder.Configuration);
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -84,7 +91,25 @@ app.MapPost("/operations/resource", async (ResourceRequest request, IOperationSi
     return response;
 });
 
-// Health check endpoint
-app.MapGet("/health", () => "API is operational");
+// Add a sample endpoint to test error analysis
+app.MapPost("/analyze-error", async (ErrorContext context, IErrorAnalyzer analyzer) =>
+{
+    try
+    {
+        var result = await analyzer.AnalyzeErrorAsync(context);
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            title: "Error analysis failed",
+            detail: ex.Message,
+            statusCode: 500);
+    }
+});
 
-app.Run();
+// Add health check endpoint
+app.MapHealthChecks("/health");
+
+// Run the application
+await app.RunAsync();

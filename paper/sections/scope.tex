@@ -1,97 +1,152 @@
-\section{Scope of Research}
+\section{Scope of Research}\label{sec:scope}
 
-This research outlines the scope for \textit{CodeSage}, a middleware layer designed to enhance software reliability in .NET 9 applications through intelligent runtime error handling. The scope is defined as follows:
+This research focuses on a single, well-defined contribution: evaluating the feasibility and effectiveness of local LLM-assisted runtime error analysis in .NET applications. The scope is deliberately limited to ensure proper validation and meaningful results.
 
-\subsection{Project Structure}
-The research is implemented as a .NET solution (\textit{CodeSage.sln}) comprising the following projects:
+\subsection{Core Research Question}
+Can local LLM inference (via LM Studio) provide effective runtime error analysis and remediation suggestions in .NET applications, while maintaining privacy and performance requirements?
+
+\subsection{Success Criteria}
+The research will be considered successful if it can demonstrate:
 
 \begin{itemize}
-    \item \textit{CodeSage.Core} – Contains the core logic and interfaces:
+    \item \textbf{Error Analysis Accuracy:}
     \begin{itemize}
-        \item \textit{ICodeSageService} and \textit{CodeSageService} for orchestrating exception processing
-        \item \textit{ILMStudioClient} and \textit{LMStudioClient} for local LLM integration (using \textit{qwen2.5-7b-instruct-1m} via LM Studio at \textit{http://127.0.0.1:1234/v1})
-        \item \textit{IMCPClient} and \textit{MCPClient} for distributed context sharing
+        \item At least 80\% accuracy in error root cause identification
+        \item At least 70\% accuracy in remediation suggestion relevance
+        \item Measured against a standardized test suite of common .NET errors
     \end{itemize}
-    \item \textit{CodeSage.Middleware} – Implements the ASP.NET Core middleware (\textit{CodeSageMiddleware}) that:
+    \item \textbf{Performance Requirements:}
     \begin{itemize}
-        \item Intercepts unhandled exceptions
-        \item Enriches error context
-        \item Processes exceptions through the core service
-        \item Applies remediation strategies
+        \item Error analysis latency under 500ms for 95\% of requests
+        \item Memory overhead under 100MB for the LLM component
+        \item CPU impact under 10\% during error analysis
     \end{itemize}
-    \item \textit{CodeSage.Tests} – Contains xUnit tests validating:
+    \item \textbf{Implementation Completeness:}
     \begin{itemize}
-        \item Exception interception and context enrichment
-        \item LM Studio client integration
-        \item MCP client functionality
-        \item Middleware behavior
-        \item Operation simulator functionality
-    \end{itemize}
-    \item \textit{CodeSage.Examples} – Provides example endpoints demonstrating CodeSage's capabilities:
-    \begin{itemize}
-        \item Database operations with connection issues
-        \item File operations with resource management
-        \item External service integration
-        \item Resource allocation and management
+        \item Fully functional LM Studio integration
+        \item Complete test coverage of core components
+        \item Documented API and integration patterns
     \end{itemize}
 \end{itemize}
 
-\subsection{Research Goals}
-The primary goals of this research are:
+\subsection{Implementation Scope}
+The implementation will be limited to:
 
 \begin{itemize}
-    \item \textbf{Local LLM Integration:}
+    \item \textbf{Core Components:}
     \begin{itemize}
-        \item Implement real-time error analysis using the LM Studio API
-        \item Ensure privacy-preserving inference with the \textit{qwen2.5-7b-instruct-1m} model
-        \item Generate structured error context and remediation suggestions
-        \item Specialize in runtime error patterns and their remediation
+        \item LM Studio integration with qwen2.5-7b-instruct-1m model
+        \item Basic error context collection
+        \item Standardized error response format
+        \item Simple remediation execution
     \end{itemize}
-    \item \textbf{Distributed Context Sharing:}
+    \item \textbf{Error Types:}
     \begin{itemize}
-        \item Implement the Model Context Protocol (MCP) for error context distribution
-        \item Enable context publishing and subscription
-        \item Support historical context retrieval
-        \item Focus on error patterns and their propagation
+        \item Database connection errors
+        \item File system errors
+        \item HTTP client errors
+        \item Resource allocation errors
     \end{itemize}
-    \item \textbf{Middleware Integration:}
+    \item \textbf{Application Types:}
     \begin{itemize}
-        \item Provide seamless integration with ASP.NET Core applications
-        \item Implement exception interception and context enrichment
-        \item Support automated remediation based on LLM analysis
-        \item Demonstrate practical error handling through example scenarios
-    \end{itemize}
-    \item \textbf{Runtime Error Handling:}
-    \begin{itemize}
-        \item Comprehensive coverage of common runtime errors
-        \item Advanced error pattern recognition
-        \item Intelligent remediation strategies
-        \item Real-time error analysis and recovery
+        \item ASP.NET Core Web APIs
+        \item Single-instance applications
+        \item No distributed system requirements
     \end{itemize}
 \end{itemize}
 
-\subsection{Research Boundaries}
-To maintain focus and ensure practical implementation, this research is bounded by:
+\subsection{Evaluation Methodology}
+The research will be evaluated through:
 
 \begin{itemize}
-    \item \textbf{Technology Stack:} Limited to .NET 9 applications using ASP.NET Core
-    \item \textbf{LLM Integration:} Focused on LM Studio API with the \textit{qwen2.5-7b-instruct-1m} model
-    \item \textbf{Context Protocol:} Implemented through a basic MCP for error context sharing
-    \item \textbf{Error Handling Scope:}
+    \item \textbf{Test Suite:}
     \begin{itemize}
-        \item Database operation errors
-        \item File system operations
-        \item External service integration
-        \item Resource management
-        \item Common runtime exceptions
+        \item 100 standardized error scenarios
+        \item 20 real-world error cases
+        \item Performance benchmark suite
+        \item Memory usage analysis
     \end{itemize}
-    \item \textbf{Evaluation:} Based on:
+    \item \textbf{Comparison Baseline:}
     \begin{itemize}
-        \item Error detection accuracy
-        \item Remediation strategy effectiveness
+        \item Traditional error handling (try-catch)
+        \item Static analysis tools
+        \item Manual debugging process
+    \end{itemize}
+    \item \textbf{Metrics:}
+    \begin{itemize}
+        \item Error resolution time
+        \item Analysis accuracy
         \item System performance impact
-        \item Context sharing efficiency
+        \item Memory usage
+        \item CPU utilization
     \end{itemize}
 \end{itemize}
 
-The complete source code is open-sourced at \url{https://github.com/myonathanlinkedin/paper_research}, providing a foundation for further research in runtime error handling. The implementation demonstrates CodeSage's capabilities in handling complex error scenarios through intelligent analysis and automated remediation. 
+\subsection{Out of Scope}
+The following aspects are explicitly out of scope:
+
+\begin{itemize}
+    \item Distributed system error handling
+    \item Advanced pattern recognition
+    \item Custom LLM model training
+    \item Complex remediation strategies
+    \item Production deployment
+    \item Security analysis
+    \item Cross-platform support
+\end{itemize}
+
+\subsection{Implementation Status}
+Current implementation status (as of [DATE]):
+
+\begin{itemize}
+    \item \textbf{Completed:}
+    \begin{itemize}
+        \item Basic error context collection
+        \item LM Studio API integration
+        \item Standardized error responses
+        \item Test framework setup
+    \end{itemize}
+    \item \textbf{In Progress:}
+    \begin{itemize}
+        \item Error analysis accuracy validation
+        \item Performance benchmarking
+        \item Test suite implementation
+        \item Documentation
+    \end{itemize}
+    \item \textbf{Pending:}
+    \begin{itemize}
+        \item Full test suite execution
+        \item Performance optimization
+        \item Final accuracy measurements
+        \item Comparison with baselines
+    \end{itemize}
+\end{itemize}
+
+\subsection{Timeline}
+The research will be completed in the following phases:
+
+\begin{itemize}
+    \item \textbf{Phase 1 (Current):} Core Implementation
+    \begin{itemize}
+        \item Complete LM Studio integration
+        \item Implement error context collection
+        \item Develop test framework
+        \item Create benchmark suite
+    \end{itemize}
+    \item \textbf{Phase 2:} Validation
+    \begin{itemize}
+        \item Execute test suite
+        \item Measure accuracy
+        \item Benchmark performance
+        \item Compare with baselines
+    \end{itemize}
+    \item \textbf{Phase 3:} Documentation
+    \begin{itemize}
+        \item Document findings
+        \item Analyze results
+        \item Draw conclusions
+        \item Identify limitations
+    \end{itemize}
+\end{itemize}
+
+The research will be considered complete when all success criteria are met or when clear limitations are identified that prevent meeting the criteria. All results, including negative findings, will be documented and analyzed.

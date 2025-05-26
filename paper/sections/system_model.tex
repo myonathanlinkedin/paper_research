@@ -1,0 +1,55 @@
+\section{System Model}\label{sec:system-model}
+
+To formally describe the operation of RuntimeErrorSage, we introduce a mathematical framework that models the key processes of error classification, context management, and remediation decision making. This formalization provides a rigorous basis for understanding the system's behavior and designing its algorithms.
+
+\subsection{Error Context Representation}
+
+An error instance $e$ is represented by a tuple $(t, s, l, p, c)$, where:
+\begin{itemize}[leftmargin=*,align=left]
+    \item $t$ is the timestamp of the error occurrence.
+    \item $s$ is the source of the error (e.g., module, function, line number).
+    \item $l$ is the raw error log message.
+    \item $p$ is the current program state, including relevant variable values, stack trace, and system metrics.
+    \item $c$ is the historical execution context, represented as a dynamic graph $G=(V, E)$, where nodes $v \in V$ are program states or events, and edges $e \in E$ represent transitions or causal relationships.\cite{graph_based_context_modeling_2021, log_analysis_survey_2016}
+\end{itemize}
+
+\subsection{Error Classification}
+
+Error classification maps an error instance $e$ to a category $k \in \mathcal{K}$, where $\mathcal{K}$ is a predefined set of error types (e.g., database error, network error, resource exhaustion). This process can be formalized as a function $f(e) \to k$. The classification relies on analyzing the error log message $l$, stack trace within $p$, and potentially the context graph $c$.\cite{error_pattern_mining_ml_2019, graph_similarity_metrics_2019}
+
+\subsection{Context Graph Enrichment and Analysis}
+
+The context graph $c$ is dynamically updated and analyzed to extract features relevant for remediation. For a given error $e$, the graph $c$ is enriched with the current program state $p$ and potentially other relevant information. Analysis involves computing metrics on the graph, such as node centrality, reachability, and temporal relationships.
+
+Key features extracted from the context graph for a program point $p$ and context $c$ related to an error $e$ include:
+\begin{itemize}[leftmargin=*,align=left]
+    \item \textbf{Recency} ($R(p, c)$): Measures how recently a program point or related event occurred in the execution history captured by $c$. Points closer to the error occurrence have higher recency.
+    \item \textbf{Importance} ($I(p, c)$): Assesses the significance of a program point or event based on graph centrality metrics (e.g., degree, betweenness) within $c$. More central points are considered more important.\cite{graph_centrality_metrics_2015}
+    \item \textbf{Connectivity} ($C(p, c)$): Quantifies the degree of connection of a program point $p$ or related event to other elements in the context graph $c$, indicating its interaction scope.
+    \item \textbf{Error Proximity} ($E(p, c, e)$): Measures the distance or relationship strength between the current program point $p$ (or related context) and the error event $e$ within the graph $c$.
+\end{itemize}
+These features are combined to form a context vector $V(p, c, e) = [R(p, c), I(p, c), C(p, c), E(p, c, e)]$ that summarizes the relevant aspects of the execution environment.
+
+\subsection{Remediation Decision Making}
+
+The core of RuntimeErrorSage involves deciding the best remediation action $r \in \mathcal{R}_e \cup \{\text{None}\}$ for a given error instance $e$, where $\mathcal{R}_e$ is the set of possible remediation actions applicable to error type $e$. This decision is a function of the error classification $k$, the context vector $V(p, c, e)$, and potentially historical outcomes of previous remediation attempts. The decision-making process is typically guided by a model, which in our system is the LLM. The LLM, given the error details ($e$) and the context vector ($V$), suggests the most appropriate action.
+
+Formally, the remediation decision function can be expressed as:
+\begin{equation}
+\label{eq:remediation-decision}
+g(e, V) = r
+\end{equation}
+
+In the context of the LLM, this function $g$ is approximated by the model's inference process. The LLM analyzes a prompt constructed from $e$ and $V$ and outputs a suggested action $r$. The action $r$ is chosen to minimize the negative impact of the error and prevent recurrence. This can be viewed as an optimization problem where the LLM attempts to maximize the likelihood of successful recovery or minimize the estimated cost of failure.
+\begin{equation}
+\label{eq:argmax}
+g(p,c,s) = \argmax_{r \in \mathcal{R}_p \cup \{\text{None}\}} \text{Score}(e, V, r)
+\end{equation}
+Where $\text{Score}(e, V, r)$ is a function evaluated by the LLM (or a part of its reasoning process) that estimates the desirability of action $r$ given the error and context. The set $\mathcal{R}_p$ includes actions like modifying variable values, retrying operations, adjusting configuration, or escalating the error. The option $\{\text{None}\}$ represents the decision to take no automated action, perhaps logging the error for manual inspection.\cite{runtime_safety_analysis_2018}
+
+The score could be based on factors such as estimated success probability, predicted time to recovery, potential side effects, and confidence level. The LLM leverages its training data and the provided context to estimate these factors and make a ranked suggestion of actions.
+\subsection{Learning and Adaptation}
+RuntimeErrorSage can incorporate a feedback loop where the outcomes of remediation actions are recorded. This data can be used to fine-tune the LLM or update the scoring function, allowing the system to adapt and improve its remediation decisions over time.
+
+\subsection{Summary}
+The system model provides a formal basis for understanding how RuntimeErrorSage processes errors, utilizes contextual information, and makes remediation decisions. It highlights the key inputs to the LLM-driven decision process, which are crucial for the system's effectiveness and adaptability.
