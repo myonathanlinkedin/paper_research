@@ -10,9 +10,16 @@ using System.Collections.Concurrent;
 using CoreIRemediationValidator = RuntimeErrorSage.Core.Interfaces.IRemediationValidator;
 using RemediationIRemediationValidator = RuntimeErrorSage.Core.Remediation.Interfaces.IRemediationValidator;
 using ValidationResult = RuntimeErrorSage.Core.Models.Validation.RemediationValidationResult;
+using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
+/// <summary>
+/// Validates remediation actions and strategies.
+/// </summary>
 public class RemediationValidator : CoreIRemediationValidator, RemediationIRemediationValidator, IDisposable
 {
     private readonly ILogger<RemediationValidator> _logger;
@@ -21,6 +28,10 @@ public class RemediationValidator : CoreIRemediationValidator, RemediationIRemed
     private readonly RemediationValidatorOptions _options;
     private readonly CancellationTokenSource _globalCts;
     private bool _disposed;
+    private readonly IErrorContextAnalyzer _errorContextAnalyzer;
+    private readonly IRemediationMetricsCollector _metricsCollector;
+    private readonly IRemediationRegistry _registry;
+    private readonly IQwenLLMClient _llmClient;
 
     public bool IsEnabled => !_disposed && _options.IsEnabled;
     public string Name => "RuntimeErrorSage Remediation Validator";
@@ -36,13 +47,21 @@ public class RemediationValidator : CoreIRemediationValidator, RemediationIRemed
         ILogger<RemediationValidator> logger,
         IOptions<RemediationValidatorOptions> options,
         IEnumerable<IValidationRule> rules,
-        IEnumerable<IValidationWarning> warnings)
+        IEnumerable<IValidationWarning> warnings,
+        IErrorContextAnalyzer errorContextAnalyzer,
+        IRemediationMetricsCollector metricsCollector,
+        IRemediationRegistry registry,
+        IQwenLLMClient llmClient)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         _rules = rules?.ToList() ?? throw new ArgumentNullException(nameof(rules));
         _warnings = warnings?.ToList() ?? throw new ArgumentNullException(nameof(warnings));
         _globalCts = new CancellationTokenSource();
+        _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
+        _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
+        _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+        _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
     }
 
     public async Task<RemediationValidationResult> ValidateRemediationAsync(ErrorContext context)

@@ -1,13 +1,12 @@
-using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Graph.Models;
+using RuntimeErrorSage.Core.Models.Graph;
 
 namespace RuntimeErrorSage.Core.Graph.Interfaces
 {
     /// <summary>
     /// Defines the interface for graph-based context analysis.
     /// </summary>
-    public interface IGraphAnalyzer
+    public interface IDependencyGraphAnalyzer
     {
         /// <summary>
         /// Analyzes the error context using graph-based analysis.

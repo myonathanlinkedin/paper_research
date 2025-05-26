@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Remediation.Models.Analysis;
@@ -14,34 +15,34 @@ using RuntimeErrorSage.Core.Remediation.Models.Validation;
 namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
-    /// Analyzes error contexts to determine appropriate remediation strategies.
+    /// Analyzes errors and determines appropriate remediation actions.
     /// </summary>
     public class RemediationAnalyzer : IRemediationAnalyzer
     {
         private readonly ILogger<RemediationAnalyzer> _logger;
-        private readonly IRemediationValidator _validator;
+        private readonly IErrorContextAnalyzer _errorContextAnalyzer;
         private readonly IRemediationRegistry _registry;
-        private readonly IGraphAnalyzer _graphAnalyzer;
+        private readonly IRemediationValidator _validator;
+        private readonly IRemediationStrategyProvider _strategyProvider;
+        private readonly IRemediationMetricsCollector _metricsCollector;
         private readonly IQwenLLMClient _llmClient;
 
         public RemediationAnalyzer(
             ILogger<RemediationAnalyzer> logger,
-            IRemediationValidator validator,
+            IErrorContextAnalyzer errorContextAnalyzer,
             IRemediationRegistry registry,
-            IGraphAnalyzer graphAnalyzer,
+            IRemediationValidator validator,
+            IRemediationStrategyProvider strategyProvider,
+            IRemediationMetricsCollector metricsCollector,
             IQwenLLMClient llmClient)
         {
-            ArgumentNullException.ThrowIfNull(logger);
-            ArgumentNullException.ThrowIfNull(validator);
-            ArgumentNullException.ThrowIfNull(registry);
-            ArgumentNullException.ThrowIfNull(graphAnalyzer);
-            ArgumentNullException.ThrowIfNull(llmClient);
-            
-            _logger = logger;
-            _validator = validator;
-            _registry = registry;
-            _graphAnalyzer = graphAnalyzer;
-            _llmClient = llmClient;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
+            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _strategyProvider = strategyProvider ?? throw new ArgumentNullException(nameof(strategyProvider));
+            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
+            _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
         }
 
         public async Task<RemediationAnalysis> AnalyzeErrorAsync(ErrorContext context)
@@ -63,7 +64,7 @@ namespace RuntimeErrorSage.Core.Remediation
                 }
 
                 // Analyze context graph
-                var graphAnalysis = await _graphAnalyzer.AnalyzeContextGraphAsync(context);
+                var graphAnalysis = await _errorContextAnalyzer.AnalyzeContextAsync(context);
                 if (!graphAnalysis.IsValid)
                 {
                     return new RemediationAnalysis

@@ -17,6 +17,8 @@ namespace RuntimeErrorSage.Tests.Analysis
     {
         private readonly Mock<ILogger<PatternRecognition>> _loggerMock;
         private readonly Mock<IMCPClient> _mcpClientMock;
+        private readonly Mock<IModel> _modelMock;
+        private readonly Mock<IStorage> _storageMock;
         private readonly PatternRecognitionOptions _options;
         private readonly PatternRecognition _patternRecognition;
 
@@ -24,6 +26,8 @@ namespace RuntimeErrorSage.Tests.Analysis
         {
             _loggerMock = new Mock<ILogger<PatternRecognition>>();
             _mcpClientMock = new Mock<IMCPClient>();
+            _modelMock = new Mock<IModel>();
+            _storageMock = new Mock<IStorage>();
             _options = new PatternRecognitionOptions
             {
                 ServiceName = "TestService",
@@ -38,8 +42,10 @@ namespace RuntimeErrorSage.Tests.Analysis
 
             _patternRecognition = new PatternRecognition(
                 _loggerMock.Object,
+                _mcpClientMock.Object,
                 Options.Create(_options),
-                _mcpClientMock.Object);
+                _modelMock.Object,
+                _storageMock.Object);
         }
 
         [Fact]
@@ -47,21 +53,26 @@ namespace RuntimeErrorSage.Tests.Analysis
         {
             // Arrange
             var patterns = new List<ErrorPattern>();
-            _mcpClientMock.Setup(x => x.GetErrorPatternsAsync(_options.ServiceName))
+            _storageMock.Setup(x => x.LoadPatternsAsync())
                 .ReturnsAsync(patterns);
+            _modelMock.Setup(x => x.InitializeAsync())
+                .Returns(Task.CompletedTask);
+            _modelMock.Setup(x => x.ValidatePatternAsync(It.IsAny<ErrorPattern>()))
+                .ReturnsAsync(true);
 
             // Act
             await _patternRecognition.InitializeAsync();
 
             // Assert
-            _mcpClientMock.Verify(x => x.GetErrorPatternsAsync(_options.ServiceName), Times.Once);
+            _storageMock.Verify(x => x.LoadPatternsAsync(), Times.Once);
+            _modelMock.Verify(x => x.InitializeAsync(), Times.Once);
         }
 
         [Fact]
         public async Task InitializeAsync_ThrowsOnError()
         {
             // Arrange
-            _mcpClientMock.Setup(x => x.GetErrorPatternsAsync(_options.ServiceName))
+            _storageMock.Setup(x => x.LoadPatternsAsync())
                 .ThrowsAsync(new Exception("Test error"));
 
             // Act & Assert
@@ -98,6 +109,8 @@ namespace RuntimeErrorSage.Tests.Analysis
 
             _mcpClientMock.Setup(x => x.GetErrorPatternsAsync(_options.ServiceName))
                 .ReturnsAsync(patterns);
+            _modelMock.Setup(x => x.ValidatePatternAsync(It.IsAny<ErrorPattern>()))
+                .ReturnsAsync(true);
 
             // Act
             var result = await _patternRecognition.DetectPatternsAsync(contexts, _options.ServiceName);
@@ -128,6 +141,8 @@ namespace RuntimeErrorSage.Tests.Analysis
 
             _mcpClientMock.Setup(x => x.GetErrorPatternsAsync(_options.ServiceName))
                 .ReturnsAsync(patterns);
+            _modelMock.Setup(x => x.ValidatePatternAsync(It.IsAny<ErrorPattern>()))
+                .ReturnsAsync(true);
 
             // Act
             var result = await _patternRecognition.FindMatchingPatternAsync(context, _options.ServiceName);

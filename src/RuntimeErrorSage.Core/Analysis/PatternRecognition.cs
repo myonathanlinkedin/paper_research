@@ -172,7 +172,7 @@ namespace RuntimeErrorSage.Core.Analysis
 
         private bool CompareAdditionalContext(
             Dictionary<string, object> patternContext,
-            Dictionary<string, object> currentContext)
+            Dictionary<string, string> currentContext)
         {
             return ContextComparer.CompareAdditionalContext(patternContext, currentContext);
         }
@@ -191,7 +191,7 @@ namespace RuntimeErrorSage.Core.Analysis
 
                 if (existingPattern != null)
                 {
-                    existingPattern.LastOccurrence = newPattern.LastOccurrence;
+                    existingPattern.LastUpdated = newPattern.LastUpdated;
                     existingPattern.OccurrenceCount += newPattern.OccurrenceCount;
                     existingPattern.Context = newPattern.Context;
                     existingPattern.Confidence = Math.Max(existingPattern.Confidence, newPattern.Confidence);

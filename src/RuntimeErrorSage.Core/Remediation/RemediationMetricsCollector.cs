@@ -15,6 +15,11 @@ using ValidationError = RuntimeErrorSage.Core.Models.Validation.ValidationError;
 using ValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
 using ValidationWarning = RuntimeErrorSage.Core.Models.Validation.ValidationWarning;
 using ValidationSeverity = RuntimeErrorSage.Core.Models.Validation.ValidationSeverity;
+using System;
+using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
@@ -32,6 +37,9 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
     private readonly object _lock = new();
     private readonly CancellationTokenSource _cts = new();
     private bool _disposed;
+    private readonly IErrorContextAnalyzer _errorContextAnalyzer;
+    private readonly IRemediationRegistry _registry;
+    private readonly IQwenLLMClient _llmClient;
 
     private static readonly Action<ILogger, string, Exception?> LogMetricsError =
         LoggerMessage.Define<string>(
@@ -41,11 +49,17 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
     public RemediationMetricsCollector(
         ILogger<RemediationMetricsCollector> logger,
-        IOptions<RemediationMetricsCollectorOptions> options)
+        IOptions<RemediationMetricsCollectorOptions> options,
+        IErrorContextAnalyzer errorContextAnalyzer,
+        IRemediationRegistry registry,
+        IQwenLLMClient llmClient)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         _currentProcess = Process.GetCurrentProcess();
+        _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
+        _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+        _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
 
         // Setup collection timer with dueTime and period in milliseconds
         _collectionTimer = new Timer(
@@ -655,4 +669,25 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
     public bool IsEnabled => !_disposed;
     public string Name => "RuntimeErrorSage Remediation Metrics Collector";
     public string Version => "1.0.0";
+
+    // Implementation for IMetricsCollector extension (for graph-based context analysis)
+    public Task<double> CalculateComponentHealthAsync(RuntimeErrorSage.Core.Models.Graph.DependencyNode node)
+    {
+        // Example: Health = 1 - ErrorProbability (clamped between 0 and 1)
+        if (node == null) return Task.FromResult(0.0);
+        var health = 1.0 - node.ErrorProbability;
+        if (health < 0.0) health = 0.0;
+        if (health > 1.0) health = 1.0;
+        return Task.FromResult(health);
+    }
+
+    public Task<double> CalculateReliabilityAsync(RuntimeErrorSage.Core.Models.Graph.DependencyNode node)
+    {
+        // Example: Use node.Reliability directly (clamped between 0 and 1)
+        if (node == null) return Task.FromResult(0.0);
+        var reliability = node.Reliability;
+        if (reliability < 0.0) reliability = 0.0;
+        if (reliability > 1.0) reliability = 1.0;
+        return Task.FromResult(reliability);
+    }
 } 

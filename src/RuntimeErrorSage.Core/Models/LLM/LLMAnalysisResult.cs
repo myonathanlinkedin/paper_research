@@ -150,42 +150,6 @@ public class LLMAnalysisContext
     public Dictionary<string, object> Metadata { get; set; } = new();
 }
 
-/// <summary>
-/// Defines the status of an analysis operation.
-/// </summary>
-public enum AnalysisStatus
-{
-    /// <summary>
-    /// Analysis has been created.
-    /// </summary>
-    Created,
-
-    /// <summary>
-    /// Analysis is in progress.
-    /// </summary>
-    InProgress,
-
-    /// <summary>
-    /// Analysis has completed successfully.
-    /// </summary>
-    Completed,
-
-    /// <summary>
-    /// Analysis has failed.
-    /// </summary>
-    Failed,
-
-    /// <summary>
-    /// Analysis was cancelled.
-    /// </summary>
-    Cancelled,
-
-    /// <summary>
-    /// Analysis status is unknown.
-    /// </summary>
-    Unknown
-}
-
 public class ModelMetrics
 {
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;

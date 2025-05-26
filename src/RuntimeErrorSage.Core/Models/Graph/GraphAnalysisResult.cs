@@ -71,16 +71,6 @@ public class GraphAnalysisResult
     public DateTime Timestamp { get; set; }
 
     /// <summary>
-    /// Gets or sets the list of dependency nodes.
-    /// </summary>
-    public List<DependencyNode> Nodes { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the list of dependency edges.
-    /// </summary>
-    public List<DependencyEdge> Edges { get; set; } = new();
-
-    /// <summary>
     /// Gets or sets the analysis metrics.
     /// </summary>
     public Dictionary<string, double> Metrics { get; set; } = new();

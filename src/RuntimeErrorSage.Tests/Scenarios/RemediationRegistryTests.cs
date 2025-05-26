@@ -1,0 +1,38 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Moq;
+using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Remediation;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
+using Xunit;
+
+namespace RuntimeErrorSage.Tests.Scenarios;
+
+/// <summary>
+/// Tests for remediation registry scenarios.
+/// </summary>
+public class RemediationRegistryTests
+{
+    private readonly Mock<ILogger<RemediationRegistry>> _loggerMock;
+    private readonly Mock<IErrorContextAnalyzer> _errorContextAnalyzerMock;
+    private readonly Mock<IQwenLLMClient> _llmClientMock;
+    private readonly RemediationRegistry _registry;
+
+    public RemediationRegistryTests()
+    {
+        _loggerMock = new Mock<ILogger<RemediationRegistry>>();
+        _errorContextAnalyzerMock = new Mock<IErrorContextAnalyzer>();
+        _llmClientMock = new Mock<IQwenLLMClient>();
+
+        _registry = new RemediationRegistry(
+            _loggerMock.Object,
+            _errorContextAnalyzerMock.Object,
+            _llmClientMock.Object);
+    }
+
+    // ... existing code ...
+} 

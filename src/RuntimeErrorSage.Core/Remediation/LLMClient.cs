@@ -4,18 +4,27 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.LLM;
 using System.Text.Json;
 using System.Text;
+using RuntimeErrorSage.Core.Models.Remediation;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
     /// Client for interacting with the Qwen 2.5 7B Instruct 1M language model.
     /// </summary>
-    public class LLMClient : IQwenLLMClient
+    public class LLMClient : ILLMClient
     {
         private readonly ILogger<LLMClient> _logger;
         private readonly string _modelEndpoint;
         private readonly string _apiKey;
         private readonly JsonSerializerOptions _jsonOptions;
+
+        public bool IsEnabled => true;
+
+        public string Name => "Qwen2.5-7B-Instruct-1M";
+
+        public string Version => "1.0.0";
+
+        public bool IsConnected => true;
 
         public LLMClient(
             ILogger<LLMClient> logger,
@@ -83,7 +92,7 @@ namespace RuntimeErrorSage.Core.Remediation
             // Add error context
             prompt.AppendLine("Analyze the following error context and provide remediation strategy recommendations:");
             prompt.AppendLine($"Error Type: {context.ErrorType}");
-            prompt.AppendLine($"Error Message: {context.ErrorMessage}");
+            prompt.AppendLine($"Error Message: {context.Message}");
             prompt.AppendLine($"Error Source: {context.ErrorSource}");
             prompt.AppendLine($"Severity: {context.Severity}");
 
@@ -94,20 +103,6 @@ namespace RuntimeErrorSage.Core.Remediation
                 foreach (var (source, targets) in context.ComponentGraph)
                 {
                     prompt.AppendLine($"- {source} -> {string.Join(", ", targets)}");
-                }
-            }
-
-            // Add component metrics
-            if (context.ComponentMetrics != null && context.ComponentMetrics.Any())
-            {
-                prompt.AppendLine("\nComponent Metrics:");
-                foreach (var (component, metrics) in context.ComponentMetrics)
-                {
-                    prompt.AppendLine($"- {component}:");
-                    foreach (var (metric, value) in metrics)
-                    {
-                        prompt.AppendLine($"  - {metric}: {value}");
-                    }
                 }
             }
 
@@ -274,15 +269,15 @@ namespace RuntimeErrorSage.Core.Remediation
 
             try
             {
-                var prompt = request.Prompt;
+                var prompt = request.Query;
                 var response = await CallLLMAsync(prompt);
                 
                 return new LLMResponse
                 {
-                    RequestId = request.Id,
+                    ResponseId = request.Query,
                     Content = response,
-                    Timestamp = DateTime.UtcNow,
-                    IsValid = true
+                    Confidence = 0.0,
+                    Metadata = new Dictionary<string, object>()
                 };
             }
             catch (Exception ex)
@@ -290,10 +285,10 @@ namespace RuntimeErrorSage.Core.Remediation
                 _logger.LogError(ex, "Error generating LLM response");
                 return new LLMResponse
                 {
-                    RequestId = request.Id,
-                    ErrorMessage = ex.Message,
-                    Timestamp = DateTime.UtcNow,
-                    IsValid = false
+                    ResponseId = request.Query,
+                    Content = string.Empty,
+                    Confidence = 0.0,
+                    Metadata = new Dictionary<string, object>()
                 };
             }
         }
@@ -302,7 +297,7 @@ namespace RuntimeErrorSage.Core.Remediation
         {
             ArgumentNullException.ThrowIfNull(response);
 
-            if (!response.IsValid || string.IsNullOrEmpty(response.Content))
+            if (string.IsNullOrEmpty(response.Content))
             {
                 return false;
             }
@@ -359,9 +354,11 @@ namespace RuntimeErrorSage.Core.Remediation
             {
                 return new LLMSuggestion
                 {
-                    IsValid = false,
-                    ErrorMessage = "Cannot generate suggestion from invalid analysis",
-                    Timestamp = DateTime.UtcNow
+                    SuggestionId = string.Empty,
+                    Content = string.Empty,
+                    Confidence = 0.0,
+                    Steps = new List<string>(),
+                    Metadata = new Dictionary<string, object>()
                 };
             }
 
@@ -381,9 +378,11 @@ namespace RuntimeErrorSage.Core.Remediation
                 var suggestion = JsonSerializer.Deserialize<LLMSuggestion>(response, _jsonOptions);
                 return suggestion ?? new LLMSuggestion
                 {
-                    IsValid = false,
-                    ErrorMessage = "Failed to parse suggestion response",
-                    Timestamp = DateTime.UtcNow
+                    SuggestionId = string.Empty,
+                    Content = string.Empty,
+                    Confidence = 0.0,
+                    Steps = new List<string>(),
+                    Metadata = new Dictionary<string, object>()
                 };
             }
             catch (Exception ex)
@@ -391,9 +390,11 @@ namespace RuntimeErrorSage.Core.Remediation
                 _logger.LogError(ex, "Error generating remediation suggestion");
                 return new LLMSuggestion
                 {
-                    IsValid = false,
-                    ErrorMessage = ex.Message,
-                    Timestamp = DateTime.UtcNow
+                    SuggestionId = string.Empty,
+                    Content = string.Empty,
+                    Confidence = 0.0,
+                    Steps = new List<string>(),
+                    Metadata = new Dictionary<string, object>()
                 };
             }
         }

@@ -1,5 +1,6 @@
 using Microsoft.OpenApi.Validations;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace RuntimeErrorSage.Core.Validation.Interfaces

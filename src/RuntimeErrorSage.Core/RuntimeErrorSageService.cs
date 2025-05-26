@@ -19,6 +19,11 @@ using RuntimeErrorSage.Core.MCP;
 using RuntimeErrorSage.Core.LLM;
 using RuntimeErrorSage.Core.Validation;
 using RuntimeErrorSage.Core.Graph;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.MCP;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Services;
+using RuntimeErrorSage.Core.Exceptions;
 
 namespace RuntimeErrorSage.Core
 {
@@ -40,7 +45,11 @@ namespace RuntimeErrorSage.Core
         private readonly ConcurrentDictionary<string, RemediationResult> _remediationCache;
         private readonly IQwenLLMClient? _llmClient;
         private readonly IValidationRegistry? _validationRegistry;
-        private readonly IGraphAnalyzer? _graphAnalyzer;
+        private readonly IErrorContextAnalyzer _errorContextAnalyzer;
+        private readonly IRemediationAnalyzer _remediationAnalyzer;
+        private readonly IRemediationValidator _remediationValidator;
+        private readonly IRemediationMetricsCollector _metricsCollector;
+        private readonly ModelContextProtocol _mcp;
 
         public RuntimeErrorSageService(
             ILogger<RuntimeErrorSageService> logger,
@@ -53,7 +62,11 @@ namespace RuntimeErrorSage.Core
             IRemediationTracker remediationTracker,
             IQwenLLMClient? llmClient = null,
             IValidationRegistry? validationRegistry = null,
-            IGraphAnalyzer? graphAnalyzer = null)
+            IErrorContextAnalyzer errorContextAnalyzer,
+            IRemediationAnalyzer remediationAnalyzer,
+            IRemediationValidator remediationValidator,
+            IRemediationMetricsCollector metricsCollector,
+            ModelContextProtocol mcp)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -68,7 +81,11 @@ namespace RuntimeErrorSage.Core
             _remediationCache = new ConcurrentDictionary<string, RemediationResult>();
             _llmClient = llmClient;
             _validationRegistry = validationRegistry;
-            _graphAnalyzer = graphAnalyzer;
+            _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
+            _remediationAnalyzer = remediationAnalyzer ?? throw new ArgumentNullException(nameof(remediationAnalyzer));
+            _remediationValidator = remediationValidator ?? throw new ArgumentNullException(nameof(remediationValidator));
+            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
+            _mcp = mcp ?? throw new ArgumentNullException(nameof(mcp));
         }
 
         public async Task<ErrorAnalysisResult> ProcessExceptionAsync(Exception exception, ErrorContext context)
@@ -523,15 +540,15 @@ namespace RuntimeErrorSage.Core
 
         public async Task<GraphAnalysisResult> AnalyzeContextGraphAsync(ErrorContext context)
         {
-            if (_graphAnalyzer == null)
+            if (_errorContextAnalyzer == null)
             {
-                throw new InvalidOperationException("Graph analyzer is not configured");
+                throw new InvalidOperationException("Error context analyzer is not configured");
             }
 
             try
             {
                 _logger.LogInformation("Analyzing context graph: {ContextId}", context.Id);
-                return await _graphAnalyzer.AnalyzeContextAsync(context);
+                return await _errorContextAnalyzer.AnalyzeContextAsync(context);
             }
             catch (Exception ex)
             {

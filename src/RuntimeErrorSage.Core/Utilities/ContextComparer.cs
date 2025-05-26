@@ -22,12 +22,15 @@ namespace RuntimeErrorSage.Core.Utilities
         /// <returns>True if the contexts are similar, false otherwise</returns>
         public static bool CompareAdditionalContext(
             Dictionary<string, object> patternContext,
-            Dictionary<string, object> currentContext)
+            Dictionary<string, string> currentContext)
         {
+            if (patternContext == null || currentContext == null)
+                return false;
+
             return RelevantKeys.All(key =>
                 patternContext.TryGetValue(key, out var patternValue) &&
                 currentContext.TryGetValue(key, out var currentValue) &&
-                patternValue?.ToString() == currentValue?.ToString());
+                patternValue?.ToString() == currentValue);
         }
     }
 } 

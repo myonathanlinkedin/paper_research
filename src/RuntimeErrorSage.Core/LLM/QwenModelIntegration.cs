@@ -6,6 +6,7 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Core.LLM.Options;
+using RuntimeErrorSage.Core.Interfaces;
 
 namespace RuntimeErrorSage.Core.LLM;
 
@@ -14,12 +15,12 @@ namespace RuntimeErrorSage.Core.LLM;
 /// </summary>
 public class QwenModelIntegration : ILLMIntegration
 {
-    private readonly IQwenClient _qwenClient;
+    private readonly ILLMClient _qwenClient;
     private readonly IModelConfigurationProvider _configProvider;
     private readonly LMStudioOptions _options;
 
     public QwenModelIntegration(
-        IQwenClient qwenClient, 
+        ILLMClient qwenClient, 
         IModelConfigurationProvider configProvider,
         IOptions<LMStudioOptions> options)
     {

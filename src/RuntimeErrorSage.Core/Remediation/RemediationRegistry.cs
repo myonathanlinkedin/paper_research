@@ -3,25 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Remediation.Models.Common;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
-    /// Registry for managing remediation strategies.
+    /// Registry for managing remediation strategies and actions.
     /// </summary>
     public class RemediationRegistry : IRemediationRegistry
     {
         private readonly ILogger<RemediationRegistry> _logger;
+        private readonly IErrorContextAnalyzer _errorContextAnalyzer;
+        private readonly IQwenLLMClient _llmClient;
         private readonly Dictionary<string, IRemediationStrategy> _strategies;
         private readonly Dictionary<string, List<string>> _errorTypeStrategies;
 
-        public RemediationRegistry(ILogger<RemediationRegistry> logger)
+        public RemediationRegistry(
+            ILogger<RemediationRegistry> logger,
+            IErrorContextAnalyzer errorContextAnalyzer,
+            IQwenLLMClient llmClient)
         {
-            ArgumentNullException.ThrowIfNull(logger);
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
+            _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
             _strategies = new Dictionary<string, IRemediationStrategy>(StringComparer.OrdinalIgnoreCase);
             _errorTypeStrategies = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         }

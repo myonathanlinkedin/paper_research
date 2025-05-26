@@ -8,25 +8,48 @@ using Moq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using RuntimeErrorSage.Tests.Helpers;
+using System;
+using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Services;
 
 namespace RuntimeErrorSage.Tests.Scenarios;
 
+/// <summary>
+/// Tests for graph-based error analysis scenarios.
+/// </summary>
 public class GraphAnalysisTests
 {
-    private readonly Mock<IMCPClient> _mcpClientMock;
+    private readonly Mock<ILogger<GraphAnalysisTests>> _loggerMock;
+    private readonly Mock<IErrorContextAnalyzer> _errorContextAnalyzerMock;
+    private readonly Mock<IRemediationAnalyzer> _remediationAnalyzerMock;
     private readonly Mock<IRemediationExecutor> _remediationExecutorMock;
-    private readonly Mock<IGraphAnalyzer> _graphAnalyzerMock;
+    private readonly Mock<IRemediationValidator> _remediationValidatorMock;
+    private readonly Mock<IRemediationMetricsCollector> _metricsCollectorMock;
+    private readonly Mock<ModelContextProtocol> _mcpMock;
     private readonly RuntimeErrorSageService _service;
 
     public GraphAnalysisTests()
     {
-        _mcpClientMock = TestHelper.CreateMCPClientMock();
-        _remediationExecutorMock = TestHelper.CreateRemediationExecutorMock();
-        _graphAnalyzerMock = new Mock<IGraphAnalyzer>();
+        _loggerMock = new Mock<ILogger<GraphAnalysisTests>>();
+        _errorContextAnalyzerMock = new Mock<IErrorContextAnalyzer>();
+        _remediationAnalyzerMock = new Mock<IRemediationAnalyzer>();
+        _remediationExecutorMock = new Mock<IRemediationExecutor>();
+        _remediationValidatorMock = new Mock<IRemediationValidator>();
+        _metricsCollectorMock = new Mock<IRemediationMetricsCollector>();
+        _mcpMock = new Mock<ModelContextProtocol>();
+
         _service = new RuntimeErrorSageService(
-            _mcpClientMock.Object, 
+            _loggerMock.Object,
+            _errorContextAnalyzerMock.Object,
+            _remediationAnalyzerMock.Object,
             _remediationExecutorMock.Object,
-            _graphAnalyzerMock.Object);
+            _remediationValidatorMock.Object,
+            _metricsCollectorMock.Object,
+            _mcpMock.Object);
     }
 
     [Fact]
@@ -66,7 +89,7 @@ public class GraphAnalysisTests
             }
         };
 
-        _graphAnalyzerMock.Setup(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()))
+        _errorContextAnalyzerMock.Setup(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()))
             .ReturnsAsync(graphAnalysis);
 
         // Act
@@ -83,7 +106,7 @@ public class GraphAnalysisTests
         result.GraphAnalysis.ImpactAnalysis.CriticalPath.Should().HaveCount(2);
         result.GraphAnalysis.ImpactAnalysis.Severity.Should().Be("High");
 
-        _graphAnalyzerMock.Verify(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()), Times.Once);
+        _errorContextAnalyzerMock.Verify(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()), Times.Once);
     }
 
     [Fact]
@@ -129,7 +152,7 @@ public class GraphAnalysisTests
             }
         };
 
-        _graphAnalyzerMock.Setup(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()))
+        _errorContextAnalyzerMock.Setup(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()))
             .ReturnsAsync(graphAnalysis);
 
         // Act
@@ -145,7 +168,7 @@ public class GraphAnalysisTests
             s.Name == "CircularDependencyResolution" || 
             s.Name == "ServiceDecoupling");
 
-        _graphAnalyzerMock.Verify(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()), Times.Once);
+        _errorContextAnalyzerMock.Verify(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()), Times.Once);
     }
 
     [Fact]
@@ -189,7 +212,7 @@ public class GraphAnalysisTests
             }
         };
 
-        _graphAnalyzerMock.Setup(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()))
+        _errorContextAnalyzerMock.Setup(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()))
             .ReturnsAsync(graphAnalysis);
 
         // Act
@@ -206,6 +229,6 @@ public class GraphAnalysisTests
             s.Name == "FallbackMechanism" ||
             s.Name == "ServiceIsolation");
 
-        _graphAnalyzerMock.Verify(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()), Times.Once);
+        _errorContextAnalyzerMock.Verify(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()), Times.Once);
     }
 } 

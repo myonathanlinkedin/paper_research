@@ -3,19 +3,24 @@ using System.Collections.Generic;
 namespace RuntimeErrorSage.Core.Models.Error;
 
 /// <summary>
-/// Represents an error classification.
+/// Represents the classification of an error.
 /// </summary>
 public class ErrorClassification
 {
     /// <summary>
+    /// Gets or sets the category of the error.
+    /// </summary>
+    public string Category { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the subcategory of the error.
+    /// </summary>
+    public string Subcategory { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the error type.
     /// </summary>
     public string ErrorType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the error category.
-    /// </summary>
-    public string Category { get; set; }
 
     /// <summary>
     /// Gets or sets the error severity.

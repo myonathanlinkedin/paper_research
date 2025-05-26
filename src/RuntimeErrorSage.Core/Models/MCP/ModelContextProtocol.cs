@@ -1,26 +1,32 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Context;
+using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 
 namespace RuntimeErrorSage.Core.Models.MCP;
 
 /// <summary>
-/// Implements the Model Context Protocol (MCP) as specified in the research paper.
+/// Implements the Model Context Protocol (MCP) for error analysis.
 /// This protocol manages the interaction between runtime error analysis and context gathering.
 /// </summary>
 public class ModelContextProtocol
 {
+    private readonly ILogger<ModelContextProtocol> _logger;
     private readonly IContextProvider _contextProvider;
-    private readonly IGraphAnalyzer _graphAnalyzer;
+    private readonly IErrorContextAnalyzer _errorContextAnalyzer;
     private readonly Dictionary<string, ContextMetadata> _contextCache;
 
-    public ModelContextProtocol(IContextProvider contextProvider, IGraphAnalyzer graphAnalyzer)
+    public ModelContextProtocol(
+        IContextProvider contextProvider,
+        IErrorContextAnalyzer errorContextAnalyzer)
     {
         _contextProvider = contextProvider ?? throw new ArgumentNullException(nameof(contextProvider));
-        _graphAnalyzer = graphAnalyzer ?? throw new ArgumentNullException(nameof(graphAnalyzer));
+        _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
         _contextCache = new Dictionary<string, ContextMetadata>();
     }
 
@@ -30,7 +36,7 @@ public class ModelContextProtocol
     public async Task<ContextAnalysisResult> AnalyzeContextAsync(RuntimeContext context)
     {
         var metadata = await _contextProvider.GetContextMetadataAsync(context);
-        var graph = await _graphAnalyzer.BuildDependencyGraphAsync(context);
+        var graph = await _errorContextAnalyzer.BuildDependencyGraphAsync(context);
         
         var result = new ContextAnalysisResult
         {

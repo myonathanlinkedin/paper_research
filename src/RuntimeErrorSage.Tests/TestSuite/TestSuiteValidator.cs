@@ -173,25 +173,4 @@ public class TestSuiteValidator
 
         return errors.Count == 0;
     }
-
-    /// <summary>
-    /// Validation result.
-    /// </summary>
-    public class ValidationResult
-    {
-        /// <summary>
-        /// Gets or sets a value indicating whether the validation is valid.
-        /// </summary>
-        public bool IsValid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the errors.
-        /// </summary>
-        public List<string> Errors { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the warnings.
-        /// </summary>
-        public List<string> Warnings { get; set; } = new();
-    }
 } 

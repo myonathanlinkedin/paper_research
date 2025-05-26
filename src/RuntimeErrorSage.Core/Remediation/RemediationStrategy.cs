@@ -4,6 +4,12 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Execution;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
+using System;
+using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -13,7 +19,11 @@ namespace RuntimeErrorSage.Core.Remediation
     public abstract class RemediationStrategy : IRemediationStrategy
     {
         protected readonly ILogger<RemediationStrategy> _logger;
+        protected readonly IErrorContextAnalyzer _errorContextAnalyzer;
+        protected readonly IRemediationRegistry _registry;
         protected readonly IRemediationValidator _validator;
+        protected readonly IRemediationMetricsCollector _metricsCollector;
+        protected readonly IQwenLLMClient _llmClient;
 
         public string Name { get; protected set; }
         public string Description { get; protected set; }
@@ -22,13 +32,22 @@ namespace RuntimeErrorSage.Core.Remediation
 
         protected RemediationStrategy(
             ILogger<RemediationStrategy> logger,
+            IErrorContextAnalyzer errorContextAnalyzer,
+            IRemediationRegistry registry,
             IRemediationValidator validator,
+            IRemediationMetricsCollector metricsCollector,
+            IQwenLLMClient llmClient,
             string name,
             string description,
             int priority)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
             ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(validator);
+            ArgumentNullException.ThrowIfNull(errorContextAnalyzer);
+            ArgumentNullException.ThrowIfNull(registry);
+            ArgumentNullException.ThrowIfNull(llmClient);
             
             if (string.IsNullOrEmpty(name))
             {
@@ -47,6 +66,9 @@ namespace RuntimeErrorSage.Core.Remediation
 
             _logger = logger;
             _validator = validator;
+            _errorContextAnalyzer = errorContextAnalyzer;
+            _registry = registry;
+            _llmClient = llmClient;
             Name = name;
             Description = description;
             Priority = priority;
@@ -169,8 +191,11 @@ namespace RuntimeErrorSage.Core.Remediation
     {
         public MonitorStrategy(
             ILogger<RemediationStrategy> logger,
-            IRemediationValidator validator)
-            : base(logger, validator, "Monitor", "Monitors system components for health and performance", 1)
+            IRemediationValidator validator,
+            IErrorContextAnalyzer errorContextAnalyzer,
+            IRemediationRegistry registry,
+            IQwenLLMClient llmClient)
+            : base(logger, validator, errorContextAnalyzer, registry, llmClient, "Monitor", "Monitors system components for health and performance", 1)
         {
         }
 
@@ -230,8 +255,11 @@ namespace RuntimeErrorSage.Core.Remediation
     {
         public AlertStrategy(
             ILogger<RemediationStrategy> logger,
-            IRemediationValidator validator)
-            : base(logger, validator, "Alert", "Sends alerts for system issues", 2)
+            IRemediationValidator validator,
+            IErrorContextAnalyzer errorContextAnalyzer,
+            IRemediationRegistry registry,
+            IQwenLLMClient llmClient)
+            : base(logger, validator, errorContextAnalyzer, registry, llmClient, "Alert", "Sends alerts for system issues", 2)
         {
         }
 

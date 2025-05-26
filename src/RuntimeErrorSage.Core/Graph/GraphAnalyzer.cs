@@ -1,9 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Models.Context;
+using RuntimeErrorSage.Core.Graph.Interfaces;
+using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Services.Interfaces;
+using RuntimeErrorSage.Core.Models.Common;
 
 namespace RuntimeErrorSage.Core.Graph;
 
@@ -11,233 +12,437 @@ namespace RuntimeErrorSage.Core.Graph;
 /// Implements the graph-based context analysis as specified in the research paper.
 /// This implementation follows the mathematical framework described in Section 3.
 /// </summary>
-public class GraphAnalyzer : IGraphAnalyzer
+public class GraphAnalyzer : IDependencyGraphAnalyzer
 {
     private readonly ILogger<GraphAnalyzer> _logger;
+    private readonly IGraphBuilder _graphBuilder;
+    private readonly IImpactAnalyzer _impactAnalyzer;
+    private readonly IErrorRelationshipAnalyzer _relationshipAnalyzer;
     private readonly IErrorClassifier _errorClassifier;
-    private readonly IMetricsCollector _metricsCollector;
 
     public GraphAnalyzer(
         ILogger<GraphAnalyzer> logger,
-        IErrorClassifier errorClassifier,
-        IMetricsCollector metricsCollector)
+        IGraphBuilder graphBuilder,
+        IImpactAnalyzer impactAnalyzer,
+        IErrorRelationshipAnalyzer relationshipAnalyzer,
+        IErrorClassifier errorClassifier)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
+        _impactAnalyzer = impactAnalyzer ?? throw new ArgumentNullException(nameof(impactAnalyzer));
+        _relationshipAnalyzer = relationshipAnalyzer ?? throw new ArgumentNullException(nameof(relationshipAnalyzer));
         _errorClassifier = errorClassifier ?? throw new ArgumentNullException(nameof(errorClassifier));
-        _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
     }
 
-    /// <summary>
-    /// Builds a dependency graph from the runtime context.
-    /// Implements the graph construction algorithm described in Section 3.1.
-    /// </summary>
-    public async Task<DependencyGraph> BuildDependencyGraphAsync(RuntimeContext context)
+    /// <inheritdoc />
+    public async Task<GraphAnalysisResult> AnalyzeContextAsync(ErrorContext context)
     {
-        var graph = new DependencyGraph
-        {
-            Nodes = new List<DependencyNode>(),
-            Edges = new List<DependencyEdge>(),
-            Metadata = new Dictionary<string, object>()
-        };
+        ArgumentNullException.ThrowIfNull(context);
 
-        // Extract nodes from runtime context
-        foreach (var component in context.Components)
+        try
         {
-            var node = new DependencyNode
+            _logger.LogInformation("Starting graph analysis for error {ErrorId}", context.ErrorId);
+
+            var result = new GraphAnalysisResult
             {
-                Id = component.Id,
-                Type = component.Type,
-                Properties = component.Properties,
-                ErrorProbability = await _errorClassifier.CalculateErrorProbabilityAsync(component)
+                StartTime = DateTime.UtcNow,
+                CorrelationId = context.CorrelationId,
+                Timestamp = DateTime.UtcNow
             };
-            graph.Nodes.Add(node);
-        }
 
-        // Build edges based on component dependencies
-        foreach (var dependency in context.Dependencies)
+            // Build dependency graph
+            result.DependencyGraph = await _graphBuilder.BuildGraphAsync(context);
+
+            // Analyze impact
+            result.ImpactResults = await _impactAnalyzer.AnalyzeImpactAsync(context, result.DependencyGraph);
+
+            // Find related errors
+            result.RelatedErrors = await _relationshipAnalyzer.FindRelatedErrorsAsync(context, result.DependencyGraph);
+
+            // Calculate graph metrics
+            result.Metrics = await CalculateGraphMetricsAsync(result.DependencyGraph);
+
+            result.EndTime = DateTime.UtcNow;
+            result.Status = AnalysisStatus.Completed;
+
+            return result;
+        }
+        catch (Exception ex)
         {
-            var edge = new DependencyEdge
+            _logger.LogError(ex, "Error during graph analysis for error {ErrorId}", context.ErrorId);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<DependencyGraph> BuildDependencyGraphAsync(ErrorContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        try
+        {
+            _logger.LogInformation("Building dependency graph for error {ErrorId}", context.ErrorId);
+            return await _graphBuilder.BuildGraphAsync(context);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error building dependency graph for error {ErrorId}", context.ErrorId);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<ImpactAnalysisResult> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(graph);
+
+        try
+        {
+            _logger.LogInformation("Analyzing impact for error {ErrorId}", context.ErrorId);
+            var results = await _impactAnalyzer.AnalyzeImpactAsync(context, graph);
+            return results.FirstOrDefault() ?? new ImpactAnalysisResult
             {
-                SourceId = dependency.SourceId,
-                TargetId = dependency.TargetId,
-                Type = dependency.Type,
-                Weight = await CalculateEdgeWeightAsync(dependency)
+                AnalysisId = Guid.NewGuid().ToString(),
+                ComponentId = context.ComponentId,
+                Timestamp = DateTime.UtcNow,
+                IsValid = false,
+                Description = "No impact analysis results available"
             };
-            graph.Edges.Add(edge);
         }
-
-        // Add graph-level metrics
-        graph.Metadata["complexity"] = await _metricsCollector.CalculateComplexityAsync(graph);
-        graph.Metadata["reliability"] = await _metricsCollector.CalculateReliabilityAsync(graph);
-        graph.Metadata["timestamp"] = DateTime.UtcNow;
-
-        return graph;
-    }
-
-    /// <summary>
-    /// Analyzes the impact of an error through the dependency graph.
-    /// Implements the impact analysis algorithm described in Section 3.2.
-    /// </summary>
-    public async Task<ImpactAnalysisResult> AnalyzeImpactAsync(DependencyGraph graph, string errorNodeId)
-    {
-        var result = new ImpactAnalysisResult
+        catch (Exception ex)
         {
-            ErrorNodeId = errorNodeId,
-            AffectedNodes = new List<string>(),
-            ImpactMetrics = new Dictionary<string, double>()
-        };
-
-        var visited = new HashSet<string>();
-        await TraverseImpactAsync(graph, errorNodeId, visited, result);
-
-        // Calculate impact metrics as described in Section 3.2
-        result.ImpactMetrics["severity"] = await CalculateImpactSeverityAsync(graph, result.AffectedNodes);
-        result.ImpactMetrics["spread"] = (double)result.AffectedNodes.Count / graph.Nodes.Count;
-        result.ImpactMetrics["recency"] = await CalculateRecencyAsync(graph, errorNodeId);
-        result.ImpactMetrics["importance"] = await CalculateImportanceAsync(graph, errorNodeId);
-        result.ImpactMetrics["connectivity"] = await CalculateConnectivityAsync(graph, errorNodeId);
-        result.ImpactMetrics["error_proximity"] = await CalculateErrorProximityAsync(graph, errorNodeId);
-
-        return result;
-    }
-
-    private async Task TraverseImpactAsync(DependencyGraph graph, string nodeId, HashSet<string> visited, ImpactAnalysisResult result)
-    {
-        if (visited.Contains(nodeId))
-            return;
-
-        visited.Add(nodeId);
-        result.AffectedNodes.Add(nodeId);
-
-        // Find all outgoing edges
-        var outgoingEdges = graph.Edges.Where(e => e.SourceId == nodeId);
-        foreach (var edge in outgoingEdges)
-        {
-            await TraverseImpactAsync(graph, edge.TargetId, visited, result);
+            _logger.LogError(ex, "Error analyzing impact for error {ErrorId}", context.ErrorId);
+            throw;
         }
     }
 
-    private async Task<double> CalculateEdgeWeightAsync(Dependency dependency)
+    /// <inheritdoc />
+    public async Task<IEnumerable<RelatedError>> FindRelatedErrorsAsync(ErrorContext context, DependencyGraph graph)
     {
-        // Calculate edge weight based on dependency strength and type
-        var baseWeight = dependency.Strength;
-        var typeMultiplier = GetDependencyTypeMultiplier(dependency.Type);
-        return baseWeight * typeMultiplier;
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(graph);
+
+        try
+        {
+            _logger.LogInformation("Finding related errors for error {ErrorId}", context.ErrorId);
+            return await _relationshipAnalyzer.FindRelatedErrorsAsync(context, graph);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error finding related errors for error {ErrorId}", context.ErrorId);
+            throw;
+        }
     }
 
-    private double GetDependencyTypeMultiplier(string dependencyType)
+    /// <inheritdoc />
+    public async Task<bool> ValidateConfigurationAsync()
     {
-        return dependencyType switch
+        try
         {
-            "direct" => 1.0,
-            "indirect" => 0.7,
-            "optional" => 0.3,
-            _ => 0.5
-        };
-    }
+            _logger.LogInformation("Validating graph analyzer configuration");
 
-    private async Task<double> CalculateImpactSeverityAsync(DependencyGraph graph, List<string> affectedNodes)
-    {
-        // Calculate severity based on affected nodes' error probabilities
-        var totalSeverity = 0.0;
-        foreach (var nodeId in affectedNodes)
-        {
-            var node = graph.Nodes.FirstOrDefault(n => n.Id == nodeId);
-            if (node != null)
+            // Validate graph builder configuration
+            var graphBuilderValid = await _graphBuilder.ValidateConfigurationAsync();
+            if (!graphBuilderValid)
             {
-                totalSeverity += node.ErrorProbability;
+                _logger.LogWarning("Graph builder configuration validation failed");
+                return false;
             }
-        }
-        return totalSeverity / affectedNodes.Count;
-    }
 
-    private async Task<double> CalculateRecencyAsync(DependencyGraph graph, string nodeId)
-    {
-        // Calculate recency based on node's last update timestamp
-        var node = graph.Nodes.FirstOrDefault(n => n.Id == nodeId);
-        if (node == null || !node.Properties.ContainsKey("lastUpdate"))
-            return 0.0;
-
-        var lastUpdate = (DateTime)node.Properties["lastUpdate"];
-        var timeSinceUpdate = DateTime.UtcNow - lastUpdate;
-        return Math.Exp(-timeSinceUpdate.TotalMinutes / 60.0); // Exponential decay
-    }
-
-    private async Task<double> CalculateImportanceAsync(DependencyGraph graph, string nodeId)
-    {
-        // Calculate importance based on node centrality
-        var node = graph.Nodes.FirstOrDefault(n => n.Id == nodeId);
-        if (node == null)
-            return 0.0;
-
-        var inDegree = graph.Edges.Count(e => e.TargetId == nodeId);
-        var outDegree = graph.Edges.Count(e => e.SourceId == nodeId);
-        var totalNodes = graph.Nodes.Count;
-
-        return (inDegree + outDegree) / (double)(2 * (totalNodes - 1));
-    }
-
-    private async Task<double> CalculateConnectivityAsync(DependencyGraph graph, string nodeId)
-    {
-        // Calculate connectivity based on node's edge weights
-        var edges = graph.Edges.Where(e => e.SourceId == nodeId || e.TargetId == nodeId);
-        return edges.Sum(e => e.Weight) / edges.Count();
-    }
-
-    private async Task<double> CalculateErrorProximityAsync(DependencyGraph graph, string nodeId)
-    {
-        // Calculate error proximity based on shortest path to error nodes
-        var errorNodes = graph.Nodes.Where(n => n.ErrorProbability > 0.5).ToList();
-        if (!errorNodes.Any())
-            return 0.0;
-
-        var minDistance = double.MaxValue;
-        foreach (var errorNode in errorNodes)
-        {
-            var distance = await CalculateShortestPathAsync(graph, nodeId, errorNode.Id);
-            minDistance = Math.Min(minDistance, distance);
-        }
-
-        return Math.Exp(-minDistance); // Exponential decay
-    }
-
-    private async Task<double> CalculateShortestPathAsync(DependencyGraph graph, string sourceId, string targetId)
-    {
-        // Implement Dijkstra's algorithm for shortest path
-        var distances = new Dictionary<string, double>();
-        var visited = new HashSet<string>();
-        var queue = new PriorityQueue<string, double>();
-
-        foreach (var node in graph.Nodes)
-        {
-            distances[node.Id] = double.MaxValue;
-        }
-        distances[sourceId] = 0;
-        queue.Enqueue(sourceId, 0);
-
-        while (queue.Count > 0)
-        {
-            var current = queue.Dequeue();
-            if (current == targetId)
-                break;
-
-            if (visited.Contains(current))
-                continue;
-
-            visited.Add(current);
-
-            var edges = graph.Edges.Where(e => e.SourceId == current);
-            foreach (var edge in edges)
+            // Validate impact analyzer configuration
+            var impactAnalyzerValid = await _impactAnalyzer.ValidateConfigurationAsync();
+            if (!impactAnalyzerValid)
             {
-                var newDistance = distances[current] + (1.0 / edge.Weight);
-                if (newDistance < distances[edge.TargetId])
+                _logger.LogWarning("Impact analyzer configuration validation failed");
+                return false;
+            }
+
+            // Validate relationship analyzer configuration
+            var relationshipAnalyzerValid = await _relationshipAnalyzer.ValidateConfigurationAsync();
+            if (!relationshipAnalyzerValid)
+            {
+                _logger.LogWarning("Relationship analyzer configuration validation failed");
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating graph analyzer configuration");
+            return false;
+        }
+    }
+
+    private async Task<Dictionary<string, double>> CalculateGraphMetricsAsync(DependencyGraph graph)
+    {
+        var metrics = new Dictionary<string, double>();
+
+        // Calculate basic graph metrics
+        metrics["node_count"] = graph.Nodes.Count;
+        metrics["edge_count"] = graph.Edges.Count;
+        metrics["density"] = CalculateGraphDensity(graph);
+        metrics["average_degree"] = CalculateAverageDegree(graph);
+        metrics["max_degree"] = CalculateMaxDegree(graph);
+        metrics["average_path_length"] = CalculateAveragePathLength(graph);
+        metrics["clustering_coefficient"] = CalculateClusteringCoefficient(graph);
+        metrics["centrality"] = CalculateCentrality(graph);
+
+        // Calculate error-specific metrics
+        metrics["error_probability"] = await CalculateErrorProbabilityAsync(graph);
+        metrics["impact_severity"] = await CalculateImpactSeverityAsync(graph);
+        metrics["error_spread"] = await CalculateErrorSpreadAsync(graph);
+
+        // Calculate component health metrics
+        metrics["component_health"] = await CalculateComponentHealthAsync(graph);
+        metrics["system_reliability"] = await CalculateSystemReliabilityAsync(graph);
+
+        return metrics;
+    }
+
+    private double CalculateGraphDensity(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count <= 1) return 0;
+        return (2.0 * graph.Edges.Count) / (graph.Nodes.Count * (graph.Nodes.Count - 1));
+    }
+
+    private double CalculateAverageDegree(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count == 0) return 0;
+        return (2.0 * graph.Edges.Count) / graph.Nodes.Count;
+    }
+
+    private double CalculateMaxDegree(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count == 0) return 0;
+        return graph.Nodes.Max(node => 
+            graph.Edges.Count(e => e.SourceId == node.Id || e.TargetId == node.Id));
+    }
+
+    private double CalculateAveragePathLength(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count <= 1) return 0;
+
+        var totalLength = 0.0;
+        var pathCount = 0;
+
+        foreach (var source in graph.Nodes)
+        {
+            foreach (var target in graph.Nodes.Where(n => n.Id != source.Id))
+            {
+                var path = graph.GetPath(source.Id, target.Id);
+                if (path != null)
                 {
-                    distances[edge.TargetId] = newDistance;
-                    queue.Enqueue(edge.TargetId, newDistance);
+                    totalLength += path.Count - 1;
+                    pathCount++;
                 }
             }
         }
 
-        return distances[targetId];
+        return pathCount > 0 ? totalLength / pathCount : 0;
+    }
+
+    private double CalculateClusteringCoefficient(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count <= 2) return 0;
+
+        var totalCoefficient = 0.0;
+        var nodeCount = 0;
+
+        foreach (var node in graph.Nodes)
+        {
+            var neighbors = graph.GetNeighbors(node.Id);
+            if (neighbors.Count <= 1) continue;
+
+            var possibleEdges = (neighbors.Count * (neighbors.Count - 1)) / 2;
+            var actualEdges = 0;
+
+            for (int i = 0; i < neighbors.Count; i++)
+            {
+                for (int j = i + 1; j < neighbors.Count; j++)
+                {
+                    if (graph.Edges.Any(e => 
+                        (e.SourceId == neighbors[i].Id && e.TargetId == neighbors[j].Id) ||
+                        (e.SourceId == neighbors[j].Id && e.TargetId == neighbors[i].Id)))
+                    {
+                        actualEdges++;
+                    }
+                }
+            }
+
+            if (possibleEdges > 0)
+            {
+                totalCoefficient += (double)actualEdges / possibleEdges;
+                nodeCount++;
+            }
+        }
+
+        return nodeCount > 0 ? totalCoefficient / nodeCount : 0;
+    }
+
+    private double CalculateCentrality(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count <= 1) return 0;
+
+        var centrality = 0.0;
+        var nodeCount = 0;
+
+        foreach (var node in graph.Nodes)
+        {
+            var shortestPaths = 0;
+            var pathsThroughNode = 0;
+
+            foreach (var source in graph.Nodes.Where(n => n.Id != node.Id))
+            {
+                foreach (var target in graph.Nodes.Where(n => n.Id != node.Id && n.Id != source.Id))
+                {
+                    var path = graph.GetPath(source.Id, target.Id);
+                    if (path != null)
+                    {
+                        shortestPaths++;
+                        if (path.Any(n => n.Id == node.Id))
+                        {
+                            pathsThroughNode++;
+                        }
+                    }
+                }
+            }
+
+            if (shortestPaths > 0)
+            {
+                centrality += (double)pathsThroughNode / shortestPaths;
+                nodeCount++;
+            }
+        }
+
+        return nodeCount > 0 ? centrality / nodeCount : 0;
+    }
+
+    private async Task<double> CalculateErrorProbabilityAsync(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count == 0)
+            return 0;
+
+        var totalProbability = 0.0;
+        foreach (var node in graph.Nodes)
+        {
+            totalProbability += await _errorClassifier.CalculateErrorProbabilityAsync(node);
+        }
+
+        return totalProbability / graph.Nodes.Count;
+    }
+
+    private async Task<double> CalculateImpactSeverityAsync(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count == 0)
+            return 0;
+
+        var totalSeverity = 0.0;
+        foreach (var node in graph.Nodes)
+        {
+            var errorContext = new ErrorContext(
+                new Error(
+                    type: node.NodeType,
+                    message: "Node error analysis",
+                    source: node.Id,
+                    stackTrace: string.Empty
+                ),
+                environment: null,
+                timestamp: DateTime.UtcNow
+            );
+
+            // Set additional properties
+            errorContext.ComponentId = node.Id;
+            errorContext.ErrorType = node.NodeType;
+            errorContext.ServiceName = graph.Metadata.TryGetValue("ServiceName", out var svc) ? svc?.ToString() : string.Empty;
+            
+            // Add metadata using the proper method
+            errorContext.AddMetadata("NodeId", node.Id);
+            errorContext.AddMetadata("NodeType", node.NodeType);
+            var impactResults = await _impactAnalyzer.AnalyzeImpactAsync(errorContext, graph);
+            var impact = impactResults?.FirstOrDefault();
+            if (impact != null)
+            {
+                totalSeverity += impact.ImpactMetrics.GetValueOrDefault("severity", 0);
+            }
+        }
+
+        return totalSeverity / graph.Nodes.Count;
+    }
+
+    private async Task<double> CalculateErrorSpreadAsync(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count == 0)
+            return 0;
+
+        var errorNodes = graph.Nodes.Where(n => n.ErrorProbability > 0.5).ToList();
+        if (!errorNodes.Any())
+            return 0;
+
+        var totalSpread = 0.0;
+        foreach (var errorNode in errorNodes)
+        {
+            var errorContext = new ErrorContext(
+                new Error(
+                    type: errorNode.NodeType,
+                    message: "Error spread analysis",
+                    source: errorNode.Id,
+                    stackTrace: string.Empty
+                ),
+                environment: null,
+                timestamp: DateTime.UtcNow
+            );
+
+            errorContext.ComponentId = errorNode.Id;
+            errorContext.AddMetadata("NodeId", errorNode.Id);
+            errorContext.AddMetadata("NodeType", errorNode.NodeType);
+            errorContext.AddMetadata("ErrorProbability", errorNode.ErrorProbability);
+
+            var impactResults = await _impactAnalyzer.AnalyzeImpactAsync(errorContext, graph);
+            var impact = impactResults?.FirstOrDefault();
+            if (impact != null && impact.AffectedNodes != null)
+            {
+                totalSpread += (double)impact.AffectedNodes.Count / graph.Nodes.Count;
+            }
+        }
+
+        return totalSpread / (double)errorNodes.Count;
+    }
+
+    private async Task<double> CalculateComponentHealthAsync(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count == 0)
+            return 0;
+
+        var totalHealth = 0.0;
+        foreach (var node in graph.Nodes)
+        {
+            // Health = 1 - ErrorProbability (clamped 0..1)
+            var health = 1.0 - node.ErrorProbability;
+            if (health < 0.0) health = 0.0;
+            if (health > 1.0) health = 1.0;
+            totalHealth += health;
+        }
+
+        return totalHealth / graph.Nodes.Count;
+    }
+
+    private async Task<double> CalculateSystemReliabilityAsync(DependencyGraph graph)
+    {
+        if (graph.Nodes.Count == 0)
+            return 0;
+
+        var totalReliability = 0.0;
+        foreach (var node in graph.Nodes)
+        {
+            // Reliability = node.Reliability (clamped 0..1)
+            var reliability = node.Reliability;
+            if (reliability < 0.0) reliability = 0.0;
+            if (reliability > 1.0) reliability = 1.0;
+            totalReliability += reliability;
+        }
+
+        return totalReliability / graph.Nodes.Count;
     }
 } 

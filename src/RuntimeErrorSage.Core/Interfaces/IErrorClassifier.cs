@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Graph;
 
 namespace RuntimeErrorSage.Core.Interfaces;
 
@@ -43,4 +44,11 @@ public interface IErrorClassifier
     /// <param name="context">The error context.</param>
     /// <returns>The similar error patterns.</returns>
     Task<ErrorPatternCollection> GetSimilarPatternsAsync(ErrorContext context);
+
+    /// <summary>
+    /// Calculates the error probability for a dependency node.
+    /// </summary>
+    /// <param name="node">The dependency node to analyze.</param>
+    /// <returns>The error probability between 0 and 1.</returns>
+    Task<double> CalculateErrorProbabilityAsync(DependencyNode node);
 } 

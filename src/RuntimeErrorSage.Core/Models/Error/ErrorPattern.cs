@@ -29,9 +29,9 @@ namespace RuntimeErrorSage.Core.Models.Error
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the frequency of occurrence.
+        /// Gets or sets the number of times this pattern has occurred.
         /// </summary>
-        public int Frequency { get; set; }
+        public int OccurrenceCount { get; set; }
 
         /// <summary>
         /// Gets or sets the confidence level of the pattern match.
@@ -69,16 +69,6 @@ namespace RuntimeErrorSage.Core.Models.Error
         public string OperationName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the timestamp of the last occurrence.
-        /// </summary>
-        public DateTime LastOccurrence { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets the number of times this pattern has occurred.
-        /// </summary>
-        public int OccurrenceCount { get; set; }
-
-        /// <summary>
         /// Gets or sets the service name associated with this pattern.
         /// </summary>
         public string ServiceName { get; set; } = string.Empty;
@@ -97,11 +87,6 @@ namespace RuntimeErrorSage.Core.Models.Error
         /// Gets or sets the pattern notes.
         /// </summary>
         public string Notes { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the pattern ID.
-        /// </summary>
-        public string PatternId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the first occurrence timestamp.

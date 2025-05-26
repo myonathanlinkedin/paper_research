@@ -10,6 +10,8 @@ using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Models.Execution;
 using RuntimeErrorSage.Core.Models.Metrics;
 using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -19,26 +21,26 @@ namespace RuntimeErrorSage.Core.Remediation
     public class RemediationService : IRemediationService
     {
         private readonly ILogger<RemediationService> _logger;
-        private readonly IRemediationAnalyzer _analyzer;
-        private readonly IRemediationExecutor _executor;
-        private readonly IRemediationMetricsCollector _metricsCollector;
-        private readonly IRemediationValidator _validator;
+        private readonly IErrorContextAnalyzer _errorContextAnalyzer;
         private readonly IRemediationRegistry _registry;
+        private readonly IRemediationExecutor _executor;
+        private readonly IRemediationValidator _validator;
+        private readonly IRemediationMetricsCollector _metricsCollector;
 
         public RemediationService(
             ILogger<RemediationService> logger,
-            IRemediationAnalyzer analyzer,
+            IErrorContextAnalyzer errorContextAnalyzer,
+            IRemediationRegistry registry,
             IRemediationExecutor executor,
-            IRemediationMetricsCollector metricsCollector,
             IRemediationValidator validator,
-            IRemediationRegistry registry)
+            IRemediationMetricsCollector metricsCollector)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
-            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
-            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
         }
 
         /// <inheritdoc/>
@@ -133,7 +135,7 @@ namespace RuntimeErrorSage.Core.Remediation
             try
             {
                 // Analyze error
-                var analysis = await _analyzer.AnalyzeErrorAsync(context);
+                var analysis = await _errorContextAnalyzer.AnalyzeErrorAsync(context);
 
                 // Get applicable strategies
                 var strategies = await _registry.GetStrategiesForErrorAsync(context);

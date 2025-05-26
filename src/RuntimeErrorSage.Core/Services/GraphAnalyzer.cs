@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Services.Interfaces;
+using RuntimeErrorSage.Core.Graph.Interfaces;
 using RelatedErrorModel = RuntimeErrorSage.Core.Models.Error.RelatedError;
 
 namespace RuntimeErrorSage.Core.Services;
@@ -11,7 +12,7 @@ namespace RuntimeErrorSage.Core.Services;
 /// <summary>
 /// Service for analyzing error contexts using graph-based analysis.
 /// </summary>
-public class GraphAnalyzer : IGraphAnalyzer
+public class GraphAnalyzer : IDependencyGraphAnalyzer
 {
     private readonly ILogger<GraphAnalyzer> _logger;
     private readonly IGraphBuilder _graphBuilder;

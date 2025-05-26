@@ -1,27 +1,27 @@
-namespace RuntimeErrorSage.Core.Models.Graph.Enums;
+namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Specifies the impact severity.
+/// Represents the severity level of an impact.
 /// </summary>
 public enum ImpactSeverity
 {
     /// <summary>
-    /// Low impact severity.
+    /// Low severity impact.
     /// </summary>
     Low,
 
     /// <summary>
-    /// Medium impact severity.
+    /// Medium severity impact.
     /// </summary>
     Medium,
 
     /// <summary>
-    /// High impact severity.
+    /// High severity impact.
     /// </summary>
     High,
 
     /// <summary>
-    /// Critical impact severity.
+    /// Critical severity impact.
     /// </summary>
     Critical
 } 

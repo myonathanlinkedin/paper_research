@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Metrics.Enums;
 
 namespace RuntimeErrorSage.Core.Interfaces;
 
@@ -49,4 +50,18 @@ public interface IMetricsCollector
     /// <param name="aggregation">The aggregation type.</param>
     /// <returns>The aggregated metric value.</returns>
     Task<double> GetAggregatedMetricAsync(string name, TimeRange range, AggregationType aggregation);
+
+    /// <summary>
+    /// Calculates the health score of a component node.
+    /// </summary>
+    /// <param name="node">The dependency node.</param>
+    /// <returns>The health score (0.0 to 1.0).</returns>
+    Task<double> CalculateComponentHealthAsync(RuntimeErrorSage.Core.Models.Graph.DependencyNode node);
+
+    /// <summary>
+    /// Calculates the reliability score of a component node.
+    /// </summary>
+    /// <param name="node">The dependency node.</param>
+    /// <returns>The reliability score (0.0 to 1.0).</returns>
+    Task<double> CalculateReliabilityAsync(RuntimeErrorSage.Core.Models.Graph.DependencyNode node);
 } 

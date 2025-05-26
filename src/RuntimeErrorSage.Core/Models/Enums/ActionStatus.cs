@@ -1,42 +1,42 @@
-namespace RuntimeErrorSage.Core.Models.Error.Enums;
+namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Represents the status of an error analysis.
+/// Represents the status of a remediation action.
 /// </summary>
-public enum AnalysisStatus
+public enum ActionStatus
 {
     /// <summary>
-    /// The analysis is pending.
+    /// Action is pending execution.
     /// </summary>
     Pending,
 
     /// <summary>
-    /// The analysis is in progress.
+    /// Action is currently in progress.
     /// </summary>
     InProgress,
 
     /// <summary>
-    /// The analysis has completed successfully.
+    /// Action has completed successfully.
     /// </summary>
     Completed,
 
     /// <summary>
-    /// The analysis has failed.
+    /// Action has failed.
     /// </summary>
     Failed,
 
     /// <summary>
-    /// The analysis has been cancelled.
+    /// Action has been cancelled.
     /// </summary>
     Cancelled,
 
     /// <summary>
-    /// The analysis has timed out.
+    /// Action has timed out.
     /// </summary>
     TimedOut,
 
     /// <summary>
-    /// The analysis status is unknown.
+    /// Action status is unknown.
     /// </summary>
     Unknown
 } 

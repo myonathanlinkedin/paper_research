@@ -8,7 +8,7 @@ namespace RuntimeErrorSage.Core.Models.Error;
 public class ErrorPatternCollection
 {
     /// <summary>
-    /// Gets or sets the patterns.
+    /// Gets or sets the collection of error patterns.
     /// </summary>
     public List<ErrorPattern> Patterns { get; set; } = new();
 

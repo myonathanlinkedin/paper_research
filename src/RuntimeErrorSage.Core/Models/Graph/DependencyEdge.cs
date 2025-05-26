@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Core.Models.Graph
@@ -10,12 +11,12 @@ namespace RuntimeErrorSage.Core.Models.Graph
         /// <summary>
         /// Gets or sets the source node identifier.
         /// </summary>
-        public string SourceNodeId { get; set; }
+        public string SourceId { get; set; }
 
         /// <summary>
         /// Gets or sets the target node identifier.
         /// </summary>
-        public string TargetNodeId { get; set; }
+        public string TargetId { get; set; }
 
         /// <summary>
         /// Gets or sets the edge type.
@@ -23,8 +24,13 @@ namespace RuntimeErrorSage.Core.Models.Graph
         public string EdgeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the edge properties.
+        /// Gets or sets the edge weight.
         /// </summary>
-        public Dictionary<string, object> Properties { get; set; }
+        public double Weight { get; set; } = 1.0;
+
+        /// <summary>
+        /// Gets or sets the edge metadata.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new();
     }
 } 

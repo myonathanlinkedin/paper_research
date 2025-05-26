@@ -11,13 +11,13 @@ using RuntimeErrorSage.Core.Remediation.Models.Common;
 namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
-    /// Analyzes error context graphs to determine component health and relationships.
+    /// Analyzes error context graphs to determine component health and relationships for remediation purposes.
     /// </summary>
-    public class GraphAnalyzer : IGraphAnalyzer
+    public class RemediationGraphAnalyzer : IRemediationGraphAnalyzer
     {
-        private readonly ILogger<GraphAnalyzer> _logger;
+        private readonly ILogger<RemediationGraphAnalyzer> _logger;
 
-        public GraphAnalyzer(ILogger<GraphAnalyzer> logger)
+        public RemediationGraphAnalyzer(ILogger<RemediationGraphAnalyzer> logger)
         {
             ArgumentNullException.ThrowIfNull(logger);
             _logger = logger;

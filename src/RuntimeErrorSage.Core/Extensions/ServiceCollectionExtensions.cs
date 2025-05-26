@@ -1,18 +1,20 @@
-using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.LLM;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Core.Analysis;
-using RuntimeErrorSage.Core.Options;
-using RuntimeErrorSage.Core.LLM.Options;
 using RuntimeErrorSage.Core.Health;
-using RuntimeErrorSage.Core.MCP;
-using RuntimeErrorSage.Core.Remediation;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Interfaces.MCP;
 using RuntimeErrorSage.Core.Interfaces.Storage;
+using RuntimeErrorSage.Core.LLM;
+using RuntimeErrorSage.Core.LLM.Options;
+using RuntimeErrorSage.Core.MCP;
+using RuntimeErrorSage.Core.Options;
+using RuntimeErrorSage.Core.Remediation;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Storage;
+using StackExchange.Redis;
 
 namespace RuntimeErrorSage.Core.Extensions
 {
@@ -41,6 +43,17 @@ namespace RuntimeErrorSage.Core.Extensions
             // Configure LM Studio
             services.Configure<LMStudioOptions>(configuration.GetSection("RuntimeErrorSage:LMStudio"));
             services.AddHttpClient<ILMStudioClient, LMStudioClient>();
+
+            // Register Qwen LLM client
+            services.AddSingleton<ILLMClient>(sp =>
+            {
+                var logger = sp.GetRequiredService<ILogger<LLMClient>>();
+                var options = sp.GetRequiredService<IOptions<LMStudioOptions>>();
+                return new LLMClient(
+                    logger,
+                    options.Value.BaseUrl,
+                    options.Value.ModelId);
+            });
 
             // Register core services
             services.AddSingleton<IErrorAnalyzer, ErrorAnalyzer>();

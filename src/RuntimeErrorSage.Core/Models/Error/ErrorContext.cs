@@ -7,11 +7,61 @@ using RuntimeErrorSage.Core.Models;
 namespace RuntimeErrorSage.Core.Models.Error
 {
     /// <summary>
-    /// Context information for an error.
+    /// Represents the context of an error, including exception details and additional metadata.
     /// </summary>
     public class ErrorContext
     {
-        private readonly Dictionary<string, object> _metadata;
+        /// <summary>
+        /// Gets or sets the unique identifier for the error.
+        /// </summary>
+        public string ErrorId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the correlation identifier for tracking related errors.
+        /// </summary>
+        public string CorrelationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the component identifier where the error occurred.
+        /// </summary>
+        public string ComponentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exception that caused the error.
+        /// </summary>
+        public Exception Exception { get; set; }
+
+        /// <summary>
+        /// Gets or sets the stack trace of the error.
+        /// </summary>
+        public string StackTrace { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timestamp when the error occurred.
+        /// </summary>
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets additional context information.
+        /// </summary>
+        public Dictionary<string, string> AdditionalContext { get; set; } = new();
+
+        private readonly Dictionary<string, object> _metadata = new();
+
+        /// <summary>
+        /// Gets the metadata.
+        /// </summary>
+        public IReadOnlyDictionary<string, object> Metadata => _metadata;
+
+        /// <summary>
+        /// Gets or sets the error source component.
+        /// </summary>
+        public string ErrorSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the component graph data.
+        /// </summary>
+        public Dictionary<string, HashSet<string>> ComponentGraph { get; set; } = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorContext"/> class.
@@ -30,7 +80,6 @@ namespace RuntimeErrorSage.Core.Models.Error
             Error = error;
             Environment = environment;
             Timestamp = timestamp ?? DateTime.UtcNow;
-            _metadata = new Dictionary<string, object>();
         }
 
         /// <summary>
@@ -44,16 +93,6 @@ namespace RuntimeErrorSage.Core.Models.Error
         public string Environment { get; }
 
         /// <summary>
-        /// Gets the timestamp.
-        /// </summary>
-        public DateTime Timestamp { get; }
-
-        /// <summary>
-        /// Gets the metadata.
-        /// </summary>
-        public IReadOnlyDictionary<string, object> Metadata => _metadata;
-
-        /// <summary>
         /// Adds metadata.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -62,7 +101,6 @@ namespace RuntimeErrorSage.Core.Models.Error
         {
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException("Key cannot be null or empty.", nameof(key));
-
             _metadata[key] = value;
         }
 
@@ -75,7 +113,6 @@ namespace RuntimeErrorSage.Core.Models.Error
         {
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException("Key cannot be null or empty.", nameof(key));
-
             return _metadata.TryGetValue(key, out var value) ? value : null;
         }
 
@@ -89,10 +126,8 @@ namespace RuntimeErrorSage.Core.Models.Error
         {
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException("Key cannot be null or empty.", nameof(key));
-
             if (!_metadata.TryGetValue(key, out var value))
                 return default;
-
             return value is T typedValue ? typedValue : default;
         }
 
@@ -112,11 +147,6 @@ namespace RuntimeErrorSage.Core.Models.Error
         }
 
         /// <summary>
-        /// Gets or sets the unique identifier for this error context.
-        /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
         /// Gets or sets the name of the service where the error occurred.
         /// </summary>
         public string ServiceName { get; set; } = string.Empty;
@@ -130,11 +160,6 @@ namespace RuntimeErrorSage.Core.Models.Error
         /// Gets or sets the error message.
         /// </summary>
         public string Message { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the stack trace of the error.
-        /// </summary>
-        public string StackTrace { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the source of the error.
@@ -185,11 +210,6 @@ namespace RuntimeErrorSage.Core.Models.Error
         /// Gets or sets the operation name.
         /// </summary>
         public string OperationName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the correlation ID.
-        /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the operation ID.
@@ -269,7 +289,6 @@ namespace RuntimeErrorSage.Core.Models.Error
                 { nameof(Severity), Severity },
                 { nameof(Category), Category },
                 { nameof(Tags), Tags },
-                { nameof(Details), Details },
                 { nameof(Metadata), Metadata },
                 { nameof(OperationName), OperationName },
                 { nameof(CorrelationId), CorrelationId },

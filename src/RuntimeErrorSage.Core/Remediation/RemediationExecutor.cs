@@ -71,19 +71,21 @@ public class RemediationExecutor : IRemediationExecutor
             "GetExecutionMetricsAsync not implemented for {RemediationId}");
 
     private readonly ILogger<RemediationExecutor> _logger;
-    private readonly IRemediationRegistry _registry;
+    private readonly IErrorContextAnalyzer _errorContextAnalyzer;
     private readonly IRemediationValidator _validator;
     private readonly IRemediationTracker _tracker;
     private readonly IRemediationMetricsCollector _metricsCollector;
 
     public RemediationExecutor(
         ILogger<RemediationExecutor> logger,
+        IErrorContextAnalyzer errorContextAnalyzer,
         IRemediationRegistry registry,
         IRemediationValidator validator,
         IRemediationTracker tracker,
         IRemediationMetricsCollector metricsCollector)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _tracker = tracker ?? throw new ArgumentNullException(nameof(tracker));

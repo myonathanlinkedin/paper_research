@@ -10,6 +10,9 @@ using RuntimeErrorSage.Core.MCP;
 using RuntimeErrorSage.Core.LLM;
 using RuntimeErrorSage.Core.Validation;
 using RuntimeErrorSage.Core.Graph;
+using System.ComponentModel.DataAnnotations;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.LLM;
 
 namespace RuntimeErrorSage.Core.Interfaces
 {
@@ -52,10 +55,39 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// <param name="options">The configuration options</param>
         void Configure(RuntimeErrorSageOptions options);
 
+        /// <summary>
+        ///   Analyzes an error context to generate an error analysis result.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         Task<ErrorAnalysisResult> AnalyzeErrorAsync(ErrorContext context);
+
+        /// <summary>
+        /// Remediates an error context based on the analysis result.   
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         Task<RemediationResult> RemediateErrorAsync(ErrorContext context);
+
+        /// <summary>
+        ///     Validates the error context using registered validators.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         Task<ValidationResult> ValidateContextAsync(ErrorContext context);
+
+        /// <summary>
+        /// Analyzes the context graph to generate a graph analysis result. 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         Task<GraphAnalysisResult> AnalyzeContextGraphAsync(ErrorContext context);
+
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         Task<LLMAnalysisResult> AnalyzeWithLLMAsync(ErrorContext context);
     }
 } 

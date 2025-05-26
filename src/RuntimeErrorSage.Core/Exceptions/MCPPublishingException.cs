@@ -8,7 +8,9 @@ namespace RuntimeErrorSage.Core.Exceptions
     public class MCPPublishingException : Exception
     {
         public MCPPublishingException(string message, Exception inner) : base(message, inner) { }
-        public MCPPublishingException() { }
         public MCPPublishingException(string message) : base(message) { }
+        public MCPPublishingException()
+        {
+        }
     }
 } 
