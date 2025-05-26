@@ -79,6 +79,39 @@ public class LLMAnalysisResult
     /// Gets or sets the analysis context.
     /// </summary>
     public LLMAnalysisContext Context { get; set; }
+
+    public bool IsValid { get; set; }
+    public string Analysis { get; set; } = string.Empty;
+    public List<string> Suggestions { get; set; } = new();
+    public ModelMetrics ModelMetrics { get; set; } = new();
+
+    public void AddSuggestion(string suggestion)
+    {
+        Suggestions.Add(suggestion);
+    }
+
+    public void AddMetadata(string key, object value)
+    {
+        Metadata[key] = value;
+    }
+
+    public static LLMAnalysisResult Success(string analysis)
+    {
+        return new LLMAnalysisResult
+        {
+            IsValid = true,
+            Analysis = analysis
+        };
+    }
+
+    public static LLMAnalysisResult Failure(string error)
+    {
+        return new LLMAnalysisResult
+        {
+            IsValid = false,
+            Analysis = error
+        };
+    }
 }
 
 /// <summary>
@@ -151,4 +184,19 @@ public enum AnalysisStatus
     /// Analysis status is unknown.
     /// </summary>
     Unknown
+}
+
+public class ModelMetrics
+{
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public string ModelName { get; set; } = string.Empty;
+    public string ModelVersion { get; set; } = string.Empty;
+    public double ResponseTime { get; set; }
+    public int TokenCount { get; set; }
+    public Dictionary<string, object> Properties { get; set; } = new();
+
+    public void AddProperty(string key, object value)
+    {
+        Properties[key] = value;
+    }
 } 

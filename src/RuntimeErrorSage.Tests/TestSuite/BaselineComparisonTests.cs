@@ -5,6 +5,8 @@ using System.Diagnostics;
 using Xunit;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Services;
+using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Tests.TestSuite.Models;
 
 namespace RuntimeErrorSage.Tests.TestSuite
 {
@@ -17,15 +19,20 @@ namespace RuntimeErrorSage.Tests.TestSuite
         private readonly IRuntimeErrorSageService _RuntimeErrorSageService;
         private readonly StandardizedErrorScenarios _standardizedScenarios;
         private readonly RealWorldErrorCases _realWorldScenarios;
+        private readonly IErrorAnalyzer _errorAnalyzer;
+        private readonly List<ComparisonResults> _results;
 
         public BaselineComparisonTests(
             IRuntimeErrorSageService RuntimeErrorSageService,
             StandardizedErrorScenarios standardizedScenarios,
-            RealWorldErrorCases realWorldScenarios)
+            RealWorldErrorCases realWorldScenarios,
+            IErrorAnalyzer errorAnalyzer)
         {
             _RuntimeErrorSageService = RuntimeErrorSageService;
             _standardizedScenarios = standardizedScenarios;
             _realWorldScenarios = realWorldScenarios;
+            _errorAnalyzer = errorAnalyzer;
+            _results = new List<ComparisonResults>();
         }
 
         /// <summary>
@@ -322,6 +329,48 @@ namespace RuntimeErrorSage.Tests.TestSuite
             // Implementation of normal CDF using error function
             return 0.5 * (1 + Math.Erf(x / Math.Sqrt(2)));
         }
+
+        /// <summary>
+        /// Compares baseline and experimental test results
+        /// </summary>
+        public async Task<ComparisonResults> CompareResultsAsync(
+            string testName,
+            Func<Task> baselineAction,
+            Func<Task> experimentalAction)
+        {
+            var baselineMethods = new BaselineExecutionMethods(_errorAnalyzer);
+            var experimentalMethods = new BaselineExecutionMethods(_errorAnalyzer);
+
+            await baselineMethods.ExecuteBaselineAsync(testName, baselineAction);
+            await experimentalMethods.ExecuteBaselineAsync(testName, experimentalAction);
+
+            var baselineResult = baselineMethods.GetResults().First();
+            var experimentalResult = experimentalMethods.GetResults().First();
+
+            var comparison = new ComparisonResults
+            {
+                Name = testName,
+                Baseline = baselineResult,
+                Experimental = experimentalResult,
+                StatisticalSignificance = CalculateStatisticalSignificance(baselineResult, experimentalResult),
+                IsSignificantlyBetter = IsSignificantlyBetter(baselineResult, experimentalResult)
+            };
+
+            _results.Add(comparison);
+            return comparison;
+        }
+
+        /// <summary>
+        /// Gets all comparison results
+        /// </summary>
+        public IReadOnlyList<ComparisonResults> GetResults() => _results;
+
+        private bool IsSignificantlyBetter(BaselineResult baseline, BaselineResult experimental)
+        {
+            const double significanceThreshold = 0.05;
+            var significance = CalculateStatisticalSignificance(baseline, experimental);
+            return significance > significanceThreshold && experimental.DurationMs < baseline.DurationMs;
+        }
     }
 
     /// <summary>
@@ -331,6 +380,11 @@ namespace RuntimeErrorSage.Tests.TestSuite
     {
         public string Method { get; set; }
         public List<ComparisonScenario> Scenarios { get; set; }
+        public string Name { get; set; }
+        public BaselineResult Baseline { get; set; }
+        public BaselineResult Experimental { get; set; }
+        public double StatisticalSignificance { get; set; }
+        public bool IsSignificantlyBetter { get; set; }
     }
 
     /// <summary>

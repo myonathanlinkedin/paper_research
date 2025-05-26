@@ -220,27 +220,6 @@ namespace RuntimeErrorSage.Core.Models.Remediation
     }
 
     /// <summary>
-    /// Represents a rollback step.
-    /// </summary>
-    public class RollbackStep
-    {
-        /// <summary>
-        /// Gets or sets the step identifier.
-        /// </summary>
-        public string StepId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the step action.
-        /// </summary>
-        public string Action { get; set; }
-
-        /// <summary>
-        /// Gets or sets the step parameters.
-        /// </summary>
-        public Dictionary<string, object> Parameters { get; set; } = new();
-    }
-
-    /// <summary>
     /// Specifies the rollback order.
     /// </summary>
     public enum RollbackOrder

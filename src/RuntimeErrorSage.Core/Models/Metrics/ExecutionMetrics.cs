@@ -5,7 +5,7 @@ using RuntimeErrorSage.Core.Models.Models.Execution;
 namespace RuntimeErrorSage.Core.Models.Metrics
 {
     /// <summary>
-    /// Represents metrics for remediation executions.
+    /// Represents execution metrics for error analysis and remediation.
     /// </summary>
     public class ExecutionMetrics
     {
@@ -95,6 +95,36 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         public Dictionary<string, object> AdditionalMetrics { get; set; } = new();
 
         /// <summary>
+        /// Gets or sets the timestamp of the metrics.
+        /// </summary>
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the CPU usage.
+        /// </summary>
+        public double CpuUsage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the memory usage.
+        /// </summary>
+        public double MemoryUsage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the latency.
+        /// </summary>
+        public double Latency { get; set; }
+
+        /// <summary>
+        /// Gets or sets custom metrics.
+        /// </summary>
+        public Dictionary<string, double> CustomMetrics { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets step metrics.
+        /// </summary>
+        public List<StepMetrics> StepMetrics { get; set; } = new();
+
+        /// <summary>
         /// Updates the metrics with a new execution result.
         /// </summary>
         /// <param name="execution">The remediation execution to record.</param>
@@ -177,6 +207,103 @@ namespace RuntimeErrorSage.Core.Models.Metrics
                 PeakResourceUsage.DiskUsage = Math.Max(PeakResourceUsage.DiskUsage, metrics.EndResourceUsage.DiskUsage);
                 PeakResourceUsage.NetworkUsage = Math.Max(PeakResourceUsage.NetworkUsage, metrics.EndResourceUsage.NetworkUsage);
             }
+        }
+
+        /// <summary>
+        /// Adds a custom metric.
+        /// </summary>
+        /// <param name="name">The name of the metric.</param>
+        /// <param name="value">The value of the metric.</param>
+        public void AddCustomMetric(string name, double value)
+        {
+            CustomMetrics[name] = value;
+        }
+
+        /// <summary>
+        /// Adds step metrics.
+        /// </summary>
+        /// <param name="metrics">The step metrics to add.</param>
+        public void AddStepMetrics(StepMetrics metrics)
+        {
+            StepMetrics.Add(metrics);
+        }
+
+        /// <summary>
+        /// Gets the average latency.
+        /// </summary>
+        /// <returns>The average latency.</returns>
+        public double GetAverageLatency()
+        {
+            if (StepMetrics.Count == 0) return 0;
+            return StepMetrics.Average(m => m.Latency);
+        }
+
+        /// <summary>
+        /// Gets the maximum memory usage.
+        /// </summary>
+        /// <returns>The maximum memory usage.</returns>
+        public double GetMaxMemoryUsage()
+        {
+            if (StepMetrics.Count == 0) return MemoryUsage;
+            return Math.Max(MemoryUsage, StepMetrics.Max(m => m.MemoryUsage));
+        }
+
+        /// <summary>
+        /// Gets the maximum CPU usage.
+        /// </summary>
+        /// <returns>The maximum CPU usage.</returns>
+        public double GetMaxCpuUsage()
+        {
+            if (StepMetrics.Count == 0) return CpuUsage;
+            return Math.Max(CpuUsage, StepMetrics.Max(m => m.CpuUsage));
+        }
+    }
+
+    public class StepMetrics
+    {
+        /// <summary>
+        /// Gets or sets the step name.
+        /// </summary>
+        public string StepName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the start time.
+        /// </summary>
+        public DateTime StartTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end time.
+        /// </summary>
+        public DateTime EndTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the latency.
+        /// </summary>
+        public double Latency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CPU usage.
+        /// </summary>
+        public double CpuUsage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the memory usage.
+        /// </summary>
+        public double MemoryUsage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metadata.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new();
+
+        /// <summary>
+        /// Adds metadata.
+        /// </summary>
+        /// <param name="key">The key of the metadata.</param>
+        /// <param name="value">The value of the metadata.</param>
+        public void AddMetadata(string key, object value)
+        {
+            Metadata[key] = value;
         }
     }
 } 

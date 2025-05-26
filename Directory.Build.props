@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
@@ -10,41 +9,5 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- Common package versions -->
-    <MicrosoftExtensionsVersion>9.0.0-preview.3.24172.9</MicrosoftExtensionsVersion>
-    <MicrosoftAspNetCoreVersion>9.0.0-preview.3.24172.9</MicrosoftAspNetCoreVersion>
-    <SystemNetHttpJsonVersion>9.0.0-preview.3.24172.9</SystemNetHttpJsonVersion>
-    <MicrosoftExtensionsLoggingVersion>9.0.0-preview.3.24172.9</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsConfigurationVersion>9.0.0-preview.3.24172.9</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>9.0.0-preview.3.24172.9</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsOptionsVersion>9.0.0-preview.3.24172.9</MicrosoftExtensionsOptionsVersion>
-    <MicrosoftExtensionsHttpVersion>9.0.0-preview.3.24172.9</MicrosoftExtensionsHttpVersion>
-    <MicrosoftExtensionsDiagnosticsVersion>9.0.0-preview.3.24172.9</MicrosoftExtensionsDiagnosticsVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>9.0.0-preview.3.24172.13</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>9.0.0-preview.3.24172.13</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>
-    <MicrosoftAspNetCoreOpenApiVersion>9.0.0-preview.3.24123.4</MicrosoftAspNetCoreOpenApiVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsVersion>9.0.0-preview.3.24172.9</MicrosoftAspNetCoreHttpAbstractionsVersion>
-    <MicrosoftMLVersion>3.0.1</MicrosoftMLVersion>
-    <StackExchangeRedisVersion>2.7.10</StackExchangeRedisVersion>
-    <SwashbuckleVersion>6.5.0</SwashbuckleVersion>
-    <XunitVersion>2.6.6</XunitVersion>
-    <XunitRunnerVisualStudioVersion>2.5.6</XunitRunnerVisualStudioVersion>
-    <MoqVersion>4.20.70</MoqVersion>
-    <MicrosoftNETTestSdkVersion>17.9.0-preview-23577-04</MicrosoftNETTestSdkVersion>
-    <CoverletCollectorVersion>6.0.0</CoverletCollectorVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <!-- Common package references -->
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics" Version="$(MicrosoftExtensionsDiagnosticsVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftAspNetCoreOpenApiVersion)" />
-  </ItemGroup>
+  <!-- Removed all 8.0.0 version properties and related PackageReferences. All package versions are now managed in each .csproj for .NET 9 compatibility. -->
 </Project> 

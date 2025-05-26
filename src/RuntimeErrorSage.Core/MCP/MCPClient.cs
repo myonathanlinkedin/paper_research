@@ -16,11 +16,13 @@ using RuntimeErrorSage.Core.Options;
 using RuntimeErrorSage.Core.Interfaces.Storage;
 using RuntimeErrorSage.Core.Extensions;
 using ConnectionState = RuntimeErrorSage.Core.Models.Common.ConnectionState;
+using RuntimeErrorSage.Core.Analysis;
 
 namespace RuntimeErrorSage.Core.MCP;
 
 /// <summary>
 /// Implements the Model Context Protocol (MCP) client for error context analysis.
+/// This implementation follows the specifications in the research paper.
 /// </summary>
 public class MCPClient : IMCPClient, IDisposable
 {
@@ -32,6 +34,7 @@ public class MCPClient : IMCPClient, IDisposable
     private readonly Dictionary<string, Func<ErrorContext, Task>> _contextSubscribers;
     private readonly MCPClientOptions _options;
     private readonly IPatternStorage _storage;
+    private readonly IErrorAnalyzer _errorAnalyzer;
     private bool _disposed;
 
     /// <summary>
@@ -39,23 +42,17 @@ public class MCPClient : IMCPClient, IDisposable
     /// </summary>
     public MCPClient(
         ILogger<MCPClient> logger,
-        string clientId,
         IOptions<MCPClientOptions> options,
-        IPatternStorage storage)
+        IPatternStorage storage,
+        IErrorAnalyzer errorAnalyzer)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _clientId = clientId ?? throw new ArgumentNullException(nameof(clientId));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         _storage = storage ?? throw new ArgumentNullException(nameof(storage));
-        _connectionStatus = new ConnectionStatus
-        {
-            IsConnected = false,
-            LastConnected = null,
-            LastDisconnected = null,
-            Status = ConnectionState.Disconnected,
-            ErrorMessage = null,
-            Details = new Dictionary<string, object>()
-        };
+        _errorAnalyzer = errorAnalyzer ?? throw new ArgumentNullException(nameof(errorAnalyzer));
+        
+        _clientId = Guid.NewGuid().ToString();
+        _connectionStatus = new ConnectionStatus { State = ConnectionState.Disconnected };
         _contextCache = new Dictionary<string, ErrorContext>();
         _contextHistory = new Dictionary<string, List<ContextHistory>>();
         _contextSubscribers = new Dictionary<string, Func<ErrorContext, Task>>();
@@ -69,7 +66,7 @@ public class MCPClient : IMCPClient, IDisposable
     /// <summary>
     /// Gets a value indicating whether the client is connected.
     /// </summary>
-    public bool IsConnected => _connectionStatus.IsConnected;
+    public bool IsConnected => _connectionStatus.State == ConnectionState.Connected;
 
     /// <summary>
     /// Gets the current connection status.
@@ -81,23 +78,35 @@ public class MCPClient : IMCPClient, IDisposable
     /// </summary>
     public async Task ConnectAsync()
     {
+        if (IsConnected)
+        {
+            return;
+        }
+
         try
         {
-            _connectionStatus.Status = ConnectionState.Connecting;
-            _connectionStatus.LastConnected = DateTime.UtcNow;
-            _connectionStatus.IsConnected = true;
-            _connectionStatus.Status = ConnectionState.Connected;
-            _connectionStatus.ErrorMessage = null;
-            _connectionStatus.Details["ConnectedAt"] = _connectionStatus.LastConnected;
+            _connectionStatus.State = ConnectionState.Connecting;
+            _connectionStatus.LastAttempt = DateTime.UtcNow;
+
+            // Validate storage connection
+            if (!await _storage.ValidateConnectionAsync())
+            {
+                throw new MCPException("Failed to connect to pattern storage");
+            }
+
+            // Initialize context cache
+            await InitializeContextCacheAsync();
+
+            _connectionStatus.State = ConnectionState.Connected;
+            _connectionStatus.LastSuccess = DateTime.UtcNow;
+            _logger.LogInformation("MCP client connected successfully");
         }
         catch (Exception ex)
         {
-            _connectionStatus.Status = ConnectionState.Failed;
-            _connectionStatus.IsConnected = false;
-            _connectionStatus.ErrorMessage = ex.Message;
-            _connectionStatus.Details["Error"] = ex.ToString();
+            _connectionStatus.State = ConnectionState.Failed;
+            _connectionStatus.LastError = ex.Message;
             _logger.LogError(ex, "Failed to connect MCP client");
-            throw;
+            throw new MCPException("Failed to connect MCP client", ex);
         }
     }
 
@@ -108,42 +117,40 @@ public class MCPClient : IMCPClient, IDisposable
     /// <returns>The analyzed error context.</returns>
     public async Task<ErrorContext> AnalyzeErrorAsync(ErrorContext context)
     {
+        if (!IsConnected)
+        {
+            throw new InvalidOperationException("MCP client is not connected");
+        }
+
         try
         {
-            if (!IsConnected)
+            // Validate context
+            if (!await ValidateContextAsync(context))
             {
-                throw new InvalidOperationException("MCP client is not connected");
+                throw new MCPException("Invalid error context");
             }
 
-            // Cache the context
-            _contextCache[context.ErrorId] = context;
-
-            // Record context history
-            var history = _contextHistory.GetOrAdd(context.ErrorId, _ => new List<ContextHistory>());
-            history.Add(new ContextHistory
-            {
-                Id = Guid.NewGuid().ToString(),
-                ContextId = context.ErrorId,
-                Timestamp = DateTime.UtcNow,
-                ChangeType = ContextChangeType.Analyzed,
-                PreviousState = null,
-                NewState = (Dictionary<string, object>)context,
-                ChangedBy = _clientId,
-                Metadata = new Dictionary<string, object>()
-            });
-
+            // Analyze error using graph-based analysis
+            var analysis = await _errorAnalyzer.AnalyzeErrorAsync(context);
+            
+            // Update context with analysis results
+            context.AnalysisResults = analysis;
+            
+            // Cache context
+            _contextCache[context.Id] = context;
+            
+            // Update history
+            await UpdateContextHistoryAsync(context);
+            
             // Notify subscribers
-            if (_contextSubscribers.TryGetValue(context.ErrorId, out var callback))
-            {
-                await callback(context);
-            }
+            await NotifySubscribersAsync(context);
 
             return context;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error analyzing context {ErrorId}", context.ErrorId);
-            throw;
+            _logger.LogError(ex, "Error analyzing context: {ContextId}", context.Id);
+            throw new MCPException("Failed to analyze error context", ex);
         }
     }
 
@@ -152,16 +159,22 @@ public class MCPClient : IMCPClient, IDisposable
     /// </summary>
     /// <param name="contextId">The context identifier.</param>
     /// <returns>The complete context history.</returns>
-    public async Task<List<ContextHistory>> GetContextHistoryAsync(string contextId)
+    public async Task<List<ContextHistory>> GetContextHistoryAsync(string contextId, TimeRange range)
     {
         if (!IsConnected)
         {
             throw new InvalidOperationException("MCP client is not connected");
         }
 
-        return _contextHistory.TryGetValue(contextId, out var history) 
-            ? history.ToList() 
-            : new List<ContextHistory>();
+        if (!_contextHistory.ContainsKey(contextId))
+        {
+            return new List<ContextHistory>();
+        }
+
+        return _contextHistory[contextId]
+            .Where(h => h.Timestamp >= range.Start && h.Timestamp <= range.End)
+            .OrderByDescending(h => h.Timestamp)
+            .ToList();
     }
 
     /// <summary>
@@ -171,11 +184,6 @@ public class MCPClient : IMCPClient, IDisposable
     /// <returns>The connection status.</returns>
     public async Task<ConnectionStatus> GetConnectionStatusAsync(string clientId)
     {
-        if (!IsConnected)
-        {
-            throw new InvalidOperationException("MCP client is not connected");
-        }
-
         if (clientId != _clientId)
         {
             throw new ArgumentException("Invalid client ID", nameof(clientId));
@@ -325,87 +333,86 @@ public class MCPClient : IMCPClient, IDisposable
         }
     }
 
-    public async Task<List<ContextHistory>> GetContextHistoryAsync(string correlationId, TimeRange timeRange)
+    private async Task InitializeContextCacheAsync()
     {
-        if (string.IsNullOrEmpty(correlationId))
-        {
-            throw new ArgumentException("Correlation ID cannot be null or empty", nameof(correlationId));
-        }
-
-        var history = new List<ContextHistory>();
-        
-        // Get all contexts for this correlation ID
-        var contexts = _contextHistory.Values
-            .SelectMany(h => h)
-            .Where(h => h.ContextId == correlationId &&
-                       h.Timestamp >= timeRange.Start &&
-                       h.Timestamp <= timeRange.End)
-            .OrderBy(h => h.Timestamp)
-            .ToList();
-
-        foreach (var ctx in contexts)
-        {
-            history.Add(new ContextHistory
-            {
-                Id = ctx.Id,
-                ContextId = ctx.ContextId,
-                Timestamp = ctx.Timestamp,
-                ChangeType = ctx.ChangeType,
-                PreviousState = ctx.PreviousState,
-                NewState = ctx.NewState,
-                ChangedBy = ctx.ChangedBy,
-                Metadata = new Dictionary<string, object>(ctx.Metadata)
-            });
-        }
-
-        return history;
-    }
-
-    public async Task<List<ErrorPattern>> GetErrorPatternsAsync(string errorType)
-    {
-        ArgumentNullException.ThrowIfNull(errorType);
-        ThrowIfDisposed();
-
         try
         {
-            var patterns = await _storage.GetPatternsAsync().ConfigureAwait(false);
-            return patterns?.Where(p => p.ErrorType == errorType).ToList() ?? new List<ErrorPattern>();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving error patterns for type {ErrorType}", errorType);
-            throw;
-        }
-    }
-
-    public async Task UpdateErrorPatternsAsync(List<ErrorPattern> patterns)
-    {
-        ArgumentNullException.ThrowIfNull(patterns);
-        ThrowIfDisposed();
-
-        try
-        {
+            var patterns = await _storage.GetPatternsAsync();
             foreach (var pattern in patterns)
             {
-                await _storage.StorePatternAsync(pattern);
+                _contextCache[pattern.Id] = pattern.Context;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating error patterns");
+            _logger.LogError(ex, "Failed to initialize context cache");
             throw;
         }
     }
 
-    private void ThrowIfDisposed()
+    private async Task<bool> ValidateContextAsync(ErrorContext context)
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(MCPClient));
+        if (context == null)
+        {
+            return false;
+        }
+
+        // Validate required fields
+        if (string.IsNullOrEmpty(context.Id) ||
+            string.IsNullOrEmpty(context.ErrorType) ||
+            string.IsNullOrEmpty(context.ErrorMessage))
+        {
+            return false;
+        }
+
+        // Validate component graph
+        if (context.ComponentGraph == null || !context.ComponentGraph.Any())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task UpdateContextHistoryAsync(ErrorContext context)
+    {
+        if (!_contextHistory.ContainsKey(context.Id))
+        {
+            _contextHistory[context.Id] = new List<ContextHistory>();
+        }
+
+        _contextHistory[context.Id].Add(new ContextHistory
+        {
+            ContextId = context.Id,
+            Timestamp = DateTime.UtcNow,
+            State = context.State,
+            AnalysisResults = context.AnalysisResults
+        });
+    }
+
+    private async Task NotifySubscribersAsync(ErrorContext context)
+    {
+        if (_contextSubscribers.TryGetValue(context.Id, out var callback))
+        {
+            try
+            {
+                await callback(context);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error notifying subscriber for context: {ContextId}", context.Id);
+            }
+        }
     }
 
     public void Dispose()
     {
-        if (_disposed) return;
-        _disposed = true;
-        GC.SuppressFinalize(this);
+        if (!_disposed)
+        {
+            _contextCache.Clear();
+            _contextHistory.Clear();
+            _contextSubscribers.Clear();
+            _disposed = true;
+        }
     }
 } 

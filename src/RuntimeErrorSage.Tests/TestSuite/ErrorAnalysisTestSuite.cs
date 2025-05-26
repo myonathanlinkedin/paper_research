@@ -4,15 +4,24 @@ using System.Threading.Tasks;
 using Xunit;
 using RuntimeErrorSage.Core.Analysis;
 using RuntimeErrorSage.Core.LLM;
+using Moq;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Tests.TestSuite.Models;
+using RuntimeErrorSage.Tests.TestSuite.Enums;
 
 namespace RuntimeErrorSage.Tests.TestSuite
 {
+    /// <summary>
+    /// Test suite for error analysis functionality as described in the research paper.
+    /// </summary>
     public class ErrorAnalysisTestSuite
     {
         private readonly ILMStudioClient _llmClient;
         private readonly IErrorAnalyzer _errorAnalyzer;
         private readonly Dictionary<string, ErrorScenario> _standardScenarios;
         private readonly Dictionary<string, ErrorScenario> _realWorldScenarios;
+        private readonly List<ErrorScenario> _scenarios;
+        private readonly List<PerformanceMetric> _metrics;
 
         public ErrorAnalysisTestSuite()
         {
@@ -27,6 +36,8 @@ namespace RuntimeErrorSage.Tests.TestSuite
             _errorAnalyzer = new ErrorAnalyzer(_llmClient);
             _standardScenarios = InitializeStandardScenarios();
             _realWorldScenarios = InitializeRealWorldScenarios();
+            _scenarios = new List<ErrorScenario>();
+            _metrics = new List<PerformanceMetric>();
         }
 
         [Fact]
@@ -125,6 +136,58 @@ namespace RuntimeErrorSage.Tests.TestSuite
             Assert.True(maxCpu <= 20, $"Max CPU usage too high: {maxCpu}%");
         }
 
+        [Fact]
+        public async Task TestGraphAnalysis()
+        {
+            foreach (var scenario in _standardScenarios.Values)
+            {
+                var result = await _errorAnalyzer.AnalyzeGraphAsync(scenario.Context);
+                Assert.NotNull(result);
+                Assert.True(result.IsValid);
+                Assert.NotNull(result.DependencyGraph);
+                Assert.True(result.DependencyGraph.Nodes.Count > 0);
+                Assert.True(result.DependencyGraph.Edges.Count > 0);
+            }
+        }
+
+        [Fact]
+        public async Task TestImpactAnalysis()
+        {
+            foreach (var scenario in _standardScenarios.Values)
+            {
+                var result = await _errorAnalyzer.AnalyzeImpactAsync(scenario.Context);
+                Assert.NotNull(result);
+                Assert.True(result.IsValid);
+                Assert.NotNull(result.AffectedNodes);
+                Assert.NotNull(result.ImpactMetrics);
+                Assert.True(result.ImpactMetrics.ContainsKey("severity"));
+                Assert.True(result.ImpactMetrics.ContainsKey("spread"));
+                Assert.True(result.ImpactMetrics.ContainsKey("recency"));
+                Assert.True(result.ImpactMetrics.ContainsKey("importance"));
+                Assert.True(result.ImpactMetrics.ContainsKey("connectivity"));
+                Assert.True(result.ImpactMetrics.ContainsKey("error_proximity"));
+            }
+        }
+
+        [Fact]
+        public async Task TestRemediationAnalysis()
+        {
+            foreach (var scenario in _standardScenarios.Values)
+            {
+                var result = await _errorAnalyzer.AnalyzeRemediationAsync(scenario.Context);
+                Assert.NotNull(result);
+                Assert.True(result.IsValid);
+                Assert.NotNull(result.Suggestions);
+                Assert.True(result.Suggestions.Count > 0);
+                foreach (var suggestion in result.Suggestions)
+                {
+                    Assert.NotNull(suggestion.Description);
+                    Assert.NotNull(suggestion.Implementation);
+                    Assert.True(suggestion.Confidence >= 0.0 && suggestion.Confidence <= 1.0);
+                }
+            }
+        }
+
         private Dictionary<string, ErrorScenario> InitializeStandardScenarios()
         {
             var scenarios = new Dictionary<string, ErrorScenario>();
@@ -196,10 +259,10 @@ namespace RuntimeErrorSage.Tests.TestSuite
 
         private void AddFileSystemScenarios(Dictionary<string, ErrorScenario> scenarios)
         {
-            // Permission issues
-            scenarios.Add("fs_permission_denied", new ErrorScenario
+            // File access errors
+            scenarios.Add("file_access_denied", new ErrorScenario
             {
-                Name = "File Permission Denied",
+                Name = "File Access Denied",
                 Type = ErrorType.FileSystem,
                 Context = new ErrorContext
                 {
@@ -207,9 +270,9 @@ namespace RuntimeErrorSage.Tests.TestSuite
                     StackTrace = "...",
                     AdditionalContext = new Dictionary<string, string>
                     {
-                        { "FilePath", "C:\\Program Files\\App\\config.json" },
-                        { "User", "NETWORK SERVICE" },
-                        { "RequiredAccess", "Write" }
+                        { "Path", "C:\\Program Files\\App\\config.json" },
+                        { "User", "SYSTEM" },
+                        { "Permissions", "Read" }
                     }
                 }
             });
@@ -219,20 +282,20 @@ namespace RuntimeErrorSage.Tests.TestSuite
 
         private void AddHttpClientScenarios(Dictionary<string, ErrorScenario> scenarios)
         {
-            // Connection timeouts
-            scenarios.Add("http_connection_timeout", new ErrorScenario
+            // HTTP client errors
+            scenarios.Add("http_timeout", new ErrorScenario
             {
-                Name = "HTTP Connection Timeout",
+                Name = "HTTP Request Timeout",
                 Type = ErrorType.HttpClient,
                 Context = new ErrorContext
                 {
-                    Exception = new HttpRequestException("Connection timed out"),
+                    Exception = new HttpRequestException("The request timed out"),
                     StackTrace = "...",
                     AdditionalContext = new Dictionary<string, string>
                     {
-                        { "Url", "https://api.example.com" },
-                        { "Timeout", "30" },
-                        { "Method", "GET" }
+                        { "Url", "https://api.example.com/data" },
+                        { "Method", "GET" },
+                        { "Timeout", "30" }
                     }
                 }
             });
@@ -242,25 +305,61 @@ namespace RuntimeErrorSage.Tests.TestSuite
 
         private void AddResourceScenarios(Dictionary<string, ErrorScenario> scenarios)
         {
-            // Memory allocation
-            scenarios.Add("mem_allocation_failed", new ErrorScenario
+            // Resource exhaustion errors
+            scenarios.Add("memory_exhaustion", new ErrorScenario
             {
-                Name = "Memory Allocation Failed",
+                Name = "Memory Exhaustion",
                 Type = ErrorType.Resource,
                 Context = new ErrorContext
                 {
-                    Exception = new OutOfMemoryException("Insufficient memory"),
+                    Exception = new OutOfMemoryException("Insufficient memory to continue the execution of the program"),
                     StackTrace = "...",
                     AdditionalContext = new Dictionary<string, string>
                     {
-                        { "RequestedSize", "1GB" },
                         { "AvailableMemory", "512MB" },
-                        { "ProcessMemory", "2GB" }
+                        { "RequiredMemory", "1GB" },
+                        { "ProcessId", "1234" }
                     }
                 }
             });
 
             // Add more resource scenarios...
+        }
+
+        public async Task RunTestSuiteAsync()
+        {
+            foreach (var scenario in _scenarios)
+            {
+                var startTime = DateTime.UtcNow;
+                var result = await _errorAnalyzer.AnalyzeErrorAsync(scenario.Context);
+                var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+                _metrics.Add(new PerformanceMetric
+                {
+                    Name = $"AnalysisDuration_{scenario.Id}",
+                    Value = duration,
+                    Unit = "ms",
+                    Metadata = new Dictionary<string, object>
+                    {
+                        { "ScenarioId", scenario.Id },
+                        { "ScenarioName", scenario.Name }
+                    }
+                });
+
+                Assert.Equal(scenario.ExpectedResult.Severity, result.Severity);
+                Assert.Equal(scenario.ExpectedResult.CanAutoRemediate, result.CanAutoRemediate);
+                Assert.Equal(scenario.ExpectedResult.RootCause, result.RootCause);
+            }
+        }
+
+        public void AddScenario(ErrorScenario scenario)
+        {
+            _scenarios.Add(scenario);
+        }
+
+        public IEnumerable<PerformanceMetric> GetMetrics()
+        {
+            return _metrics;
         }
     }
 
@@ -269,6 +368,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
         public string Name { get; set; }
         public ErrorType Type { get; set; }
         public ErrorContext Context { get; set; }
+        public ExpectedResult ExpectedResult { get; set; }
     }
 
     public enum ErrorType
@@ -285,5 +385,9 @@ namespace RuntimeErrorSage.Tests.TestSuite
         public double Latency { get; set; }
         public long MemoryUsage { get; set; }
         public double CpuUsage { get; set; }
+        public string Name { get; set; }
+        public double Value { get; set; }
+        public string Unit { get; set; }
+        public Dictionary<string, object> Metadata { get; set; }
     }
 } 

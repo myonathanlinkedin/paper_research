@@ -1,48 +1,60 @@
+using System;
+using System.Collections.Generic;
+
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
     /// <summary>
-    /// Specifies the status of a remediation operation.
+    /// Represents the status of a remediation operation.
     /// </summary>
-    public enum RemediationStatus
+    public class RemediationStatus
     {
-        /// <summary>
-        /// Unknown status.
-        /// </summary>
-        Unknown,
+        public string Status { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public DateTime StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
+        public List<string> Steps { get; set; } = new();
+        public Dictionary<string, object> Metadata { get; set; } = new();
+        public ExecutionMetrics Metrics { get; set; } = new();
 
-        /// <summary>
-        /// Pending status.
-        /// </summary>
-        Pending,
+        public void AddStep(string step)
+        {
+            Steps.Add(step);
+        }
 
-        /// <summary>
-        /// In progress status.
-        /// </summary>
-        InProgress,
+        public void AddMetadata(string key, object value)
+        {
+            Metadata[key] = value;
+        }
 
-        /// <summary>
-        /// Completed status.
-        /// </summary>
-        Completed,
+        public void Complete()
+        {
+            EndTime = DateTime.UtcNow;
+            Status = "Completed";
+        }
 
-        /// <summary>
-        /// Failed status.
-        /// </summary>
-        Failed,
+        public void Fail(string error)
+        {
+            EndTime = DateTime.UtcNow;
+            Status = "Failed";
+            Description = error;
+        }
 
-        /// <summary>
-        /// Cancelled status.
-        /// </summary>
-        Cancelled,
+        public static RemediationStatus Started()
+        {
+            return new RemediationStatus
+            {
+                Status = "Started",
+                StartTime = DateTime.UtcNow
+            };
+        }
 
-        /// <summary>
-        /// Timed out status.
-        /// </summary>
-        TimedOut,
-
-        /// <summary>
-        /// Rolled back status.
-        /// </summary>
-        RolledBack
+        public static RemediationStatus InProgress()
+        {
+            return new RemediationStatus
+            {
+                Status = "InProgress",
+                StartTime = DateTime.UtcNow
+            };
+        }
     }
 } 

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Examples.Models;
 
 namespace RuntimeErrorSage.Examples.Controllers
 {
@@ -58,18 +59,15 @@ namespace RuntimeErrorSage.Examples.Controllers
             {
                 var errorContext = new ErrorContext
                 {
-                    ServiceName = context.ServiceName,
-                    OperationName = context.OperationName,
-                    CorrelationId = context.CorrelationId,
+                    ErrorType = "DatabaseError",
+                    ErrorMessage = "Database operation failed",
+                    Source = "Database",
                     Timestamp = DateTime.UtcNow,
-                    Exception = context.Exception,
-                    AdditionalContext = new Dictionary<string, string>
+                    AdditionalContext = new Dictionary<string, object>
                     {
-                        ["DatabaseName"] = context.DatabaseName,
-                        ["ConnectionString"] = context.ConnectionString,
-                        ["Query"] = context.Query,
-                        ["Parameters"] = string.Join(", ", context.Parameters),
-                        ["Timeout"] = context.Timeout.ToString()
+                        { "Operation", context.Operation },
+                        { "Table", context.Table },
+                        { "Query", context.Query }
                     }
                 };
 
@@ -94,20 +92,16 @@ namespace RuntimeErrorSage.Examples.Controllers
             {
                 var errorContext = new ErrorContext
                 {
-                    ServiceName = context.ServiceName,
-                    OperationName = context.OperationName,
-                    CorrelationId = context.CorrelationId,
+                    ErrorType = "HttpError",
+                    ErrorMessage = $"HTTP request failed with status {context.StatusCode}",
+                    Source = "HttpClient",
                     Timestamp = DateTime.UtcNow,
-                    Exception = context.Exception,
-                    AdditionalContext = new Dictionary<string, string>
+                    AdditionalContext = new Dictionary<string, object>
                     {
-                        ["Url"] = context.Url,
-                        ["Method"] = context.Method,
-                        ["StatusCode"] = context.StatusCode.ToString(),
-                        ["RequestHeaders"] = string.Join(", ", context.RequestHeaders),
-                        ["ResponseHeaders"] = string.Join(", ", context.ResponseHeaders),
-                        ["RequestBody"] = context.RequestBody,
-                        ["ResponseBody"] = context.ResponseBody
+                        { "Method", context.Method },
+                        { "Url", context.Url },
+                        { "StatusCode", context.StatusCode },
+                        { "ResponseContent", context.ResponseContent }
                     }
                 };
 

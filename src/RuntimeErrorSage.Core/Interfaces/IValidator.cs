@@ -4,7 +4,7 @@ using RuntimeErrorSage.Core.Models.Validation;
 namespace RuntimeErrorSage.Core.Interfaces
 {
     /// <summary>
-    /// Defines the contract for validators.
+    /// Interface for validators.
     /// </summary>
     public interface IValidator
     {
@@ -49,17 +49,17 @@ namespace RuntimeErrorSage.Core.Interfaces
         bool IsEnabled { get; }
 
         /// <summary>
-        /// Determines whether this validator can validate the given context.
-        /// </summary>
-        /// <param name="context">The context to validate.</param>
-        /// <returns>True if this validator can validate the context; otherwise, false.</returns>
-        bool CanValidate(object context);
-
-        /// <summary>
-        /// Validates the given context.
+        /// Validates a context.
         /// </summary>
         /// <param name="context">The context to validate.</param>
         /// <returns>The validation result.</returns>
         Task<ValidationResult> ValidateAsync(object context);
+
+        /// <summary>
+        /// Determines whether this validator can validate the given context.
+        /// </summary>
+        /// <param name="context">The context to validate.</param>
+        /// <returns>True if this validator can validate the context, false otherwise.</returns>
+        bool CanValidate(object context);
     }
 } 

@@ -106,37 +106,34 @@ namespace RuntimeErrorSage.Core.Models.Validation
             Warnings = new ReadOnlyCollection<ValidationWarning>(warnings ?? new List<ValidationWarning>());
             IsValid = Errors.Count == 0;
         }
-    }
 
-    /// <summary>
-    /// Represents a validation error.
-    /// </summary>
-    public class ValidationError
-    {
-        /// <summary>
-        /// Gets or sets the error code.
-        /// </summary>
-        public string Code { get; set; }
+        public void AddError(string error)
+        {
+            Errors.Add(new ValidationError(error));
+            IsValid = false;
+        }
 
-        /// <summary>
-        /// Gets or sets the error message.
-        /// </summary>
-        public string Message { get; set; }
+        public void AddWarning(string warning)
+        {
+            Warnings.Add(new ValidationWarning { Code = warning, Message = warning });
+        }
 
-        /// <summary>
-        /// Gets or sets the error severity.
-        /// </summary>
-        public ValidationSeverity Severity { get; set; }
+        public void AddMetadata(string key, object value)
+        {
+            Metadata[key] = value;
+        }
 
-        /// <summary>
-        /// Gets or sets the error source.
-        /// </summary>
-        public string Source { get; set; }
+        public static ValidationResult Success()
+        {
+            return new ValidationResult { IsValid = true };
+        }
 
-        /// <summary>
-        /// Gets or sets additional error details.
-        /// </summary>
-        public Dictionary<string, object> Details { get; set; } = new();
+        public static ValidationResult Failure(string error)
+        {
+            var result = new ValidationResult { IsValid = false };
+            result.AddError(error);
+            return result;
+        }
     }
 
     /// <summary>

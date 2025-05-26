@@ -210,32 +210,6 @@ namespace RuntimeErrorSage.Core.Models.Remediation
     }
 
     /// <summary>
-    /// Represents a validation rule for a remediation action.
-    /// </summary>
-    public class ValidationRule
-    {
-        /// <summary>
-        /// Gets or sets the rule identifier.
-        /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// Gets or sets the rule description.
-        /// </summary>
-        public string Description { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the rule condition.
-        /// </summary>
-        public string Condition { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the rule parameters.
-        /// </summary>
-        public Dictionary<string, object> Parameters { get; set; } = new();
-    }
-
-    /// <summary>
     /// Represents an execution step for a remediation action.
     /// </summary>
     public class ExecutionStep

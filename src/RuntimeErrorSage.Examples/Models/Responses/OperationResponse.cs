@@ -1,4 +1,5 @@
 using System;
+using RuntimeErrorSage.Examples.Models.Responses.Enums;
 
 namespace RuntimeErrorSage.Examples.Models.Responses;
 

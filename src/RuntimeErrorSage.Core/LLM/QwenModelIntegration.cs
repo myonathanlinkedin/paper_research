@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.LLM;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
+using Microsoft.Extensions.Options;
+using RuntimeErrorSage.Core.LLM.Options;
 
 namespace RuntimeErrorSage.Core.LLM;
 
@@ -14,12 +16,16 @@ public class QwenModelIntegration : ILLMIntegration
 {
     private readonly IQwenClient _qwenClient;
     private readonly IModelConfigurationProvider _configProvider;
-    private const string MODEL_VERSION = "qwen-2.5-7b-instruct-1m";
+    private readonly LMStudioOptions _options;
 
-    public QwenModelIntegration(IQwenClient qwenClient, IModelConfigurationProvider configProvider)
+    public QwenModelIntegration(
+        IQwenClient qwenClient, 
+        IModelConfigurationProvider configProvider,
+        IOptions<LMStudioOptions> options)
     {
         _qwenClient = qwenClient ?? throw new ArgumentNullException(nameof(qwenClient));
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <summary>
@@ -27,16 +33,16 @@ public class QwenModelIntegration : ILLMIntegration
     /// </summary>
     public async Task<ErrorAnalysisResult> AnalyzeErrorAsync(RuntimeError error, ErrorContext context)
     {
-        var config = await _configProvider.GetModelConfigurationAsync(MODEL_VERSION);
+        var config = await _configProvider.GetModelConfigurationAsync(_options.ModelId);
         var prompt = BuildErrorAnalysisPrompt(error, context);
 
         var response = await _qwenClient.GetCompletionAsync(new ModelRequest
         {
             Prompt = prompt,
-            MaxTokens = config.MaxTokens,
-            Temperature = config.Temperature,
-            TopP = config.TopP,
-            StopSequences = config.StopSequences
+            MaxTokens = _options.MaxTokens,
+            Temperature = _options.Temperature,
+            TopP = _options.TopP,
+            StopSequences = _options.StopSequences
         });
 
         return ParseErrorAnalysisResponse(response);
@@ -47,16 +53,16 @@ public class QwenModelIntegration : ILLMIntegration
     /// </summary>
     public async Task<List<RemediationSuggestion>> GenerateRemediationSuggestionsAsync(RuntimeError error, ErrorAnalysisResult analysis)
     {
-        var config = await _configProvider.GetModelConfigurationAsync(MODEL_VERSION);
+        var config = await _configProvider.GetModelConfigurationAsync(_options.ModelId);
         var prompt = BuildRemediationPrompt(error, analysis);
 
         var response = await _qwenClient.GetCompletionAsync(new ModelRequest
         {
             Prompt = prompt,
-            MaxTokens = config.MaxTokens,
-            Temperature = config.Temperature,
-            TopP = config.TopP,
-            StopSequences = config.StopSequences
+            MaxTokens = _options.MaxTokens,
+            Temperature = _options.Temperature,
+            TopP = _options.TopP,
+            StopSequences = _options.StopSequences
         });
 
         return ParseRemediationResponse(response);
@@ -67,16 +73,16 @@ public class QwenModelIntegration : ILLMIntegration
     /// </summary>
     public async Task<RemediationValidationResult> ValidateRemediationAsync(RemediationSuggestion suggestion, ErrorContext context)
     {
-        var config = await _configProvider.GetModelConfigurationAsync(MODEL_VERSION);
+        var config = await _configProvider.GetModelConfigurationAsync(_options.ModelId);
         var prompt = BuildValidationPrompt(suggestion, context);
 
         var response = await _qwenClient.GetCompletionAsync(new ModelRequest
         {
             Prompt = prompt,
-            MaxTokens = config.MaxTokens,
-            Temperature = config.Temperature,
-            TopP = config.TopP,
-            StopSequences = config.StopSequences
+            MaxTokens = _options.MaxTokens,
+            Temperature = _options.Temperature,
+            TopP = _options.TopP,
+            StopSequences = _options.StopSequences
         });
 
         return ParseValidationResponse(response);

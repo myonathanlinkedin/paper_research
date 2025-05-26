@@ -33,9 +33,9 @@ namespace RuntimeErrorSage.Core.LLM
             };
 
             // Validate Qwen model configuration
-            if (_options.ModelId != "Qwen-2.5-7B-Instruct-1M")
+            if (string.IsNullOrEmpty(_options.ModelId))
             {
-                throw new LMStudioException("Invalid model ID. Must use Qwen-2.5-7B-Instruct-1M for research compliance.");
+                throw new LMStudioException("Model ID must be configured in appsettings.json");
             }
 
             _httpClient.BaseAddress = new Uri(_options.BaseUrl);
@@ -232,9 +232,7 @@ Please provide:
 2. Validation checks for each step
 3. Rollback procedures if needed
 4. Prevention strategies
-5. Confidence score (0-1) for the remediation plan
-
-Format your response in a clear, technical manner suitable for implementation.";
+5. Confidence score (0-1) for the remediation plan";
         }
     }
 } 

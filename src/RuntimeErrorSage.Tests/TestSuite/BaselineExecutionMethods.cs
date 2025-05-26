@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using RuntimeErrorSage.Core.Models.Error;
+using Xunit;
+using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Tests.TestSuite.Models;
 
 namespace RuntimeErrorSage.Tests.TestSuite
 {
@@ -15,9 +18,14 @@ namespace RuntimeErrorSage.Tests.TestSuite
         private readonly Dictionary<string, double> _errorTypeAccuracy;
         private readonly Dictionary<string, double> _errorTypeFalsePositiveRate;
         private readonly Dictionary<string, double> _errorTypeFalseNegativeRate;
+        private readonly IErrorAnalyzer _errorAnalyzer;
+        private readonly List<BaselineResult> _results;
 
-        public BaselineExecutionMethods()
+        public BaselineExecutionMethods(IErrorAnalyzer errorAnalyzer)
         {
+            _errorAnalyzer = errorAnalyzer ?? throw new ArgumentNullException(nameof(errorAnalyzer));
+            _results = new List<BaselineResult>();
+
             // Initialize baseline accuracy metrics based on research data
             _errorTypeAccuracy = new Dictionary<string, double>
             {
@@ -141,6 +149,37 @@ namespace RuntimeErrorSage.Tests.TestSuite
                 FalsePositiveRate = falsePositiveRate,
                 FalseNegativeRate = falseNegativeRate
             };
+        }
+
+        public async Task<BaselineResult> ExecuteBaselineAsync(string name, Func<Task> testAction)
+        {
+            var result = new BaselineResult { Name = name };
+            var startTime = DateTime.UtcNow;
+            var startMemory = GC.GetTotalMemory(false);
+            var startCpu = GetCpuUsage();
+
+            try
+            {
+                await testAction();
+                result.Passed = true;
+            }
+            catch (Exception ex)
+            {
+                result.Passed = false;
+                result.ErrorMessage = ex.Message;
+            }
+
+            result.DurationMs = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
+            result.MemoryUsage = GC.GetTotalMemory(false) - startMemory;
+            result.CpuUsage = GetCpuUsage() - startCpu;
+
+            _results.Add(result);
+            return result;
+        }
+
+        public IEnumerable<BaselineResult> GetResults()
+        {
+            return _results;
         }
 
         #region Helper Methods
@@ -307,6 +346,13 @@ namespace RuntimeErrorSage.Tests.TestSuite
 
             return baseFactor;
         }
+
+        private double GetCpuUsage()
+        {
+            // This is a placeholder - in a real implementation, you would use
+            // platform-specific APIs to get CPU usage
+            return 0.0;
+        }
         #endregion
     }
 
@@ -320,5 +366,11 @@ namespace RuntimeErrorSage.Tests.TestSuite
         public double RemediationAccuracy { get; set; }
         public double FalsePositiveRate { get; set; }
         public double FalseNegativeRate { get; set; }
+        public string Name { get; set; }
+        public bool Passed { get; set; }
+        public string ErrorMessage { get; set; }
+        public long DurationMs { get; set; }
+        public long MemoryUsage { get; set; }
+        public double CpuUsage { get; set; }
     }
 } 

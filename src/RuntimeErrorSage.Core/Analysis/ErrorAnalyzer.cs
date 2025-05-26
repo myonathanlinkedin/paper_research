@@ -16,6 +16,9 @@ using RuntimeErrorSage.Core.Models.Metrics;
 
 namespace RuntimeErrorSage.Core.Analysis;
 
+/// <summary>
+/// Analyzes errors using a local LLM.
+/// </summary>
 public class ErrorAnalyzer : IErrorAnalyzer
 {
     private readonly ILogger<ErrorAnalyzer> _logger;
@@ -23,17 +26,216 @@ public class ErrorAnalyzer : IErrorAnalyzer
     private readonly IMCPClient _mcpClient;
     private readonly ConcurrentDictionary<string, List<ErrorPattern>> _localPatternCache;
     private readonly Dictionary<string, string> _promptTemplates;
+    private readonly ILLMService _llmService;
+    private readonly Dictionary<string, double> _errorTypeConfidence;
+    private readonly Dictionary<string, List<string>> _remediationSteps;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ErrorAnalyzer"/> class.
+    /// </summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="llmClient">The LLM client.</param>
+    /// <param name="mcpClient">The MCP client.</param>
+    /// <param name="llmService">The LLM service.</param>
     public ErrorAnalyzer(
         ILogger<ErrorAnalyzer> logger,
         ILMStudioClient llmClient,
-        IMCPClient mcpClient)
+        IMCPClient mcpClient,
+        ILLMService llmService)
     {
         _logger = logger;
         _llmClient = llmClient;
         _mcpClient = mcpClient;
         _localPatternCache = new();
         _promptTemplates = InitializePromptTemplates();
+        _llmService = llmService ?? throw new ArgumentNullException(nameof(llmService));
+        _errorTypeConfidence = new Dictionary<string, double>();
+        _remediationSteps = new Dictionary<string, List<string>>();
+    }
+
+    /// <summary>
+    /// Analyzes an error.
+    /// </summary>
+    /// <param name="error">The error.</param>
+    /// <returns>The analysis.</returns>
+    public async Task<ErrorAnalysis> AnalyzeAsync(Error error)
+    {
+        if (error == null)
+            throw new ArgumentNullException(nameof(error));
+
+        if (!error.Validate())
+            throw new ArgumentException("Invalid error.", nameof(error));
+
+        var prompt = GeneratePrompt(error);
+        var response = await _llmService.GenerateAsync(prompt);
+        var analysis = ParseResponse(response);
+
+        if (!ValidateAnalysis(analysis))
+            throw new InvalidOperationException("Invalid analysis.");
+
+        return analysis;
+    }
+
+    /// <summary>
+    /// Analyzes an error context.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <returns>The analysis.</returns>
+    public async Task<ErrorAnalysis> AnalyzeContextAsync(ErrorContext context)
+    {
+        if (context == null)
+            throw new ArgumentNullException(nameof(context));
+
+        if (!context.Validate())
+            throw new ArgumentException("Invalid context.", nameof(context));
+
+        var prompt = GenerateContextPrompt(context);
+        var response = await _llmService.GenerateAsync(prompt);
+        var analysis = ParseResponse(response);
+
+        if (!ValidateAnalysis(analysis))
+            throw new InvalidOperationException("Invalid analysis.");
+
+        return analysis;
+    }
+
+    /// <summary>
+    /// Validates an analysis.
+    /// </summary>
+    /// <param name="analysis">The analysis.</param>
+    /// <returns>True if the analysis is valid; otherwise, false.</returns>
+    public bool ValidateAnalysis(ErrorAnalysis analysis)
+    {
+        if (analysis == null)
+            return false;
+
+        if (!analysis.Validate())
+            return false;
+
+        if (string.IsNullOrEmpty(analysis.ErrorType))
+            return false;
+
+        if (string.IsNullOrEmpty(analysis.RootCause))
+            return false;
+
+        if (analysis.Confidence < 0 || analysis.Confidence > 1)
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Generates a prompt for error analysis.
+    /// </summary>
+    /// <param name="error">The error.</param>
+    /// <returns>The prompt.</returns>
+    private string GeneratePrompt(Error error)
+    {
+        var prompt = new List<string>
+        {
+            "Analyze the following error:",
+            $"Type: {error.Type}",
+            $"Message: {error.Message}",
+            $"Source: {error.Source}",
+            $"Stack Trace: {error.StackTrace}"
+        };
+
+        foreach (var (key, value) in error.Metadata)
+        {
+            prompt.Add($"{key}: {value}");
+        }
+
+        prompt.Add("Provide the following information:");
+        prompt.Add("1. Error type");
+        prompt.Add("2. Root cause");
+        prompt.Add("3. Confidence (0-1)");
+        prompt.Add("4. Remediation steps");
+
+        return string.Join("\n", prompt);
+    }
+
+    /// <summary>
+    /// Generates a prompt for error context analysis.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <returns>The prompt.</returns>
+    private string GenerateContextPrompt(ErrorContext context)
+    {
+        var prompt = new List<string>
+        {
+            "Analyze the following error context:",
+            $"Environment: {context.Environment}",
+            $"Timestamp: {context.Timestamp}"
+        };
+
+        prompt.Add("Error:");
+        prompt.Add($"Type: {context.Error.Type}");
+        prompt.Add($"Message: {context.Error.Message}");
+        prompt.Add($"Source: {context.Error.Source}");
+        prompt.Add($"Stack Trace: {context.Error.StackTrace}");
+
+        foreach (var (key, value) in context.Error.Metadata)
+        {
+            prompt.Add($"{key}: {value}");
+        }
+
+        foreach (var (key, value) in context.Metadata)
+        {
+            prompt.Add($"{key}: {value}");
+        }
+
+        prompt.Add("Provide the following information:");
+        prompt.Add("1. Error type");
+        prompt.Add("2. Root cause");
+        prompt.Add("3. Confidence (0-1)");
+        prompt.Add("4. Remediation steps");
+
+        return string.Join("\n", prompt);
+    }
+
+    /// <summary>
+    /// Parses the LLM response.
+    /// </summary>
+    /// <param name="response">The response.</param>
+    /// <returns>The analysis.</returns>
+    private ErrorAnalysis ParseResponse(string response)
+    {
+        if (string.IsNullOrEmpty(response))
+            throw new ArgumentException("Response cannot be null or empty.", nameof(response));
+
+        var lines = response.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var errorType = string.Empty;
+        var rootCause = string.Empty;
+        var confidence = 0.0;
+        var remediationSteps = new List<string>();
+
+        foreach (var line in lines)
+        {
+            if (line.StartsWith("1. Error type:", StringComparison.OrdinalIgnoreCase))
+            {
+                errorType = line.Substring("1. Error type:".Length).Trim();
+            }
+            else if (line.StartsWith("2. Root cause:", StringComparison.OrdinalIgnoreCase))
+            {
+                rootCause = line.Substring("2. Root cause:".Length).Trim();
+            }
+            else if (line.StartsWith("3. Confidence:", StringComparison.OrdinalIgnoreCase))
+            {
+                var confidenceStr = line.Substring("3. Confidence:".Length).Trim();
+                if (double.TryParse(confidenceStr, out var confidenceValue))
+                {
+                    confidence = confidenceValue;
+                }
+            }
+            else if (line.StartsWith("4. Remediation steps:", StringComparison.OrdinalIgnoreCase))
+            {
+                var steps = line.Substring("4. Remediation steps:".Length).Trim();
+                remediationSteps.AddRange(steps.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => s.Trim()));
+            }
+        }
+
+        return new ErrorAnalysis(errorType, rootCause, confidence, remediationSteps);
     }
 
     public async Task<ErrorAnalysisResult> AnalyzeErrorAsync(Exception exception, ErrorContext context)

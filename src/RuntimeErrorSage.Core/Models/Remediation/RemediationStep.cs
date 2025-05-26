@@ -114,67 +114,10 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// Gets or sets the step rollback parameters.
         /// </summary>
         public Dictionary<string, object> RollbackParameters { get; set; } = new();
-    }
-
-    /// <summary>
-    /// Represents a validation rule.
-    /// </summary>
-    public class ValidationRule
-    {
-        /// <summary>
-        /// Gets or sets the rule name.
-        /// </summary>
-        public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the rule description.
+        /// Gets or sets the step timestamp.
         /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Gets or sets the rule condition.
-        /// </summary>
-        public string Condition { get; set; }
-
-        /// <summary>
-        /// Gets or sets the rule parameters.
-        /// </summary>
-        public Dictionary<string, object> Parameters { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets whether the rule is required.
-        /// </summary>
-        public bool IsRequired { get; set; }
-
-        /// <summary>
-        /// Gets or sets the rule severity.
-        /// </summary>
-        public ValidationSeverity Severity { get; set; }
-    }
-
-    /// <summary>
-    /// Specifies the validation severity.
-    /// </summary>
-    public enum ValidationSeverity
-    {
-        /// <summary>
-        /// Low severity.
-        /// </summary>
-        Low,
-
-        /// <summary>
-        /// Medium severity.
-        /// </summary>
-        Medium,
-
-        /// <summary>
-        /// High severity.
-        /// </summary>
-        High,
-
-        /// <summary>
-        /// Critical severity.
-        /// </summary>
-        Critical
+        public DateTime Timestamp { get; set; }
     }
 } 

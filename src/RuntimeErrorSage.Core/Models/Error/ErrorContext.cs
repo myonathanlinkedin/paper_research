@@ -7,10 +7,110 @@ using RuntimeErrorSage.Core.Models;
 namespace RuntimeErrorSage.Core.Models.Error
 {
     /// <summary>
-    /// Represents the context of an error occurrence.
+    /// Context information for an error.
     /// </summary>
     public class ErrorContext
     {
+        private readonly Dictionary<string, object> _metadata;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ErrorContext"/> class.
+        /// </summary>
+        /// <param name="error">The error.</param>
+        /// <param name="environment">The environment.</param>
+        /// <param name="timestamp">The timestamp.</param>
+        public ErrorContext(
+            Error error,
+            string environment = null,
+            DateTime? timestamp = null)
+        {
+            if (error == null)
+                throw new ArgumentNullException(nameof(error));
+
+            Error = error;
+            Environment = environment;
+            Timestamp = timestamp ?? DateTime.UtcNow;
+            _metadata = new Dictionary<string, object>();
+        }
+
+        /// <summary>
+        /// Gets the error.
+        /// </summary>
+        public Error Error { get; }
+
+        /// <summary>
+        /// Gets the environment.
+        /// </summary>
+        public string Environment { get; }
+
+        /// <summary>
+        /// Gets the timestamp.
+        /// </summary>
+        public DateTime Timestamp { get; }
+
+        /// <summary>
+        /// Gets the metadata.
+        /// </summary>
+        public IReadOnlyDictionary<string, object> Metadata => _metadata;
+
+        /// <summary>
+        /// Adds metadata.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void AddMetadata(string key, object value)
+        {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+
+            _metadata[key] = value;
+        }
+
+        /// <summary>
+        /// Gets the metadata.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>The metadata value.</returns>
+        public object GetMetadata(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+
+            return _metadata.TryGetValue(key, out var value) ? value : null;
+        }
+
+        /// <summary>
+        /// Gets the metadata.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="key">The key.</param>
+        /// <returns>The metadata value.</returns>
+        public T GetMetadata<T>(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+
+            if (!_metadata.TryGetValue(key, out var value))
+                return default;
+
+            return value is T typedValue ? typedValue : default;
+        }
+
+        /// <summary>
+        /// Validates the context.
+        /// </summary>
+        /// <returns>True if the context is valid; otherwise, false.</returns>
+        public bool Validate()
+        {
+            if (Error == null)
+                return false;
+
+            if (!Error.Validate())
+                return false;
+
+            return true;
+        }
+
         /// <summary>
         /// Gets or sets the unique identifier for this error context.
         /// </summary>
@@ -35,16 +135,6 @@ namespace RuntimeErrorSage.Core.Models.Error
         /// Gets or sets the stack trace of the error.
         /// </summary>
         public string StackTrace { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the timestamp when the error occurred.
-        /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets additional context information about the error.
-        /// </summary>
-        public Dictionary<string, object> AdditionalContext { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the source of the error.
@@ -77,29 +167,9 @@ namespace RuntimeErrorSage.Core.Models.Error
         public List<ErrorContext> RelatedErrors { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets additional properties.
-        /// </summary>
-        public Dictionary<string, object> Properties { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the environment.
-        /// </summary>
-        public Dictionary<string, string> Environment { get; set; } = new();
-
-        /// <summary>
         /// Gets or sets the error severity.
         /// </summary>
         public ErrorSeverity SeverityLevel { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unique identifier for this error.
-        /// </summary>
-        public string ErrorId { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// Gets or sets additional error details.
-        /// </summary>
-        public Dictionary<string, object> Details { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the error category.
@@ -110,11 +180,6 @@ namespace RuntimeErrorSage.Core.Models.Error
         /// Gets or sets the error tags.
         /// </summary>
         public List<string> Tags { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets error metadata.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the operation name.
@@ -233,17 +298,5 @@ namespace RuntimeErrorSage.Core.Models.Error
         {
             return context.ToDictionary();
         }
-    }
-
-    /// <summary>
-    /// Defines the validation status of error analysis.
-    /// </summary>
-    public enum AnalysisValidationStatus
-    {
-        Validated,
-        Pending,
-        Failed,
-        Skipped,
-        Unknown
     }
 } 

@@ -78,4 +78,9 @@ public class RemediationValidationRule
     /// Gets or sets when the rule was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets or sets whether the rule is active.
+    /// </summary>
+    public bool IsActive { get; set; }
 } 

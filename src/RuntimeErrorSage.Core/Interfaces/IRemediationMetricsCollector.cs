@@ -68,7 +68,7 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// </summary>
         /// <param name="remediationId">The remediation ID.</param>
         /// <returns>The remediation metrics.</returns>
-        Task<RemediationMetrics> GetRemediationMetricsAsync(string remediationId);
+        Task<RemediationMetrics> GetMetricsAsync(string remediationId);
 
         /// <summary>
         /// Gets the aggregated metrics for a time period.
@@ -83,64 +83,5 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// <param name="metrics">The remediation metrics.</param>
         /// <returns>The validation result.</returns>
         Task<ValidationResult> ValidateMetricsAsync(RemediationMetrics metrics);
-
-        /// <summary>
-        /// Gets metrics for a remediation operation.
-        /// </summary>
-        /// <param name="remediationId">The remediation identifier.</param>
-        /// <returns>The remediation metrics.</returns>
-        Task<RemediationMetrics> GetMetricsAsync(string remediationId);
-    }
-
-    /// <summary>
-    /// Represents remediation metrics.
-    /// </summary>
-    public class RemediationMetrics
-    {
-        /// <summary>
-        /// Gets or sets the remediation identifier.
-        /// </summary>
-        public required string RemediationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the remediation status.
-        /// </summary>
-        public RemediationStatus Status { get; set; }
-
-        /// <summary>
-        /// Gets or sets the values.
-        /// </summary>
-        public Dictionary<string, double> Values { get; set; } = new();
-    }
-
-    /// <summary>
-    /// Represents step metrics.
-    /// </summary>
-    public class StepMetrics
-    {
-        /// <summary>
-        /// Gets or sets the step identifier.
-        /// </summary>
-        public string StepId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the step name.
-        /// </summary>
-        public string StepName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the step status.
-        /// </summary>
-        public RemediationStatus Status { get; set; }
-
-        /// <summary>
-        /// Gets or sets the step duration in milliseconds.
-        /// </summary>
-        public double DurationMs { get; set; }
-
-        /// <summary>
-        /// Gets or sets the step metrics.
-        /// </summary>
-        public Dictionary<string, double> Values { get; set; } = new();
     }
 } 

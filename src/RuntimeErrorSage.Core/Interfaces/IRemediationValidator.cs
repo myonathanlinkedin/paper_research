@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
 
@@ -54,4 +56,11 @@ public interface IRemediationValidator
     /// <param name="context">The error context.</param>
     /// <returns>The validation result.</returns>
     Task<RemediationValidationResult> ValidateRemediationAsync(ErrorContext context);
+
+    /// <summary>
+    /// Validates the system health after remediation.
+    /// </summary>
+    /// <param name="context">The error context</param>
+    /// <returns>The health validation result</returns>
+    Task<RemediationHealthStatus> ValidateSystemHealthAsync(ErrorContext context);
 } 

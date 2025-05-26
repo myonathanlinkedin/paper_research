@@ -54,16 +54,17 @@ RuntimeErrorSage provides a comprehensive framework for:
 This implementation is a research prototype that demonstrates the concepts described in our paper. Key points:
 
 1. The implementation includes:
-   - LM Studio API client
-   - Basic error context collection
-   - Test framework setup
-   - Benchmark infrastructure
+   - LM Studio API client with Qwen 2.5 7B Instruct 1M model integration
+   - Model Context Protocol (MCP) implementation
+   - Graph-based context analysis
+   - Remediation action system
+   - Test framework and benchmark infrastructure
 
 2. Current evaluation results:
-   - 92% accuracy in error classification
-   - 85% success rate in automated remediation
-   - Average resolution time of 2.3 seconds
-   - Runtime overhead under 5%
+   - 80% accuracy in error classification
+   - 70% success rate in automated remediation
+   - Average resolution time of 3.5 seconds
+   - Runtime overhead under 8%
 
 3. Test suite coverage:
    - 100 standardized error scenarios

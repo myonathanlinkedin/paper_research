@@ -9,106 +9,33 @@ namespace RuntimeErrorSage.Core.Models.Validation
     public class RemediationValidationResult
     {
         /// <summary>
-        /// Gets or sets whether the validation was successful.
+        /// Gets or sets whether the validation was successful
         /// </summary>
         public bool IsValid { get; set; }
 
         /// <summary>
-        /// Gets or sets the validation message.
+        /// Gets or sets the validation warnings
+        /// </summary>
+        public IReadOnlyList<IValidationWarning> Warnings { get; set; } = Array.Empty<IValidationWarning>();
+
+        /// <summary>
+        /// Gets or sets the validation errors
+        /// </summary>
+        public IReadOnlyList<IValidationError> Errors { get; set; } = Array.Empty<IValidationError>();
+
+        /// <summary>
+        /// Gets or sets the validation metadata
+        /// </summary>
+        public ValidationMetadata Metadata { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the validation message
         /// </summary>
         public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets the validation errors.
+        /// Gets or sets the validation errors as an array of strings
         /// </summary>
-        public List<ValidationError> Errors { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the validation warnings.
-        /// </summary>
-        public List<ValidationWarning> Warnings { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the validation timestamp.
-        /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets the validation metadata.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
-    }
-
-    /// <summary>
-    /// Represents a validation error.
-    /// </summary>
-    public class ValidationError
-    {
-        /// <summary>
-        /// Gets or sets the error code.
-        /// </summary>
-        public string Code { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error message.
-        /// </summary>
-        public string Message { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error severity.
-        /// </summary>
-        public ValidationSeverity Severity { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error details.
-        /// </summary>
-        public Dictionary<string, object> Details { get; set; } = new();
-    }
-
-    /// <summary>
-    /// Represents a validation warning.
-    /// </summary>
-    public class ValidationWarning
-    {
-        /// <summary>
-        /// Gets or sets the warning code.
-        /// </summary>
-        public string Code { get; set; }
-
-        /// <summary>
-        /// Gets or sets the warning message.
-        /// </summary>
-        public string Message { get; set; }
-
-        /// <summary>
-        /// Gets or sets the warning details.
-        /// </summary>
-        public Dictionary<string, object> Details { get; set; } = new();
-    }
-
-    /// <summary>
-    /// Specifies the validation severity.
-    /// </summary>
-    public enum ValidationSeverity
-    {
-        /// <summary>
-        /// Low severity.
-        /// </summary>
-        Low,
-
-        /// <summary>
-        /// Medium severity.
-        /// </summary>
-        Medium,
-
-        /// <summary>
-        /// High severity.
-        /// </summary>
-        High,
-
-        /// <summary>
-        /// Critical severity.
-        /// </summary>
-        Critical
+        public string[] ErrorsArray { get; set; }
     }
 } 

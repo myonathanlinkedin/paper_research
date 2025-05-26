@@ -10,6 +10,8 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.LLM.Options;
 using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Storage;
+using RuntimeErrorSage.Core.MCP.Options;
+using RuntimeErrorSage.Core.MCP.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -392,7 +394,7 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
                     var value = await db.StringGetAsync(key);
                     if (value.HasValue)
                     {
-                        var errorPattern = JsonSerializer.Deserialize<ErrorPattern>(value);
+                        var errorPattern = JsonSerializer.Deserialize<ErrorPattern>(value.ToString());
                         if (errorPattern != null)
                         {
                             patterns.Add(errorPattern);

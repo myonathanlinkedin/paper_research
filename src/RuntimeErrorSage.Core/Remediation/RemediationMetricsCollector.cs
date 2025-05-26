@@ -14,6 +14,7 @@ using SeverityLevel = RuntimeErrorSage.Core.Models.Validation.SeverityLevel;
 using ValidationError = RuntimeErrorSage.Core.Models.Validation.ValidationError;
 using ValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
 using ValidationWarning = RuntimeErrorSage.Core.Models.Validation.ValidationWarning;
+using ValidationSeverity = RuntimeErrorSage.Core.Models.Validation.ValidationSeverity;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
@@ -107,50 +108,33 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         return Task.CompletedTask;
     }
 
-    public async Task RecordStepMetricsAsync(CoreStepMetrics metrics)
+    public async Task RecordStepMetricsAsync(StepMetrics metrics)
     {
         ArgumentNullException.ThrowIfNull(metrics);
         ThrowIfDisposed();
 
-        try
+        var metricsStepMetrics = new MetricsStepMetrics
         {
-            var stepMetrics = new MetricsStepMetrics
-            {
-                StepId = metrics.StepId,
-                RemediationId = metrics.RemediationId,
-                StartTime = metrics.StartTime,
-                EndTime = metrics.EndTime,
-                Status = metrics.Status,
-                Duration = metrics.Duration,
-                Metrics = metrics.Metrics.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
-                Labels = metrics.Labels.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
-            };
+            StepId = metrics.StepId,
+            ActionId = metrics.StepName,
+            DurationMs = metrics.DurationMs,
+            Status = metrics.Status,
+            StartTime = DateTime.UtcNow,
+            EndTime = DateTime.UtcNow.AddMilliseconds(metrics.DurationMs)
+        };
 
-            _stepMetricsHistory.AddOrUpdate(
-                metrics.RemediationId,
-                new List<MetricsStepMetrics> { stepMetrics },
-                (_, list) =>
-                {
-                    list.Add(stepMetrics);
-                    return list;
-                });
-
-            await Task.CompletedTask;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error recording step metrics for remediation {RemediationId}", metrics.RemediationId);
-            throw;
-        }
+        _stepMetricsHistory.AddOrUpdate(
+            metricsStepMetrics.StepId,
+            new List<MetricsStepMetrics> { metricsStepMetrics },
+            (_, list) => { list.Add(metricsStepMetrics); return list; });
+        await Task.CompletedTask;
     }
 
     public async Task<Dictionary<string, List<MetricValue>>> GetMetricsHistoryAsync(string remediationId)
     {
         ArgumentNullException.ThrowIfNull(remediationId);
         ThrowIfDisposed();
-
         var history = new Dictionary<string, List<MetricValue>>();
-
         if (_metricsHistory.TryGetValue(remediationId, out var metrics))
         {
             foreach (var metric in metrics)
@@ -158,12 +142,10 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                 foreach (var (key, value) in metric.Values)
                 {
                     if (!history.ContainsKey(key))
-                    {
                         history[key] = new List<MetricValue>();
-                    }
-
                     history[key].Add(new MetricValue
                     {
+                        Name = key,
                         Value = value,
                         Timestamp = metric.Timestamp,
                         Labels = metric.Labels
@@ -171,8 +153,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                 }
             }
         }
-
-        return history;
+        return await Task.FromResult(history);
     }
 
     public Task<Dictionary<string, AggregatedMetrics>> GetAggregatedMetricsAsync(TimeRange timeRange)
@@ -224,29 +205,19 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         return Task.FromResult(result);
     }
 
-    private async Task<Dictionary<string, double>> CollectSystemMetricsAsync(CancellationToken cancellationToken)
+    private async Task<Dictionary<string, object>> CollectSystemMetricsAsync(CancellationToken cancellationToken)
     {
-        var metrics = new Dictionary<string, double>();
-
-        try
+        var metrics = new Dictionary<string, object>
         {
-            metrics["cpu_usage"] = await GetCpuUsageAsync(cancellationToken).ConfigureAwait(false);
-            metrics["memory_usage"] = await GetMemoryUsageAsync(cancellationToken).ConfigureAwait(false);
-            metrics["disk_usage"] = await GetDiskUsageAsync(cancellationToken).ConfigureAwait(false);
-
-            if (_options.EnableDetailedMetrics)
-            {
-                metrics["cpu_frequency"] = await Task.Run(() => GetCpuFrequency(), cancellationToken).ConfigureAwait(false);
-                metrics["total_memory"] = await Task.Run(() => GetTotalMemory(), cancellationToken).ConfigureAwait(false);
-                metrics["available_memory"] = await Task.Run(() => GetAvailableMemory(), cancellationToken).ConfigureAwait(false);
-                metrics["total_disk_space"] = await Task.Run(() => GetTotalDiskSpace(), cancellationToken).ConfigureAwait(false);
-                metrics["free_disk_space"] = await Task.Run(() => GetFreeDiskSpace(), cancellationToken).ConfigureAwait(false);
-            }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            LogMetricsError(_logger, ex.Message, ex);
-        }
+            ["cpu_usage"] = await GetCpuUsageAsync(cancellationToken),
+            ["memory_usage"] = await GetMemoryUsageAsync(cancellationToken),
+            ["disk_usage"] = await GetDiskUsageAsync(cancellationToken),
+            ["cpu_frequency"] = GetCpuFrequency(),
+            ["total_memory"] = GetTotalMemory(),
+            ["available_memory"] = GetAvailableMemory(),
+            ["total_disk_space"] = GetTotalDiskSpace(),
+            ["free_disk_space"] = GetFreeDiskSpace()
+        };
 
         return metrics;
     }
@@ -400,21 +371,32 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                 {
                     Code = "MetricThresholdExceeded",
                     Message = $"Metric '{key}' value {value} exceeds threshold {threshold}",
-                    Severity = SeverityLevel.Warning,
+                    Severity = MapSeverity(SeverityLevel.Warning),
                     Timestamp = DateTime.UtcNow
                 });
             }
         }
 
-        var result = new ValidationResult
+        var result = new ValidationResult(errors, warnings)
         {
             IsValid = errors.Count == 0,
-            Timestamp = DateTime.UtcNow,
-            Errors = new ReadOnlyCollection<ValidationError>(errors),
-            Warnings = new ReadOnlyCollection<ValidationWarning>(warnings)
+            Message = errors.Count == 0 ? "Metrics valid" : "Metrics validation failed"
         };
 
         return Task.FromResult(result);
+    }
+
+    private static ValidationSeverity MapSeverity(SeverityLevel level)
+    {
+        return level switch
+        {
+            SeverityLevel.Info => ValidationSeverity.Info,
+            SeverityLevel.Low => ValidationSeverity.Warning,
+            SeverityLevel.Medium => ValidationSeverity.Error,
+            SeverityLevel.High => ValidationSeverity.Critical,
+            SeverityLevel.Critical => ValidationSeverity.Critical,
+            _ => ValidationSeverity.Error
+        };
     }
 
     public void Dispose()
@@ -458,21 +440,17 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         return RecordRemediationMetricsAsync(metrics);
     }
 
-    public Task<RemediationMetrics> GetRemediationMetricsAsync(string remediationId)
+    public async Task<RemediationMetrics> GetMetricsAsync(string remediationId)
     {
-        if (_metricsHistory.TryGetValue(remediationId, out var history) && history.Any())
+        ArgumentNullException.ThrowIfNull(remediationId);
+        ThrowIfDisposed();
+
+        if (_metricsHistory.TryGetValue(remediationId, out var metrics) && metrics.Count > 0)
         {
-            return Task.FromResult(history.Last());
+            return await Task.FromResult(metrics[^1]);
         }
 
-        return Task.FromResult(new RemediationMetrics
-        {
-            MetricsId = Guid.NewGuid().ToString(),
-            RemediationId = remediationId,
-            StartTime = DateTime.UtcNow,
-            EndTime = DateTime.UtcNow,
-            Timestamp = DateTime.UtcNow
-        });
+        return await Task.FromResult<RemediationMetrics>(null);
     }
 
     public async Task<RemediationMetrics> GetAggregatedMetricsAsync(string remediationId, TimeRange timeRange)
@@ -515,12 +493,12 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         return metrics;
     }
 
-    public Task<Dictionary<string, object>> CollectMetricsAsync(ErrorContext context)
+    public async Task<Dictionary<string, object>> CollectMetricsAsync(ErrorContext context)
     {
         var metrics = new Dictionary<string, object>();
 
         // Collect system metrics
-        var systemMetrics = await CollectSystemMetricsAsync().ConfigureAwait(false);
+        var systemMetrics = await CollectSystemMetricsAsync(_cts.Token).ConfigureAwait(false);
         foreach (var (key, value) in systemMetrics)
         {
             metrics[$"system.{key}"] = value;
@@ -547,7 +525,59 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             metrics[$"error.{key}"] = value;
         }
 
-        return Task.FromResult(metrics);
+        return metrics;
+    }
+
+    private async Task<Dictionary<string, object>> CollectNetworkMetricsAsync(ErrorContext context)
+    {
+        var metrics = new Dictionary<string, object>();
+        try
+        {
+            // Add network metrics collection logic here
+            metrics["network_latency"] = 0.0;
+            metrics["network_errors"] = 0;
+            metrics["network_connections"] = 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error collecting network metrics");
+        }
+        return metrics;
+    }
+
+    private async Task<Dictionary<string, object>> CollectErrorMetricsAsync(ErrorContext context)
+    {
+        var metrics = new Dictionary<string, object>();
+        try
+        {
+            metrics["error_count"] = 1;
+            metrics["error_type"] = context.ErrorType;
+            metrics["error_severity"] = context.Severity.ToString();
+            metrics["error_timestamp"] = context.Timestamp;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error collecting error metrics");
+        }
+        return metrics;
+    }
+
+    private Dictionary<string, object> CollectProcessMetrics()
+    {
+        var metrics = new Dictionary<string, object>();
+        try
+        {
+            metrics["process_id"] = _currentProcess.Id;
+            metrics["process_cpu_time"] = _currentProcess.TotalProcessorTime.TotalMilliseconds;
+            metrics["process_memory"] = _currentProcess.WorkingSet64;
+            metrics["process_threads"] = _currentProcess.Threads.Count;
+            metrics["process_handles"] = _currentProcess.HandleCount;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error collecting process metrics");
+        }
+        return metrics;
     }
 
     Task<Dictionary<string, List<Models.Metrics.MetricValue>>> IRemediationMetricsCollector.GetMetricsHistoryAsync(string remediationId)
@@ -621,4 +651,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         return Task.FromResult(aggregatedMetrics);
     }
+
+    public bool IsEnabled => !_disposed;
+    public string Name => "RuntimeErrorSage Remediation Metrics Collector";
+    public string Version => "1.0.0";
 } 
