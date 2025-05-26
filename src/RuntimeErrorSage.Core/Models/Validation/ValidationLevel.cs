@@ -1,32 +1,32 @@
 namespace RuntimeErrorSage.Core.Models.Validation;
 
 /// <summary>
-/// Defines the levels of validation.
+/// Defines levels for validation operations.
 /// </summary>
 public enum ValidationLevel
 {
     /// <summary>
     /// Basic validation level.
     /// </summary>
-    Basic,
+    Basic = 0,
 
     /// <summary>
     /// Standard validation level.
     /// </summary>
-    Standard,
+    Standard = 1,
 
     /// <summary>
     /// Advanced validation level.
     /// </summary>
-    Advanced,
+    Advanced = 2,
 
     /// <summary>
-    /// Expert validation level.
+    /// Strict validation level.
     /// </summary>
-    Expert,
+    Strict = 3,
 
     /// <summary>
-    /// Unknown validation level.
+    /// Custom validation level.
     /// </summary>
-    Unknown
+    Custom = 4
 } 

@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Exceptions;
-using RuntimeErrorSage.Core.LLM.Models;
 using RuntimeErrorSage.Core.LLM.Options;
+using RuntimeErrorSage.Core.Models.LLM;
 
 namespace RuntimeErrorSage.Core.LLM
 {

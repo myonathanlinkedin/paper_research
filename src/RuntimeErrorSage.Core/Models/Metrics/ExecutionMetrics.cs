@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Remediation.Models.Execution;
+using RuntimeErrorSage.Core.Models.Models.Execution;
 
 namespace RuntimeErrorSage.Core.Models.Metrics
 {

@@ -1,10 +1,10 @@
-name: Build RuntimeErrorSage
+name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -15,7 +15,7 @@ env:
 jobs:
   build:
     name: Build and Test
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -23,19 +23,19 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Setup .NET SDK
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore dependencies
-      run: dotnet restore RuntimeErrorSage.sln --verbosity normal
+      run: dotnet restore
 
-    - name: Build solution
-      run: dotnet build RuntimeErrorSage.sln --configuration Release --no-restore --verbosity normal
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
 
-    - name: Run tests
-      run: dotnet test RuntimeErrorSage.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+    - name: Test
+      run: dotnet test --no-build --configuration Release --verbosity normal
 
     - name: Upload test results
       uses: actions/upload-artifact@v4

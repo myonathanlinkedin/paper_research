@@ -1,243 +1,244 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Remediation.Models.Analysis;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
-using RuntimeErrorSage.Core.Remediation.Models.Validation;
+using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Models.Execution;
+using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
-    /// Orchestrates the remediation process for error contexts.
+    /// Service for managing remediation operations.
     /// </summary>
     public class RemediationService : IRemediationService
     {
         private readonly ILogger<RemediationService> _logger;
         private readonly IRemediationAnalyzer _analyzer;
         private readonly IRemediationExecutor _executor;
-        private readonly IRemediationValidator _validator;
-        private readonly IRemediationTracker _tracker;
         private readonly IRemediationMetricsCollector _metricsCollector;
+        private readonly IRemediationValidator _validator;
+        private readonly IRemediationRegistry _registry;
 
         public RemediationService(
             ILogger<RemediationService> logger,
             IRemediationAnalyzer analyzer,
             IRemediationExecutor executor,
+            IRemediationMetricsCollector metricsCollector,
             IRemediationValidator validator,
-            IRemediationTracker tracker,
-            IRemediationMetricsCollector metricsCollector)
+            IRemediationRegistry registry)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
             _executor = executor ?? throw new ArgumentNullException(nameof(executor));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-            _tracker = tracker ?? throw new ArgumentNullException(nameof(tracker));
             _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         }
 
-        public async Task<RemediationResult> RemediateErrorAsync(ErrorContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+        /// <inheritdoc/>
+        public bool IsEnabled => true;
 
-            var remediationId = Guid.NewGuid().ToString();
+        /// <inheritdoc/>
+        public string Name => "RuntimeErrorSage Remediation Service";
+
+        /// <inheritdoc/>
+        public string Version => "1.0.0";
+
+        public async Task<RemediationResult> ApplyRemediationAsync(ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {
-                // Validate context
-                var validationResult = await _validator.ValidateRemediationAsync(context);
-                if (!validationResult.IsValid)
-                {
-                    await _tracker.UpdateStatusAsync(
-                        remediationId,
-                        RemediationStatus.Failed,
-                        $"Context validation failed: {string.Join(", ", validationResult.Errors)}");
+                // Create remediation plan
+                var plan = await CreatePlanAsync(context);
 
+                // Validate plan
+                var validationResult = await ValidatePlanAsync(plan);
+                if (!validationResult)
+                {
                     return new RemediationResult
                     {
                         Success = false,
-                        Message = $"Context validation failed: {string.Join(", ", validationResult.Errors)}",
-                        Timestamp = DateTime.UtcNow
+                        ErrorMessage = "Plan validation failed",
+                        Status = RemediationStatus.Failed
                     };
                 }
 
-                // Update status
-                await _tracker.UpdateStatusAsync(remediationId, RemediationStatus.Analyzing);
-
-                // Analyze error
-                var analysis = await _analyzer.AnalyzeErrorAsync(context);
-                if (!analysis.IsValid)
+                // Record initial metrics
+                var metrics = new RemediationMetrics
                 {
-                    await _tracker.UpdateStatusAsync(
-                        remediationId,
-                        RemediationStatus.Failed,
-                        $"Analysis failed: {analysis.ErrorMessage}");
-
-                    return new RemediationResult
-                    {
-                        Success = false,
-                        Message = $"Analysis failed: {analysis.ErrorMessage}",
-                        Timestamp = DateTime.UtcNow
-                    };
-                }
-
-                // Record analysis metrics
-                var analysisMetrics = new RemediationMetrics
-                {
-                    RemediationId = remediationId,
-                    ErrorType = context.ErrorType,
+                    MetricsId = Guid.NewGuid().ToString(),
+                    RemediationId = Guid.NewGuid().ToString(),
                     StartTime = DateTime.UtcNow,
-                    Analysis = analysis
+                    Status = RemediationStatus.Analyzing,
+                    ErrorType = context.ErrorType,
+                    ServiceName = context.ServiceName
                 };
 
-                await _metricsCollector.RecordRemediationMetricsAsync(analysisMetrics);
-
-                // Update status
-                await _tracker.UpdateStatusAsync(remediationId, RemediationStatus.Executing);
+                await _metricsCollector.RecordRemediationMetricsAsync(metrics);
 
                 // Execute remediation
-                var result = await ExecuteRemediationAsync(context, analysis, remediationId);
+                metrics.Status = RemediationStatus.Executing;
+                await _metricsCollector.RecordRemediationMetricsAsync(metrics);
 
-                // Record execution metrics
-                var executionMetrics = new RemediationMetrics
+                var execution = await _executor.ExecuteRemediationAsync(plan, context);
+
+                // Record final metrics
+                metrics = new RemediationMetrics
                 {
-                    RemediationId = remediationId,
-                    ErrorType = context.ErrorType,
+                    MetricsId = Guid.NewGuid().ToString(),
+                    RemediationId = execution.RemediationId,
                     EndTime = DateTime.UtcNow,
-                    Success = result.Success,
-                    ErrorMessage = result.Error
+                    Status = execution.Status,
+                    ErrorType = context.ErrorType,
+                    ServiceName = context.ServiceName,
+                    Success = execution.Success,
+                    ErrorMessage = execution.ErrorMessage
                 };
 
-                await _metricsCollector.RecordRemediationMetricsAsync(executionMetrics);
-
-                // Update status
-                await _tracker.UpdateStatusAsync(
-                    remediationId,
-                    result.Success ? RemediationStatus.Completed : RemediationStatus.Failed,
-                    result.Message);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error remediating error context");
-                await _tracker.UpdateStatusAsync(
-                    remediationId,
-                    RemediationStatus.Failed,
-                    $"Remediation failed: {ex.Message}");
+                await _metricsCollector.RecordRemediationMetricsAsync(metrics);
 
                 return new RemediationResult
                 {
+                    RemediationId = execution.RemediationId,
+                    Success = execution.Success,
+                    ErrorMessage = execution.ErrorMessage,
+                    Status = execution.Status,
+                    Metrics = metrics
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error applying remediation for error {ErrorType}", context.ErrorType);
+                return new RemediationResult
+                {
                     Success = false,
-                    Message = $"Remediation failed: {ex.Message}",
-                    Error = ex.ToString(),
-                    Timestamp = DateTime.UtcNow
+                    ErrorMessage = ex.Message,
+                    Status = RemediationStatus.Failed
                 };
             }
         }
 
-        private async Task<RemediationResult> ExecuteRemediationAsync(
-            ErrorContext context,
-            RemediationAnalysis analysis,
-            string remediationId)
+        public async Task<RemediationPlan> CreatePlanAsync(ErrorContext context)
         {
-            // Get recommended strategies
-            var strategies = analysis.ApplicableStrategies
-                .OrderByDescending(s => s.Confidence)
-                .ThenByDescending(s => s.Priority)
-                .ToList();
+            ArgumentNullException.ThrowIfNull(context);
 
-            if (!strategies.Any())
+            try
             {
-                return new RemediationResult
+                // Analyze error
+                var analysis = await _analyzer.AnalyzeErrorAsync(context);
+
+                // Get applicable strategies
+                var strategies = await _registry.GetStrategiesForErrorAsync(context);
+
+                var statusInfo = new RemediationStatusInfo
                 {
-                    Success = false,
-                    Message = "No applicable strategies found",
-                    Timestamp = DateTime.UtcNow
+                    Status = RemediationStatus.Created,
+                    Message = "Remediation plan created",
+                    LastUpdated = DateTime.UtcNow
+                };
+
+                var rollbackPlan = new RemediationPlan
+                {
+                    PlanId = Guid.NewGuid().ToString(),
+                    Context = context,
+                    CreatedAt = DateTime.UtcNow,
+                    Status = RemediationStatus.Created,
+                    StatusInfo = statusInfo,
+                    RollbackPlan = null
+                };
+
+                return new RemediationPlan
+                {
+                    PlanId = Guid.NewGuid().ToString(),
+                    Analysis = analysis,
+                    Context = context,
+                    Strategies = strategies.ToList(),
+                    CreatedAt = DateTime.UtcNow,
+                    Status = RemediationStatus.Created,
+                    StatusInfo = statusInfo,
+                    RollbackPlan = rollbackPlan
                 };
             }
-
-            // Try each strategy in order
-            foreach (var strategy in strategies)
+            catch (Exception ex)
             {
-                try
-                {
-                    // Update status
-                    await _tracker.UpdateStatusAsync(
-                        remediationId,
-                        RemediationStatus.Executing,
-                        $"Executing strategy '{strategy.StrategyName}'");
-
-                    // Execute strategy
-                    var result = await _executor.ExecuteStrategyAsync(
-                        strategy.StrategyName,
-                        context,
-                        new Dictionary<string, string>
-                        {
-                            ["confidence"] = strategy.Confidence.ToString(),
-                            ["reasoning"] = strategy.Reasoning
-                        });
-
-                    // Record strategy metrics
-                    var strategyMetrics = new RemediationMetrics
-                    {
-                        RemediationId = remediationId,
-                        StrategyName = strategy.StrategyName,
-                        ErrorType = context.ErrorType,
-                        StartTime = DateTime.UtcNow,
-                        Success = result.Success,
-                        ErrorMessage = result.Error,
-                        Confidence = strategy.Confidence
-                    };
-
-                    await _metricsCollector.RecordRemediationMetricsAsync(strategyMetrics);
-
-                    // If strategy succeeded, return result
-                    if (result.Success)
-                    {
-                        return result;
-                    }
-
-                    _logger.LogWarning(
-                        "Strategy {StrategyName} failed: {Message}",
-                        strategy.StrategyName,
-                        result.Message);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(
-                        ex,
-                        "Error executing strategy {StrategyName}",
-                        strategy.StrategyName);
-
-                    // Record failure metrics
-                    var failureMetrics = new RemediationMetrics
-                    {
-                        RemediationId = remediationId,
-                        StrategyName = strategy.StrategyName,
-                        ErrorType = context.ErrorType,
-                        StartTime = DateTime.UtcNow,
-                        Success = false,
-                        ErrorMessage = ex.Message,
-                        Confidence = strategy.Confidence
-                    };
-
-                    await _metricsCollector.RecordRemediationMetricsAsync(failureMetrics);
-                }
+                _logger.LogError(ex, "Error creating remediation plan for error {ErrorType}", context.ErrorType);
+                throw;
             }
+        }
 
-            // All strategies failed
-            return new RemediationResult
+        public async Task<bool> ValidatePlanAsync(RemediationPlan plan)
+        {
+            ArgumentNullException.ThrowIfNull(plan);
+
+            try
             {
-                Success = false,
-                Message = "All remediation strategies failed",
-                Timestamp = DateTime.UtcNow
-            };
+                var validationResult = await _validator.ValidatePlanAsync(plan, plan.Context);
+                return validationResult.IsValid;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating remediation plan {PlanId}", plan.PlanId);
+                return false;
+            }
+        }
+
+        public async Task<RemediationStatus> GetStatusAsync(string remediationId)
+        {
+            ArgumentNullException.ThrowIfNull(remediationId);
+
+            try
+            {
+                return await _executor.GetRemediationStatusAsync(remediationId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting remediation status for {RemediationId}", remediationId);
+                return RemediationStatus.Unknown;
+            }
+        }
+
+        public async Task<RemediationMetrics> GetMetricsAsync(string remediationId)
+        {
+            ArgumentNullException.ThrowIfNull(remediationId);
+
+            try
+            {
+                var metrics = await _metricsCollector.GetMetricsHistoryAsync(remediationId);
+                var values = metrics.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.FirstOrDefault()?.Value
+                );
+
+                bool success = false;
+                if (values.TryGetValue("Success", out var successValue) && successValue is double doubleValue)
+                {
+                    success = doubleValue != 0;
+                }
+
+                return new RemediationMetrics
+                {
+                    MetricsId = Guid.NewGuid().ToString(),
+                    RemediationId = remediationId,
+                    StrategyName = values.GetValueOrDefault("StrategyName")?.ToString(),
+                    ErrorType = values.GetValueOrDefault("ErrorType")?.ToString(),
+                    ServiceName = values.GetValueOrDefault("ServiceName")?.ToString(),
+                    Success = success,
+                    ErrorMessage = values.GetValueOrDefault("ErrorMessage")?.ToString()
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting remediation metrics for {RemediationId}", remediationId);
+                throw;
+            }
         }
     }
 } 

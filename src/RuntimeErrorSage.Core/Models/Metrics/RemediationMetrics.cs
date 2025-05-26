@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Models.Execution;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Models.Common;
 
@@ -13,29 +12,29 @@ namespace RuntimeErrorSage.Core.Models.Metrics
     public class RemediationMetrics
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the metrics.
+        /// Gets or sets the unique identifier for these metrics.
         /// </summary>
-        public string MetricsId { get; set; } = Guid.NewGuid().ToString();
+        public required string MetricsId { get; set; }
 
         /// <summary>
-        /// Gets or sets the remediation identifier.
+        /// Gets or sets the remediation ID these metrics are for.
         /// </summary>
-        public string RemediationId { get; set; }
+        public required string RemediationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the start time of the remediation.
+        /// Gets or sets when the remediation started.
         /// </summary>
         public DateTime StartTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the end time of the remediation.
+        /// Gets or sets when the remediation ended.
         /// </summary>
-        public DateTime? EndTime { get; set; }
+        public DateTime EndTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the total duration in milliseconds.
+        /// Gets or sets when these metrics were recorded.
         /// </summary>
-        public double TotalDurationMs => EndTime.HasValue ? (EndTime.Value - StartTime).TotalMilliseconds : 0;
+        public DateTime Timestamp { get; set; }
 
         /// <summary>
         /// Gets or sets the number of steps executed.
@@ -53,6 +52,78 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         public int FailedSteps { get; set; }
 
         /// <summary>
+        /// Gets or sets the error type.
+        /// </summary>
+        public string ErrorType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the service name.
+        /// </summary>
+        public string ServiceName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets whether the remediation was successful.
+        /// </summary>
+        public bool Success { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message if any.
+        /// </summary>
+        public string ErrorMessage { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the remediation status.
+        /// </summary>
+        public RemediationStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the strategy name.
+        /// </summary>
+        public string StrategyName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the analysis data.
+        /// </summary>
+        public Dictionary<string, object> Analysis { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the metric values.
+        /// </summary>
+        public Dictionary<string, double> Values { get; private set; } = new();
+
+        /// <summary>
+        /// Gets or sets the metric labels.
+        /// </summary>
+        public Dictionary<string, string> Labels { get; private set; } = new();
+
+        /// <summary>
+        /// Gets the step metrics.
+        /// </summary>
+        public IReadOnlyCollection<StepMetrics> StepMetrics => _stepMetrics;
+        private readonly List<StepMetrics> _stepMetrics = new();
+
+        /// <summary>
+        /// Gets the resource usage metrics.
+        /// </summary>
+        public IReadOnlyDictionary<string, ResourceUsage> ResourceUsage => _resourceUsage;
+        private readonly Dictionary<string, ResourceUsage> _resourceUsage = new();
+
+        /// <summary>
+        /// Gets the performance metrics.
+        /// </summary>
+        public IReadOnlyDictionary<string, PerformanceMetrics> PerformanceMetrics { get; } = new Dictionary<string, PerformanceMetrics>();
+
+        /// <summary>
+        /// Gets the metadata.
+        /// </summary>
+        public IReadOnlyDictionary<string, object> Metadata { get; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Gets or sets the total duration in milliseconds.
+        /// </summary>
+        public double TotalDurationMs => (EndTime - StartTime).TotalMilliseconds;
+
+        /// <summary>
         /// Gets or sets the success rate (0-1).
         /// </summary>
         public double SuccessRate => StepsExecuted > 0 ? (double)SuccessfulSteps / StepsExecuted : 0;
@@ -63,146 +134,29 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         public double FailureRate => StepsExecuted > 0 ? (double)FailedSteps / StepsExecuted : 0;
 
         /// <summary>
-        /// Gets or sets the resource usage metrics.
+        /// Adds a metric value.
         /// </summary>
-        public ResourceUsage ResourceUsage { get; set; } = new();
+        public void AddValue(string key, double value)
+        {
+            Values[key] = value;
+        }
 
         /// <summary>
-        /// Gets or sets the step metrics.
+        /// Adds a metric label.
         /// </summary>
-        public List<StepMetrics> StepMetrics { get; set; } = new();
+        public void AddLabel(string key, string value)
+        {
+            Labels[key] = value;
+        }
 
         /// <summary>
-        /// Gets or sets the strategy metrics.
+        /// Adds step metrics.
         /// </summary>
-        public List<StrategyMetrics> StrategyMetrics { get; set; } = new();
+        public void AddStepMetrics(StepMetrics metrics) => _stepMetrics.Add(metrics);
 
         /// <summary>
-        /// Gets or sets the metrics metadata.
+        /// Adds resource usage metrics.
         /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
-    }
-
-    /// <summary>
-    /// Represents metrics for a remediation step.
-    /// </summary>
-    public class StepMetrics
-    {
-        /// <summary>
-        /// Gets or sets the unique identifier of the step metrics.
-        /// </summary>
-        public string StepMetricsId { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// Gets or sets the step identifier.
-        /// </summary>
-        public string StepId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the step name.
-        /// </summary>
-        public string StepName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start time of the step.
-        /// </summary>
-        public DateTime StartTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the end time of the step.
-        /// </summary>
-        public DateTime? EndTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the duration in milliseconds.
-        /// </summary>
-        public double DurationMs => EndTime.HasValue ? (EndTime.Value - StartTime).TotalMilliseconds : 0;
-
-        /// <summary>
-        /// Gets or sets whether the step was successful.
-        /// </summary>
-        public bool IsSuccessful { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error message if the step failed.
-        /// </summary>
-        public string ErrorMessage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the number of retries.
-        /// </summary>
-        public int RetryCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the resource usage metrics.
-        /// </summary>
-        public ResourceUsage ResourceUsage { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the step metadata.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
-    }
-
-    /// <summary>
-    /// Represents resource usage metrics.
-    /// </summary>
-    public class ResourceUsage
-    {
-        /// <summary>
-        /// Gets or sets the CPU usage percentage.
-        /// </summary>
-        public double CpuUsagePercent { get; set; }
-
-        /// <summary>
-        /// Gets or sets the memory usage in bytes.
-        /// </summary>
-        public long MemoryUsageBytes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the disk usage in bytes.
-        /// </summary>
-        public long DiskUsageBytes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the network usage in bytes.
-        /// </summary>
-        public long NetworkUsageBytes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the number of threads used.
-        /// </summary>
-        public int ThreadCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the number of handles used.
-        /// </summary>
-        public int HandleCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the resource usage metadata.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
-    }
-
-    /// <summary>
-    /// Represents a metric value with timestamp.
-    /// </summary>
-    public class MetricValue
-    {
-        /// <summary>
-        /// Gets or sets the timestamp of the metric.
-        /// </summary>
-        public DateTime Timestamp { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value of the metric.
-        /// </summary>
-        public double Value { get; set; }
-
-        /// <summary>
-        /// Gets or sets the metric metadata.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public void AddResourceUsage(string key, ResourceUsage usage) => _resourceUsage[key] = usage;
     }
 } 

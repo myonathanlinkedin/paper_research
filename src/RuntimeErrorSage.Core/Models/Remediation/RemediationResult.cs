@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
@@ -10,84 +14,49 @@ namespace RuntimeErrorSage.Core.Models.Remediation
     public class RemediationResult
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the result.
+        /// Gets or sets the error context.
         /// </summary>
-        public string ResultId { get; set; } = Guid.NewGuid().ToString();
+        public ErrorContext Context { get; set; }
 
         /// <summary>
-        /// Gets or sets the remediation action that was executed.
-        /// </summary>
-        public RemediationAction Action { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the remediation was successful.
-        /// </summary>
-        public bool IsSuccessful { get; set; }
-
-        /// <summary>
-        /// Gets or sets the status of the remediation.
+        /// Gets or sets the remediation status.
         /// </summary>
         public RemediationStatus Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the start time of the remediation.
+        /// Gets or sets the remediation message.
         /// </summary>
-        public DateTime StartTime { get; set; }
+        public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets the end time of the remediation.
+        /// Gets or sets the completed remediation steps.
         /// </summary>
-        public DateTime? EndTime { get; set; }
+        public List<string> CompletedSteps { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the duration of the remediation in milliseconds.
+        /// Gets or sets the failed remediation steps.
         /// </summary>
-        public double DurationMs => EndTime.HasValue ? (EndTime.Value - StartTime).TotalMilliseconds : 0;
+        public List<string> FailedSteps { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the error message if the remediation failed.
+        /// Gets or sets the remediation metrics.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public Dictionary<string, double> Metrics { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the exception that occurred during remediation.
+        /// Gets or sets the validation result.
         /// </summary>
-        public Exception Exception { get; set; }
+        public ValidationResult Validation { get; set; }
 
         /// <summary>
-        /// Gets or sets the validation results for the remediation.
+        /// Gets or sets the action taken.
         /// </summary>
-        public List<ValidationResult> ValidationResults { get; set; } = new();
+        public string ActionTaken { get; set; }
 
         /// <summary>
-        /// Gets or sets the metrics collected during remediation.
+        /// Gets or sets when the remediation was performed.
         /// </summary>
-        public RemediationMetrics Metrics { get; set; }
-
-        /// <summary>
-        /// Gets or sets the rollback result if the remediation was rolled back.
-        /// </summary>
-        public RemediationResult RollbackResult { get; set; }
-
-        /// <summary>
-        /// Gets or sets the number of retries attempted.
-        /// </summary>
-        public int RetryCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the remediation was rolled back.
-        /// </summary>
-        public bool WasRolledBack { get; set; }
-
-        /// <summary>
-        /// Gets or sets the impact of the remediation.
-        /// </summary>
-        public RemediationImpact Impact { get; set; }
-
-        /// <summary>
-        /// Gets or sets additional metadata about the remediation.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public DateTime RemediationTimestamp { get; set; } = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -95,54 +64,13 @@ namespace RuntimeErrorSage.Core.Models.Remediation
     /// </summary>
     public class RemediationImpact
     {
-        /// <summary>
-        /// Gets or sets the scope of the impact.
-        /// </summary>
-        public RemediationActionImpactScope Scope { get; set; }
+        // Other properties...
 
         /// <summary>
-        /// Gets or sets the severity of the impact.
+        /// Gets additional impact details.
         /// </summary>
-        public RemediationActionSeverity Severity { get; set; }
+        public Dictionary<string, object> Details { get; } = new();
 
-        /// <summary>
-        /// Gets or sets the affected components.
-        /// </summary>
-        public List<string> AffectedComponents { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the affected services.
-        /// </summary>
-        public List<string> AffectedServices { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the affected operations.
-        /// </summary>
-        public List<string> AffectedOperations { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the affected users.
-        /// </summary>
-        public List<string> AffectedUsers { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the estimated downtime in milliseconds.
-        /// </summary>
-        public double EstimatedDowntimeMs { get; set; }
-
-        /// <summary>
-        /// Gets or sets the estimated recovery time in milliseconds.
-        /// </summary>
-        public double EstimatedRecoveryTimeMs { get; set; }
-
-        /// <summary>
-        /// Gets or sets the risk level of the impact.
-        /// </summary>
-        public RemediationActionPriority RiskLevel { get; set; }
-
-        /// <summary>
-        /// Gets or sets additional impact details.
-        /// </summary>
-        public Dictionary<string, object> Details { get; set; } = new();
+        // Other properties...
     }
 } 

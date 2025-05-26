@@ -1,17 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Interfaces.MCP;
-using RuntimeErrorSage.Core.Remediation.Models.Execution;
-using RuntimeErrorSage.Core.Remediation.Models.Validation;
-using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
 using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Execution;
+using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
+using IRemediationValidator = RuntimeErrorSage.Core.Remediation.Interfaces.IRemediationValidator;
+using RemediationStatus = RuntimeErrorSage.Core.Models.Remediation.RemediationStatus;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
@@ -20,6 +16,60 @@ namespace RuntimeErrorSage.Core.Remediation;
 /// </summary>
 public class RemediationExecutor : IRemediationExecutor
 {
+    private static readonly Action<ILogger, string, Exception?> LogExecutionError =
+        LoggerMessage.Define<string>(
+            LogLevel.Error,
+            new EventId(1, nameof(ExecuteStrategyAsync)),
+            "Error executing strategy {StrategyName}");
+
+    private static readonly Action<ILogger, string, Exception?> LogValidationError =
+        LoggerMessage.Define<string>(
+            LogLevel.Error,
+            new EventId(2, nameof(ValidateRemediationAsync)),
+            "Error validating remediation {RemediationId}");
+
+    private static readonly Action<ILogger, string, Exception?> LogExecutionCancelled =
+        LoggerMessage.Define<string>(
+            LogLevel.Information,
+            new EventId(3, nameof(CancelRemediationAsync)),
+            "Remediation {RemediationId} cancelled");
+
+    private static readonly Action<ILogger, string, string, Exception?> LogStrategyValidationFailed =
+        LoggerMessage.Define<string, string>(
+            LogLevel.Warning,
+            new EventId(4, nameof(ExecuteStrategiesForErrorTypeAsync)),
+            "Strategy {StrategyName} validation failed: {Errors}");
+
+    private static readonly Action<ILogger, string, Exception?> LogStrategyExecutionError =
+        LoggerMessage.Define<string>(
+            LogLevel.Error,
+            new EventId(5, nameof(ExecuteStrategiesForErrorTypeAsync)),
+            "Error executing strategies for error type {ErrorType}");
+
+    private static readonly Action<ILogger, string, Exception?> LogRemediationExecutionError =
+        LoggerMessage.Define<string>(
+            LogLevel.Error,
+            new EventId(6, nameof(ExecuteRemediationAsync)),
+            "Error during remediation execution {CorrelationId}");
+
+    private static readonly Action<ILogger, string, Exception?> LogStatusNotImplemented =
+        LoggerMessage.Define<string>(
+            LogLevel.Information,
+            new EventId(7, nameof(GetRemediationStatusAsync)),
+            "GetRemediationStatusAsync not implemented for {RemediationId}");
+
+    private static readonly Action<ILogger, string, Exception?> LogHistoryNotImplemented =
+        LoggerMessage.Define<string>(
+            LogLevel.Information,
+            new EventId(8, nameof(GetExecutionHistoryAsync)),
+            "GetExecutionHistoryAsync not implemented for {RemediationId}");
+
+    private static readonly Action<ILogger, string, Exception?> LogMetricsNotImplemented =
+        LoggerMessage.Define<string>(
+            LogLevel.Information,
+            new EventId(9, nameof(GetExecutionMetricsAsync)),
+            "GetExecutionMetricsAsync not implemented for {RemediationId}");
+
     private readonly ILogger<RemediationExecutor> _logger;
     private readonly IRemediationRegistry _registry;
     private readonly IRemediationValidator _validator;
@@ -40,25 +90,22 @@ public class RemediationExecutor : IRemediationExecutor
         _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
     }
 
+    private void LogError(Action<ILogger, string, Exception?> logAction, string param, Exception ex)
+    {
+        logAction(_logger, param, ex);
+    }
+
     public async Task<RemediationResult> ExecuteStrategyAsync(
         string strategyName,
         ErrorContext context,
         Dictionary<string, string>? parameters = null)
     {
-        if (string.IsNullOrEmpty(strategyName))
-        {
-            throw new ArgumentException("Strategy name cannot be null or empty", nameof(strategyName));
-        }
-
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(strategyName);
+        ArgumentNullException.ThrowIfNull(context);
 
         try
         {
-            // Get strategy
-            var strategy = await _registry.GetStrategyAsync(strategyName);
+            var strategy = await _registry.GetStrategyAsync(strategyName).ConfigureAwait(false);
             if (strategy == null)
             {
                 return new RemediationResult
@@ -79,7 +126,7 @@ public class RemediationExecutor : IRemediationExecutor
             }
 
             // Validate context
-            var contextValidation = await _validator.ValidateRemediationAsync(context);
+            var contextValidation = await _validator.ValidateRemediationAsync(context).ConfigureAwait(false);
             if (!contextValidation.IsValid)
             {
                 return new RemediationResult
@@ -91,7 +138,7 @@ public class RemediationExecutor : IRemediationExecutor
             }
 
             // Validate strategy
-            var strategyValidation = await strategy.ValidateAsync(context);
+            var strategyValidation = await strategy.ValidateAsync(context).ConfigureAwait(false);
             if (!strategyValidation.IsValid)
             {
                 return new RemediationResult
@@ -106,44 +153,72 @@ public class RemediationExecutor : IRemediationExecutor
             var remediationId = Guid.NewGuid().ToString();
 
             // Update status
-            await _tracker.UpdateStatusAsync(remediationId, RemediationStatus.Running);
+            await _tracker.UpdateStatusAsync(remediationId, RemediationStatus.Running).ConfigureAwait(false);
 
             // Execute strategy
             var startTime = DateTime.UtcNow;
-            var result = await strategy.ExecuteAsync(context);
+            var result = await strategy.ExecuteAsync(context).ConfigureAwait(false);
             var endTime = DateTime.UtcNow;
 
             // Record metrics
             var metrics = new RemediationMetrics
             {
+                MetricsId = Guid.NewGuid().ToString(),
                 RemediationId = remediationId,
-                StrategyName = strategyName,
-                ErrorType = context.ErrorType,
                 StartTime = startTime,
                 EndTime = endTime,
-                Duration = endTime - startTime,
-                Success = result.Success,
-                ErrorMessage = result.Error
+                StepsExecuted = 1,
+                SuccessfulSteps = result.Success ? 1 : 0,
+                FailedSteps = result.Success ? 0 : 1,
+                Timestamp = DateTime.UtcNow
             };
 
-            await _metricsCollector.RecordRemediationMetricsAsync(metrics);
+            metrics.AddValue("duration_ms", (endTime - startTime).TotalMilliseconds);
+            metrics.AddValue("success", result.Success ? 1 : 0);
+            metrics.AddLabel("strategy", strategyName);
+            metrics.AddLabel("error_type", context.ErrorType);
+            metrics.AddLabel("status", result.Success ? "success" : "failure");
+
+            await _metricsCollector.RecordRemediationMetricsAsync(metrics).ConfigureAwait(false);
 
             // Update status
             await _tracker.UpdateStatusAsync(
                 remediationId,
                 result.Success ? RemediationStatus.Completed : RemediationStatus.Failed,
-                result.Message);
+                result.Message).ConfigureAwait(false);
 
             return result;
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error executing strategy {StrategyName}", strategyName);
+            LogError(LogExecutionError, strategyName, ex);
             return new RemediationResult
             {
                 Success = false,
-                Message = $"Error executing strategy: {ex.Message}",
-                Error = ex.ToString(),
+                Message = "Strategy execution failed due to invalid operation",
+                Error = ex.Message,
+                Timestamp = DateTime.UtcNow
+            };
+        }
+        catch (ValidationException ex)
+        {
+            LogError(LogExecutionError, strategyName, ex);
+            return new RemediationResult
+            {
+                Success = false,
+                Message = "Strategy validation failed",
+                Error = ex.Message,
+                Timestamp = DateTime.UtcNow
+            };
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException && ex is not ValidationException)
+        {
+            LogError(LogExecutionError, strategyName, ex);
+            return new RemediationResult
+            {
+                Success = false,
+                Message = "Unexpected error during strategy execution",
+                Error = ex.Message,
                 Timestamp = DateTime.UtcNow
             };
         }
@@ -154,20 +229,12 @@ public class RemediationExecutor : IRemediationExecutor
         ErrorContext context,
         Dictionary<string, Dictionary<string, string>>? strategyParameters = null)
     {
-        if (string.IsNullOrEmpty(errorType))
-        {
-            throw new ArgumentException("Error type cannot be null or empty", nameof(errorType));
-        }
-
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(errorType);
+        ArgumentNullException.ThrowIfNull(context);
 
         try
         {
-            // Get strategies for error type
-            var strategies = await _registry.GetStrategiesForErrorTypeAsync(errorType);
+            var strategies = await _registry.GetStrategiesForErrorTypeAsync(errorType).ConfigureAwait(false);
             if (!strategies.Any())
             {
                 return new RemediationResult
@@ -178,8 +245,7 @@ public class RemediationExecutor : IRemediationExecutor
                 };
             }
 
-            // Validate context
-            var contextValidation = await _validator.ValidateRemediationAsync(context);
+            var contextValidation = await _validator.ValidateRemediationAsync(context).ConfigureAwait(false);
             if (!contextValidation.IsValid)
             {
                 return new RemediationResult
@@ -193,66 +259,96 @@ public class RemediationExecutor : IRemediationExecutor
             var results = new List<RemediationResult>();
             var remediationId = Guid.NewGuid().ToString();
 
-            // Execute strategies in priority order
             foreach (var strategy in strategies)
             {
-                // Set parameters if provided
-                if (strategyParameters != null &&
-                    strategyParameters.TryGetValue(strategy.Name, out var parameters))
+                try
                 {
-                    foreach (var (key, value) in parameters)
+                    if (strategyParameters?.TryGetValue(strategy.Name, out var parameters) == true)
                     {
-                        strategy.Parameters[key] = value;
+                        foreach (var (key, value) in parameters)
+                        {
+                            strategy.Parameters[key] = value;
+                        }
+                    }
+
+                    var strategyValidation = await strategy.ValidateAsync(context).ConfigureAwait(false);
+                    if (!strategyValidation.IsValid)
+                    {
+                        LogStrategyValidationFailed(_logger, strategy.Name, string.Join(", ", strategyValidation.Errors), null);
+                        continue;
+                    }
+
+                    await _tracker.UpdateStatusAsync(remediationId, RemediationStatus.Running).ConfigureAwait(false);
+
+                    var startTime = DateTime.UtcNow;
+                    var result = await strategy.ExecuteAsync(context).ConfigureAwait(false);
+                    var endTime = DateTime.UtcNow;
+
+                    var metrics = new RemediationMetrics
+                    {
+                        MetricsId = Guid.NewGuid().ToString(),
+                        RemediationId = remediationId,
+                        StartTime = startTime,
+                        EndTime = endTime,
+                        StepsExecuted = 1,
+                        SuccessfulSteps = result.Success ? 1 : 0,
+                        FailedSteps = result.Success ? 0 : 1,
+                        Timestamp = DateTime.UtcNow
+                    };
+
+                    metrics.AddValue("duration_ms", (endTime - startTime).TotalMilliseconds);
+                    metrics.AddValue("success", result.Success ? 1 : 0);
+                    metrics.AddLabel("strategy", strategy.Name);
+                    metrics.AddLabel("error_type", errorType);
+                    metrics.AddLabel("status", result.Success ? "success" : "failure");
+
+                    await _metricsCollector.RecordRemediationMetricsAsync(metrics).ConfigureAwait(false);
+                    results.Add(result);
+
+                    if (result.Success)
+                    {
+                        await _tracker.UpdateStatusAsync(
+                            remediationId,
+                            RemediationStatus.Completed,
+                            $"Strategy '{strategy.Name}' succeeded: {result.Message}").ConfigureAwait(false);
+                        break;
                     }
                 }
-
-                // Validate strategy
-                var strategyValidation = await strategy.ValidateAsync(context);
-                if (!strategyValidation.IsValid)
+                catch (InvalidOperationException ex)
                 {
-                    _logger.LogWarning(
-                        "Strategy {StrategyName} validation failed: {Errors}",
-                        strategy.Name,
-                        string.Join(", ", strategyValidation.Errors));
-                    continue;
+                    LogStrategyExecutionError(_logger, errorType, ex);
+                    results.Add(new RemediationResult
+                    {
+                        Success = false,
+                        Message = "Strategy execution failed due to invalid operation",
+                        Error = ex.Message,
+                        Timestamp = DateTime.UtcNow
+                    });
                 }
-
-                // Update status
-                await _tracker.UpdateStatusAsync(remediationId, RemediationStatus.Running);
-
-                // Execute strategy
-                var startTime = DateTime.UtcNow;
-                var result = await strategy.ExecuteAsync(context);
-                var endTime = DateTime.UtcNow;
-
-                // Record metrics
-                var metrics = new RemediationMetrics
+                catch (ValidationException ex)
                 {
-                    RemediationId = remediationId,
-                    StrategyName = strategy.Name,
-                    ErrorType = errorType,
-                    StartTime = startTime,
-                    EndTime = endTime,
-                    Duration = endTime - startTime,
-                    Success = result.Success,
-                    ErrorMessage = result.Error
-                };
-
-                await _metricsCollector.RecordRemediationMetricsAsync(metrics);
-                results.Add(result);
-
-                // If strategy succeeded, stop execution
-                if (result.Success)
+                    LogStrategyExecutionError(_logger, errorType, ex);
+                    results.Add(new RemediationResult
+                    {
+                        Success = false,
+                        Message = "Strategy validation failed",
+                        Error = ex.Message,
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
+                catch (Exception ex) when (ex is not InvalidOperationException && ex is not ValidationException)
                 {
-                    await _tracker.UpdateStatusAsync(
-                        remediationId,
-                        RemediationStatus.Completed,
-                        $"Strategy '{strategy.Name}' succeeded: {result.Message}");
-                    break;
+                    LogStrategyExecutionError(_logger, errorType, ex);
+                    results.Add(new RemediationResult
+                    {
+                        Success = false,
+                        Message = "Unexpected error during strategy execution",
+                        Error = ex.Message,
+                        Timestamp = DateTime.UtcNow
+                    });
                 }
             }
 
-            // Determine overall result
             var overallSuccess = results.Any(r => r.Success);
             var lastResult = results.LastOrDefault();
 
@@ -261,7 +357,7 @@ public class RemediationExecutor : IRemediationExecutor
                 overallSuccess ? RemediationStatus.Completed : RemediationStatus.Failed,
                 overallSuccess
                     ? $"Remediation succeeded with strategy '{lastResult?.Message}'"
-                    : "All strategies failed");
+                    : "All strategies failed").ConfigureAwait(false);
 
             return new RemediationResult
             {
@@ -272,14 +368,36 @@ public class RemediationExecutor : IRemediationExecutor
                 Timestamp = DateTime.UtcNow
             };
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error executing strategies for error type {ErrorType}", errorType);
+            LogStrategyExecutionError(_logger, errorType, ex);
             return new RemediationResult
             {
                 Success = false,
-                Message = $"Error executing strategies: {ex.Message}",
-                Error = ex.ToString(),
+                Message = "Strategy execution failed due to invalid operation",
+                Error = ex.Message,
+                Timestamp = DateTime.UtcNow
+            };
+        }
+        catch (ValidationException ex)
+        {
+            LogStrategyExecutionError(_logger, errorType, ex);
+            return new RemediationResult
+            {
+                Success = false,
+                Message = "Strategy validation failed",
+                Error = ex.Message,
+                Timestamp = DateTime.UtcNow
+            };
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException && ex is not ValidationException)
+        {
+            LogStrategyExecutionError(_logger, errorType, ex);
+            return new RemediationResult
+            {
+                Success = false,
+                Message = "Unexpected error during strategy execution",
+                Error = ex.Message,
                 Timestamp = DateTime.UtcNow
             };
         }
@@ -294,20 +412,20 @@ public class RemediationExecutor : IRemediationExecutor
             Status = RemediationExecutionStatus.Running
         };
 
-        await _tracker.TrackRemediationAsync(execution);
+        await _tracker.TrackRemediationAsync(execution).ConfigureAwait(false);
 
         try
         {
             // Validate the remediation plan (derived from analysis)
             var plan = CreateRemediationPlan(analysis); // Create a plan from the analysis result
-            var validationResult = await _validator.ValidatePlanAsync(plan, context);
+            var validationResult = await _validator.ValidatePlanAsync(plan, context).ConfigureAwait(false);
 
-            if (!validationResult.IsSuccessful)
+            if (!validationResult.IsValid)
             {
                 execution.Status = RemediationExecutionStatus.Failed;
                 execution.Error = $"Remediation plan validation failed: {validationResult.Message}";
                 execution.Validation = validationResult;
-                await _tracker.TrackRemediationAsync(execution);
+                await _tracker.TrackRemediationAsync(execution).ConfigureAwait(false);
                 return execution;
             }
 
@@ -321,38 +439,62 @@ public class RemediationExecutor : IRemediationExecutor
                 try
                 {
                     // Validate the strategy for the current context
-                    var strategyValidation = await _validator.ValidateStrategyAsync(strategy, context);
-                    if (!strategyValidation.IsSuccessful)
+                    var strategyValidation = await _validator.ValidateStrategyAsync(strategy, context).ConfigureAwait(false);
+                    if (!strategyValidation.IsValid)
                     {
                         _logger.LogWarning("Strategy {Strategy} validation failed: {Message}", strategy.Name, strategyValidation.Message);
                         continue; // Skip this strategy if validation fails
                     }
 
                     _logger.LogInformation("Executing remediation strategy: {Strategy}", strategy.Name);
-                    var strategyExecution = await strategy.ExecuteAsync(context);
-                    execution.ExecutedActions.Add(strategyExecution);
+                    var strategyExecution = await strategy.ExecuteAsync(context).ConfigureAwait(false);
+                    execution.AddExecutedAction(strategyExecution);
 
                     if (strategyExecution.IsSuccessful)
                     {
-                        execution.Status = RemediationExecutionStatus.Completed; // Mark as completed if any strategy succeeds
+                        execution.Status = RemediationExecutionStatus.Completed;
                         _logger.LogInformation("Remediation strategy {Strategy} completed successfully.", strategy.Name);
-                        break; // Stop on first successful strategy (or continue for multiple?)
+                        break;
                     }
                     else
                     {
                         _logger.LogError("Remediation strategy {Strategy} failed: {Error}", strategy.Name, strategyExecution.Error);
                     }
                 }
-                catch (Exception strategyEx)
+                catch (InvalidOperationException ex)
                 {
-                    _logger.LogError(strategyEx, "Exception during remediation strategy execution: {Strategy}", strategy.Name);
-                    execution.ExecutedActions.Add(new RemediationActionExecution // Log strategy exception as a failed action
+                    _logger.LogError(ex, "Invalid operation during remediation strategy execution: {Strategy}", strategy.Name);
+                    execution.AddExecutedAction(new RemediationActionExecution
                     {
                         ActionName = $"{strategy.Name} Execution",
                         Status = RemediationActionStatus.Failed,
-                        Error = strategyEx.Message,
+                        Error = ex.Message,
                         StartTime = DateTime.UtcNow,
-                        EndTime = DateTime.UtcNow // Assuming immediate failure
+                        EndTime = DateTime.UtcNow
+                    });
+                }
+                catch (ValidationException ex)
+                {
+                    _logger.LogError(ex, "Validation error during remediation strategy execution: {Strategy}", strategy.Name);
+                    execution.AddExecutedAction(new RemediationActionExecution
+                    {
+                        ActionName = $"{strategy.Name} Execution",
+                        Status = RemediationActionStatus.Failed,
+                        Error = ex.Message,
+                        StartTime = DateTime.UtcNow,
+                        EndTime = DateTime.UtcNow
+                    });
+                }
+                catch (Exception ex) when (ex is not InvalidOperationException && ex is not ValidationException)
+                {
+                    _logger.LogError(ex, "Unexpected error during remediation strategy execution: {Strategy}", strategy.Name);
+                    execution.AddExecutedAction(new RemediationActionExecution
+                    {
+                        ActionName = $"{strategy.Name} Execution",
+                        Status = RemediationActionStatus.Failed,
+                        Error = ex.Message,
+                        StartTime = DateTime.UtcNow,
+                        EndTime = DateTime.UtcNow
                     });
                 }
             }
@@ -360,34 +502,64 @@ public class RemediationExecutor : IRemediationExecutor
             // Final status based on executed actions
             if (execution.Status != RemediationExecutionStatus.Completed)
             {
-                 if (execution.ExecutedActions.Any(a => a.Status == RemediationActionStatus.Completed))
-                 {
-                      execution.Status = RemediationExecutionStatus.Partial; // Partially successful if some actions passed
-                 }
-                 else
-                 {
-                      execution.Status = RemediationExecutionStatus.Failed; // Failed if no strategy succeeded
-                      execution.Error = execution.ExecutedActions.LastOrDefault()?.Error ?? "No successful remediation strategy found.";
-                 }
+                if (execution.ExecutedActions.Any(a => a.Status == RemediationActionStatus.Completed))
+                {
+                    execution.Status = RemediationExecutionStatus.Partial;
+                }
+                else
+                {
+                    execution.Status = RemediationExecutionStatus.Failed;
+                    execution.Error = execution.ExecutedActions[^1]?.Error ?? "No successful remediation strategy found.";
+                }
             }
 
             execution.EndTime = DateTime.UtcNow;
+            var metrics = await _metricsCollector.CollectMetricsAsync(context).ConfigureAwait(false);
+            execution.Metrics = new RemediationMetrics
+            {
+                MetricsId = Guid.NewGuid().ToString(),
+                RemediationId = execution.CorrelationId,
+                StartTime = execution.StartTime,
+                EndTime = execution.EndTime,
+                Timestamp = DateTime.UtcNow
+            };
 
-            // Collect metrics
-            // This would ideally be done after a successful remediation or to analyze failures
-            // For simplicity, collecting general metrics here
-            execution.Metrics = await _metricsCollector.CollectMetricsAsync(context); // Assuming CollectMetricsAsync returns RemediationMetrics
+            foreach (var (key, value) in metrics)
+            {
+                if (value is IConvertible convertible)
+                {
+                    execution.Metrics.AddValue(key, Convert.ToDouble(convertible, System.Globalization.CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    execution.Metrics.AddLabel(key, value?.ToString() ?? string.Empty);
+                }
+            }
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error during remediation execution");
+            LogRemediationExecutionError(_logger, execution.CorrelationId, ex);
             execution.Status = RemediationExecutionStatus.Failed;
-            execution.Error = ex.Message;
+            execution.Error = $"Invalid operation during remediation: {ex.Message}";
+            execution.EndTime = DateTime.UtcNow;
+        }
+        catch (ValidationException ex)
+        {
+            LogRemediationExecutionError(_logger, execution.CorrelationId, ex);
+            execution.Status = RemediationExecutionStatus.Failed;
+            execution.Error = $"Validation error during remediation: {ex.Message}";
+            execution.EndTime = DateTime.UtcNow;
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException && ex is not ValidationException)
+        {
+            LogRemediationExecutionError(_logger, execution.CorrelationId, ex);
+            execution.Status = RemediationExecutionStatus.Failed;
+            execution.Error = $"Unexpected error during remediation: {ex.Message}";
             execution.EndTime = DateTime.UtcNow;
         }
         finally
         {
-            await _tracker.TrackRemediationAsync(execution); // Final tracking update
+            await _tracker.TrackRemediationAsync(execution).ConfigureAwait(false);
         }
 
         return execution;
@@ -395,58 +567,115 @@ public class RemediationExecutor : IRemediationExecutor
 
     public Task<RemediationExecution?> GetRemediationStatusAsync(string remediationId)
     {
-        // This would typically retrieve status from the tracker
-        _logger.LogInformation("GetRemediationStatusAsync not implemented");
+        LogStatusNotImplemented(_logger, remediationId, null);
         return Task.FromResult<RemediationExecution?>(null);
     }
 
     public Task<bool> CancelRemediationAsync(string remediationId)
     {
         // Implement cancellation logic
-        _logger.LogInformation("CancelRemediationAsync not implemented");
+        LogExecutionCancelled(_logger, remediationId, null);
         return Task.FromResult(false);
     }
 
-    public Task<RemediationValidationResult> ValidateRemediationAsync(ErrorAnalysisResult analysis, ErrorContext context)
+    public async Task<RemediationValidationResult> ValidateRemediationAsync(ErrorAnalysisResult analysis, ErrorContext context)
     {
-        // This would typically involve the validator
-         var plan = CreateRemediationPlan(analysis); // Create a plan from the analysis result
-        return _validator.ValidatePlanAsync(plan, context);
+        ArgumentNullException.ThrowIfNull(analysis);
+        ArgumentNullException.ThrowIfNull(context);
+
+        var plan = CreateRemediationPlan(analysis);
+        return await _validator.ValidatePlanAsync(plan, context);
     }
 
     public Task<List<RemediationExecution>> GetExecutionHistoryAsync(string remediationId)
     {
-         // This would typically retrieve history from the tracker or storage
-        _logger.LogInformation("GetExecutionHistoryAsync not implemented");
+        LogHistoryNotImplemented(_logger, remediationId, null);
         return Task.FromResult(new List<RemediationExecution>());
     }
 
     public Task<RemediationMetrics> GetExecutionMetricsAsync(string remediationId)
     {
-        // This would typically retrieve metrics from the tracker or storage
-        _logger.LogInformation("GetExecutionMetricsAsync not implemented");
-        return Task.FromResult(new RemediationMetrics { }); // Return empty metrics for now
+        LogMetricsNotImplemented(_logger, remediationId, null);
+        return Task.FromResult(new RemediationMetrics
+        {
+            MetricsId = Guid.NewGuid().ToString(),
+            RemediationId = remediationId,
+            StartTime = DateTime.UtcNow,
+            EndTime = DateTime.UtcNow,
+            Timestamp = DateTime.UtcNow
+        });
     }
 
-     private RemediationPlan CreateRemediationPlan(ErrorAnalysisResult analysisResult)
+    private static RemediationPlan CreateRemediationPlan(ErrorAnalysisResult analysisResult)
     {
-        // Convert analysis result to a remediation plan
-        // This is a simplified mapping
-        var plan = new RemediationPlan
+        // Create a rollback plan first
+        var rollbackPlan = new RemediationPlan
         {
-            Context = analysisResult.RootCause, // Using root cause as context for simplicity
-            IsValidated = false // Needs explicit validation
+            PlanId = Guid.NewGuid().ToString(),
+            Name = $"Rollback Plan for {analysisResult.CorrelationId}",
+            Description = "Automatic rollback plan for remediation actions",
+            Status = new RemediationStatus { State = RemediationState.NotStarted }, // Updated to use 'State'
+            RollbackPlan = null // Rollback plan doesn't need its own rollback
         };
 
-        // Add suggested actions as steps
-        plan.Steps.AddRange(analysisResult.SuggestedActions.Select(action => new RemediationStep
+        // Create the main plan
+        var plan = new RemediationPlan
         {
-            Description = action.Description,
-            Action = action.ActionType, // Using ActionType as the action identifier
-            Parameters = action.Parameters,
-            MaxRetries = 3 // Default retries
-        }));
+            PlanId = Guid.NewGuid().ToString(),
+            Name = $"Remediation Plan for {analysisResult.CorrelationId}",
+            Description = $"Remediation plan for error analysis {analysisResult.CorrelationId}",
+            Context = analysisResult.RootCause,
+            Status = new RemediationStatus { State = RemediationState.Pending }, // Updated to use 'State'
+            RollbackPlan = rollbackPlan
+        };
+
+        // Fix for CS0117: 'RemediationState' does not contain a definition for 'Pending'
+        // The error indicates that 'Pending' is not a valid member of the 'RemediationState' enum.
+        // Based on the provided enum definition, the correct value to use is 'NotStarted'.
+
+        plan.Status = new RemediationStatus { State = RemediationState.NotStarted }; // Updated to use 'NotStarted'
+
+        // Add suggested actions as steps
+        foreach (var action in analysisResult.SuggestedActions)
+        {
+            var step = new RemediationStep
+            {
+                StepId = Guid.NewGuid().ToString(),
+                Name = action.Description,
+                Description = action.Description,
+                Type = Models.Remediation.RemediationStepType.Execution,
+                Status = new RemediationStatus { State = RemediationState.NotStarted }, // Updated to use 'State'
+                Action = new RemediationAction
+                {
+                    ActionId = Guid.NewGuid().ToString(),
+                    Name = action.ActionType,
+                    Description = action.Description,
+                    Type = action.ActionType,
+                    Status = new RemediationStatus { State = RemediationState.NotStarted } // Updated to use 'State'
+                }
+            };
+
+            // Add parameters if any
+            if (action.Parameters != null)
+            {
+                foreach (var param in action.Parameters)
+                {
+                    step.Parameters[param.Key] = param.Value;
+                }
+            }
+
+            plan.Steps.Add(step);
+        }
 
         return plan;
+    }
+
+    Task<Models.Validation.RemediationValidationResult> IRemediationExecutor.ValidateRemediationAsync(ErrorAnalysisResult analysis, ErrorContext context)
+    {
+        ArgumentNullException.ThrowIfNull(analysis);
+        ArgumentNullException.ThrowIfNull(context);
+
+        var plan = CreateRemediationPlan(analysis);
+        return _validator.ValidatePlanAsync(plan, context);
     }
 } 

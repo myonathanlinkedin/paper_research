@@ -20,5 +20,8 @@ namespace RuntimeErrorSage.Core.Exceptions
         /// <param name="innerException">The inner exception.</param>
         public PatternRecognitionException(string message, Exception innerException) 
             : base(message, innerException) { }
+        public PatternRecognitionException()
+        {
+        }
     }
 } 

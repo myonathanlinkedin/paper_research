@@ -1,179 +1,175 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using System.Text.Json;
-using System.IO;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Interfaces.MCP;
-using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Metrics;
 using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Remediation.Models.Common;
+using RuntimeErrorSage.Core.Remediation.Models.Validation;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Context;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
-    /// Implements the remediation action system.
+    /// Implements the remediation action system as specified in the research paper.
     /// </summary>
     public class RemediationActionSystem : IRemediationActionSystem
     {
-        private readonly IMCPClient _mcpClient;
-        private readonly IRemediationMetricsCollector _metricsCollector;
-        private readonly ILogger<RemediationActionSystem> _logger;
+        private readonly ILLMIntegration _llmIntegration;
+        private readonly IRemediationExecutor _executor;
+        private readonly IRemediationValidator _validator;
+        private readonly IContextProvider _contextProvider;
 
-        /// <summary>
-        /// Initializes a new instance of the RemediationActionSystem class.
-        /// </summary>
         public RemediationActionSystem(
-            IMCPClient mcpClient,
-            IRemediationMetricsCollector metricsCollector,
-            ILogger<RemediationActionSystem> logger)
+            ILLMIntegration llmIntegration,
+            IRemediationExecutor executor,
+            IRemediationValidator validator,
+            IContextProvider contextProvider)
         {
-            _mcpClient = mcpClient ?? throw new ArgumentNullException(nameof(mcpClient));
-            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _llmIntegration = llmIntegration ?? throw new ArgumentNullException(nameof(llmIntegration));
+            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _contextProvider = contextProvider ?? throw new ArgumentNullException(nameof(contextProvider));
         }
 
         /// <summary>
-        /// Executes a remediation action for an error context.
+        /// Generates and validates remediation actions for a runtime error.
         /// </summary>
-        public async Task<RemediationResult> ExecuteRemediationAsync(ErrorContext context, RemediationAction action)
+        public async Task<RemediationPlan> GenerateRemediationPlanAsync(RuntimeError error, ErrorContext context)
         {
-            if (context == null)
+            // Analyze the error using LLM
+            var analysis = await _llmIntegration.AnalyzeErrorAsync(error, context);
+
+            // Generate remediation suggestions
+            var suggestions = await _llmIntegration.GenerateRemediationSuggestionsAsync(error, analysis);
+
+            // Validate and rank suggestions
+            var validatedSuggestions = new List<ValidatedRemediationSuggestion>();
+            foreach (var suggestion in suggestions)
             {
-                throw new ArgumentNullException(nameof(context));
+                var validationResult = await _llmIntegration.ValidateRemediationAsync(suggestion, context);
+                validatedSuggestions.Add(new ValidatedRemediationSuggestion
+                {
+                    Suggestion = suggestion,
+                    ValidationResult = validationResult,
+                    Score = CalculateRemediationScore(suggestion, validationResult)
+                });
             }
 
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
+            // Sort suggestions by score
+            validatedSuggestions.Sort((a, b) => b.Score.CompareTo(a.Score));
 
+            return new RemediationPlan
+            {
+                ErrorAnalysis = analysis,
+                ValidatedSuggestions = validatedSuggestions,
+                Context = context,
+                GeneratedAt = DateTime.UtcNow
+            };
+        }
+
+        /// <summary>
+        /// Executes a remediation plan.
+        /// </summary>
+        public async Task<RemediationResult> ExecuteRemediationPlanAsync(RemediationPlan plan)
+        {
             var result = new RemediationResult
             {
-                ActionId = action.Id,
-                ErrorContextId = context.ErrorId,
-                Status = RemediationStatus.Created,
-                StartTime = DateTime.UtcNow
+                PlanId = plan.Id,
+                StartTime = DateTime.UtcNow,
+                Status = RemediationStatus.InProgress,
+                Actions = new List<RemediationAction>()
             };
 
             try
             {
-                // Validate the action
-                var validationResults = await ValidateActionAsync(action);
-                result.ValidationResults.AddRange(validationResults);
-
-                if (!validationResults.TrueForAll(r => r.IsValid))
+                // Execute each suggestion in order of score
+                foreach (var validatedSuggestion in plan.ValidatedSuggestions)
                 {
-                    result.Status = RemediationStatus.ValidationFailed;
-                    result.ErrorMessage = "Action validation failed";
-                    return result;
-                }
+                    var action = await ExecuteRemediationActionAsync(validatedSuggestion, plan.Context);
+                    result.Actions.Add(action);
 
-                // Execute the action steps
-                result.Status = RemediationStatus.Executing;
-                foreach (var step in action.Steps)
-                {
-                    var stepResult = await ExecuteStepAsync(step);
-                    result.StepResults.Add(stepResult);
-
-                    if (stepResult.Status == RemediationStatus.ExecutionFailed)
+                    if (!action.Success)
                     {
-                        result.Status = RemediationStatus.ExecutionFailed;
-                        result.ErrorMessage = stepResult.ErrorMessage;
+                        result.Status = RemediationStatus.PartiallySucceeded;
                         break;
                     }
                 }
 
-                // Update final status
-                result.Status = result.StepResults.TrueForAll(r => r.Status == RemediationStatus.Executed)
-                    ? RemediationStatus.Completed
-                    : RemediationStatus.Failed;
-
-                // Record metrics
-                await _metricsCollector.RecordRemediationMetricsAsync(new RemediationMetrics
+                if (result.Status != RemediationStatus.PartiallySucceeded)
                 {
-                    RemediationId = result.Id,
-                    TotalDurationMs = (long)(DateTime.UtcNow - result.StartTime).TotalMilliseconds,
-                    StepCount = action.Steps.Count,
-                    SuccessfulStepCount = result.StepResults.Count(r => r.Status == RemediationStatus.Executed),
-                    FailedStepCount = result.StepResults.Count(r => r.Status == RemediationStatus.ExecutionFailed),
-                    Severity = context.Severity == ErrorSeverity.Critical ? SeverityLevel.Critical :
-                              context.Severity == ErrorSeverity.High ? SeverityLevel.High :
-                              context.Severity == ErrorSeverity.Medium ? SeverityLevel.Medium :
-                              context.Severity == ErrorSeverity.Low ? SeverityLevel.Low :
-                              SeverityLevel.Info
-                });
+                    result.Status = RemediationStatus.Succeeded;
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error executing remediation action {ActionId}", action.Id);
                 result.Status = RemediationStatus.Failed;
                 result.ErrorMessage = ex.Message;
             }
-            finally
-            {
-                result.EndTime = DateTime.UtcNow;
-                result.Duration = (long)(result.EndTime.Value - result.StartTime).TotalMilliseconds;
-            }
 
+            result.EndTime = DateTime.UtcNow;
             return result;
         }
 
-        private async Task<List<ValidationResult>> ValidateActionAsync(RemediationAction action)
+        private async Task<RemediationAction> ExecuteRemediationActionAsync(ValidatedRemediationSuggestion suggestion, ErrorContext context)
         {
-            // TODO: Implement action validation
-            return new List<ValidationResult>();
-        }
-
-        private async Task<RemediationStepResult> ExecuteStepAsync(RemediationStep step)
-        {
-            var result = new RemediationStepResult
+            var action = new RemediationAction
             {
-                StepId = step.Id,
-                Status = RemediationStatus.Executing,
+                SuggestionId = suggestion.Suggestion.Id,
                 StartTime = DateTime.UtcNow
             };
 
             try
             {
-                // TODO: Implement step execution
-                result.Status = RemediationStatus.Executed;
+                // Validate the action before execution
+                var validationResult = await _validator.ValidateActionAsync(suggestion.Suggestion, context);
+                if (!validationResult.IsValid)
+                {
+                    action.Success = false;
+                    action.ErrorMessage = validationResult.ErrorMessage;
+                    return action;
+                }
+
+                // Execute the remediation action
+                await _executor.ExecuteActionAsync(suggestion.Suggestion, context);
+                action.Success = true;
+
+                // Update context after successful execution
+                await _contextProvider.UpdateContextAsync(context.Id, new RuntimeUpdate
+                {
+                    Type = "RemediationAction",
+                    Data = new Dictionary<string, object>
+                    {
+                        { "actionId", action.Id },
+                        { "suggestionId", suggestion.Suggestion.Id }
+                    }
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error executing remediation step {StepId}", step.Id);
-                result.Status = RemediationStatus.ExecutionFailed;
-                result.ErrorMessage = ex.Message;
-            }
-            finally
-            {
-                result.EndTime = DateTime.UtcNow;
-                result.Duration = (long)(result.EndTime.Value - result.StartTime).TotalMilliseconds;
+                action.Success = false;
+                action.ErrorMessage = ex.Message;
             }
 
-            return result;
+            action.EndTime = DateTime.UtcNow;
+            return action;
         }
-    }
 
-    public class StepValidationResult
-    {
-        public bool IsValid { get; set; }
-        public string Reason { get; set; }
-        public double ConfidenceScore { get; set; }
-        public Dictionary<string, object> ValidationDetails { get; set; }
-    }
-
-    public class StepMetrics
-    {
-        public string StepId { get; set; }
-        public string ActionId { get; set; }
-        public double Duration { get; set; }
-        public RemediationStatus Status { get; set; }
-        public string ErrorType { get; set; }
+        private double CalculateRemediationScore(RemediationSuggestion suggestion, RemediationValidationResult validation)
+        {
+            // Implement scoring logic based on:
+            // 1. Effectiveness score from validation
+            // 2. Implementation complexity
+            // 3. Risk assessment
+            // 4. Expected success probability
+            return validation.EffectivenessScore * 0.4 +
+                   (1.0 - suggestion.ComplexityScore) * 0.3 +
+                   (1.0 - validation.RiskScore) * 0.2 +
+                   validation.SuccessProbability * 0.1;
+        }
     }
 } 

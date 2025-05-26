@@ -25,6 +25,11 @@ public class RemediationValidationResult
     public string Message { get; set; }
 
     /// <summary>
+    /// Gets or sets the validation timestamp.
+    /// </summary>
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
     /// Gets or sets the validation status.
     /// </summary>
     public ValidationStatus Status { get; set; }
@@ -103,40 +108,153 @@ public class RemediationValidationResult
     /// Gets or sets the validation details.
     /// </summary>
     public List<ValidationDetail> Details { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the validation errors.
+    /// </summary>
+    public List<ValidationError> Errors { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the validation warnings.
+    /// </summary>
+    public List<ValidationWarning> Warnings { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the validation suggestions.
+    /// </summary>
+    public List<ValidationSuggestion> Suggestions { get; set; } = new();
 }
 
 /// <summary>
-/// Represents a detail of a validation operation.
+/// Represents a validation detail.
 /// </summary>
 public class ValidationDetail
 {
-    /// <summary>
-    /// Gets or sets the unique identifier of the detail.
-    /// </summary>
-    public string DetailId { get; set; } = Guid.NewGuid().ToString();
-
     /// <summary>
     /// Gets or sets the detail message.
     /// </summary>
     public string Message { get; set; }
 
     /// <summary>
-    /// Gets or sets the detail status.
+    /// Gets or sets the detail code.
     /// </summary>
-    public ValidationStatus Status { get; set; }
+    public string Code { get; set; }
 
     /// <summary>
-    /// Gets or sets the detail category.
+    /// Gets or sets the detail source.
     /// </summary>
-    public ValidationCategory Category { get; set; }
-
-    /// <summary>
-    /// Gets or sets the detail type.
-    /// </summary>
-    public ValidationType Type { get; set; }
+    public string Source { get; set; }
 
     /// <summary>
     /// Gets or sets the detail metadata.
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new();
+}
+
+/// <summary>
+/// Represents a validation error.
+/// </summary>
+public class ValidationError
+{
+    /// <summary>
+    /// Gets or sets the error message.
+    /// </summary>
+    public string Message { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error code.
+    /// </summary>
+    public string Code { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error source.
+    /// </summary>
+    public string Source { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error severity level.
+    /// </summary>
+    public SeverityLevel Severity { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the property that caused the error.
+    /// </summary>
+    public string PropertyName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the timestamp when the error occurred.
+    /// </summary>
+    public DateTime Timestamp { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error metadata.
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new();
+}
+
+/// <summary>
+/// Represents a validation warning.
+/// </summary>
+public class ValidationWarning
+{
+    /// <summary>
+    /// Gets or sets the warning message.
+    /// </summary>
+    public string Message { get; set; }
+
+    /// <summary>
+    /// Gets or sets the warning code.
+    /// </summary>
+    public string Code { get; set; }
+
+    /// <summary>
+    /// Gets or sets the warning source.
+    /// </summary>
+    public string Source { get; set; }
+
+    /// <summary>
+    /// Gets or sets the warning severity level.
+    /// </summary>
+    public SeverityLevel Severity { get; set; }
+
+    /// <summary>
+    /// Gets or sets the unique identifier of the warning.
+    /// </summary>
+    public string WarningId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the timestamp when the warning occurred.
+    /// </summary>
+    public DateTime Timestamp { get; set; }
+
+    /// <summary>
+    /// Gets or sets the warning metadata.
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new();
+}
+
+/// <summary>
+/// Represents a validation suggestion.
+/// </summary>
+public class ValidationSuggestion
+{
+    /// <summary>
+    /// Gets or sets the suggestion message.
+    /// </summary>
+    public string Message { get; set; }
+
+    /// <summary>
+    /// Gets or sets the suggestion code.
+    /// </summary>
+    public string Code { get; set; }
+
+    /// <summary>
+    /// Gets or sets the suggestion source.
+    /// </summary>
+    public string Source { get; set; }
+
+    /// <summary>
+    /// Gets or sets the suggestion metadata.
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
 }
@@ -201,37 +319,6 @@ public enum ValidationImpact
     /// No impact.
     /// </summary>
     None
-}
-
-/// <summary>
-/// Defines the scope levels for validation.
-/// </summary>
-public enum ValidationScope
-{
-    /// <summary>
-    /// Global scope.
-    /// </summary>
-    Global,
-
-    /// <summary>
-    /// Service scope.
-    /// </summary>
-    Service,
-
-    /// <summary>
-    /// Component scope.
-    /// </summary>
-    Component,
-
-    /// <summary>
-    /// Operation scope.
-    /// </summary>
-    Operation,
-
-    /// <summary>
-    /// Local scope.
-    /// </summary>
-    Local
 }
 
 /// <summary>

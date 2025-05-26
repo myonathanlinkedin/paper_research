@@ -109,5 +109,11 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// <param name="backupId">The backup identifier.</param>
         /// <returns>A task representing the restore operation.</returns>
         Task RestoreAsync(string backupId);
+
+        /// <summary>
+        /// Loads error patterns from storage.
+        /// </summary>
+        /// <returns>A list of error patterns.</returns>
+        Task<List<ErrorPattern>> LoadPatternsAsync();
     }
 } 

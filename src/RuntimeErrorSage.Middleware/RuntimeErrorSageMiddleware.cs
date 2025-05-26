@@ -26,9 +26,13 @@ namespace RuntimeErrorSage.Middleware
             IRuntimeErrorSageService service,
             ILogger<RuntimeErrorSageMiddleware> logger)
         {
-            _next = next ?? throw new ArgumentNullException(nameof(next));
-            _service = service ?? throw new ArgumentNullException(nameof(service));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            ArgumentNullException.ThrowIfNull(next);
+            ArgumentNullException.ThrowIfNull(service);
+            ArgumentNullException.ThrowIfNull(logger);
+            
+            _next = next;
+            _service = service;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)

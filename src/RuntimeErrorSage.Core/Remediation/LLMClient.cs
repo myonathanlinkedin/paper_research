@@ -1,20 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Remediation.Models.Analysis;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
+using RuntimeErrorSage.Core.Models.LLM;
+using System.Text.Json;
+using System.Text;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
     /// Client for interacting with the Qwen 2.5 7B Instruct 1M language model.
     /// </summary>
-    public class LLMClient : ILLMClient
+    public class LLMClient : IQwenLLMClient
     {
         private readonly ILogger<LLMClient> _logger;
         private readonly string _modelEndpoint;
@@ -269,6 +265,136 @@ namespace RuntimeErrorSage.Core.Remediation
             {
                 analysis.IsValid = false;
                 analysis.ErrorMessage = "No valid strategy scores found in LLM response";
+            }
+        }
+
+        public async Task<LLMResponse> GenerateResponseAsync(LLMRequest request)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+
+            try
+            {
+                var prompt = request.Prompt;
+                var response = await CallLLMAsync(prompt);
+                
+                return new LLMResponse
+                {
+                    RequestId = request.Id,
+                    Content = response,
+                    Timestamp = DateTime.UtcNow,
+                    IsValid = true
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating LLM response");
+                return new LLMResponse
+                {
+                    RequestId = request.Id,
+                    ErrorMessage = ex.Message,
+                    Timestamp = DateTime.UtcNow,
+                    IsValid = false
+                };
+            }
+        }
+
+        public async Task<bool> ValidateResponseAsync(LLMResponse response)
+        {
+            ArgumentNullException.ThrowIfNull(response);
+
+            if (!response.IsValid || string.IsNullOrEmpty(response.Content))
+            {
+                return false;
+            }
+
+            try
+            {
+                var analysis = ParseLLMResponse(response.Content);
+                ValidateStrategyScores(analysis);
+                return analysis.IsValid;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating LLM response");
+                return false;
+            }
+        }
+
+        public async Task<LLMAnalysis> AnalyzeErrorAsync(string errorMessage, string context)
+        {
+            ArgumentNullException.ThrowIfNull(errorMessage);
+
+            try
+            {
+                var prompt = new StringBuilder();
+                prompt.AppendLine("Error Analysis Request:");
+                prompt.AppendLine($"Error Message: {errorMessage}");
+                if (!string.IsNullOrEmpty(context))
+                {
+                    prompt.AppendLine($"Context: {context}");
+                }
+
+                var response = await CallLLMAsync(prompt.ToString());
+                var analysis = ParseLLMResponse(response);
+                ValidateStrategyScores(analysis);
+                return analysis;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error analyzing error with LLM");
+                return new LLMAnalysis
+                {
+                    IsValid = false,
+                    ErrorMessage = ex.Message,
+                    Timestamp = DateTime.UtcNow
+                };
+            }
+        }
+
+        public async Task<LLMSuggestion> GetRemediationSuggestionAsync(LLMAnalysis analysis)
+        {
+            ArgumentNullException.ThrowIfNull(analysis);
+
+            if (!analysis.IsValid)
+            {
+                return new LLMSuggestion
+                {
+                    IsValid = false,
+                    ErrorMessage = "Cannot generate suggestion from invalid analysis",
+                    Timestamp = DateTime.UtcNow
+                };
+            }
+
+            try
+            {
+                var prompt = new StringBuilder();
+                prompt.AppendLine("Remediation Suggestion Request:");
+                prompt.AppendLine($"Analysis: {analysis.Analysis}");
+                prompt.AppendLine($"Approach: {analysis.Approach}");
+                prompt.AppendLine("\nStrategy Scores:");
+                foreach (var (strategy, score) in analysis.StrategyScores)
+                {
+                    prompt.AppendLine($"- {strategy}: {score}");
+                }
+
+                var response = await CallLLMAsync(prompt.ToString());
+                var suggestion = JsonSerializer.Deserialize<LLMSuggestion>(response, _jsonOptions);
+                return suggestion ?? new LLMSuggestion
+                {
+                    IsValid = false,
+                    ErrorMessage = "Failed to parse suggestion response",
+                    Timestamp = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating remediation suggestion");
+                return new LLMSuggestion
+                {
+                    IsValid = false,
+                    ErrorMessage = ex.Message,
+                    Timestamp = DateTime.UtcNow
+                };
             }
         }
     }

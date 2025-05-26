@@ -20,22 +20,16 @@ namespace RuntimeErrorSage.Core.Remediation
 
         public RemediationRegistry(ILogger<RemediationRegistry> logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            ArgumentNullException.ThrowIfNull(logger);
+            _logger = logger;
             _strategies = new Dictionary<string, IRemediationStrategy>(StringComparer.OrdinalIgnoreCase);
             _errorTypeStrategies = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         }
 
         public async Task RegisterStrategyAsync(IRemediationStrategy strategy, IEnumerable<string> errorTypes)
         {
-            if (strategy == null)
-            {
-                throw new ArgumentNullException(nameof(strategy));
-            }
-
-            if (errorTypes == null)
-            {
-                throw new ArgumentNullException(nameof(errorTypes));
-            }
+            ArgumentNullException.ThrowIfNull(strategy);
+            ArgumentNullException.ThrowIfNull(errorTypes);
 
             try
             {

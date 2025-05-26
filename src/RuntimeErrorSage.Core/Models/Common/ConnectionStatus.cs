@@ -1,82 +1,76 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Core.Models.Common
+namespace RuntimeErrorSage.Core.Models.Common;
+
+/// <summary>
+/// Represents the connection status of a service or component.
+/// </summary>
+public class ConnectionStatus
 {
     /// <summary>
-    /// Represents the connection status of a client or service.
+    /// Gets or sets whether the connection is currently active.
     /// </summary>
-    public class ConnectionStatus
-    {
-        /// <summary>
-        /// Gets or sets whether the connection is active.
-        /// </summary>
-        public bool IsConnected { get; set; }
-
-        /// <summary>
-        /// Gets or sets the last time the connection was established.
-        /// </summary>
-        public DateTime? LastConnected { get; set; }
-
-        /// <summary>
-        /// Gets or sets the last time the connection was disconnected.
-        /// </summary>
-        public DateTime? LastDisconnected { get; set; }
-
-        /// <summary>
-        /// Gets or sets the current status of the connection.
-        /// </summary>
-        public ConnectionState Status { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error message if the connection failed.
-        /// </summary>
-        public string ErrorMessage { get; set; }
-
-        /// <summary>
-        /// Gets or sets additional details about the connection status.
-        /// </summary>
-        public Dictionary<string, object> Details { get; set; } = new();
-    }
+    public bool IsConnected { get; set; }
 
     /// <summary>
-    /// Defines the possible states of a connection.
+    /// Gets or sets the current connection status.
     /// </summary>
-    public enum ConnectionState
-    {
-        /// <summary>
-        /// The connection is disconnected.
-        /// </summary>
-        Disconnected,
+    public ConnectionState Status { get; set; }
 
-        /// <summary>
-        /// The connection is in the process of connecting.
-        /// </summary>
-        Connecting,
+    /// <summary>
+    /// Gets or sets the last time a successful connection was established.
+    /// </summary>
+    public DateTime? LastConnected { get; set; }
 
-        /// <summary>
-        /// The connection is connected and active.
-        /// </summary>
-        Connected,
+    /// <summary>
+    /// Gets or sets the last time the connection was lost.
+    /// </summary>
+    public DateTime? LastDisconnected { get; set; }
 
-        /// <summary>
-        /// The connection is in the process of disconnecting.
-        /// </summary>
-        Disconnecting,
+    /// <summary>
+    /// Gets or sets the error message if any.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
 
-        /// <summary>
-        /// The connection has failed.
-        /// </summary>
-        Failed,
+    /// <summary>
+    /// Gets or sets additional connection details.
+    /// </summary>
+    public Dictionary<string, object> Details { get; set; } = new();
+}
 
-        /// <summary>
-        /// The connection is in a reconnecting state.
-        /// </summary>
-        Reconnecting,
+/// <summary>
+/// Represents the state of a connection.
+/// </summary>
+public enum ConnectionState
+{
+    /// <summary>
+    /// The connection is disconnected.
+    /// </summary>
+    Disconnected,
 
-        /// <summary>
-        /// The connection status is unknown.
-        /// </summary>
-        Unknown
-    }
-} 
+    /// <summary>
+    /// The connection is connecting.
+    /// </summary>
+    Connecting,
+
+    /// <summary>
+    /// The connection is connected.
+    /// </summary>
+    Connected,
+
+    /// <summary>
+    /// The connection is reconnecting.
+    /// </summary>
+    Reconnecting,
+
+    /// <summary>
+    /// The connection failed.
+    /// </summary>
+    Failed,
+
+    /// <summary>
+    /// The connection state is unknown.
+    /// </summary>
+    Unknown
+}

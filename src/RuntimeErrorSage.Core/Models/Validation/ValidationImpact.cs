@@ -1,32 +1,32 @@
 namespace RuntimeErrorSage.Core.Models.Validation;
 
 /// <summary>
-/// Defines the impact levels of validation results.
+/// Defines impact levels for validation.
 /// </summary>
 public enum ValidationImpact
 {
     /// <summary>
-    /// Critical impact level.
+    /// Critical impact - system is unusable.
     /// </summary>
     Critical,
 
     /// <summary>
-    /// High impact level.
+    /// High impact - major functionality is impacted.
     /// </summary>
     High,
 
     /// <summary>
-    /// Medium impact level.
+    /// Medium impact - system is degraded but functional.
     /// </summary>
     Medium,
 
     /// <summary>
-    /// Low impact level.
+    /// Low impact - minor impact on functionality.
     /// </summary>
     Low,
 
     /// <summary>
-    /// No impact level.
+    /// No impact - no functional impact.
     /// </summary>
     None
 } 

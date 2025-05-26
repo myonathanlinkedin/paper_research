@@ -1,52 +1,57 @@
 namespace RuntimeErrorSage.Core.Models.Validation;
 
 /// <summary>
-/// Defines the categories of validation.
+/// Defines categories for validation operations.
 /// </summary>
 public enum ValidationCategory
 {
     /// <summary>
-    /// Syntax validation category.
+    /// Input validation category.
     /// </summary>
-    Syntax,
+    Input = 0,
 
     /// <summary>
-    /// Semantic validation category.
+    /// Business logic validation category.
     /// </summary>
-    Semantic,
+    BusinessLogic = 1,
 
     /// <summary>
-    /// Runtime validation category.
+    /// Data integrity validation category.
     /// </summary>
-    Runtime,
+    DataIntegrity = 2,
 
     /// <summary>
     /// Security validation category.
     /// </summary>
-    Security,
+    Security = 3,
 
     /// <summary>
     /// Performance validation category.
     /// </summary>
-    Performance,
-
-    /// <summary>
-    /// Resource validation category.
-    /// </summary>
-    Resource,
-
-    /// <summary>
-    /// Dependency validation category.
-    /// </summary>
-    Dependency,
+    Performance = 4,
 
     /// <summary>
     /// Configuration validation category.
     /// </summary>
-    Configuration,
+    Configuration = 5,
 
     /// <summary>
-    /// Unknown validation category.
+    /// Dependency validation category.
     /// </summary>
-    Unknown
+    Dependency = 6,
+
+    /// <summary>
+    /// Resource validation category.
+    /// </summary>
+    Resource = 7,
+
+    /// <summary>
+    /// State validation category.
+    /// </summary>
+    State = 8,
+
+    /// <summary>
+    /// Custom validation category.
+    /// </summary>
+    Custom = 9
 } 

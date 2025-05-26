@@ -10,6 +10,9 @@ using RuntimeErrorSage.Core.Health;
 using RuntimeErrorSage.Core.MCP;
 using RuntimeErrorSage.Core.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Interfaces.MCP;
+using RuntimeErrorSage.Core.Interfaces.Storage;
+using RuntimeErrorSage.Core.Storage;
 
 namespace RuntimeErrorSage.Core.Extensions
 {
@@ -27,13 +30,21 @@ namespace RuntimeErrorSage.Core.Extensions
                 services.Configure(configureOptions);
             }
 
+            // Configure Redis storage
+            services.Configure<RedisPatternStorageOptions>(configuration.GetSection("RuntimeErrorSage:Redis"));
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<RedisPatternStorageOptions>>();
+                return ConnectionMultiplexer.Connect(options.Value.ConnectionString);
+            });
+
             // Configure LM Studio
             services.Configure<LMStudioOptions>(configuration.GetSection("RuntimeErrorSage:LMStudio"));
             services.AddHttpClient<ILMStudioClient, LMStudioClient>();
 
             // Register core services
             services.AddSingleton<IErrorAnalyzer, ErrorAnalyzer>();
-            services.AddSingleton<IDistributedStorage, DistributedStorage>();
+            services.AddSingleton<IPatternStorage, RedisPatternStorage>();
             services.AddSingleton<IMCPClient, MCPClient>();
             services.AddSingleton<IRemediationMetricsCollector, RemediationMetricsCollector>();
             services.AddSingleton<IRemediationValidator, RemediationValidator>();
@@ -43,8 +54,8 @@ namespace RuntimeErrorSage.Core.Extensions
 
             // Register health checks
             services.AddHealthChecks()
-                .AddCheck<LMStudioHealthCheck>("lmstudio");
-                // Add other health checks here
+                .AddCheck<LMStudioHealthCheck>("lmstudio")
+                .AddCheck<RedisHealthCheck>("redis");
 
             return services;
         }

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Remediation.Models.Analysis;
 using RuntimeErrorSage.Core.Remediation.Models.Common;
@@ -20,28 +22,31 @@ namespace RuntimeErrorSage.Core.Remediation
         private readonly IRemediationValidator _validator;
         private readonly IRemediationRegistry _registry;
         private readonly IGraphAnalyzer _graphAnalyzer;
-        private readonly ILLMClient _llmClient;
+        private readonly IQwenLLMClient _llmClient;
 
         public RemediationAnalyzer(
             ILogger<RemediationAnalyzer> logger,
             IRemediationValidator validator,
             IRemediationRegistry registry,
             IGraphAnalyzer graphAnalyzer,
-            ILLMClient llmClient)
+            IQwenLLMClient llmClient)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-            _graphAnalyzer = graphAnalyzer ?? throw new ArgumentNullException(nameof(graphAnalyzer));
-            _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(validator);
+            ArgumentNullException.ThrowIfNull(registry);
+            ArgumentNullException.ThrowIfNull(graphAnalyzer);
+            ArgumentNullException.ThrowIfNull(llmClient);
+            
+            _logger = logger;
+            _validator = validator;
+            _registry = registry;
+            _graphAnalyzer = graphAnalyzer;
+            _llmClient = llmClient;
         }
 
         public async Task<RemediationAnalysis> AnalyzeErrorAsync(ErrorContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {

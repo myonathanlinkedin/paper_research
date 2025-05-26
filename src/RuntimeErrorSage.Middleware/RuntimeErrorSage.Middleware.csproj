@@ -4,12 +4,14 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>0.1.0</Version>
-    <Authors>Mateus Yonathan</Authors>
-    <Description>ASP.NET Core middleware for RuntimeErrorSage runtime intelligence layer</Description>
-    <AssemblyName>RuntimeErrorSage.Middleware</AssemblyName>
+    <LangVersion>preview</LangVersion>
     <RootNamespace>RuntimeErrorSage.Middleware</RootNamespace>
+    <AssemblyName>RuntimeErrorSage.Middleware</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\RuntimeErrorSage.Core\RuntimeErrorSage.Core.csproj" />
