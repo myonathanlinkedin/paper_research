@@ -1,0 +1,74 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core;
+using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Core.Remediation;
+using RuntimeErrorSage.Core.MCP;
+using RuntimeErrorSage.Core.LLM;
+using RuntimeErrorSage.Core.Validation;
+using RuntimeErrorSage.Core.Graph;
+
+namespace RuntimeErrorSage.Middleware
+{
+    /// <summary>
+    /// ASP.NET Core middleware (conforming to IRuntimeErrorSageMiddleware) that intercepts exceptions, enriches the error context (if enabled), and (optionally) applies automated remediation (using the injected IRuntimeErrorSageService).
+    /// </summary>
+    public class RuntimeErrorSageMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly IRuntimeErrorSageService _service;
+        private readonly ILogger<RuntimeErrorSageMiddleware> _logger;
+
+        public RuntimeErrorSageMiddleware(
+            RequestDelegate next,
+            IRuntimeErrorSageService service,
+            ILogger<RuntimeErrorSageMiddleware> logger)
+        {
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _service = service ?? throw new ArgumentNullException(nameof(service));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            try
+            {
+                await _next(context);
+            }
+            catch (Exception ex)
+            {
+                var errorContext = new ErrorContext
+                {
+                    ErrorType = ex.GetType().Name,
+                    ErrorMessage = ex.Message,
+                    Source = "Middleware",
+                    Timestamp = DateTime.UtcNow,
+                    AdditionalContext = new Dictionary<string, object>
+                    {
+                        { "RequestPath", context.Request.Path },
+                        { "RequestMethod", context.Request.Method },
+                        { "StatusCode", context.Response.StatusCode },
+                        { "StackTrace", ex.StackTrace ?? string.Empty }
+                    }
+                };
+
+                try
+                {
+                    var result = await _service.AnalyzeErrorAsync(errorContext);
+                    if (result.IsAnalyzed && result.RemediationPlan?.Strategies?.Any() == true)
+                    {
+                        await _service.RemediateErrorAsync(errorContext);
+                    }
+                }
+                catch (Exception analysisEx)
+                {
+                    _logger.LogError(analysisEx, "Error analyzing or remediating exception in middleware");
+                }
+
+                throw;
+            }
+        }
+    }
+} 

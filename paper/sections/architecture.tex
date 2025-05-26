@@ -95,7 +95,7 @@ RuntimeErrorSage supports multiple integration patterns for different applicatio
 public class RuntimeErrorSageMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly ICodeSageService _codeSage;
+    private readonly IRuntimeErrorSageService _runtimeErrorSage;
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -105,7 +105,7 @@ public class RuntimeErrorSageMiddleware
         }
         catch (Exception ex)
         {
-            var errorContext = await _codeSage
+            var errorContext = await _runtimeErrorSage
                 .ProcessExceptionAsync(ex, context);
             // Handle or rethrow based on analysis
         }
@@ -118,7 +118,7 @@ For background services and worker processes, RuntimeErrorSage provides a custom
 \begin{lstlisting}[style=csharpstyle,caption={Background Service Integration},label=lst:background]
 public class RuntimeErrorSageExceptionHandler : IHostedService
 {
-    private readonly ICodeSageService _codeSage;
+    private readonly IRuntimeErrorSageService _runtimeErrorSage;
     
     public Task StartAsync(CancellationToken token)
     {

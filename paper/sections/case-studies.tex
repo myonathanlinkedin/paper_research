@@ -1,27 +1,27 @@
 \section{Case Studies}\label{sec:case-studies}
 
-This section presents detailed case studies of RuntimeErrorSage in real-world production environments~\cite{production_error_analysis_2023, runtime_remediation_2024}. These case studies demonstrate the system's effectiveness in handling complex runtime errors and its impact on application reliability and developer productivity.
+This section presents simulated case studies of RuntimeErrorSage, designed to evaluate the system's theoretical effectiveness in handling complex runtime errors. These simulations are based on common error patterns observed in production environments but are not actual production data~\cite{production_error_analysis_2023, runtime_remediation_2024}. The simulations demonstrate the system's potential capabilities and guide future real-world implementation.
 
-\subsection{Enterprise E-commerce Platform}
+\subsection{Simulated Enterprise E-commerce Platform}
 
-\subsubsection{Scenario}
-A large e-commerce platform experienced intermittent database connection pool exhaustion during peak shopping periods~\cite{database_performance_2023}. The traditional approach involved manual investigation of logs and database metrics, often taking 30-45 minutes to identify and resolve the issue.
+\subsubsection{Simulation Scenario}
+A simulated e-commerce platform experiencing database connection pool exhaustion during peak load periods~\cite{database_performance_2023}. The simulation models traditional manual investigation taking 30-45 minutes, against which RuntimeErrorSage's performance is compared.
 
-\subsubsection{Error Analysis}
-RuntimeErrorSage detected the following error pattern:
-\begin{lstlisting}[style=csharpstyle,caption={Database Connection Pool Error}]
+\subsubsection{Simulated Error Analysis}
+RuntimeErrorSage's simulated analysis of the following error pattern:
+\begin{lstlisting}[style=csharpstyle,caption={Simulated Database Connection Pool Error}]
 System.InvalidOperationException: Timeout expired. The timeout period elapsed prior to obtaining a connection from the pool.
 \end{lstlisting}
 
-The system collected context including:
+The simulation models context collection including:
 \begin{itemize}
-    \item Current connection pool utilization (95\%)
-    \item Active database transactions (142)
-    \item Recent query patterns showing inefficient connection usage
-    \item Application thread pool status
+    \item Simulated connection pool utilization (95\%)
+    \item Simulated active database transactions (142)
+    \item Simulated query patterns
+    \item Simulated application thread pool status
 \end{itemize}
 
-The context collection process can be modeled as:
+The simulated context collection process is modeled as:
 \begin{equation}
 \begin{split}
 \text{context\_size} &= \text{base\_metrics} + \text{historical\_data} \\
@@ -29,16 +29,16 @@ The context collection process can be modeled as:
 \end{split}
 \end{equation}
 
-\subsubsection{Remediation}
-RuntimeErrorSage identified that the issue stemmed from unclosed database connections in the shopping cart service~\cite{connection_pooling_2023}. The system proposed and executed the following remediation steps:
+\subsubsection{Simulated Remediation}
+The simulation models RuntimeErrorSage identifying connection management issues and proposing:
 \begin{enumerate}
-    \item Implemented connection pooling optimization
-    \item Added connection timeout handling
-    \item Deployed a hotfix to properly dispose of database connections
+    \item Simulated connection pooling optimization
+    \item Simulated connection timeout handling
+    \item Simulated hotfix deployment
 \end{enumerate}
 
-\subsubsection{Results}
-The remediation effectiveness can be quantified as:
+\subsubsection{Simulated Results}
+The simulated remediation effectiveness is modeled as:
 \begin{equation}
 \begin{split}
 \text{improvement} &= \text{baseline\_time} - \text{resolution\_time} \\
@@ -46,48 +46,48 @@ The remediation effectiveness can be quantified as:
 \end{split}
 \end{equation}
 
-Key metrics achieved:
+Simulated metrics:
 \begin{itemize}
-    \item Resolution time reduced from 45 minutes to 2.1 seconds
-    \item Connection pool utilization normalized to 60-70\%
-    \item Zero recurrence of the issue in subsequent peak periods
-    \item Estimated cost savings of \$15,000 in developer time per incident
+    \item Simulated resolution time: 2.1 seconds
+    \item Simulated connection pool utilization: 60-70\%
+    \item Simulated issue recurrence: 0\%
+    \item Simulated cost savings: \$15,000 per incident
 \end{itemize}
 
-\subsection{Financial Services Application}
+\subsection{Simulated Financial Services Application}
 
-\subsubsection{Scenario}
-A financial services application processing real-time transactions encountered deadlock situations in the database layer~\cite{transaction_management_2024}, causing transaction failures and customer impact.
+\subsubsection{Simulation Scenario}
+A simulated financial services application processing transactions with modeled deadlock situations~\cite{transaction_management_2024}.
 
-\subsubsection{Error Analysis}
-RuntimeErrorSage intercepted the following error:
-\begin{lstlisting}[style=csharpstyle,caption={Database Deadlock Error}]
+\subsubsection{Simulated Error Analysis}
+RuntimeErrorSage's simulated analysis of:
+\begin{lstlisting}[style=csharpstyle,caption={Simulated Database Deadlock Error}]
 System.Data.SqlClient.SqlException: Transaction (Process ID XX) was deadlocked on lock resources with another process and has been chosen as the deadlock victim.
 \end{lstlisting}
 
-Context analysis revealed:
+Simulated context analysis includes:
 \begin{itemize}
-    \item Transaction isolation level (ReadCommitted)
-    \item Lock acquisition patterns
-    \item Concurrent transaction sequences
-    \item Table access patterns
+    \item Simulated transaction isolation level
+    \item Simulated lock acquisition patterns
+    \item Simulated concurrent transaction sequences
+    \item Simulated table access patterns
 \end{itemize}
 
-The deadlock probability can be modeled as:
+The simulated deadlock probability is modeled as:
 \begin{equation}
 P(\text{deadlock}) = f(\text{concurrency}, \text{isolation\_level}, \text{transaction\_pattern})
 \end{equation}
 
-\subsubsection{Remediation}
-The system identified a circular dependency in transaction patterns and implemented:
+\subsubsection{Simulated Remediation}
+The simulation models:
 \begin{enumerate}
-    \item Transaction isolation level adjustment
-    \item Query optimization to reduce lock contention
-    \item Implementation of deadlock retry logic
+    \item Simulated transaction isolation adjustment
+    \item Simulated query optimization
+    \item Simulated deadlock retry logic
 \end{enumerate}
 
-\subsubsection{Results}
-Performance improvements can be expressed as:
+\subsubsection{Simulated Results}
+Simulated performance improvements:
 \begin{equation}
 \begin{split}
 \text{reliability} &= \text{baseline} \cdot (1 - \text{deadlock\_rate}) \\
@@ -95,34 +95,34 @@ Performance improvements can be expressed as:
 \end{split}
 \end{equation}
 
-Key metrics achieved:
+Simulated metrics:
 \begin{itemize}
-    \item Deadlock incidents reduced by 95\%
-    \item Average transaction processing time improved by 40\%
-    \item System reliability increased to 99.99\%
-    \item Reduced database maintenance overhead
+    \item Simulated deadlock reduction: 95\%
+    \item Simulated transaction time improvement: 40\%
+    \item Simulated system reliability: 99.99\%
+    \item Simulated maintenance overhead reduction
 \end{itemize}
 
-\subsection{Healthcare Data Processing System}
+\subsection{Simulated Healthcare Data Processing System}
 
-\subsubsection{Scenario}
-A healthcare data processing system experienced memory leaks during large batch processing operations~\cite{memory_management_2023}, leading to system instability and potential data loss.
+\subsubsection{Simulation Scenario}
+A simulated healthcare data processing system with modeled memory leaks during batch operations~\cite{memory_management_2023}.
 
-\subsubsection{Error Analysis}
-RuntimeErrorSage detected the following pattern:
-\begin{lstlisting}[style=csharpstyle,caption={Memory Leak Error}]
+\subsubsection{Simulated Error Analysis}
+RuntimeErrorSage's simulated analysis of:
+\begin{lstlisting}[style=csharpstyle,caption={Simulated Memory Leak Error}]
 System.OutOfMemoryException: Exception of type 'System.OutOfMemoryException' was thrown.
 \end{lstlisting}
 
-The system analyzed:
+Simulated analysis includes:
 \begin{itemize}
-    \item Memory usage patterns
-    \item Object lifecycle in batch processing
-    \item Resource cleanup patterns
-    \item GC collection statistics
+    \item Simulated memory usage patterns
+    \item Simulated object lifecycle
+    \item Simulated resource cleanup patterns
+    \item Simulated GC statistics
 \end{itemize}
 
-Memory usage can be modeled as:
+Simulated memory usage model:
 \begin{equation}
 \begin{split}
 \text{memory\_usage}(t) &= \text{base\_allocation} \\
@@ -130,42 +130,42 @@ Memory usage can be modeled as:
 \end{split}
 \end{equation}
 
-\subsubsection{Remediation}
-The system identified improper disposal of large object graphs and implemented:
+\subsubsection{Simulated Remediation}
+The simulation models:
 \begin{enumerate}
-    \item Memory-efficient batch processing
-    \item Proper implementation of IDisposable
-    \item Weak reference usage for caching
-    \item Memory pressure monitoring
+    \item Simulated memory-efficient processing
+    \item Simulated resource disposal
+    \item Simulated weak reference usage
+    \item Simulated memory monitoring
 \end{enumerate}
 
-\subsubsection{Results}
-Memory optimization impact can be quantified as:
+\subsubsection{Simulated Results}
+Simulated optimization impact:
 \begin{equation}
 \text{optimization\_factor} = \frac{\text{baseline\_usage} - \text{optimized\_usage}}{\text{baseline\_usage}}
 \end{equation}
 
-Key metrics achieved:
+Simulated metrics:
 \begin{itemize}
-    \item Memory usage stabilized at 60\% of previous levels
-    \item Batch processing reliability increased to 99.9\%
-    \item System uptime improved by 40\%
-    \item Reduced infrastructure costs by 30\%
+    \item Simulated memory usage: 60\% of baseline
+    \item Simulated processing reliability: 99.9\%
+    \item Simulated uptime improvement: 40\%
+    \item Simulated cost reduction: 30\%
 \end{itemize}
 
 \subsection{Cross-Cutting Analysis}
 
-\subsubsection{Common Patterns}
-Analysis of these case studies reveals several common patterns in runtime error remediation~\cite{error_patterns_2024}:
+\subsubsection{Simulated Common Patterns}
+Analysis of these simulated scenarios reveals theoretical patterns in runtime error remediation~\cite{error_patterns_2024}:
 \begin{itemize}
-    \item Resource management issues (connections, memory, locks)
-    \item Concurrent access patterns
-    \item System boundary conditions
-    \item Integration point failures
+    \item Simulated resource management issues
+    \item Simulated concurrent access patterns
+    \item Simulated system boundary conditions
+    \item Simulated integration point failures
 \end{itemize}
 
-\subsubsection{Impact Metrics}
-Across all case studies, RuntimeErrorSage demonstrated:
+\subsubsection{Simulated Impact Metrics}
+Across all simulated scenarios, RuntimeErrorSage demonstrates theoretical improvements:
 \begin{equation}
 \begin{split}
 \text{overall\_improvement} &= \sum_{i=1}^{n} w_i \cdot \text{metric}_i \\
@@ -173,21 +173,21 @@ Across all case studies, RuntimeErrorSage demonstrated:
 \end{split}
 \end{equation}
 
-Key metrics:
+Simulated metrics:
 \begin{itemize}
-    \item Average resolution time: 2.3 seconds
-    \item Remediation success rate: 85\%
-    \item Mean time to recovery (MTTR) reduction: 95\%
-    \item System reliability improvement: 40-60\%
+    \item Simulated resolution time: 2.3 seconds
+    \item Simulated remediation success: 85\%
+    \item Simulated MTTR reduction: 95\%
+    \item Simulated reliability improvement: 40-60\%
 \end{itemize}
 
-\subsubsection{Lessons Learned}
-Key insights from the case studies include~\cite{llm_error_analysis_2024}:
+\subsubsection{Theoretical Insights}
+Key theoretical insights from the simulations include~\cite{llm_error_analysis_2024}:
 \begin{itemize}
     \item Importance of comprehensive context collection
     \item Value of historical error pattern analysis
     \item Need for safe remediation execution
-    \item Benefits of local LLM inference for sensitive data
+    \item Benefits of local LLM inference
 \end{itemize}
 
-These case studies demonstrate RuntimeErrorSage's effectiveness in real-world scenarios, showing significant improvements in error resolution time, system reliability, and operational efficiency~\cite{production_llm_2024}. The system's ability to provide immediate, accurate remediation while maintaining data privacy and security makes it particularly valuable in enterprise environments.
+These simulated case studies demonstrate RuntimeErrorSage's theoretical effectiveness in various scenarios, showing potential improvements in error resolution time, system reliability, and operational efficiency~\cite{production_llm_2024}. The simulations guide future real-world implementation and validation of the system's capabilities.

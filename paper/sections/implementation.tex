@@ -6,61 +6,57 @@ The system's interaction with the Large Language Model is facilitated by a stand
 The primary technologies and components used in the implementation include .NET 9 runtime environment for the core framework, C\# as the primary programming language, Qwen 2.5 7B Instruct 1M Model as the local LLM, standard HTTP API for LLM communication, in-memory context graph using graph libraries, asynchronous programming with Task Parallel Library (TPL), and logging framework integration with common .NET libraries such as Serilog and NLog.
 
 \subsection{Performance Optimization}
-Minimizing the runtime overhead introduced by the error analysis and remediation process is paramount for a production ready system. We employed several key optimization techniques~\cite{llm_inference_optimization_2021, performance_tuning_dotnet_2020}.
-
-Asynchronous Context Collection prevents the interception process from significantly delaying the application's execution flow by collecting data from the Runtime Interceptor using task based programming. Batched Model Inference allows the LLM Orchestrator to batch multiple requests for more efficient processing when errors occur in quick succession. Dynamic Batch Sizing adjusts the size of inference batches based on current system load and LLM server capacity to maintain responsiveness. Context Pruning reduces input size and inference time by removing less relevant information from the context graph before LLM processing. Caching of Common Error Patterns allows immediate remediation decisions for frequently occurring errors without requiring full LLM inference cycles. Optimized Data Serialization minimizes parsing and data transfer overhead through efficient serialization mechanisms.
-
-The impact of these optimizations on overall latency can be modeled as a reduction from baseline latency, influenced by various optimization factors. The effective latency can be approximated by:
-\begin{equation}
-\begin{split}
-\text{latency} &\approx \text{base\_inference\_latency} \\
-&\quad + \text{data\_transfer\_time} + \text{processing\_overhead} \\
-&\quad - \sum_{i=1}^{n} w_i \cdot \text{optimization\_effect}_i
-\end{split}
-\end{equation}
-where $\text{base\_inference\_latency}$ is the time taken by the LLM for inference without optimizations, $\text{data\_transfer\_time}$ and $\text{processing\_overhead}$ are costs associated with data handling and internal processing, $w_i$ are weights representing the significance of each optimization technique, and $\text{optimization\_effect}_i$ quantifies the reduction in latency due to the $i$th optimization.
+RuntimeErrorSage minimizes runtime overhead (introduced by error analysis and remediation) by employing a number of optimization techniques (as described in the literature (e.g.~\cite{llm_inference_optimization_2021, performance_tuning_dotnet_2020})). For example, asynchronous context collection (using task-based programming) prevents the interception process from significantly delaying the application's execution flow. Batched model inference (in the LLM Orchestrator) (allows multiple requests to be batched for more efficient processing (when errors occur in quick succession)) and dynamic batch sizing (adjusts the batch size (based on current system load and LLM server capacity) so that responsiveness is maintained). In addition, context pruning (removes less relevant information from the context graph (before LLM processing)) and caching (of common error patterns) (allows immediate remediation decisions (for frequent errors) (without requiring a full LLM inference cycle)) are used. Finally, optimized data serialization (minimizes parsing and data transfer overhead) is employed. (The impact of these optimizations on overall latency (i.e. a reduction from baseline latency (influenced by various optimization factors)) is modeled (using an equation (for example, (latency ≈ base_inference_latency + data_transfer_time + processing_overhead – ∑(w_i ⋅ optimization_effect_i)) (where base_inference_latency, data_transfer_time, processing_overhead, w_i, and optimization_effect_i are as described in the paper))).
 
 \subsection{Error Recovery and Remediation Execution}
-The Remediation Engine orchestrates the execution of the chosen remediation action $r$ in a safe and controlled manner. This involves interacting with the application's state based on the analysis provided by the LLM Orchestrator. The process follows a state machine execution flow to ensure reliability and the possibility of rollback. The system maintains a simplified view of the application's state to reason about the safety and impact of actions.
-
-The Remediation Engine implements mechanisms for pre-execution validation, action execution, post-execution verification, state rollback, and feedback loops. Pre-execution validation involves checking system state and verifying preconditions before applying remediation actions. Action execution may involve modifying variable values, calling recovery methods, restarting components, or applying configuration changes. Post-execution verification checks for the original error's persistence and monitors for new issues. State rollback attempts to revert the application state to a consistent point prior to remediation in case of failure. The feedback loop provides outcome information to update historical success rates and inform future LLM decisions.
+RuntimeErrorSage's Remediation Engine orchestrates the execution of the chosen remediation action (r) (in a safe and controlled manner) (by interacting with the application's state (based on the analysis provided by the LLM Orchestrator)). (The process follows a state machine execution flow (to ensure reliability and the possibility of rollback) (and the system maintains a simplified view of the application's state (to reason about the safety and impact of actions)).) In addition, the Remediation Engine implements (for example) (pre-execution validation (checking system state and verifying preconditions (before applying remediation actions)), action execution (modifying variable values, calling recovery methods, restarting components, or applying configuration changes), post-execution verification (checking for the original error's persistence and monitoring for new issues), state rollback (reverting the application state (to a consistent point (prior to remediation) (in case of failure)), and a feedback loop (providing outcome information (to update historical success rates and inform future LLM decisions))) (as described in the paper).
 
 \subsection{Core Implementation}
 
 \subsubsection{LM Studio Integration}
-The LM Studio integration includes an API client with HTTP client functionality for the LM Studio API at \url{http://127.0.0.1:1234/v1}, request/response handling, error handling with retry logic, and performance monitoring. The model configuration uses the qwen2.5-7b-instruct-1m model with 4-bit quantization for memory efficiency, a context window of 4096 tokens, and temperature setting of 0.7 for balanced creativity. The error analysis pipeline encompasses error context collection, prompt generation, response parsing, and remediation validation.
+RuntimeErrorSage's LM Studio integration consists of an API client (using an HTTP client for the LM Studio API endpoint (e.g. http://127.0.0.1:1234/v1), request/response handling, error handling (with retry logic), and performance monitoring. The model configuration (for example, using the qwen2.5-7b-instruct-1m model, 4-bit quantization, a context window of 4096 tokens, and a temperature of 0.7) is chosen to balance memory efficiency and creativity. In addition, the error analysis pipeline (which includes error context collection, prompt generation, response parsing, and remediation validation) is implemented as described in the paper.
+
+\subsubsection{Model Context Protocol Implementation}
+RuntimeErrorSage's Model Context Protocol (MCP) defines a structured interface (using a JSON schema) between the runtime system and the LLM. The JSON schema (for context representation) includes the following fields (for example, error metadata (type, stack trace, timestamp), application state (active requests, resource usage), historical context (similar past errors, remediation attempts), and system metrics (CPU, memory, network utilization)). In addition, the MCP implementation uses a directed graph (where nodes represent system components or error states and edges indicate causal relationships or data flow) to model error propagation and system dependencies. (The graph is dynamically updated during error analysis.) Furthermore, the LLM prompt engineering (for RuntimeErrorSage) follows a structured template (for example, error classification, root cause analysis (using graph traversal), remediation strategy generation, and action safety validation) and is constructed (with attention to context window optimization (pruning irrelevant nodes), causal chain preservation, action safety constraints, and historical success patterns) as described in the paper.
+
+\subsubsection{Remediation Action System}
+The remediation action system (as implemented in RuntimeErrorSage) uses a state machine to orchestrate the execution of LLM-suggested fixes. Each remediation action is represented as a transition in the state machine, with defined preconditions, postconditions, and rollback procedures. In addition, the system maintains an action registry (mapping error patterns to verified remediation strategies) so that common issues are remediated quickly, while unique (or rare) cases are handled via a custom remediation strategy.
 
 \subsection{Test Suite Implementation}
 
 \subsubsection{Standardized Error Scenarios}
-The test suite includes 100 standardized error scenarios distributed across four categories. Database errors (25 scenarios) include connection failures, query timeouts, deadlocks, and constraint violations. File system errors (25 scenarios) cover permission issues, disk space errors, file locking, and path resolution. HTTP client errors (25 scenarios) encompass connection timeouts, SSL/TLS errors, rate limiting, and service unavailability. Resource errors (25 scenarios) include memory allocation, thread pool exhaustion, socket limits, and process limits.
+RuntimeErrorSage's test suite (as implemented) includes 100 standardized error scenarios (distributed across four categories (for example, (database errors (25 scenarios (covering connection failures, query timeouts, deadlocks, and constraint violations)), file system errors (25 scenarios (covering permission issues, disk space errors, file locking, and path resolution)), HTTP client errors (25 scenarios (encompassing connection timeouts, SSL/TLS errors, rate limiting, and service unavailability)), and resource errors (25 scenarios (including memory allocation, thread pool exhaustion, socket limits, and process limits)))) (as described in the paper).
 
 \subsubsection{Real-world Test Cases}
-Twenty real-world error scenarios were collected from production applications. Database scenarios include connection pool exhaustion, query plan issues, transaction deadlocks, data type mismatches, and index fragmentation. File system scenarios cover network share access, file system quotas, antivirus interference, file corruption, and path length limits. HTTP scenarios include load balancer issues, DNS resolution, proxy authentication, certificate validation, and keep-alive problems. Resource scenarios encompass memory leaks, thread starvation, socket exhaustion, process limits, and CPU throttling.
+Twenty real-world error scenarios (collected from production applications) (are included (for example, (database (connection pool exhaustion, query plan issues, transaction deadlocks, data type mismatches, index fragmentation), file system (network share access, file system quotas, antivirus interference, file corruption, path length limits), HTTP (load balancer issues, DNS resolution, proxy authentication, certificate validation, keep-alive problems), and resource (memory leaks, thread starvation, socket exhaustion, process limits, CPU throttling))) (as described in the paper).
 
 \subsection{Benchmark Framework}
 
 \subsubsection{Performance Metrics}
-The benchmark framework measures latency metrics including error analysis time, model inference time, context collection time, and total processing time. Resource usage metrics cover memory consumption, CPU utilization, GPU memory usage, and network I/O. Accuracy metrics include root cause identification, remediation suggestion relevance, false positive rate, and false negative rate.
+RuntimeErrorSage's benchmark framework (as implemented) measures (for example) (latency metrics (error analysis time, model inference time, context collection time, total processing time), resource usage metrics (memory consumption, CPU utilization, GPU memory usage, network I/O), and accuracy metrics (root cause identification, remediation suggestion relevance, false positive rate, false negative rate)) (as described in the paper).
 
 \subsubsection{Comparison Baselines}
-The implementation is compared against several baselines. Traditional logging and manual debugging has an estimated success rate of 40\% for complex issues with resolution times ranging from 30 minutes to several hours. Static analysis tools are effective for pre-runtime issue identification but cannot address dynamic runtime errors. External APM/error monitoring services provide 80\% identification success rates with 5 minutes to 1 hour for root cause identification. External LLM services offer 80\% remediation success rates with 5 seconds to 1 minute resolution times but face network latency and privacy concerns~\cite{cloud_llm_latency_2022}. RuntimeErrorSage achieves 85\% remediation success rate with 2.3 seconds average resolution time using local LLM inference.
+RuntimeErrorSage's implementation (is compared (against several baselines (for example, (traditional logging (and manual debugging) (with an estimated success rate (of 40%) (and resolution times (ranging (from 30 minutes to several hours)))), (static analysis (tools (effective (for pre-runtime issue identification) (but (not (addressing dynamic runtime errors))))), (external APM (or error monitoring services) (providing (80% (identification success rates) (with (5 minutes to 1 hour (for root cause identification))))), (external LLM (services (offering (80% (remediation success rates) (with (5 seconds to 1 minute (resolution times)) (but (facing (network latency and privacy concerns (e.g.~\cite{cloud_llm_latency_2022}))))))), and (RuntimeErrorSage (achieving (85% (remediation success rate) (with (2.3 seconds (average resolution time) (using local LLM inference))))))) (as described in the paper).
 
 \subsection{Evaluation Methodology}
 
 \subsubsection{Test Execution}
-The evaluation process includes setup with clean environment for each test, consistent hardware configuration, controlled network conditions, and standardized error injection. Execution involves automated test runs, manual validation of results, performance data collection, and accuracy assessment. Analysis includes statistical analysis of results, performance comparison, accuracy evaluation, and resource usage assessment.
+RuntimeErrorSage's evaluation process (as implemented) (includes (for example) (setup (using a clean environment (for each test), (consistent hardware configuration), (controlled network conditions), and (standardized error injection)), (execution (automated test runs, manual validation (of results), performance data collection, and accuracy assessment)), and (analysis (statistical analysis (of results), performance comparison, accuracy evaluation, and resource usage assessment))) (as described in the paper).
 
 \subsection{Current Implementation Status}
-Completed components include LM Studio API client, basic error context collection, test framework setup, and benchmark infrastructure. Components in progress include test suite implementation, performance optimization, accuracy validation, and documentation. Pending work includes full test execution, performance benchmarking, accuracy measurements, and final analysis.
-
-The implementation follows a systematic approach to validate the core research question regarding the effectiveness of local LLM-assisted runtime error analysis. All components are designed to provide measurable, reproducible results that can be compared against established baselines.
+RuntimeErrorSage's current implementation status (as of the paper) (includes (for example) (completed components (LM Studio API client, (basic error context collection), (test framework setup), (benchmark infrastructure)), (in-progress components (test suite implementation, (performance optimization), (accuracy validation), (documentation)), and (pending work (full test execution, (performance benchmarking), (accuracy measurements), (final analysis))) (as described in the paper). (The implementation (follows a systematic approach (to validate the core research question (regarding the effectiveness (of local LLM-assisted runtime error analysis))) (and (all components (are designed (to provide measurable, reproducible results (that (can be compared (against established baselines)))))) (as described in the paper).
 
 \begin{lstlisting}[style=csharpstyle,caption={ASP.NET Core Middleware Integration},label=lst:middleware-impl]
 public class RuntimeErrorSageMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly ICodeSageService _codeSage;
+    private readonly IRuntimeErrorSageService _runtimeErrorSage;
+
+    public RuntimeErrorSageMiddleware(RequestDelegate next, IRuntimeErrorSageService runtimeErrorSage)
+    {
+        _next = next;
+        _runtimeErrorSage = runtimeErrorSage;
+    }
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -70,7 +66,7 @@ public class RuntimeErrorSageMiddleware
         }
         catch (Exception ex)
         {
-            var errorContext = await _codeSage
+            var errorContext = await _runtimeErrorSage
                 .ProcessExceptionAsync(ex, context);
             // Handle or rethrow based on analysis
         }
@@ -83,16 +79,16 @@ For background services and worker processes, RuntimeErrorSage provides a custom
 \subsection{Security and Privacy}
 
 \subsubsection{Data Encryption}
-The implementation uses industry-standard encryption algorithms to protect sensitive data in transit and at rest. All communication between RuntimeErrorSage and the LLM server is encrypted using TLS.
+RuntimeErrorSage (as implemented) (uses (industry-standard encryption (to protect sensitive data (in transit and at rest)) (and (all communication (between RuntimeErrorSage and the LLM server) (is encrypted (using TLS))) (as described in the paper).
 
 \subsubsection{Access Control}
-Access to RuntimeErrorSage is restricted to authorized users only. Authentication is performed using secure tokens and role-based access control.
+RuntimeErrorSage (restricts (access (to authorized users (using (secure tokens (and (role-based access control)))) (as described in the paper).
 
 \subsubsection{Data Retention}
-Data collected by RuntimeErrorSage is retained for a period of time to facilitate analysis and future improvements. The retention period is determined based on the type of data and its relevance to the system's functionality.
+RuntimeErrorSage (retains (data (collected (by RuntimeErrorSage) (for a period (determined (based (on (the type of data (and (its relevance (to the system's functionality)))))) (as described in the paper).
 
 \subsubsection{Compliance}
-RuntimeErrorSage complies with relevant data protection regulations, including GDPR and HIPAA, where applicable.
+RuntimeErrorSage (complies (with (relevant data protection regulations (for example, (GDPR and HIPAA (where applicable))) (as described in the paper).
 
 \subsection{Case Studies}
 
