@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Common;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
@@ -9,19 +10,29 @@ namespace RuntimeErrorSage.Core.Models.Remediation
     public class RemediationStepResult
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the step.
+        /// Gets or sets the unique identifier for this result.
         /// </summary>
-        public string StepId { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the step that was executed.
+        /// </summary>
+        public RemediationStep Step { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the status of the step execution.
         /// </summary>
-        public RemediationStatus Status { get; set; }
+        public RemediationStepStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the step was successful.
+        /// </summary>
+        public bool IsSuccessful { get; set; }
 
         /// <summary>
         /// Gets or sets the start time of the step execution.
         /// </summary>
-        public DateTime StartTime { get; set; }
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the end time of the step execution.
@@ -29,28 +40,48 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public DateTime? EndTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration of the step execution in milliseconds.
+        /// Gets or sets the duration in seconds.
         /// </summary>
-        public double Duration => EndTime.HasValue ? (EndTime.Value - StartTime).TotalMilliseconds : 0;
+        public double Duration { get; set; }
 
         /// <summary>
-        /// Gets or sets the error message if the step failed.
+        /// Gets or sets any error message if the step failed.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string? ErrorMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the exception that occurred during step execution.
+        /// Gets or sets any warnings generated during execution.
         /// </summary>
-        public Exception Exception { get; set; }
+        public List<string> Warnings { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the output produced by the step.
+        /// Gets or sets the execution logs.
+        /// </summary>
+        public List<string> Logs { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets any output produced by the step.
         /// </summary>
         public Dictionary<string, object> Output { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets additional metadata about the step execution.
+        /// Gets or sets any validation results.
         /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public List<ValidationResult> ValidationResults { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets whether rollback is available for this step.
+        /// </summary>
+        public bool CanRollback { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether manual intervention is required.
+        /// </summary>
+        public bool RequiresManualIntervention { get; set; }
+
+        /// <summary>
+        /// Gets or sets any retry attempts made.
+        /// </summary>
+        public int RetryAttempts { get; set; }
     }
 } 

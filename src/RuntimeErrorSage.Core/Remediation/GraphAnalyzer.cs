@@ -19,15 +19,13 @@ namespace RuntimeErrorSage.Core.Remediation
 
         public GraphAnalyzer(ILogger<GraphAnalyzer> logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            ArgumentNullException.ThrowIfNull(logger);
+            _logger = logger;
         }
 
         public async Task<GraphAnalysis> AnalyzeContextGraphAsync(ErrorContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {

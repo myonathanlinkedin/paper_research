@@ -35,21 +35,29 @@ namespace RuntimeErrorSage.Core.Analysis
             IModel model,
             IStorage storage)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _mcpClient = mcpClient ?? throw new ArgumentNullException(nameof(mcpClient));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(mcpClient);
+            ArgumentNullException.ThrowIfNull(options);
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(storage);
+            
+            _logger = logger;
+            _mcpClient = mcpClient;
+            _options = options.Value;
             _patternCache = new ConcurrentDictionary<string, List<ErrorPattern>>();
             _patterns = new List<ErrorPattern>();
-            _model = model ?? throw new ArgumentNullException(nameof(model));
-            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _model = model;
+            _storage = storage;
         }
 
         public async Task<ErrorPattern?> IdentifyPatternAsync(ErrorContext context)
         {
+            ArgumentNullException.ThrowIfNull(context, nameof(context)); // Validate parameter is non-null
+
             try
             {
                 // Retrieve known patterns for the service
-                var knownPatterns = await _mcpClient.GetErrorPatternsAsync(context.ServiceName);
+                var knownPatterns = await _mcpClient.GetErrorPatternsAsync(context.ServiceName).ConfigureAwait(false);
 
                 // Find a matching pattern
                 var matchingPattern = FindMatchingPattern(context, knownPatterns);
@@ -98,7 +106,7 @@ namespace RuntimeErrorSage.Core.Analysis
             try
             {
                 // Get patterns for the service
-                var patterns = await GetPatternsAsync(serviceName);
+                var patterns = await GetPatternsAsync(serviceName).ConfigureAwait(true);
 
                 // Find matching pattern
                 return patterns.FirstOrDefault(p => 

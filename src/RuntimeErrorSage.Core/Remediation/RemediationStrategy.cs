@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Execution;
+using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
-using RuntimeErrorSage.Core.Remediation.Models.Validation;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -29,8 +27,8 @@ namespace RuntimeErrorSage.Core.Remediation
             string description,
             int priority)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(validator);
             
             if (string.IsNullOrEmpty(name))
             {
@@ -47,28 +45,76 @@ namespace RuntimeErrorSage.Core.Remediation
                 throw new ArgumentException("Strategy priority must be between 1 and 5", nameof(priority));
             }
 
+            _logger = logger;
+            _validator = validator;
             Name = name;
             Description = description;
             Priority = priority;
             Parameters = new Dictionary<string, string>();
         }
 
-        public virtual async Task<RemediationValidationResult> ValidateAsync(ErrorContext context)
+        public virtual bool CanHandle(ErrorAnalysisResult analysisResult)
         {
-            if (context == null)
+            ArgumentNullException.ThrowIfNull(analysisResult);
+
+            // Default implementation - override in derived classes
+            return false;
+        }
+
+        public virtual async Task<RemediationExecution> ApplyAsync(ErrorAnalysisResult analysisResult)
+        {
+            ArgumentNullException.ThrowIfNull(analysisResult);
+
+            var execution = new RemediationExecution
             {
-                throw new ArgumentNullException(nameof(context));
-            }
+                StartTime = DateTime.UtcNow,
+                Status = RemediationExecutionStatus.Running
+            };
 
             try
             {
-                return await _validator.ValidateStrategyAsync(this, context);
+                var result = await ExecuteAsync(analysisResult.Context);
+                execution.EndTime = DateTime.UtcNow;
+                execution.Status = result.Success ? RemediationExecutionStatus.Completed : RemediationExecutionStatus.Failed;
+                execution.Error = result.Error;
+                return execution;
+            }
+            catch (Exception ex)
+            {
+                execution.EndTime = DateTime.UtcNow;
+                execution.Status = RemediationExecutionStatus.Failed;
+                execution.Error = ex.Message;
+                return execution;
+            }
+        }
+
+        public virtual async Task<bool> ValidateAsync(ErrorAnalysisResult analysisResult)
+        {
+            ArgumentNullException.ThrowIfNull(analysisResult);
+
+            try
+            {
+                var validationResult = await _validator.ValidateStrategyAsync(this, analysisResult.Context);
+                return validationResult.IsValid;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error validating strategy {StrategyName}", Name);
-                throw;
+                return false;
             }
+        }
+
+        public virtual async Task<RemediationImpact> GetEstimatedImpactAsync(ErrorAnalysisResult analysisResult)
+        {
+            ArgumentNullException.ThrowIfNull(analysisResult);
+
+            // Default implementation - override in derived classes
+            return new RemediationImpact
+            {
+                Scope = RemediationActionImpactScope.Unknown,
+                Severity = RemediationActionSeverity.Unknown,
+                Description = "Impact not estimated"
+            };
         }
 
         public abstract Task<RemediationResult> ExecuteAsync(ErrorContext context);

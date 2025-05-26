@@ -1,206 +1,157 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Validation;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
     /// <summary>
-    /// Represents a remediation action that can be taken to address an error.
+    /// Represents a remediation action.
     /// </summary>
     public class RemediationAction
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the action.
+        /// Gets or sets the action identifier.
         /// </summary>
         public string ActionId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the name of the action.
+        /// Gets or sets the action name.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the description of the action.
+        /// Gets or sets the action description.
         /// </summary>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the action.
+        /// Gets or sets the action type.
         /// </summary>
         public RemediationActionType Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the priority of the action.
+        /// Gets or sets the action priority.
         /// </summary>
         public RemediationActionPriority Priority { get; set; }
 
         /// <summary>
-        /// Gets or sets the impact scope of the action.
-        /// </summary>
-        public RemediationActionImpactScope ImpactScope { get; set; }
-
-        /// <summary>
-        /// Gets or sets the severity level of the action.
+        /// Gets or sets the action severity.
         /// </summary>
         public RemediationActionSeverity Severity { get; set; }
 
         /// <summary>
-        /// Gets or sets the parameters required for the action.
+        /// Gets or sets the action impact scope.
+        /// </summary>
+        public RemediationActionImpactScope ImpactScope { get; set; }
+
+        /// <summary>
+        /// Gets or sets the action parameters.
         /// </summary>
         public Dictionary<string, object> Parameters { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the validation rules for the action.
+        /// Gets or sets whether the action requires manual intervention.
         /// </summary>
-        public List<RemediationActionValidationRule> ValidationRules { get; set; } = new();
+        public bool RequiresManualIntervention { get; set; }
 
         /// <summary>
-        /// Gets or sets the rollback action if this action fails.
+        /// Gets or sets whether the action can be rolled back.
         /// </summary>
-        public RemediationAction RollbackAction { get; set; }
+        public bool CanRollback { get; set; }
 
         /// <summary>
-        /// Gets or sets the timeout for the action in seconds.
+        /// Gets or sets the action dependencies.
         /// </summary>
-        public int TimeoutSeconds { get; set; } = 30;
+        public List<string> Dependencies { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the maximum number of retries for the action.
+        /// Gets or sets the action timeout in seconds.
         /// </summary>
-        public int MaxRetries { get; set; } = 3;
+        public int TimeoutSeconds { get; set; } = 300;
 
         /// <summary>
-        /// Gets or sets the delay between retries in seconds.
+        /// Gets or sets the action retry count.
         /// </summary>
-        public int RetryDelaySeconds { get; set; } = 5;
+        public int RetryCount { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the action requires confirmation.
+        /// Gets or sets the action retry delay in seconds.
         /// </summary>
-        public bool RequiresConfirmation { get; set; }
+        public int RetryDelaySeconds { get; set; } = 30;
 
         /// <summary>
-        /// Gets or sets the confirmation message.
+        /// Gets or sets the action validation rules.
         /// </summary>
-        public string ConfirmationMessage { get; set; }
+        public List<ValidationRule> ValidationRules { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets additional metadata for the action.
+        /// Gets or sets the action rollback steps.
+        /// </summary>
+        public List<RollbackStep> RollbackSteps { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the action metadata.
         /// </summary>
         public Dictionary<string, object> Metadata { get; set; } = new();
     }
 
     /// <summary>
-    /// Defines the types of remediation actions.
+    /// Specifies the type of remediation action.
     /// </summary>
     public enum RemediationActionType
     {
         /// <summary>
-        /// A code fix action.
+        /// Automated action.
         /// </summary>
-        CodeFix,
+        Automated,
 
         /// <summary>
-        /// A configuration update action.
+        /// Manual action.
         /// </summary>
-        ConfigUpdate,
+        Manual,
 
         /// <summary>
-        /// A resource allocation action.
+        /// Hybrid action.
         /// </summary>
-        ResourceAllocation,
-
-        /// <summary>
-        /// A service restart action.
-        /// </summary>
-        ServiceRestart,
-
-        /// <summary>
-        /// A dependency update action.
-        /// </summary>
-        DependencyUpdate,
-
-        /// <summary>
-        /// A custom action.
-        /// </summary>
-        Custom
+        Hybrid
     }
 
     /// <summary>
-    /// Defines the priority levels for remediation actions.
+    /// Specifies the priority of a remediation action.
     /// </summary>
     public enum RemediationActionPriority
     {
         /// <summary>
-        /// Critical priority.
+        /// Low priority.
         /// </summary>
-        Critical = 1,
-
-        /// <summary>
-        /// High priority.
-        /// </summary>
-        High = 2,
+        Low,
 
         /// <summary>
         /// Medium priority.
         /// </summary>
-        Medium = 3,
+        Medium,
 
         /// <summary>
-        /// Low priority.
+        /// High priority.
         /// </summary>
-        Low = 4,
+        High,
 
         /// <summary>
-        /// No priority.
+        /// Critical priority.
         /// </summary>
-        None = 5
+        Critical
     }
 
     /// <summary>
-    /// Defines the impact scope of remediation actions.
-    /// </summary>
-    public enum RemediationActionImpactScope
-    {
-        /// <summary>
-        /// Global impact scope.
-        /// </summary>
-        Global,
-
-        /// <summary>
-        /// Service-level impact scope.
-        /// </summary>
-        Service,
-
-        /// <summary>
-        /// Component-level impact scope.
-        /// </summary>
-        Component,
-
-        /// <summary>
-        /// Operation-level impact scope.
-        /// </summary>
-        Operation,
-
-        /// <summary>
-        /// Instance-level impact scope.
-        /// </summary>
-        Instance
-    }
-
-    /// <summary>
-    /// Defines the severity levels for remediation actions.
+    /// Specifies the severity of a remediation action.
     /// </summary>
     public enum RemediationActionSeverity
     {
         /// <summary>
-        /// Critical severity.
+        /// Low severity.
         /// </summary>
-        Critical,
-
-        /// <summary>
-        /// High severity.
-        /// </summary>
-        High,
+        Low,
 
         /// <summary>
         /// Medium severity.
@@ -208,54 +159,167 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         Medium,
 
         /// <summary>
-        /// Low severity.
+        /// High severity.
         /// </summary>
-        Low,
+        High,
 
         /// <summary>
-        /// No severity.
+        /// Critical severity.
         /// </summary>
-        None
+        Critical
+    }
+
+    /// <summary>
+    /// Specifies the impact scope of a remediation action.
+    /// </summary>
+    public enum RemediationActionImpactScope
+    {
+        /// <summary>
+        /// Local impact.
+        /// </summary>
+        Local,
+
+        /// <summary>
+        /// Component impact.
+        /// </summary>
+        Component,
+
+        /// <summary>
+        /// Service impact.
+        /// </summary>
+        Service,
+
+        /// <summary>
+        /// System impact.
+        /// </summary>
+        System
+    }
+
+    /// <summary>
+    /// Represents the status of a remediation action.
+    /// </summary>
+    public enum ActionStatus
+    {
+        Pending,
+        InProgress,
+        Completed,
+        Failed,
+        Cancelled,
+        TimedOut,
+        Unknown
     }
 
     /// <summary>
     /// Represents a validation rule for a remediation action.
     /// </summary>
-    public class RemediationActionValidationRule
+    public class ValidationRule
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the rule.
+        /// Gets or sets the rule identifier.
         /// </summary>
-        public string RuleId { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the name of the rule.
+        /// Gets or sets the rule description.
         /// </summary>
-        public string Name { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the description of the rule.
+        /// Gets or sets the rule condition.
         /// </summary>
-        public string Description { get; set; }
+        public string Condition { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the validation condition.
+        /// Gets or sets the rule parameters.
         /// </summary>
-        public string Condition { get; set; }
+        public Dictionary<string, object> Parameters { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Represents an execution step for a remediation action.
+    /// </summary>
+    public class ExecutionStep
+    {
+        /// <summary>
+        /// Gets or sets the step identifier.
+        /// </summary>
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the error message if validation fails.
+        /// Gets or sets the step description.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets whether the rule is required.
+        /// Gets or sets the step command.
         /// </summary>
-        public bool IsRequired { get; set; }
+        public string Command { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the priority of the rule.
+        /// Gets or sets the step parameters.
         /// </summary>
-        public RemediationActionPriority Priority { get; set; }
+        public Dictionary<string, object> Parameters { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the step order.
+        /// </summary>
+        public int Order { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a retry policy for a remediation action.
+    /// </summary>
+    public class RetryPolicy
+    {
+        /// <summary>
+        /// Gets or sets the maximum number of retries.
+        /// </summary>
+        public int MaxRetries { get; set; }
+
+        /// <summary>
+        /// Gets or sets the delay between retries.
+        /// </summary>
+        public TimeSpan RetryDelay { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to use exponential backoff.
+        /// </summary>
+        public bool UseExponentialBackoff { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum delay between retries.
+        /// </summary>
+        public TimeSpan? MaxRetryDelay { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a rollback step for a remediation action.
+    /// </summary>
+    public class RollbackStep
+    {
+        /// <summary>
+        /// Gets or sets the step identifier.
+        /// </summary>
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the step description.
+        /// </summary>
+        public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the step command.
+        /// </summary>
+        public string Command { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the step parameters.
+        /// </summary>
+        public Dictionary<string, object> Parameters { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the step order.
+        /// </summary>
+        public int Order { get; set; }
     }
 } 

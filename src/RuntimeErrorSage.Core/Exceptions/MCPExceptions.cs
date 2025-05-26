@@ -8,6 +8,13 @@ namespace RuntimeErrorSage.Core.Exceptions
     public class MCPPublishingException : Exception
     {
         public MCPPublishingException(string message, Exception inner) : base(message, inner) { }
+        public MCPPublishingException()
+        {
+        }
+
+        public MCPPublishingException(string message) : base(message)
+        {
+        }
     }
 
     /// <summary>
@@ -16,6 +23,13 @@ namespace RuntimeErrorSage.Core.Exceptions
     public class MCPRetrievalException : Exception
     {
         public MCPRetrievalException(string message, Exception inner) : base(message, inner) { }
+        public MCPRetrievalException()
+        {
+        }
+
+        public MCPRetrievalException(string message) : base(message)
+        {
+        }
     }
 
     /// <summary>
@@ -24,5 +38,12 @@ namespace RuntimeErrorSage.Core.Exceptions
     public class MCPSubscriptionException : Exception
     {
         public MCPSubscriptionException(string message, Exception inner) : base(message, inner) { }
+        public MCPSubscriptionException()
+        {
+        }
+
+        public MCPSubscriptionException(string message) : base(message)
+        {
+        }
     }
 } 

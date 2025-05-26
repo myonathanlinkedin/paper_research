@@ -7,5 +7,8 @@ namespace RuntimeErrorSage.Core.Exceptions
         public LMStudioException(string message) : base(message) { }
         public LMStudioException(string message, Exception innerException) 
             : base(message, innerException) { }
+        public LMStudioException()
+        {
+        }
     }
 } 

@@ -1,13 +1,30 @@
 using System;
+using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Core.Models.Metrics
+namespace RuntimeErrorSage.Core.Models.Metrics;
+
+/// <summary>
+/// Represents a single metric value with metadata.
+/// </summary>
+public sealed class MetricValue
 {
-    public class MetricValue
-    {
-        public string Name { get; set; }
-        public object Value { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string Unit { get; set; }
-        public Dictionary<string, string> Tags { get; set; }
-    }
+    /// <summary>
+    /// Gets the timestamp when the metric was recorded.
+    /// </summary>
+    public required DateTime Timestamp { get; init; }
+
+    /// <summary>
+    /// Gets the numeric value of the metric.
+    /// </summary>
+    public required double Value { get; init; }
+
+    /// <summary>
+    /// Gets the name of the metric.
+    /// </summary>
+    public required string Name { get; init; }
+
+    /// <summary>
+    /// Gets the labels associated with this metric value.
+    /// </summary>
+    public required IReadOnlyDictionary<string, string> Labels { get; init; } = new Dictionary<string, string>();
 } 

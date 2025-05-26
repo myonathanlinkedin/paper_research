@@ -1,147 +1,180 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Validation;
 
-namespace RuntimeErrorSage.Core.Models.Remediation;
-
-/// <summary>
-/// Represents a step in a remediation plan.
-/// </summary>
-public class RemediationStep
+namespace RuntimeErrorSage.Core.Models.Remediation
 {
     /// <summary>
-    /// Gets or sets the unique identifier of the step.
+    /// Represents a step in a remediation plan.
     /// </summary>
-    public string StepId { get; set; } = Guid.NewGuid().ToString();
+    public class RemediationStep
+    {
+        /// <summary>
+        /// Gets or sets the step identifier.
+        /// </summary>
+        public string StepId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the step name.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step description.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step order.
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step status.
+        /// </summary>
+        public RemediationStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step action.
+        /// </summary>
+        public string Action { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step parameters.
+        /// </summary>
+        public Dictionary<string, object> Parameters { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets whether the step requires manual intervention.
+        /// </summary>
+        public bool RequiresManualIntervention { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the step can be rolled back.
+        /// </summary>
+        public bool CanRollback { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step dependencies.
+        /// </summary>
+        public List<string> Dependencies { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the step timeout in seconds.
+        /// </summary>
+        public int TimeoutSeconds { get; set; } = 300;
+
+        /// <summary>
+        /// Gets or sets the step retry count.
+        /// </summary>
+        public int RetryCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step retry delay in seconds.
+        /// </summary>
+        public int RetryDelaySeconds { get; set; } = 30;
+
+        /// <summary>
+        /// Gets or sets the step start time.
+        /// </summary>
+        public DateTime? StartTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step end time.
+        /// </summary>
+        public DateTime? EndTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step error message.
+        /// </summary>
+        public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step output.
+        /// </summary>
+        public Dictionary<string, object> Output { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the step metadata.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the step validation rules.
+        /// </summary>
+        public List<ValidationRule> ValidationRules { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the step rollback action.
+        /// </summary>
+        public string RollbackAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step rollback parameters.
+        /// </summary>
+        public Dictionary<string, object> RollbackParameters { get; set; } = new();
+    }
 
     /// <summary>
-    /// Gets or sets the plan identifier.
+    /// Represents a validation rule.
     /// </summary>
-    public string PlanId { get; set; }
+    public class ValidationRule
+    {
+        /// <summary>
+        /// Gets or sets the rule name.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rule description.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rule condition.
+        /// </summary>
+        public string Condition { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rule parameters.
+        /// </summary>
+        public Dictionary<string, object> Parameters { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets whether the rule is required.
+        /// </summary>
+        public bool IsRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rule severity.
+        /// </summary>
+        public ValidationSeverity Severity { get; set; }
+    }
 
     /// <summary>
-    /// Gets or sets the name of the step.
+    /// Specifies the validation severity.
     /// </summary>
-    public string Name { get; set; }
+    public enum ValidationSeverity
+    {
+        /// <summary>
+        /// Low severity.
+        /// </summary>
+        Low,
 
-    /// <summary>
-    /// Gets or sets the description of the step.
-    /// </summary>
-    public string Description { get; set; }
+        /// <summary>
+        /// Medium severity.
+        /// </summary>
+        Medium,
 
-    /// <summary>
-    /// Gets or sets the order of the step in the plan.
-    /// </summary>
-    public int Order { get; set; }
+        /// <summary>
+        /// High severity.
+        /// </summary>
+        High,
 
-    /// <summary>
-    /// Gets or sets the type of the step.
-    /// </summary>
-    public RemediationStepType Type { get; set; }
-
-    /// <summary>
-    /// Gets or sets the status of the step.
-    /// </summary>
-    public RemediationState Status { get; set; }
-
-    /// <summary>
-    /// Gets or sets the start time of the step.
-    /// </summary>
-    public DateTimeOffset? StartTime { get; set; }
-
-    /// <summary>
-    /// Gets or sets the end time of the step.
-    /// </summary>
-    public DateTimeOffset? EndTime { get; set; }
-
-    /// <summary>
-    /// Gets or sets the duration of the step in milliseconds.
-    /// </summary>
-    public long? DurationMs { get; set; }
-
-    /// <summary>
-    /// Gets or sets the error message if the step failed.
-    /// </summary>
-    public string ErrorMessage { get; set; }
-
-    /// <summary>
-    /// Gets or sets the exception details if the step failed.
-    /// </summary>
-    public Exception Exception { get; set; }
-
-    /// <summary>
-    /// Gets or sets the action to execute for this step.
-    /// </summary>
-    public RemediationAction Action { get; set; }
-
-    /// <summary>
-    /// Gets or sets the validation results for this step.
-    /// </summary>
-    public List<RemediationValidationResult> ValidationResults { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the number of retries attempted.
-    /// </summary>
-    public int RetryCount { get; set; }
-
-    /// <summary>
-    /// Gets or sets whether the step was rolled back.
-    /// </summary>
-    public bool WasRolledBack { get; set; }
-
-    /// <summary>
-    /// Gets or sets the rollback step if this step fails.
-    /// </summary>
-    public RemediationStep RollbackStep { get; set; }
-
-    /// <summary>
-    /// Gets or sets the dependencies for this step.
-    /// </summary>
-    public List<string> Dependencies { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the impact of the step.
-    /// </summary>
-    public RemediationImpact Impact { get; set; }
-
-    /// <summary>
-    /// Gets or sets the metadata associated with the step.
-    /// </summary>
-    public Dictionary<string, object> Metadata { get; set; } = new();
-}
-
-/// <summary>
-/// Represents the type of a remediation step.
-/// </summary>
-public enum RemediationStepType
-{
-    /// <summary>
-    /// A step that validates the current state.
-    /// </summary>
-    Validation,
-
-    /// <summary>
-    /// A step that executes a remediation action.
-    /// </summary>
-    Action,
-
-    /// <summary>
-    /// A step that verifies the remediation result.
-    /// </summary>
-    Verification,
-
-    /// <summary>
-    /// A step that rolls back changes if needed.
-    /// </summary>
-    Rollback,
-
-    /// <summary>
-    /// A step that collects metrics.
-    /// </summary>
-    MetricsCollection,
-
-    /// <summary>
-    /// A step that performs cleanup.
-    /// </summary>
-    Cleanup
+        /// <summary>
+        /// Critical severity.
+        /// </summary>
+        Critical
+    }
 } 

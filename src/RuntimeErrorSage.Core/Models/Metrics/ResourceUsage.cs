@@ -1,31 +1,32 @@
 using System;
+using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Core.Models.Metrics
 {
     /// <summary>
-    /// Represents system resource usage metrics.
+    /// Represents resource usage metrics.
     /// </summary>
     public class ResourceUsage
     {
         /// <summary>
-        /// Gets or sets the CPU usage percentage (0-100).
+        /// Gets or sets the CPU usage percentage.
         /// </summary>
-        public double CpuUsage { get; set; }
+        public double CpuUsagePercent { get; set; }
 
         /// <summary>
         /// Gets or sets the memory usage in megabytes.
         /// </summary>
-        public double MemoryUsage { get; set; }
+        public double MemoryUsageMB { get; set; }
 
         /// <summary>
-        /// Gets or sets the disk usage in megabytes.
+        /// Gets or sets the disk I/O operations per second.
         /// </summary>
-        public double DiskUsage { get; set; }
+        public double DiskIOPS { get; set; }
 
         /// <summary>
-        /// Gets or sets the network usage in megabytes per second.
+        /// Gets or sets the network bandwidth usage in megabytes per second.
         /// </summary>
-        public double NetworkUsage { get; set; }
+        public double NetworkBandwidthMBps { get; set; }
 
         /// <summary>
         /// Gets or sets the number of active threads.
@@ -38,14 +39,19 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         public int ActiveConnections { get; set; }
 
         /// <summary>
-        /// Gets or sets the timestamp when the metrics were collected.
+        /// Gets or sets the garbage collection time in milliseconds.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public double GCTimeMs { get; set; }
 
         /// <summary>
-        /// Gets or sets any additional resource metrics.
+        /// Gets or sets the timestamp when these metrics were recorded.
         /// </summary>
-        public Dictionary<string, object> AdditionalMetrics { get; set; } = new();
+        public DateTime RecordedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets additional resource metrics.
+        /// </summary>
+        public Dictionary<string, double> AdditionalMetrics { get; set; } = new();
 
         /// <summary>
         /// Creates a new instance of ResourceUsage with the current system metrics.
@@ -54,37 +60,38 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         {
             return new ResourceUsage
             {
-                CpuUsage = GetCpuUsage(),
-                MemoryUsage = GetMemoryUsage(),
-                DiskUsage = GetDiskUsage(),
-                NetworkUsage = GetNetworkUsage(),
+                CpuUsagePercent = GetCpuUsagePercent(),
+                MemoryUsageMB = GetMemoryUsageMB(),
+                DiskIOPS = GetDiskIOPS(),
+                NetworkBandwidthMBps = GetNetworkBandwidthMBps(),
                 ActiveThreads = GetActiveThreads(),
                 ActiveConnections = GetActiveConnections(),
-                Timestamp = DateTime.UtcNow
+                GCTimeMs = GetGCTimeMs(),
+                RecordedAt = DateTime.UtcNow
             };
         }
 
-        private static double GetCpuUsage()
+        private static double GetCpuUsagePercent()
         {
             // TODO: Implement actual CPU usage measurement
             return 0;
         }
 
-        private static double GetMemoryUsage()
+        private static double GetMemoryUsageMB()
         {
             // TODO: Implement actual memory usage measurement
             return 0;
         }
 
-        private static double GetDiskUsage()
+        private static double GetDiskIOPS()
         {
-            // TODO: Implement actual disk usage measurement
+            // TODO: Implement actual disk I/O operations measurement
             return 0;
         }
 
-        private static double GetNetworkUsage()
+        private static double GetNetworkBandwidthMBps()
         {
-            // TODO: Implement actual network usage measurement
+            // TODO: Implement actual network bandwidth measurement
             return 0;
         }
 
@@ -97,6 +104,12 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         private static int GetActiveConnections()
         {
             // TODO: Implement actual connection count measurement
+            return 0;
+        }
+
+        private static double GetGCTimeMs()
+        {
+            // TODO: Implement actual garbage collection time measurement
             return 0;
         }
     }

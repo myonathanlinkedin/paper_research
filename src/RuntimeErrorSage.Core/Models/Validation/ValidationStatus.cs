@@ -1,29 +1,14 @@
 namespace RuntimeErrorSage.Core.Models.Validation;
 
 /// <summary>
-/// Defines the possible validation statuses.
+/// Defines validation status values.
 /// </summary>
 public enum ValidationStatus
 {
     /// <summary>
-    /// Validation passed successfully.
+    /// Validation has not been performed.
     /// </summary>
-    Passed,
-
-    /// <summary>
-    /// Validation failed.
-    /// </summary>
-    Failed,
-
-    /// <summary>
-    /// Validation resulted in a warning.
-    /// </summary>
-    Warning,
-
-    /// <summary>
-    /// Validation was skipped.
-    /// </summary>
-    Skipped,
+    NotValidated,
 
     /// <summary>
     /// Validation is in progress.
@@ -31,7 +16,22 @@ public enum ValidationStatus
     InProgress,
 
     /// <summary>
-    /// Validation status is unknown.
+    /// Validation passed successfully.
     /// </summary>
-    Unknown
+    Valid,
+
+    /// <summary>
+    /// Validation failed.
+    /// </summary>
+    Invalid,
+
+    /// <summary>
+    /// Validation was skipped.
+    /// </summary>
+    Skipped,
+
+    /// <summary>
+    /// Validation encountered an error.
+    /// </summary>
+    Error
 } 

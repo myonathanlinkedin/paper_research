@@ -1,43 +1,120 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.Remediation;
 
 namespace RuntimeErrorSage.Core.Models.Error
 {
     /// <summary>
-    /// Represents the result of an error analysis.
+    /// Represents the result of analyzing a runtime error.
     /// </summary>
     public class ErrorAnalysisResult
     {
         /// <summary>
-        /// Gets or sets the analysis identifier.
+        /// Gets or sets the unique identifier for this analysis.
         /// </summary>
-        public string AnalysisId { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the correlation identifier.
+        /// Gets or sets the ID of the analyzed error.
         /// </summary>
-        public string CorrelationId { get; set; } = Guid.NewGuid().ToString();
+        public string ErrorId { get; set; }
 
         /// <summary>
-        /// Gets or sets the timestamp when the analysis was created.
+        /// Gets or sets the timestamp of the analysis.
         /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the timestamp when the analysis was last updated.
+        /// Gets or sets the root cause of the error.
         /// </summary>
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public string RootCause { get; set; }
 
         /// <summary>
-        /// Gets or sets the error identifier.
+        /// Gets or sets the error classification.
         /// </summary>
-        public string ErrorId { get; set; } = string.Empty;
+        public string Classification { get; set; }
 
         /// <summary>
-        /// Gets or sets the error context identifier.
+        /// Gets or sets the error severity.
         /// </summary>
-        public string ContextId { get; set; } = string.Empty;
+        public ErrorSeverity Severity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error category.
+        /// </summary>
+        public ErrorCategory Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the impact level.
+        /// </summary>
+        public ImpactLevel Impact { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confidence score of the analysis.
+        /// </summary>
+        public double ConfidenceScore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of related errors.
+        /// </summary>
+        public List<RelatedError> RelatedErrors { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of affected components.
+        /// </summary>
+        public List<string> AffectedComponents { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of potential fixes.
+        /// </summary>
+        public List<PotentialFix> PotentialFixes { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of prevention measures.
+        /// </summary>
+        public List<PreventionMeasure> PreventionMeasures { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the dependency graph analysis.
+        /// </summary>
+        public GraphAnalysisResult GraphAnalysis { get; set; }
+
+        /// <summary>
+        /// Gets or sets additional analysis metrics.
+        /// </summary>
+        public Dictionary<string, double> Metrics { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the correlation ID for tracing purposes.
+        /// </summary>
+        public string CorrelationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confidence level.
+        /// </summary>
+        public double Confidence { get; set; }
+
+        /// <summary>
+        /// Gets or sets the suggested remediation actions.
+        /// </summary>
+        public List<RemediationAction> SuggestedActions { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets additional metadata.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the natural language explanation.
+        /// </summary>
+        public string NaturalLanguageExplanation { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the analysis duration.
+        /// </summary>
+        public TimeSpan AnalysisDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the analysis status.
@@ -45,295 +122,210 @@ namespace RuntimeErrorSage.Core.Models.Error
         public AnalysisStatus Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the analysis score.
+        /// Gets or sets the analysis version.
         /// </summary>
-        public double Score { get; set; }
+        public string AnalysisVersion { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the analysis confidence.
+        /// Gets or sets the analysis model used.
         /// </summary>
-        public double Confidence { get; set; }
+        public string AnalysisModel { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the analysis threshold.
+        /// Gets or sets the analysis parameters.
         /// </summary>
-        public double Threshold { get; set; }
+        public Dictionary<string, object> AnalysisParameters { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the analysis duration in milliseconds.
+        /// Gets or sets the analysis dependencies.
         /// </summary>
-        public double DurationMs { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analysis error message.
-        /// </summary>
-        public string? ErrorMessage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analysis error code.
-        /// </summary>
-        public string? ErrorCode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analysis error details.
-        /// </summary>
-        public string? ErrorDetails { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analysis error stack trace.
-        /// </summary>
-        public string? StackTrace { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analysis error inner exception.
-        /// </summary>
-        public Exception? InnerException { get; set; }
+        public List<string> AnalysisDependencies { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the analysis tags.
         /// </summary>
-        public List<string> Tags { get; set; } = new();
+        public Dictionary<string, string> AnalysisTags { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the analysis metadata.
+        /// Gets or sets the analysis metrics.
         /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public Dictionary<string, double> AnalysisMetrics { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the analysis owner.
+        /// Gets or sets the analysis context.
         /// </summary>
-        public string? Owner { get; set; }
+        public Dictionary<string, object> AnalysisContext { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Represents a related error.
+    /// </summary>
+    public class RelatedError
+    {
+        /// <summary>
+        /// Gets or sets the ID of the related error.
+        /// </summary>
+        public string ErrorId { get; set; }
 
         /// <summary>
-        /// Gets or sets the analysis assignee.
+        /// Gets or sets the relationship type.
         /// </summary>
-        public string? Assignee { get; set; }
+        public string RelationType { get; set; }
 
         /// <summary>
-        /// Gets or sets the analysis reviewer.
+        /// Gets or sets the similarity score.
         /// </summary>
-        public string? Reviewer { get; set; }
+        public double SimilarityScore { get; set; }
 
         /// <summary>
-        /// Gets or sets the analysis approver.
+        /// Gets or sets additional relationship details.
         /// </summary>
-        public string? Approver { get; set; }
+        public Dictionary<string, object> Details { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Represents a potential fix for an error.
+    /// </summary>
+    public class PotentialFix
+    {
+        /// <summary>
+        /// Gets or sets the unique identifier for this fix.
+        /// </summary>
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the analysis resource usage.
+        /// Gets or sets the description of the fix.
         /// </summary>
-        public ResourceUsage ResourceUsage { get; set; } = new();
+        public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the analysis validation results.
+        /// Gets or sets the implementation steps.
         /// </summary>
-        public List<ValidationResult> ValidationResults { get; set; } = new();
+        public List<string> Steps { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the analysis remediation results.
+        /// Gets or sets the estimated complexity.
         /// </summary>
-        public List<RemediationResult> RemediationResults { get; set; } = new();
+        public FixComplexity Complexity { get; set; }
 
         /// <summary>
-        /// Gets or sets the analysis connection status.
+        /// Gets or sets the estimated success probability.
         /// </summary>
-        public ConnectionStatus ConnectionStatus { get; set; } = new();
+        public double SuccessProbability { get; set; }
 
         /// <summary>
-        /// Gets or sets the analysis context history.
+        /// Gets or sets the potential risks.
         /// </summary>
-        public List<AnalysisContextHistory> ContextHistory { get; set; } = new();
+        public List<string> Risks { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Represents a prevention measure.
+    /// </summary>
+    public class PreventionMeasure
+    {
+        /// <summary>
+        /// Gets or sets the unique identifier for this measure.
+        /// </summary>
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the analysis status.
+        /// Gets or sets the description of the measure.
         /// </summary>
-        public enum AnalysisStatus
-        {
-            /// <summary>
-            /// The analysis has been created.
-            /// </summary>
-            Created,
-
-            /// <summary>
-            /// The analysis is being validated.
-            /// </summary>
-            Validating,
-
-            /// <summary>
-            /// The analysis has been validated.
-            /// </summary>
-            Validated,
-
-            /// <summary>
-            /// The analysis validation has failed.
-            /// </summary>
-            ValidationFailed,
-
-            /// <summary>
-            /// The analysis is being approved.
-            /// </summary>
-            Approving,
-
-            /// <summary>
-            /// The analysis has been approved.
-            /// </summary>
-            Approved,
-
-            /// <summary>
-            /// The analysis approval has failed.
-            /// </summary>
-            ApprovalFailed,
-
-            /// <summary>
-            /// The analysis is being scheduled.
-            /// </summary>
-            Scheduling,
-
-            /// <summary>
-            /// The analysis has been scheduled.
-            /// </summary>
-            Scheduled,
-
-            /// <summary>
-            /// The analysis scheduling has failed.
-            /// </summary>
-            SchedulingFailed,
-
-            /// <summary>
-            /// The analysis is being executed.
-            /// </summary>
-            Executing,
-
-            /// <summary>
-            /// The analysis has been executed.
-            /// </summary>
-            Executed,
-
-            /// <summary>
-            /// The analysis execution has failed.
-            /// </summary>
-            ExecutionFailed,
-
-            /// <summary>
-            /// The analysis is being rolled back.
-            /// </summary>
-            RollingBack,
-
-            /// <summary>
-            /// The analysis has been rolled back.
-            /// </summary>
-            RolledBack,
-
-            /// <summary>
-            /// The analysis rollback has failed.
-            /// </summary>
-            RollbackFailed,
-
-            /// <summary>
-            /// The analysis is being cancelled.
-            /// </summary>
-            Cancelling,
-
-            /// <summary>
-            /// The analysis has been cancelled.
-            /// </summary>
-            Cancelled,
-
-            /// <summary>
-            /// The analysis cancellation has failed.
-            /// </summary>
-            CancellationFailed,
-
-            /// <summary>
-            /// The analysis is being paused.
-            /// </summary>
-            Pausing,
-
-            /// <summary>
-            /// The analysis has been paused.
-            /// </summary>
-            Paused,
-
-            /// <summary>
-            /// The analysis pause has failed.
-            /// </summary>
-            PauseFailed,
-
-            /// <summary>
-            /// The analysis is being resumed.
-            /// </summary>
-            Resuming,
-
-            /// <summary>
-            /// The analysis has been resumed.
-            /// </summary>
-            Resumed,
-
-            /// <summary>
-            /// The analysis resume has failed.
-            /// </summary>
-            ResumeFailed,
-
-            /// <summary>
-            /// The analysis is being completed.
-            /// </summary>
-            Completing,
-
-            /// <summary>
-            /// The analysis has been completed.
-            /// </summary>
-            Completed,
-
-            /// <summary>
-            /// The analysis completion has failed.
-            /// </summary>
-            CompletionFailed,
-
-            /// <summary>
-            /// The analysis is unknown.
-            /// </summary>
-            Unknown
-        }
+        public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the analysis context history.
+        /// Gets or sets the implementation steps.
         /// </summary>
-        public class AnalysisContextHistory
-        {
-            /// <summary>
-            /// Gets or sets the history identifier.
-            /// </summary>
-            public string HistoryId { get; set; } = Guid.NewGuid().ToString();
+        public List<string> Steps { get; set; } = new();
 
-            /// <summary>
-            /// Gets or sets the history timestamp.
-            /// </summary>
-            public DateTime Timestamp { get; set; }
+        /// <summary>
+        /// Gets or sets the priority level.
+        /// </summary>
+        public PreventionPriority Priority { get; set; }
 
-            /// <summary>
-            /// Gets or sets the history action.
-            /// </summary>
-            public string Action { get; set; } = string.Empty;
+        /// <summary>
+        /// Gets or sets the estimated effectiveness.
+        /// </summary>
+        public double Effectiveness { get; set; }
 
-            /// <summary>
-            /// Gets or sets the history details.
-            /// </summary>
-            public string? Details { get; set; }
+        /// <summary>
+        /// Gets or sets the implementation cost.
+        /// </summary>
+        public ImplementationCost Cost { get; set; }
+    }
 
-            /// <summary>
-            /// Gets or sets the history user.
-            /// </summary>
-            public string? User { get; set; }
+    /// <summary>
+    /// Represents the complexity of a fix.
+    /// </summary>
+    public enum FixComplexity
+    {
+        Low,
+        Medium,
+        High,
+        VeryHigh
+    }
 
-            /// <summary>
-            /// Gets or sets the history tags.
-            /// </summary>
-            public List<string> Tags { get; set; } = new();
+    /// <summary>
+    /// Represents the priority of a prevention measure.
+    /// </summary>
+    public enum PreventionPriority
+    {
+        Low,
+        Medium,
+        High,
+        Critical
+    }
 
-            /// <summary>
-            /// Gets or sets the history metadata.
-            /// </summary>
-            public Dictionary<string, object> Metadata { get; set; } = new();
-        }
+    /// <summary>
+    /// Represents the implementation cost.
+    /// </summary>
+    public enum ImplementationCost
+    {
+        Low,
+        Medium,
+        High,
+        VeryHigh
+    }
+
+    /// <summary>
+    /// Represents the status of an error analysis.
+    /// </summary>
+    public enum AnalysisStatus
+    {
+        /// <summary>
+        /// The analysis is pending.
+        /// </summary>
+        Pending,
+
+        /// <summary>
+        /// The analysis is in progress.
+        /// </summary>
+        InProgress,
+
+        /// <summary>
+        /// The analysis has completed successfully.
+        /// </summary>
+        Completed,
+
+        /// <summary>
+        /// The analysis has failed.
+        /// </summary>
+        Failed,
+
+        /// <summary>
+        /// The analysis has been cancelled.
+        /// </summary>
+        Cancelled,
+
+        /// <summary>
+        /// The analysis has timed out.
+        /// </summary>
+        TimedOut,
+
+        /// <summary>
+        /// The analysis status is unknown.
+        /// </summary>
+        Unknown
     }
 } 

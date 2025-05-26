@@ -1,7 +1,6 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.OpenApi.Validations;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Validation.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace RuntimeErrorSage.Core.Validation.Interfaces
 {

@@ -9,6 +9,7 @@ using System.Linq;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.LLM.Options;
 using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Storage;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -37,232 +38,423 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
     private readonly IConnectionMultiplexer _redis;
     private readonly ILogger<RedisDistributedStorage> _logger;
     private readonly DistributedStorageOptions _options;
-    private readonly JsonSerializerOptions _jsonOptions;
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
-    private readonly ConcurrentDictionary<string, object> _localCache;
+    private readonly SemaphoreSlim _semaphore;
+    private readonly ConcurrentDictionary<string, byte[]> _cache;
     private readonly System.Timers.Timer _backupTimer;
-    private readonly SemaphoreSlim _backupLock = new(1, 1);
-    private readonly Random _partitionRandom = new();
+    private readonly SemaphoreSlim _backupLock;
+    private bool _disposed;
+    private long _cacheHits;
+    private long _cacheMisses;
+
+    public bool IsEnabled => !_disposed;
+    public string Name => "Redis Distributed Storage";
+    public string Version => "1.0.0";
+    public bool IsConnected => _redis?.IsConnected ?? false;
 
     public RedisDistributedStorage(
         IConnectionMultiplexer redis,
         ILogger<RedisDistributedStorage> logger,
         IOptions<DistributedStorageOptions> options)
     {
-        _redis = redis;
-        _logger = logger;
-        _options = options.Value;
-        _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        _localCache = new();
-        
+        _redis = redis ?? throw new ArgumentNullException(nameof(redis));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _semaphore = new SemaphoreSlim(1, 1);
+        _cache = new ConcurrentDictionary<string, byte[]>();
+        _backupLock = new SemaphoreSlim(1, 1);
+
         if (_options.EnableBackup)
         {
-            Directory.CreateDirectory(_options.BackupPath);
-            _backupTimer = new System.Timers.Timer(
-                PerformBackupAsync,
-                null,
-                _options.BackupInterval,
-                _options.BackupInterval);
+            _backupTimer = new System.Timers.Timer(_options.BackupInterval.TotalMilliseconds);
+            _backupTimer.Elapsed += async (s, e) => await BackupDataAsync();
+            _backupTimer.Start();
         }
     }
 
-    public async Task StoreContextAsync(ErrorContext context)
+    public async Task ConnectAsync()
     {
-        _logger.LogInformation("Storing error context for service {Service}", context.ServiceName);
-        try
+        ThrowIfDisposed();
+        if (!_redis.IsConnected)
         {
-            var db = _redis.GetDatabase(GetPartitionIndex(context.ServiceName));
-            var key = GetContextKey(context);
-            var value = JsonSerializer.Serialize(context, _jsonOptions);
-
-            // Store in Redis with expiration
-            await db.StringSetAsync(
-                key,
-                value,
-                _options.ContextRetentionPeriod,
-                When.Always);
-
-            // Update service index
-            await UpdateServiceIndexAsync(context, db);
-
-            // Update local cache if enabled
-            if (_options.EnableDistributedCache)
-            {
-                UpdateLocalCache(key, value);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error storing context for service {Service}", context.ServiceName);
-            throw new DistributedStorageException("Failed to store context", ex);
+            await _redis.GetDatabase().PingAsync();
         }
     }
 
-    public async Task<List<ErrorContext>> GetContextsAsync(
-        string serviceName,
-        DateTime startTime,
-        DateTime endTime)
+    public async Task DisconnectAsync()
     {
-        _logger.LogInformation("Retrieving error contexts for service {Service}", serviceName);
-        try
+        if (_redis.IsConnected)
         {
-            var db = _redis.GetDatabase(GetPartitionIndex(serviceName));
-            var serviceKey = GetServiceKey(serviceName);
-            var contexts = new List<ErrorContext>();
-
-            // Get correlation IDs within time range
-            var correlationIds = await db.SortedSetRangeByScoreAsync(
-                serviceKey,
-                startTime.ToUnixTimeSeconds(),
-                endTime.ToUnixTimeSeconds());
-
-            foreach (var correlationId in correlationIds)
-            {
-                var key = GetContextKey(serviceName, correlationId.ToString()!);
-                string? value;
-
-                // Try local cache first if enabled
-                if (_options.EnableDistributedCache && _localCache.TryGetValue(key, out var cachedValue))
-                {
-                    value = cachedValue.ToString();
-                }
-                else
-                {
-                    value = await db.StringGetAsync(key);
-                    if (!value.IsNull && _options.EnableDistributedCache)
-                    {
-                        UpdateLocalCache(key, value!);
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(value))
-                {
-                    var context = JsonSerializer.Deserialize<ErrorContext>(value, _jsonOptions);
-                    if (context != null)
-                    {
-                        contexts.Add(context);
-                    }
-                }
-            }
-
-            return contexts.OrderByDescending(c => c.Timestamp).ToList();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving contexts for service {Service}", serviceName);
-            throw new DistributedStorageException("Failed to retrieve contexts", ex);
+            await _redis.CloseAsync();
         }
     }
 
-    public async Task StorePatternAsync(ErrorPattern pattern)
+    public async Task<List<ErrorPattern>> LoadPatternsAsync()
     {
-        _logger.LogInformation("Storing error pattern {PatternId} for service {Service}", pattern.PatternId, pattern.ServiceName);
+        ThrowIfDisposed();
+        var patterns = new List<ErrorPattern>();
+
         try
         {
             await _semaphore.WaitAsync();
-            try
-            {
-                var db = _redis.GetDatabase(GetPartitionIndex(pattern.ServiceName));
-                var key = GetPatternKey(pattern);
-                var value = JsonSerializer.Serialize(pattern, _jsonOptions);
-
-                // Use transaction for atomic updates
-                var tran = db.CreateTransaction();
-                tran.StringSetAsync(key, value, _options.PatternRetentionPeriod);
-                
-                // Update pattern index
-                var indexKey = GetPatternIndexKey(pattern.ServiceName);
-                tran.SortedSetAddAsync(
-                    indexKey,
-                    $"{pattern.ErrorType}:{pattern.OperationName}",
-                    pattern.LastOccurrence.ToUnixTimeSeconds());
-
-                await tran.ExecuteAsync();
-
-                // Update local cache if enabled
-                if (_options.EnableDistributedCache)
-                {
-                    UpdateLocalCache(key, value);
-                }
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error storing pattern for service {Service}", pattern.ServiceName);
-            throw new DistributedStorageException("Failed to store pattern", ex);
-        }
-    }
-
-    public async Task<List<ErrorPattern>> GetPatternsAsync(string serviceName)
-    {
-        _logger.LogInformation("Retrieving error patterns for service {Service}", serviceName);
-        try
-        {
             var db = _redis.GetDatabase();
-            var indexKey = $"{_options.KeyPrefix}service:{serviceName}:patterns";
+            var server = _redis.GetServer(_redis.GetEndPoints().First());
 
-            // Get all pattern keys
-            var patternKeys = await db.SortedSetRangeByScoreAsync(
-                indexKey,
-                DateTime.UtcNow.Add(-_options.PatternRetentionPeriod).ToUnixTimeSeconds(),
-                DateTime.UtcNow.ToUnixTimeSeconds());
-
-            var patterns = new List<ErrorPattern>();
-            foreach (var patternKey in patternKeys)
+            await foreach (var key in server.KeysAsync(pattern: $"{_options.KeyPrefix}pattern:*"))
             {
-                var key = $"{_options.KeyPrefix}pattern:{serviceName}:{patternKey}";
-                var value = await db.StringGetAsync(key);
-                
-                if (!value.IsNull)
+                if (_options.EnableDistributedCache && _cache.TryGetValue(key.ToString(), out var cachedValue))
                 {
-                    var pattern = JsonSerializer.Deserialize<ErrorPattern>(value!, _jsonOptions);
+                    Interlocked.Increment(ref _cacheHits);
+                    var pattern = JsonSerializer.Deserialize<ErrorPattern>(cachedValue);
                     if (pattern != null)
                     {
                         patterns.Add(pattern);
                     }
                 }
+                else
+                {
+                    Interlocked.Increment(ref _cacheMisses);
+                    var value = await db.StringGetAsync(key);
+                    if (value.HasValue)
+                    {
+                        var pattern = JsonSerializer.Deserialize<ErrorPattern>(value.ToString());
+                        if (pattern != null)
+                        {
+                            patterns.Add(pattern);
+                            if (_options.EnableDistributedCache)
+                            {
+                                _cache.TryAdd(key.ToString(), value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+
+        return patterns;
+    }
+
+    public async Task<ErrorPattern> GetPatternAsync(string patternId)
+    {
+        ArgumentNullException.ThrowIfNull(patternId);
+        ThrowIfDisposed();
+
+        var key = $"{_options.KeyPrefix}pattern:{patternId}";
+
+        try
+        {
+            await _semaphore.WaitAsync();
+
+            if (_options.EnableDistributedCache && _cache.TryGetValue(key, out var cachedValue))
+            {
+                Interlocked.Increment(ref _cacheHits);
+                return JsonSerializer.Deserialize<ErrorPattern>(cachedValue);
             }
 
-            return patterns.OrderByDescending(p => p.OccurrenceCount).ToList();
+            Interlocked.Increment(ref _cacheMisses);
+            var db = _redis.GetDatabase();
+            var value = await db.StringGetAsync(key);
+
+            if (!value.HasValue)
+            {
+                return null;
+            }
+
+            var pattern = JsonSerializer.Deserialize<ErrorPattern>(value.ToString());
+            if (pattern != null && _options.EnableDistributedCache)
+            {
+                _cache.TryAdd(key, value);
+            }
+
+            return pattern;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public async Task UpdatePatternAsync(ErrorPattern pattern)
+    {
+        ArgumentNullException.ThrowIfNull(pattern);
+        ThrowIfDisposed();
+
+        await StorePatternAsync(pattern);
+    }
+
+    public async Task DeletePatternAsync(string patternId)
+    {
+        ArgumentNullException.ThrowIfNull(patternId);
+        ThrowIfDisposed();
+
+        var key = $"{_options.KeyPrefix}pattern:{patternId}";
+
+        try
+        {
+            await _semaphore.WaitAsync();
+            var db = _redis.GetDatabase();
+            await db.KeyDeleteAsync(key);
+
+            if (_options.EnableDistributedCache)
+            {
+                _cache.TryRemove(key, out _);
+            }
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public async Task<StorageMetrics> GetMetricsAsync()
+    {
+        ThrowIfDisposed();
+
+        try
+        {
+            await _semaphore.WaitAsync();
+            var server = _redis.GetServer(_redis.GetEndPoints().First());
+            var info = await server.InfoAsync();
+            var memory = info.Single(x => x.Key == "Memory").Single(x => x.Key == "used_memory").Value;
+
+            var totalHits = _cacheHits;
+            var totalMisses = _cacheMisses;
+            var hitRate = totalHits + totalMisses > 0
+                ? (double)totalHits / (totalHits + totalMisses)
+                : 0;
+
+            return new StorageMetrics
+            {
+                TotalPatterns = _cache.Count,
+                TotalStorageSize = long.Parse(memory),
+                CacheHitRate = hitRate,
+                CacheSize = _cache.Count,
+                LastBackupTime = null, // TODO: Track last backup time
+                AdditionalMetrics = new Dictionary<string, object>
+                {
+                    ["CacheHits"] = totalHits,
+                    ["CacheMisses"] = totalMisses,
+                    ["RedisConnected"] = _redis.IsConnected,
+                    ["RedisEndpoint"] = _redis.GetEndPoints().First().ToString()
+                }
+            };
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public async Task StoreContextAsync(ErrorContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ThrowIfDisposed();
+
+        var key = GetContextKey(context);
+        var value = JsonSerializer.SerializeToUtf8Bytes(context);
+
+        try
+        {
+            await _semaphore.WaitAsync();
+            var db = _redis.GetDatabase();
+            await db.StringSetAsync(key, value, _options.ContextRetentionPeriod);
+
+            if (_options.EnableDistributedCache)
+            {
+                _cache.AddOrUpdate(key, value, (_, _) => value);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving patterns for service {Service}", serviceName);
+            _logger.LogError(ex, "Error storing context for service {ServiceName}", context.ServiceName);
+            throw new DistributedStorageException("Failed to store context", ex);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public async Task<List<ErrorContext>> GetContextsAsync(string serviceName, DateTime startTime, DateTime endTime)
+    {
+        ArgumentNullException.ThrowIfNull(serviceName);
+        ThrowIfDisposed();
+
+        var pattern = $"{_options.KeyPrefix}context:{serviceName}:*";
+        var contexts = new List<ErrorContext>();
+
+        try
+        {
+            await _semaphore.WaitAsync();
+            var db = _redis.GetDatabase();
+            var server = _redis.GetServer(_redis.GetEndPoints().First());
+
+            await foreach (var key in server.KeysAsync(pattern: pattern))
+            {
+                if (_options.EnableDistributedCache && _cache.TryGetValue(key.ToString(), out var cachedValue))
+                {
+                    var context = JsonSerializer.Deserialize<ErrorContext>(System.Text.Encoding.UTF8.GetString(cachedValue));
+                    if (context != null && context.Timestamp >= startTime && context.Timestamp <= endTime)
+                    {
+                        contexts.Add(context);
+                    }
+                }
+                else
+                {
+                    var value = await db.StringGetAsync(key);
+                    if (value.HasValue)
+                    {
+                        var context = JsonSerializer.Deserialize<ErrorContext>(value.ToString());
+                        if (context != null && context.Timestamp >= startTime && context.Timestamp <= endTime)
+                        {
+                            contexts.Add(context);
+                            if (_options.EnableDistributedCache)
+                            {
+                                _cache.TryAdd(key.ToString(), System.Text.Encoding.UTF8.GetBytes(value.ToString()));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving contexts for service {ServiceName}", serviceName);
+            throw new DistributedStorageException("Failed to retrieve contexts", ex);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+
+        return contexts;
+    }
+
+    public async Task StorePatternAsync(ErrorPattern pattern)
+    {
+        ArgumentNullException.ThrowIfNull(pattern);
+        ThrowIfDisposed();
+
+        var key = GetPatternKey(pattern);
+        var value = JsonSerializer.SerializeToUtf8Bytes(pattern);
+
+        try
+        {
+            await _semaphore.WaitAsync();
+            var db = _redis.GetDatabase();
+            await db.StringSetAsync(key, value, _options.PatternRetentionPeriod);
+
+            if (_options.EnableDistributedCache)
+            {
+                _cache.AddOrUpdate(key, value, (_, _) => value);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error storing pattern for service {ServiceName}", pattern.ServiceName);
+            throw new DistributedStorageException("Failed to store pattern", ex);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public async Task<List<ErrorPattern>> GetPatternsAsync(string serviceName)
+    {
+        ArgumentNullException.ThrowIfNull(serviceName);
+        ThrowIfDisposed();
+
+        var pattern = $"{_options.KeyPrefix}pattern:{serviceName}:*";
+        var patterns = new List<ErrorPattern>();
+
+        try
+        {
+            await _semaphore.WaitAsync();
+            var db = _redis.GetDatabase();
+            var server = _redis.GetServer(_redis.GetEndPoints().First());
+
+            await foreach (var key in server.KeysAsync(pattern: pattern))
+            {
+                if (_options.EnableDistributedCache && _cache.TryGetValue(key.ToString(), out var cachedValue))
+                {
+                    var errorPattern = JsonSerializer.Deserialize<ErrorPattern>(cachedValue);
+                    if (errorPattern != null)
+                    {
+                        patterns.Add(errorPattern);
+                    }
+                }
+                else
+                {
+                    var value = await db.StringGetAsync(key);
+                    if (value.HasValue)
+                    {
+                        var errorPattern = JsonSerializer.Deserialize<ErrorPattern>(value);
+                        if (errorPattern != null)
+                        {
+                            patterns.Add(errorPattern);
+                            if (_options.EnableDistributedCache)
+                            {
+                                _cache.TryAdd(key.ToString(), value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving patterns for service {ServiceName}", serviceName);
             throw new DistributedStorageException("Failed to retrieve patterns", ex);
         }
+        finally
+        {
+            _semaphore.Release();
+        }
+
+        return patterns;
     }
 
     public async Task DeleteExpiredDataAsync()
     {
-        _logger.LogInformation("Deleting expired data");
+        ThrowIfDisposed();
+
         try
         {
+            await _semaphore.WaitAsync();
             var db = _redis.GetDatabase();
             var server = _redis.GetServer(_redis.GetEndPoints().First());
 
             // Delete expired contexts
-            var contextKeys = server.Keys(pattern: $"{_options.KeyPrefix}context:*");
-            foreach (var key in contextKeys)
+            var contextPattern = $"{_options.KeyPrefix}context:*";
+            await foreach (var key in server.KeysAsync(pattern: contextPattern))
             {
                 var ttl = await db.KeyTimeToLiveAsync(key);
-                if (ttl == null || ttl.Value.TotalSeconds <= 0)
+                if (!ttl.HasValue || ttl.Value <= TimeSpan.Zero)
                 {
                     await db.KeyDeleteAsync(key);
+                    if (_options.EnableDistributedCache)
+                    {
+                        _cache.TryRemove(key.ToString(), out _);
+                    }
                 }
             }
 
             // Delete expired patterns
-            var patternKeys = server.Keys(pattern: $"{_options.KeyPrefix}pattern:*");
-            foreach (var key in patternKeys)
+            var patternPattern = $"{_options.KeyPrefix}pattern:*";
+            await foreach (var key in server.KeysAsync(pattern: patternPattern))
             {
                 var ttl = await db.KeyTimeToLiveAsync(key);
-                if (ttl == null || ttl.Value.TotalSeconds <= 0)
+                if (!ttl.HasValue || ttl.Value <= TimeSpan.Zero)
                 {
                     await db.KeyDeleteAsync(key);
+                    if (_options.EnableDistributedCache)
+                    {
+                        _cache.TryRemove(key.ToString(), out _);
+                    }
                 }
             }
         }
@@ -271,45 +463,52 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
             _logger.LogError(ex, "Error deleting expired data");
             throw new DistributedStorageException("Failed to delete expired data", ex);
         }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
-    private async Task PerformBackupAsync(object? state)
+    private async Task BackupDataAsync()
     {
-        if (!await _backupLock.WaitAsync(0)) // Try to acquire lock without waiting
+        if (!_options.EnableBackup)
         {
-            _logger.LogWarning("Backup already in progress, skipping this backup cycle");
             return;
         }
 
         try
         {
-            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
-            var backupFile = Path.Combine(_options.BackupPath, $"backup_{timestamp}.rdb");
+            await _backupLock.WaitAsync();
+            var backupDir = Path.GetFullPath(_options.BackupPath);
+            Directory.CreateDirectory(backupDir);
 
-            // Get Redis server
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+            var backupFile = Path.Combine(backupDir, $"backup_{timestamp}.json");
+
+            var db = _redis.GetDatabase();
             var server = _redis.GetServer(_redis.GetEndPoints().First());
-            
-            // Perform backup
-            await server.BackupAsync(backupFile);
+            var data = new Dictionary<string, byte[]>();
 
-            // Cleanup old backups
-            var backupFiles = Directory.GetFiles(_options.BackupPath, "backup_*.rdb")
+            await foreach (var key in server.KeysAsync(pattern: $"{_options.KeyPrefix}*"))
+            {
+                var value = await db.StringGetAsync(key);
+                if (value.HasValue)
+                {
+                    data[key.ToString()] = value;
+                }
+            }
+
+            await File.WriteAllTextAsync(backupFile, JsonSerializer.Serialize(data));
+
+            // Clean up old backups
+            var backupFiles = Directory.GetFiles(backupDir, "backup_*.json")
                 .OrderByDescending(f => f)
                 .Skip(_options.MaxBackupCount);
 
             foreach (var file in backupFiles)
             {
-                try
-                {
-                    File.Delete(file);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error deleting old backup file {File}", file);
-                }
+                File.Delete(file);
             }
-
-            _logger.LogInformation("Backup completed successfully: {File}", backupFile);
         }
         catch (Exception ex)
         {
@@ -321,70 +520,57 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
         }
     }
 
-    private void UpdateLocalCache(string key, string value)
+    private string GetContextKey(ErrorContext context)
     {
-        // Implement LRU cache eviction
-        if (_localCache.Count >= _options.CacheMaxSize)
-        {
-            var oldestKey = _localCache.Keys.First();
-            _localCache.TryRemove(oldestKey, out _);
-        }
-
-        _localCache[key] = value;
+        return $"{_options.KeyPrefix}context:{context.ServiceName}:{context.Id}";
     }
 
-    private int GetPartitionIndex(string serviceName)
+    private string GetPatternKey(ErrorPattern pattern)
     {
-        if (!_options.EnableDataPartitioning)
-        {
-            return 0;
-        }
-
-        // Use consistent hashing for partition selection
-        var hash = Math.Abs(serviceName.GetHashCode());
-        return hash % _options.PartitionCount;
+        return $"{_options.KeyPrefix}pattern:{pattern.ServiceName}:{pattern.Id}";
     }
 
-    private string GetContextKey(ErrorContext context) =>
-        $"{_options.KeyPrefix}context:{context.ServiceName}:{context.CorrelationId}";
-
-    private string GetContextKey(string serviceName, string correlationId) =>
-        $"{_options.KeyPrefix}context:{serviceName}:{correlationId}";
-
-    private string GetServiceKey(string serviceName) =>
-        $"{_options.KeyPrefix}service:{serviceName}:contexts";
-
-    private string GetPatternKey(ErrorPattern pattern) =>
-        $"{_options.KeyPrefix}pattern:{pattern.ServiceName}:{pattern.ErrorType}:{pattern.OperationName}";
-
-    private string GetPatternIndexKey(string serviceName) =>
-        $"{_options.KeyPrefix}service:{serviceName}:patterns";
-
-    private async Task UpdateServiceIndexAsync(ErrorContext context, IDatabase db)
+    private void ThrowIfDisposed()
     {
-        var serviceKey = GetServiceKey(context.ServiceName);
-        await db.SortedSetAddAsync(
-            serviceKey,
-            context.CorrelationId,
-            context.Timestamp.ToUnixTimeSeconds());
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(RedisDistributedStorage));
+        }
+    }
 
-        // Trim old contexts
-        await db.SortedSetRemoveRangeByScoreAsync(
-            serviceKey,
-            0,
-            DateTime.UtcNow.Add(-_options.ContextRetentionPeriod).ToUnixTimeSeconds());
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _semaphore?.Dispose();
+                _backupLock?.Dispose();
+                _backupTimer?.Dispose();
+                _cache.Clear();
+            }
+            _disposed = true;
+        }
     }
 
     public void Dispose()
     {
-        _semaphore.Dispose();
-        _backupTimer?.Dispose();
-        _backupLock.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    ~RedisDistributedStorage()
+    {
+        Dispose(false);
     }
 }
 
 public class DistributedStorageException : Exception
 {
+    public DistributedStorageException() { }
+
+    public DistributedStorageException(string message) : base(message) { }
+
     public DistributedStorageException(string message, Exception inner) : base(message, inner) { }
 }
 

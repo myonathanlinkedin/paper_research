@@ -1,15 +1,18 @@
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Models.Validation;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
+using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Health;
 using RemediationPlan = RuntimeErrorSage.Core.Models.Remediation.RemediationPlan;
+using ValidationResult = RuntimeErrorSage.Core.Models.Validation.RemediationValidationResult;
 
 namespace RuntimeErrorSage.Core.Remediation.Interfaces
 {
     /// <summary>
     /// Defines the interface for validating remediation plans and results.
     /// </summary>
-    public interface IRemediationValidator
+    public interface IRemediationValidator : IDisposable
     {
         /// <summary>
         /// Validates a remediation plan before execution.
@@ -17,14 +20,14 @@ namespace RuntimeErrorSage.Core.Remediation.Interfaces
         /// <param name="plan">The remediation plan to validate</param>
         /// <param name="context">The error context</param>
         /// <returns>The validation result</returns>
-        Task<RemediationValidationResult> ValidatePlanAsync(RemediationPlan plan, ErrorContext context);
+        Task<ValidationResult> ValidatePlanAsync(RemediationPlan plan, ErrorContext context);
 
         /// <summary>
         /// Validates the results of a remediation execution.
         /// </summary>
         /// <param name="context">The error context</param>
         /// <returns>The validation result</returns>
-        Task<RemediationValidationResult> ValidateRemediationAsync(ErrorContext context);
+        Task<ValidationResult> ValidateRemediationAsync(ErrorContext context);
 
         /// <summary>
         /// Validates a specific remediation step.
@@ -32,7 +35,7 @@ namespace RuntimeErrorSage.Core.Remediation.Interfaces
         /// <param name="step">The remediation step to validate</param>
         /// <param name="context">The error context</param>
         /// <returns>The validation result</returns>
-        Task<RemediationValidationResult> ValidateStepAsync(RemediationStep step, ErrorContext context);
+        Task<ValidationResult> ValidateStepAsync(RemediationStep step, ErrorContext context);
 
         /// <summary>
         /// Validates a remediation strategy.
@@ -40,7 +43,7 @@ namespace RuntimeErrorSage.Core.Remediation.Interfaces
         /// <param name="strategy">The remediation strategy to validate</param>
         /// <param name="context">The error context</param>
         /// <returns>The validation result</returns>
-        Task<RemediationValidationResult> ValidateStrategyAsync(IRemediationStrategy strategy, ErrorContext context);
+        Task<ValidationResult> ValidateStrategyAsync(IRemediationStrategy strategy, ErrorContext context);
 
         /// <summary>
         /// Validates the system health after remediation.

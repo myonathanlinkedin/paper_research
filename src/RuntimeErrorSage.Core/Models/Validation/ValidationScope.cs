@@ -1,42 +1,47 @@
 namespace RuntimeErrorSage.Core.Models.Validation;
 
 /// <summary>
-/// Defines the scope of validation.
+/// Defines scopes for validation operations.
 /// </summary>
 public enum ValidationScope
 {
     /// <summary>
-    /// System-wide validation scope.
+    /// Property level scope.
     /// </summary>
-    System,
+    Property = 0,
 
     /// <summary>
-    /// Application-wide validation scope.
+    /// Object level scope.
     /// </summary>
-    Application,
+    Object = 1,
 
     /// <summary>
-    /// Component-level validation scope.
+    /// Collection level scope.
     /// </summary>
-    Component,
+    Collection = 2,
 
     /// <summary>
-    /// Module-level validation scope.
+    /// Component level scope.
     /// </summary>
-    Module,
+    Component = 3,
 
     /// <summary>
-    /// Function-level validation scope.
+    /// Module level scope.
     /// </summary>
-    Function,
+    Module = 4,
 
     /// <summary>
-    /// Line-level validation scope.
+    /// Service level scope.
     /// </summary>
-    Line,
+    Service = 5,
 
     /// <summary>
-    /// Unknown validation scope.
+    /// System level scope.
     /// </summary>
-    Unknown
+    System = 6,
+
+    /// <summary>
+    /// Cross-system scope.
+    /// </summary>
+    CrossSystem = 7
 } 

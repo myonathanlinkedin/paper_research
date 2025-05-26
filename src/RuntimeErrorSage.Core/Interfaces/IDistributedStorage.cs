@@ -1,38 +1,77 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
 
 namespace RuntimeErrorSage.Core.Interfaces
 {
     /// <summary>
-    /// Defines the interface for distributed storage operations.
+    /// Interface for distributed storage operations.
     /// </summary>
     public interface IDistributedStorage
     {
         /// <summary>
-        /// Stores an error context.
+        /// Gets whether the storage is enabled.
         /// </summary>
-        Task StoreContextAsync(ErrorContext context);
+        bool IsEnabled { get; }
 
         /// <summary>
-        /// Retrieves contexts for a service within a time range.
+        /// Gets the storage name.
         /// </summary>
-        Task<List<ErrorContext>> GetContextsAsync(string serviceName, DateTime startTime, DateTime endTime);
+        string Name { get; }
+
+        /// <summary>
+        /// Gets the storage version.
+        /// </summary>
+        string Version { get; }
+
+        /// <summary>
+        /// Gets whether the storage is connected.
+        /// </summary>
+        bool IsConnected { get; }
+
+        /// <summary>
+        /// Connects to the storage.
+        /// </summary>
+        Task ConnectAsync();
+
+        /// <summary>
+        /// Disconnects from the storage.
+        /// </summary>
+        Task DisconnectAsync();
 
         /// <summary>
         /// Stores an error pattern.
         /// </summary>
+        /// <param name="pattern">The error pattern.</param>
         Task StorePatternAsync(ErrorPattern pattern);
 
         /// <summary>
-        /// Retrieves patterns for a service.
+        /// Loads error patterns.
         /// </summary>
-        Task<List<ErrorPattern>> GetPatternsAsync(string serviceName);
+        /// <returns>The list of error patterns.</returns>
+        Task<List<ErrorPattern>> LoadPatternsAsync();
 
         /// <summary>
-        /// Deletes expired data.
+        /// Gets an error pattern by ID.
         /// </summary>
-        Task DeleteExpiredDataAsync();
+        /// <param name="patternId">The pattern ID.</param>
+        /// <returns>The error pattern if found, null otherwise.</returns>
+        Task<ErrorPattern> GetPatternAsync(string patternId);
+
+        /// <summary>
+        /// Updates an error pattern.
+        /// </summary>
+        /// <param name="pattern">The error pattern.</param>
+        Task UpdatePatternAsync(ErrorPattern pattern);
+
+        /// <summary>
+        /// Deletes an error pattern.
+        /// </summary>
+        /// <param name="patternId">The pattern ID.</param>
+        Task DeletePatternAsync(string patternId);
+
+        /// <summary>
+        /// Gets the storage metrics.
+        /// </summary>
+        /// <returns>The storage metrics.</returns>
+        Task<StorageMetrics> GetMetricsAsync();
     }
 } 

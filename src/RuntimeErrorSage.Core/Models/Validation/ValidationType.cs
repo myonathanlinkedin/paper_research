@@ -1,27 +1,52 @@
 namespace RuntimeErrorSage.Core.Models.Validation;
 
 /// <summary>
-/// Defines the types of validation.
+/// Defines types of validation operations.
 /// </summary>
 public enum ValidationType
 {
     /// <summary>
-    /// Static validation type.
+    /// Data validation.
     /// </summary>
-    Static,
+    Data = 0,
 
     /// <summary>
-    /// Dynamic validation type.
+    /// Business rule validation.
     /// </summary>
-    Dynamic,
+    BusinessRule = 1,
 
     /// <summary>
-    /// Hybrid validation type.
+    /// Security validation.
     /// </summary>
-    Hybrid,
+    Security = 2,
 
     /// <summary>
-    /// Unknown validation type.
+    /// Performance validation.
     /// </summary>
-    Unknown
+    Performance = 3,
+
+    /// <summary>
+    /// Configuration validation.
+    /// </summary>
+    Configuration = 4,
+
+    /// <summary>
+    /// Dependency validation.
+    /// </summary>
+    Dependency = 5,
+
+    /// <summary>
+    /// Resource validation.
+    /// </summary>
+    Resource = 6,
+
+    /// <summary>
+    /// State validation.
+    /// </summary>
+    State = 7,
+
+    /// <summary>
+    /// Custom validation type.
+    /// </summary>
+    Custom = 8
 } 

@@ -7,16 +7,22 @@ using RuntimeErrorSage.Core.Interfaces.MCP;
 using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
+using RuntimeErrorSage.Core.Models.MCP;
+using RuntimeErrorSage.Core.Models.Remediation;
 using ContextHistory = RuntimeErrorSage.Core.Models.Common.ContextHistory;
 using TimeRange = RuntimeErrorSage.Core.Models.Common.TimeRange;
+using Microsoft.Extensions.Options;
+using RuntimeErrorSage.Core.Options;
+using RuntimeErrorSage.Core.Interfaces.Storage;
+using RuntimeErrorSage.Core.Extensions;
+using ConnectionState = RuntimeErrorSage.Core.Models.Common.ConnectionState;
 
 namespace RuntimeErrorSage.Core.MCP;
 
 /// <summary>
 /// Implements the Model Context Protocol (MCP) client for error context analysis.
 /// </summary>
-public class MCPClient : IMCPClient
+public class MCPClient : IMCPClient, IDisposable
 {
     private readonly ILogger<MCPClient> _logger;
     private readonly string _clientId;
@@ -24,14 +30,23 @@ public class MCPClient : IMCPClient
     private readonly Dictionary<string, ErrorContext> _contextCache;
     private readonly Dictionary<string, List<ContextHistory>> _contextHistory;
     private readonly Dictionary<string, Func<ErrorContext, Task>> _contextSubscribers;
+    private readonly MCPClientOptions _options;
+    private readonly IPatternStorage _storage;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the MCPClient class.
     /// </summary>
-    public MCPClient(ILogger<MCPClient> logger, string clientId)
+    public MCPClient(
+        ILogger<MCPClient> logger,
+        string clientId,
+        IOptions<MCPClientOptions> options,
+        IPatternStorage storage)
     {
-        _logger = logger;
-        _clientId = clientId;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _clientId = clientId ?? throw new ArgumentNullException(nameof(clientId));
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _storage = storage ?? throw new ArgumentNullException(nameof(storage));
         _connectionStatus = new ConnectionStatus
         {
             IsConnected = false,
@@ -112,7 +127,7 @@ public class MCPClient : IMCPClient
                 Timestamp = DateTime.UtcNow,
                 ChangeType = ContextChangeType.Analyzed,
                 PreviousState = null,
-                NewState = context,
+                NewState = (Dictionary<string, object>)context,
                 ChangedBy = _clientId,
                 Metadata = new Dictionary<string, object>()
             });
@@ -133,26 +148,20 @@ public class MCPClient : IMCPClient
     }
 
     /// <summary>
-    /// Gets the context history for a specified time range.
+    /// Gets the complete context history.
     /// </summary>
     /// <param name="contextId">The context identifier.</param>
-    /// <param name="range">The time range.</param>
-    /// <returns>The context history.</returns>
-    public async Task<List<ContextHistory>> GetContextHistoryAsync(string contextId, TimeRange range)
+    /// <returns>The complete context history.</returns>
+    public async Task<List<ContextHistory>> GetContextHistoryAsync(string contextId)
     {
         if (!IsConnected)
         {
             throw new InvalidOperationException("MCP client is not connected");
         }
 
-        if (_contextHistory.TryGetValue(contextId, out var history))
-        {
-            return history
-                .Where(h => h.Timestamp >= range.Start && h.Timestamp <= range.End)
-                .ToList();
-        }
-
-        return new List<ContextHistory>();
+        return _contextHistory.TryGetValue(contextId, out var history) 
+            ? history.ToList() 
+            : new List<ContextHistory>();
     }
 
     /// <summary>
@@ -304,7 +313,7 @@ public class MCPClient : IMCPClient
             Timestamp = DateTime.UtcNow,
             ChangeType = ContextChangeType.Updated,
             PreviousState = null,
-            NewState = context,
+            NewState = (Dictionary<string, object>)context,
             ChangedBy = _clientId,
             Metadata = new Dictionary<string, object>()
         });
@@ -314,5 +323,89 @@ public class MCPClient : IMCPClient
         {
             await callback(context);
         }
+    }
+
+    public async Task<List<ContextHistory>> GetContextHistoryAsync(string correlationId, TimeRange timeRange)
+    {
+        if (string.IsNullOrEmpty(correlationId))
+        {
+            throw new ArgumentException("Correlation ID cannot be null or empty", nameof(correlationId));
+        }
+
+        var history = new List<ContextHistory>();
+        
+        // Get all contexts for this correlation ID
+        var contexts = _contextHistory.Values
+            .SelectMany(h => h)
+            .Where(h => h.ContextId == correlationId &&
+                       h.Timestamp >= timeRange.Start &&
+                       h.Timestamp <= timeRange.End)
+            .OrderBy(h => h.Timestamp)
+            .ToList();
+
+        foreach (var ctx in contexts)
+        {
+            history.Add(new ContextHistory
+            {
+                Id = ctx.Id,
+                ContextId = ctx.ContextId,
+                Timestamp = ctx.Timestamp,
+                ChangeType = ctx.ChangeType,
+                PreviousState = ctx.PreviousState,
+                NewState = ctx.NewState,
+                ChangedBy = ctx.ChangedBy,
+                Metadata = new Dictionary<string, object>(ctx.Metadata)
+            });
+        }
+
+        return history;
+    }
+
+    public async Task<List<ErrorPattern>> GetErrorPatternsAsync(string errorType)
+    {
+        ArgumentNullException.ThrowIfNull(errorType);
+        ThrowIfDisposed();
+
+        try
+        {
+            var patterns = await _storage.GetPatternsAsync().ConfigureAwait(false);
+            return patterns?.Where(p => p.ErrorType == errorType).ToList() ?? new List<ErrorPattern>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving error patterns for type {ErrorType}", errorType);
+            throw;
+        }
+    }
+
+    public async Task UpdateErrorPatternsAsync(List<ErrorPattern> patterns)
+    {
+        ArgumentNullException.ThrowIfNull(patterns);
+        ThrowIfDisposed();
+
+        try
+        {
+            foreach (var pattern in patterns)
+            {
+                await _storage.StorePatternAsync(pattern);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating error patterns");
+            throw;
+        }
+    }
+
+    private void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, nameof(MCPClient));
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        GC.SuppressFinalize(this);
     }
 } 

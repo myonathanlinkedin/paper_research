@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.MCP;
 using RuntimeErrorSage.Core.Models.Remediation;
 using ConnectionStatus = RuntimeErrorSage.Core.Models.Common.ConnectionStatus;
 using ContextHistory = RuntimeErrorSage.Core.Models.Common.ContextHistory;
@@ -83,5 +85,18 @@ namespace RuntimeErrorSage.Core.Interfaces.MCP
         /// Publishes a context update.
         /// </summary>
         Task PublishContextAsync(ErrorContext context);
+
+        /// <summary>
+        /// Updates error patterns.
+        /// </summary>
+        /// <param name="patterns">The patterns to update.</param>
+        Task UpdateErrorPatternsAsync(List<ErrorPattern> patterns);
+
+        /// <summary>
+        /// Gets error patterns for a service.
+        /// </summary>
+        /// <param name="serviceName">The service name.</param>
+        /// <returns>The list of error patterns.</returns>
+        Task<List<ErrorPattern>> GetErrorPatternsAsync(string serviceName);
     }
 } 

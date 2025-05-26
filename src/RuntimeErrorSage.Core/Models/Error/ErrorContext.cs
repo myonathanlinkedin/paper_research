@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models;
 
 namespace RuntimeErrorSage.Core.Models.Error
 {
@@ -11,29 +12,29 @@ namespace RuntimeErrorSage.Core.Models.Error
     public class ErrorContext
     {
         /// <summary>
-        /// Gets or sets the unique identifier for the error.
+        /// Gets or sets the unique identifier for this error context.
         /// </summary>
-        public string ErrorId { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the type of error.
+        /// Gets or sets the name of the service where the error occurred.
         /// </summary>
-        public string ErrorType { get; set; }
+        public string ServiceName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the type of the error.
+        /// </summary>
+        public string ErrorType { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error message.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the stack trace.
+        /// Gets or sets the stack trace of the error.
         /// </summary>
-        public string StackTrace { get; set; }
-
-        /// <summary>
-        /// Gets or sets the source of the error.
-        /// </summary>
-        public string Source { get; set; }
+        public string StackTrace { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the timestamp when the error occurred.
@@ -41,90 +42,197 @@ namespace RuntimeErrorSage.Core.Models.Error
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the correlation identifier.
+        /// Gets or sets additional context information about the error.
         /// </summary>
-        public string CorrelationId { get; set; } = Guid.NewGuid().ToString();
+        public Dictionary<string, object> AdditionalContext { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the service identifier.
+        /// Gets or sets the source of the error.
         /// </summary>
-        public string ServiceId { get; set; }
+        public string Source { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the operation identifier.
+        /// Gets or sets the target method where the error occurred.
         /// </summary>
-        public string OperationId { get; set; }
+        public string TargetMethod { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the severity level of the error.
+        /// </summary>
+        public SeverityLevel Severity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system state at the time of error.
+        /// </summary>
+        public Dictionary<string, object> SystemState { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets additional context data.
+        /// </summary>
+        public Dictionary<string, object> AdditionalData { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets related errors.
+        /// </summary>
+        public List<ErrorContext> RelatedErrors { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets additional properties.
+        /// </summary>
+        public Dictionary<string, object> Properties { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the environment.
         /// </summary>
-        public string Environment { get; set; }
+        public Dictionary<string, string> Environment { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the status of the error.
+        /// Gets or sets the error severity.
         /// </summary>
-        public string Status { get; set; }
+        public ErrorSeverity SeverityLevel { get; set; }
 
         /// <summary>
-        /// Gets or sets the severity of the error.
+        /// Gets or sets the unique identifier for this error.
         /// </summary>
-        public ErrorSeverity Severity { get; set; }
+        public string ErrorId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the impact scope of the error.
+        /// Gets or sets additional error details.
         /// </summary>
-        public ImpactScope ImpactScope { get; set; }
+        public Dictionary<string, object> Details { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the impact severity of the error.
+        /// Gets or sets the error category.
         /// </summary>
-        public ImpactSeverity ImpactSeverity { get; set; }
+        public ErrorCategory Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the analysis validation status.
+        /// Gets or sets the error tags.
         /// </summary>
-        public AnalysisValidationStatus AnalysisValidationStatus { get; set; }
+        public List<string> Tags { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets additional metadata.
+        /// Gets or sets error metadata.
         /// </summary>
-        public Dictionary<string, string> Metadata { get; set; } = new();
-    }
+        public Dictionary<string, object> Metadata { get; set; } = new();
 
-    /// <summary>
-    /// Defines the severity levels of errors.
-    /// </summary>
-    public enum ErrorSeverity
-    {
-        Critical,
-        High,
-        Medium,
-        Low,
-        Info
-    }
+        /// <summary>
+        /// Gets or sets the operation name.
+        /// </summary>
+        public string OperationName { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Defines the scope of error impact.
-    /// </summary>
-    public enum ImpactScope
-    {
-        Global,
-        Service,
-        Component,
-        Operation,
-        Local
-    }
+        /// <summary>
+        /// Gets or sets the correlation ID.
+        /// </summary>
+        public string CorrelationId { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Defines the severity of error impact.
-    /// </summary>
-    public enum ImpactSeverity
-    {
-        Critical,
-        High,
-        Medium,
-        Low,
-        None
+        /// <summary>
+        /// Gets or sets the operation ID.
+        /// </summary>
+        public string OperationId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the parent operation ID.
+        /// </summary>
+        public string ParentOperationId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the operation start time.
+        /// </summary>
+        public DateTime OperationStartTime { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the operation duration.
+        /// </summary>
+        public TimeSpan OperationDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the operation status.
+        /// </summary>
+        public string OperationStatus { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the operation type.
+        /// </summary>
+        public string OperationType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the operation version.
+        /// </summary>
+        public string OperationVersion { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the operation result.
+        /// </summary>
+        public string OperationResult { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the operation target.
+        /// </summary>
+        public string OperationTarget { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the operation metrics.
+        /// </summary>
+        public Dictionary<string, double> OperationMetrics { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the operation dependencies.
+        /// </summary>
+        public List<string> OperationDependencies { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the operation tags.
+        /// </summary>
+        public Dictionary<string, string> OperationTags { get; set; } = new();
+
+        /// <summary>
+        /// Converts the error context to a dictionary.
+        /// </summary>
+        /// <returns>A dictionary containing the error context properties.</returns>
+        public Dictionary<string, object> ToDictionary()
+        {
+            var dict = new Dictionary<string, object>
+            {
+                { nameof(ErrorId), ErrorId },
+                { nameof(Message), Message },
+                { nameof(ErrorType), ErrorType },
+                { nameof(ServiceName), ServiceName },
+                { nameof(Timestamp), Timestamp },
+                { nameof(StackTrace), StackTrace },
+                { nameof(Source), Source },
+                { nameof(Severity), Severity },
+                { nameof(Category), Category },
+                { nameof(Tags), Tags },
+                { nameof(Details), Details },
+                { nameof(Metadata), Metadata },
+                { nameof(OperationName), OperationName },
+                { nameof(CorrelationId), CorrelationId },
+                { nameof(OperationId), OperationId },
+                { nameof(ParentOperationId), ParentOperationId },
+                { nameof(OperationStartTime), OperationStartTime },
+                { nameof(OperationDuration), OperationDuration },
+                { nameof(OperationStatus), OperationStatus },
+                { nameof(OperationType), OperationType },
+                { nameof(OperationVersion), OperationVersion },
+                { nameof(OperationResult), OperationResult },
+                { nameof(OperationTarget), OperationTarget },
+                { nameof(OperationMetrics), OperationMetrics },
+                { nameof(OperationDependencies), OperationDependencies },
+                { nameof(OperationTags), OperationTags }
+            };
+
+            return dict;
+        }
+
+        /// <summary>
+        /// Explicit conversion operator from ErrorContext to Dictionary<string, object>.
+        /// </summary>
+        /// <param name="context">The error context to convert.</param>
+        public static explicit operator Dictionary<string, object>(ErrorContext context)
+        {
+            return context.ToDictionary();
+        }
     }
 
     /// <summary>

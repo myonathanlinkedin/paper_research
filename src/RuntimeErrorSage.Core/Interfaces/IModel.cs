@@ -85,5 +85,18 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// </summary>
         /// <returns>The model metadata.</returns>
         Dictionary<string, object> GetMetadata();
+
+        /// <summary>
+        /// Initializes the model.
+        /// </summary>
+        /// <returns>A task representing the initialization operation.</returns>
+        Task InitializeAsync();
+
+        /// <summary>
+        /// Validates an error pattern.
+        /// </summary>
+        /// <param name="pattern">The pattern to validate.</param>
+        /// <returns>True if the pattern is valid, false otherwise.</returns>
+        Task<bool> ValidatePatternAsync(ErrorPattern pattern);
     }
 } 

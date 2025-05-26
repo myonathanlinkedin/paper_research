@@ -1,137 +1,178 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Execution;
+using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Remediation.Models.Execution;
-using RuntimeErrorSage.Core.Remediation.Models.Metrics;
+using CommonRemediationStatus = RuntimeErrorSage.Core.Models.Common.RemediationStatus;
 
-namespace RuntimeErrorSage.Core.Remediation
+namespace RuntimeErrorSage.Core.Remediation;
+
+/// <summary>
+/// Tracks remediation execution status and history.
+/// </summary>
+public class RemediationTracker : IRemediationTracker, IDisposable
 {
-    /// <summary>
-    /// Tracks the status and progress of remediation actions.
-    /// </summary>
-    public class RemediationTracker : IRemediationTracker
+    private readonly ILogger<RemediationTracker> _logger;
+    private readonly ConcurrentDictionary<string, RemediationExecution> _executions = new();
+    private readonly ConcurrentDictionary<string, RemediationMetrics> _metrics = new();
+    private readonly Dictionary<string, List<RemediationStep>> _stepHistory;
+    private bool _disposed;
+
+    public RemediationTracker(ILogger<RemediationTracker> logger)
     {
-        private readonly ILogger<RemediationTracker> _logger;
-        private readonly Dictionary<string, RemediationStatus> _statuses;
-        private readonly Dictionary<string, List<RemediationStep>> _stepHistory;
-        private readonly Dictionary<string, RemediationMetrics> _metrics;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _stepHistory = new Dictionary<string, List<RemediationStep>>();
+    }
 
-        public RemediationTracker(ILogger<RemediationTracker> logger)
+    public Task<CommonRemediationStatus> GetStatusAsync(string planId)
+    {
+        if (_executions.TryGetValue(planId, out var execution))
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _statuses = new Dictionary<string, RemediationStatus>();
-            _stepHistory = new Dictionary<string, List<RemediationStep>>();
-            _metrics = new Dictionary<string, RemediationMetrics>();
+            var status = execution.Status switch
+            {
+                RemediationExecutionStatus.Running => CommonRemediationStatus.Running,
+                RemediationExecutionStatus.Completed => CommonRemediationStatus.Completed,
+                RemediationExecutionStatus.Failed => CommonRemediationStatus.Failed,
+                RemediationExecutionStatus.Cancelled => CommonRemediationStatus.Cancelled,
+                RemediationExecutionStatus.Partial => CommonRemediationStatus.Partial,
+                _ => CommonRemediationStatus.Unknown
+            };
+            return Task.FromResult(status);
         }
 
-        public async Task<RemediationStatus> GetStatusAsync(string remediationId)
+        return Task.FromResult(CommonRemediationStatus.Unknown);
+    }
+
+    public Task UpdateStatusAsync(string remediationId, CommonRemediationStatus status, string? message = null)
+    {
+        if (_executions.TryGetValue(remediationId, out var execution))
         {
-            if (string.IsNullOrEmpty(remediationId))
+            // Map RemediationStatus to RemediationExecutionStatus
+            execution.Status = status switch
             {
-                throw new ArgumentException("Remediation ID cannot be null or empty", nameof(remediationId));
+                CommonRemediationStatus.Running => RemediationExecutionStatus.Running,
+                CommonRemediationStatus.Completed => RemediationExecutionStatus.Completed,
+                CommonRemediationStatus.Failed => RemediationExecutionStatus.Failed,
+                CommonRemediationStatus.Cancelled => RemediationExecutionStatus.Cancelled,
+                CommonRemediationStatus.Partial => RemediationExecutionStatus.Partial,
+                _ => RemediationExecutionStatus.Unknown
+            };
+
+            if (message != null)
+            {
+                execution.Error = message;
             }
 
-            return await Task.FromResult(_statuses.TryGetValue(remediationId, out var status)
-                ? status
-                : new RemediationStatus { State = RemediationState.Unknown });
-        }
-
-        public async Task UpdateStatusAsync(string remediationId, RemediationStatus status, string? message = null)
-        {
-            if (string.IsNullOrEmpty(remediationId))
+            if (status is CommonRemediationStatus.Completed or CommonRemediationStatus.Failed or CommonRemediationStatus.Cancelled)
             {
-                throw new ArgumentException("Remediation ID cannot be null or empty", nameof(remediationId));
-            }
-
-            if (status == null)
-            {
-                throw new ArgumentNullException(nameof(status));
-            }
-
-            try
-            {
-                _statuses[remediationId] = status;
-                if (!string.IsNullOrEmpty(message))
-                {
-                    _logger.LogInformation("Remediation {RemediationId} status updated to {State}: {Message}",
-                        remediationId, status.State, message);
-                }
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating status for remediation {RemediationId}", remediationId);
-                throw;
+                execution.EndTime = DateTime.UtcNow;
             }
         }
 
-        public async Task<IEnumerable<RemediationStep>> GetStepHistoryAsync(string remediationId)
+        return Task.CompletedTask;
+    }
+
+    public async Task RecordStepAsync(string remediationId, RemediationStep step)
+    {
+        ArgumentNullException.ThrowIfNull(remediationId);
+        ArgumentNullException.ThrowIfNull(step);
+        ThrowIfDisposed();
+
+        try
         {
-            if (string.IsNullOrEmpty(remediationId))
+            if (!_stepHistory.ContainsKey(remediationId))
             {
-                throw new ArgumentException("Remediation ID cannot be null or empty", nameof(remediationId));
+                _stepHistory[remediationId] = new List<RemediationStep>();
             }
 
-            return await Task.FromResult(_stepHistory.TryGetValue(remediationId, out var history)
-                ? history
-                : Array.Empty<RemediationStep>());
+            _stepHistory[remediationId].Add(step);
+            await Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error recording step for remediation {RemediationId}", remediationId);
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<RemediationStep>> GetStepHistoryAsync(string remediationId)
+    {
+        ArgumentNullException.ThrowIfNull(remediationId);
+        ThrowIfDisposed();
+
+        if (_stepHistory.TryGetValue(remediationId, out var steps))
+        {
+            return steps.OrderBy(s => s.StartTime);
         }
 
-        public async Task RecordMetricsAsync(string remediationId, RemediationMetrics metrics)
+        return Enumerable.Empty<RemediationStep>();
+    }
+
+    public Task<RemediationMetrics> GetMetricsAsync(string remediationId)
+    {
+        return Task.FromResult(_metrics.GetOrAdd(remediationId, _ => new RemediationMetrics
         {
-            if (string.IsNullOrEmpty(remediationId))
-            {
-                throw new ArgumentException("Remediation ID cannot be null or empty", nameof(remediationId));
-            }
+            MetricsId = Guid.NewGuid().ToString(),
+            RemediationId = remediationId,
+            StartTime = DateTime.UtcNow,
+            EndTime = DateTime.UtcNow,
+            Timestamp = DateTime.UtcNow
+        }));
+    }
 
-            if (metrics == null)
-            {
-                throw new ArgumentNullException(nameof(metrics));
-            }
+    public Task RecordMetricsAsync(string planId, RemediationMetrics metrics)
+    {
+        _metrics.AddOrUpdate(
+            planId,
+            metrics,
+            (_, _) => metrics);
 
-            try
-            {
-                _metrics[remediationId] = metrics;
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error recording metrics for remediation {RemediationId}", remediationId);
-                throw;
-            }
+        return Task.CompletedTask;
+    }
+
+    public Task TrackRemediationAsync(RemediationExecution execution)
+    {
+        _executions.AddOrUpdate(
+            execution.CorrelationId,
+            execution,
+            (_, _) => execution);
+
+        if (execution.Metrics != null)
+        {
+            _metrics.AddOrUpdate(
+                execution.CorrelationId,
+                execution.Metrics,
+                (_, _) => execution.Metrics);
         }
 
-        public async Task AddStepAsync(string remediationId, RemediationStep step)
+        return Task.CompletedTask;
+    }
+
+    public Task<RemediationExecution> GetExecutionAsync(string remediationId)
+    {
+        return Task.FromResult(_executions.GetOrAdd(remediationId, _ => new RemediationExecution
         {
-            if (string.IsNullOrEmpty(remediationId))
-            {
-                throw new ArgumentException("Remediation ID cannot be null or empty", nameof(remediationId));
-            }
+            CorrelationId = remediationId,
+            StartTime = DateTime.UtcNow,
+            Status = RemediationExecutionStatus.Unknown
+        }));
+    }
 
-            if (step == null)
-            {
-                throw new ArgumentNullException(nameof(step));
-            }
+    private void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, nameof(RemediationTracker));
+    }
 
-            try
-            {
-                if (!_stepHistory.TryGetValue(remediationId, out var history))
-                {
-                    history = new List<RemediationStep>();
-                    _stepHistory[remediationId] = history;
-                }
-
-                history.Add(step);
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding step for remediation {RemediationId}", remediationId);
-                throw;
-            }
-        }
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        GC.SuppressFinalize(this);
     }
 } 

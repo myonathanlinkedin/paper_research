@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <Description>Examples for RuntimeErrorSage runtime intelligence layer</Description>
-    <AssemblyName>RuntimeErrorSage.Examples</AssemblyName>
+    <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
     <RootNamespace>RuntimeErrorSage.Examples</RootNamespace>
+    <AssemblyName>RuntimeErrorSage.Examples</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

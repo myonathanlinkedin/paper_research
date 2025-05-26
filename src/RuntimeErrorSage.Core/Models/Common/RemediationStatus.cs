@@ -1,163 +1,62 @@
-namespace RuntimeErrorSage.Core.Models.Common
+namespace RuntimeErrorSage.Core.Models.Common;
+
+/// <summary>
+/// Represents the status of a remediation operation.
+/// </summary>
+public enum RemediationStatus
 {
     /// <summary>
-    /// Defines the possible states of a remediation operation.
+    /// Unknown status.
     /// </summary>
-    public enum RemediationStatus
-    {
-        /// <summary>
-        /// The remediation has been created.
-        /// </summary>
-        Created,
+    Unknown = 0,
 
-        /// <summary>
-        /// The remediation is being validated.
-        /// </summary>
-        Validating,
+    /// <summary>
+    /// Remediation plan created.
+    /// </summary>
+    Created = 1,
 
-        /// <summary>
-        /// The remediation has been validated.
-        /// </summary>
-        Validated,
+    /// <summary>
+    /// Analyzing the error.
+    /// </summary>
+    Analyzing = 2,
 
-        /// <summary>
-        /// The remediation validation has failed.
-        /// </summary>
-        ValidationFailed,
+    /// <summary>
+    /// Executing remediation.
+    /// </summary>
+    Executing = 3,
 
-        /// <summary>
-        /// The remediation is being approved.
-        /// </summary>
-        Approving,
+    /// <summary>
+    /// Remediation completed successfully.
+    /// </summary>
+    Succeeded = 4,
 
-        /// <summary>
-        /// The remediation has been approved.
-        /// </summary>
-        Approved,
+    /// <summary>
+    /// Remediation failed.
+    /// </summary>
+    Failed = 5,
 
-        /// <summary>
-        /// The remediation approval has failed.
-        /// </summary>
-        ApprovalFailed,
+    /// <summary>
+    /// Remediation cancelled.
+    /// </summary>
+    Cancelled = 6,
 
-        /// <summary>
-        /// The remediation is being scheduled.
-        /// </summary>
-        Scheduling,
+    /// <summary>
+    /// Rolling back changes.
+    /// </summary>
+    RollingBack = 7,
 
-        /// <summary>
-        /// The remediation has been scheduled.
-        /// </summary>
-        Scheduled,
+    /// <summary>
+    /// Rollback completed.
+    /// </summary>
+    RolledBack = 8,
 
-        /// <summary>
-        /// The remediation scheduling has failed.
-        /// </summary>
-        SchedulingFailed,
+    /// <summary>
+    /// Validating remediation.
+    /// </summary>
+    Validating = 9,
 
-        /// <summary>
-        /// The remediation is being executed.
-        /// </summary>
-        Executing,
-
-        /// <summary>
-        /// The remediation has been executed.
-        /// </summary>
-        Executed,
-
-        /// <summary>
-        /// The remediation execution has failed.
-        /// </summary>
-        ExecutionFailed,
-
-        /// <summary>
-        /// The remediation is being rolled back.
-        /// </summary>
-        RollingBack,
-
-        /// <summary>
-        /// The remediation has been rolled back.
-        /// </summary>
-        RolledBack,
-
-        /// <summary>
-        /// The remediation rollback has failed.
-        /// </summary>
-        RollbackFailed,
-
-        /// <summary>
-        /// The remediation is being cancelled.
-        /// </summary>
-        Cancelling,
-
-        /// <summary>
-        /// The remediation has been cancelled.
-        /// </summary>
-        Cancelled,
-
-        /// <summary>
-        /// The remediation cancellation has failed.
-        /// </summary>
-        CancellationFailed,
-
-        /// <summary>
-        /// The remediation is being paused.
-        /// </summary>
-        Pausing,
-
-        /// <summary>
-        /// The remediation has been paused.
-        /// </summary>
-        Paused,
-
-        /// <summary>
-        /// The remediation pause has failed.
-        /// </summary>
-        PauseFailed,
-
-        /// <summary>
-        /// The remediation is being resumed.
-        /// </summary>
-        Resuming,
-
-        /// <summary>
-        /// The remediation has been resumed.
-        /// </summary>
-        Resumed,
-
-        /// <summary>
-        /// The remediation resume has failed.
-        /// </summary>
-        ResumeFailed,
-
-        /// <summary>
-        /// The remediation is being completed.
-        /// </summary>
-        Completing,
-
-        /// <summary>
-        /// The remediation has been completed.
-        /// </summary>
-        Completed,
-
-        /// <summary>
-        /// The remediation completion has failed.
-        /// </summary>
-        CompletionFailed,
-
-        /// <summary>
-        /// The remediation is in progress.
-        /// </summary>
-        InProgress,
-
-        /// <summary>
-        /// The remediation has failed.
-        /// </summary>
-        Failed,
-
-        /// <summary>
-        /// The remediation status is unknown.
-        /// </summary>
-        Unknown
-    }
+    /// <summary>
+    /// Waiting for external action.
+    /// </summary>
+    WaitingForAction = 10
 } 
