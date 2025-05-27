@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Remediation;
 
@@ -12,22 +12,22 @@ public class RemediationValidationRule
     /// <summary>
     /// Gets or sets the unique identifier of the rule.
     /// </summary>
-    public string RuleId { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the rule.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; set; }
 
     /// <summary>
     /// Gets or sets the description of the rule.
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    public string Description { get; set; }
 
     /// <summary>
     /// Gets or sets the validation priority.
     /// </summary>
-    public ValidationPriority Priority { get; set; }
+    public int Priority { get; set; }
 
     /// <summary>
     /// Gets or sets the validation scope.

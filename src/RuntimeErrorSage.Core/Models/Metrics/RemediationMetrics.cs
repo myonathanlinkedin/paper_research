@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Metrics
 {
@@ -11,6 +12,26 @@ namespace RuntimeErrorSage.Core.Models.Metrics
     /// </summary>
     public class RemediationMetrics
     {
+        /// <summary>
+        /// Gets or sets the execution identifier.
+        /// </summary>
+        public string ExecutionId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the timestamp.
+        /// </summary>
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the metric values.
+        /// </summary>
+        public Dictionary<string, object> Values { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the metric labels.
+        /// </summary>
+        public Dictionary<string, string> Labels { get; set; } = new();
+
         /// <summary>
         /// Gets or sets the unique identifier for these metrics.
         /// </summary>
@@ -30,11 +51,6 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// Gets or sets when the remediation ended.
         /// </summary>
         public DateTime EndTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets when these metrics were recorded.
-        /// </summary>
-        public DateTime Timestamp { get; set; }
 
         /// <summary>
         /// Gets or sets the number of steps executed.
@@ -74,7 +90,7 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// <summary>
         /// Gets or sets the remediation status.
         /// </summary>
-        public RemediationStatus Status { get; set; }
+        public RemediationStatusEnum Status { get; set; }
 
         /// <summary>
         /// Gets or sets the strategy name.
@@ -85,16 +101,6 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// Gets or sets the analysis data.
         /// </summary>
         public Dictionary<string, object> Analysis { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the metric values.
-        /// </summary>
-        public Dictionary<string, double> Values { get; private set; } = new();
-
-        /// <summary>
-        /// Gets or sets the metric labels.
-        /// </summary>
-        public Dictionary<string, string> Labels { get; private set; } = new();
 
         /// <summary>
         /// Gets the step metrics.
@@ -132,6 +138,11 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// Gets or sets the failure rate (0-1).
         /// </summary>
         public double FailureRate => StepsExecuted > 0 ? (double)FailedSteps / StepsExecuted : 0;
+
+        /// <summary>
+        /// Gets or sets the metrics dictionary.
+        /// </summary>
+        public Dictionary<string, double> Metrics { get; set; } = new();
 
         /// <summary>
         /// Adds a metric value.

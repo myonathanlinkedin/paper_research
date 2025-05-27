@@ -5,8 +5,8 @@ using System.Diagnostics;
 using Xunit;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Services;
-using RuntimeErrorSage.Core.Analysis;
 using RuntimeErrorSage.Tests.TestSuite.Models;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Tests.TestSuite
 {

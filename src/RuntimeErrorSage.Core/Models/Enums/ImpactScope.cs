@@ -1,27 +1,37 @@
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Represents the scope of impact for an error or remediation action.
+/// Defines the scope of impact for a graph node.
 /// </summary>
 public enum ImpactScope
 {
     /// <summary>
-    /// Impact is limited to a single component.
+    /// No impact.
     /// </summary>
-    Component,
+    None = 0,
 
     /// <summary>
-    /// Impact affects multiple components.
+    /// Local impact affecting only the immediate component.
     /// </summary>
-    MultiComponent,
+    Local = 1,
 
     /// <summary>
-    /// Impact affects the entire system.
+    /// Module impact affecting the containing module.
     /// </summary>
-    System,
+    Module = 2,
 
     /// <summary>
-    /// Impact extends beyond the system to external dependencies.
+    /// Service impact affecting the entire service.
     /// </summary>
-    External
+    Service = 3,
+
+    /// <summary>
+    /// System impact affecting multiple services.
+    /// </summary>
+    System = 4,
+
+    /// <summary>
+    /// Global impact affecting the entire application.
+    /// </summary>
+    Global = 5
 } 

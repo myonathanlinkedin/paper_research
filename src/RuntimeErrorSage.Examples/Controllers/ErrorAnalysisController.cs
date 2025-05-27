@@ -2,7 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Examples.Models;
 
 namespace RuntimeErrorSage.Examples.Controllers

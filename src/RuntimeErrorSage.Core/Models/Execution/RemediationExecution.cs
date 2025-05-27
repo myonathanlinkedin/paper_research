@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Common;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Validation;
 
 namespace RuntimeErrorSage.Core.Models.Execution
 {
@@ -17,12 +17,22 @@ namespace RuntimeErrorSage.Core.Models.Execution
         private readonly Dictionary<string, object> _metadata = new();
 
         /// <summary>
-        /// Gets or sets the unique identifier of the remediation execution.
+        /// Gets or sets the unique identifier for this execution.
         /// </summary>
         public string ExecutionId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the correlation ID of the error context.
+        /// Gets or sets the remediation ID.
+        /// </summary>
+        public string RemediationId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the error ID.
+        /// </summary>
+        public string ErrorId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the correlation ID.
         /// </summary>
         public string CorrelationId { get; set; } = string.Empty;
 
@@ -39,7 +49,17 @@ namespace RuntimeErrorSage.Core.Models.Execution
         /// <summary>
         /// Gets or sets the current status of the remediation execution.
         /// </summary>
-        public RemediationExecutionStatus Status { get; set; }
+        public RemediationStatusEnum Status { get; set; } = RemediationStatusEnum.NotStarted;
+
+        /// <summary>
+        /// Gets or sets whether the execution was successful.
+        /// </summary>
+        public bool Success { get; set; }
+
+        /// <summary>
+        /// Gets or sets any error message if execution failed.
+        /// </summary>
+        public string ErrorMessage { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets the list of actions that were executed.
@@ -49,7 +69,7 @@ namespace RuntimeErrorSage.Core.Models.Execution
         /// <summary>
         /// Gets or sets any error that occurred during remediation.
         /// </summary>
-        public string? Error { get; set; }
+        public string Error { get; set; }
 
         /// <summary>
         /// Gets the additional execution metadata.
@@ -59,7 +79,7 @@ namespace RuntimeErrorSage.Core.Models.Execution
         /// <summary>
         /// Gets whether the remediation was successful.
         /// </summary>
-        public bool IsSuccessful => Status == RemediationExecutionStatus.Completed && string.IsNullOrEmpty(Error);
+        public bool IsSuccessful => Status == RemediationStatusEnum.Completed && string.IsNullOrEmpty(Error);
 
         /// <summary>
         /// Gets the total duration of the remediation in seconds.
@@ -69,7 +89,7 @@ namespace RuntimeErrorSage.Core.Models.Execution
         /// <summary>
         /// Gets or sets the metrics for this remediation execution.
         /// </summary>
-        public RemediationMetrics? Metrics { get; set; }
+        public RemediationMetrics Metrics { get; set; }
 
         /// <summary>
         /// Gets the validation results for this remediation execution.
@@ -79,17 +99,45 @@ namespace RuntimeErrorSage.Core.Models.Execution
         /// <summary>
         /// Gets or sets the rollback status if the execution was rolled back.
         /// </summary>
+        public RollbackExecutionDetails? RollbackDetails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rollback status.
+        /// </summary>
         public RollbackStatus? RollbackStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the validation result.
         /// </summary>
-        public ValidationResult? Validation { get; set; }
+        public ValidationResult Validation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of executed steps.
+        /// </summary>
+        public List<string> ExecutedSteps { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of failed steps.
+        /// </summary>
+        public List<string> FailedSteps { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of actions executed during remediation.
+        /// </summary>
+        public List<RemediationActionExecution> Actions { get; set; } = new List<RemediationActionExecution>();
 
         /// <summary>
         /// Adds an executed action to the collection.
         /// </summary>
-        public void AddExecutedAction(RemediationActionExecution action) => _executedActions.Add(action);
+        public void AddExecutedAction(RemediationActionExecution action)
+        {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            _executedActions.Add(action);
+        }
 
         /// <summary>
         /// Adds a validation result to the collection.

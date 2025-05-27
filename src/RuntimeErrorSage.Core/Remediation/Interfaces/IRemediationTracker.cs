@@ -1,13 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Execution;
 using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.Models.Validation;
-using CommonRemediationStatus = RuntimeErrorSage.Core.Models.Common.RemediationStatus;
+using RuntimeErrorSage.Core.Models.Remediation;
 
-namespace RuntimeErrorSage.Core.Remediation.Interfaces
+namespace RuntimeErrorSage.Core.Interfaces
 {
     /// <summary>
     /// Interface for tracking remediation progress and status.
@@ -19,7 +18,7 @@ namespace RuntimeErrorSage.Core.Remediation.Interfaces
         /// </summary>
         /// <param name="planId">The ID of the remediation plan.</param>
         /// <returns>The current status of the plan.</returns>
-        Task<CommonRemediationStatus> GetStatusAsync(string planId);
+        Task<RemediationStatusEnum> GetStatusAsync(string planId);
 
         /// <summary>
         /// Updates the status of a remediation plan.
@@ -27,7 +26,7 @@ namespace RuntimeErrorSage.Core.Remediation.Interfaces
         /// <param name="planId">The ID of the remediation plan.</param>
         /// <param name="status">The new status.</param>
         /// <param name="details">Optional details about the status change.</param>
-        Task UpdateStatusAsync(string planId, CommonRemediationStatus status, string? details = null);
+        Task UpdateStatusAsync(string planId, RemediationStatusEnum status, string? details = null);
 
         /// <summary>
         /// Records a step in the remediation process.
@@ -60,11 +59,38 @@ namespace RuntimeErrorSage.Core.Remediation.Interfaces
         /// <summary>
         /// Tracks a remediation execution.
         /// </summary>
+        /// <param name="execution">The remediation execution to track.</param>
         Task TrackRemediationAsync(RemediationExecution execution);
 
         /// <summary>
-        /// Gets the execution history for a remediation.
+        /// Gets the execution details for a remediation.
         /// </summary>
+        /// <param name="remediationId">The ID of the remediation.</param>
+        /// <returns>The remediation execution details.</returns>
         Task<RemediationExecution> GetExecutionAsync(string remediationId);
+
+        /// <summary>
+        /// Gets the execution history for all remediations.
+        /// </summary>
+        /// <returns>The list of remediation executions.</returns>
+        Task<IEnumerable<RemediationExecution>> GetExecutionHistoryAsync();
+
+        /// <summary>
+        /// Tracks the start of a remediation action.
+        /// </summary>
+        /// <param name="planId">The ID of the remediation plan.</param>
+        /// <param name="actionId">The ID of the action.</param>
+        /// <returns>A tracking task.</returns>
+        Task TrackActionStartAsync(string planId, string actionId);
+
+        /// <summary>
+        /// Tracks the completion of a remediation action.
+        /// </summary>
+        /// <param name="planId">The ID of the remediation plan.</param>
+        /// <param name="actionId">The ID of the action.</param>
+        /// <param name="success">Whether the action succeeded.</param>
+        /// <param name="errorMessage">Optional error message if the action failed.</param>
+        /// <returns>A tracking task.</returns>
+        Task TrackActionCompletionAsync(string planId, string actionId, bool success, string? errorMessage = null);
     }
 } 

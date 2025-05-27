@@ -1,20 +1,119 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Error;
 
 /// <summary>
-/// Represents the result of an error analysis.
+/// Represents an analysis of an error occurrence.
 /// </summary>
 public class ErrorAnalysis
 {
-    private readonly Dictionary<string, object> _metadata;
+    /// <summary>
+    /// Gets or sets the unique identifier of the error analysis.
+    /// </summary>
+    public string ErrorId { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Gets the error type.
+    /// Gets or sets the category of the error.
     /// </summary>
-    public string ErrorType { get; }
+    public ErrorCategory Category { get; set; }
+
+    /// <summary>
+    /// Gets or sets the severity of the error.
+    /// </summary>
+    public ErrorSeverity Severity { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error message.
+    /// </summary>
+    public string Message { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the details of the error.
+    /// </summary>
+    public string Details { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the timestamp when the error occurred.
+    /// </summary>
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets or sets the frequency of the error.
+    /// </summary>
+    public int Frequency { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error scope.
+    /// </summary>
+    public ErrorScope Scope { get; set; }
+
+    /// <summary>
+    /// Gets or sets the source of the error.
+    /// </summary>
+    public ErrorSource Source { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stack trace of the error.
+    /// </summary>
+    public string StackTrace { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the error type.
+    /// </summary>
+    public string ErrorType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the error code.
+    /// </summary>
+    public string ErrorCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the error location.
+    /// </summary>
+    public string Location { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the status of the analysis.
+    /// </summary>
+    public AnalysisStatus Status { get; set; } = AnalysisStatus.NotStarted;
+
+    /// <summary>
+    /// Gets or sets any metadata associated with the error.
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+
+    /// <summary>
+    /// Gets or sets whether the error is actionable.
+    /// </summary>
+    public bool IsActionable { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the error is transient.
+    /// </summary>
+    public bool IsTransient { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the error has been resolved.
+    /// </summary>
+    public bool IsResolved { get; set; }
+
+    /// <summary>
+    /// Gets or sets the related errors.
+    /// </summary>
+    public List<RelatedError> RelatedErrors { get; set; } = new List<RelatedError>();
+
+    /// <summary>
+    /// Gets or sets the timestamp when the analysis was created.
+    /// </summary>
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets or sets the timestamp when the analysis was last updated.
+    /// </summary>
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets the root cause.
@@ -48,61 +147,12 @@ public class ErrorAnalysis
         RootCause = rootCause ?? throw new ArgumentNullException(nameof(rootCause));
         Confidence = confidence;
         RemediationSteps = remediationSteps?.ToList() ?? throw new ArgumentNullException(nameof(remediationSteps));
-        _metadata = new Dictionary<string, object>();
     }
 
     /// <summary>
     /// Gets a value indicating whether the analysis is valid.
     /// </summary>
     public bool IsValid => Validate();
-
-    /// <summary>
-    /// Gets the metadata.
-    /// </summary>
-    public IReadOnlyDictionary<string, object> Metadata => _metadata;
-
-    /// <summary>
-    /// Adds metadata.
-    /// </summary>
-    /// <param name="key">The key.</param>
-    /// <param name="value">The value.</param>
-    public void AddMetadata(string key, object value)
-    {
-        if (string.IsNullOrEmpty(key))
-            throw new ArgumentException("Key cannot be null or empty.", nameof(key));
-
-        _metadata[key] = value;
-    }
-
-    /// <summary>
-    /// Gets the metadata.
-    /// </summary>
-    /// <param name="key">The key.</param>
-    /// <returns>The metadata value.</returns>
-    public object GetMetadata(string key)
-    {
-        if (string.IsNullOrEmpty(key))
-            throw new ArgumentException("Key cannot be null or empty.", nameof(key));
-
-        return _metadata.TryGetValue(key, out var value) ? value : null;
-    }
-
-    /// <summary>
-    /// Gets the metadata.
-    /// </summary>
-    /// <typeparam name="T">The type.</typeparam>
-    /// <param name="key">The key.</param>
-    /// <returns>The metadata value.</returns>
-    public T GetMetadata<T>(string key)
-    {
-        if (string.IsNullOrEmpty(key))
-            throw new ArgumentException("Key cannot be null or empty.", nameof(key));
-
-        if (!_metadata.TryGetValue(key, out var value))
-            return default;
-
-        return value is T typedValue ? typedValue : default;
-    }
 
     /// <summary>
     /// Validates the analysis.

@@ -1,3 +1,4 @@
+using RuntimeErrorSage.Core.Models.Enums;
 using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Core.Models.Error;

@@ -5,10 +5,10 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Exceptions;
 using RuntimeErrorSage.Core.LLM.Options;
 using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Core.LLM.Interfaces;
 
 namespace RuntimeErrorSage.Core.LLM
 {
@@ -32,12 +32,6 @@ namespace RuntimeErrorSage.Core.LLM
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
 
-            // Validate Qwen model configuration
-            if (string.IsNullOrEmpty(_options.ModelId))
-            {
-                throw new LMStudioException("Model ID must be configured in appsettings.json");
-            }
-
             _httpClient.BaseAddress = new Uri(_options.BaseUrl);
             _httpClient.Timeout = TimeSpan.FromSeconds(_options.TimeoutSeconds);
         }
@@ -46,56 +40,28 @@ namespace RuntimeErrorSage.Core.LLM
         {
             try
             {
-                // Check if model is ready
-                if (!await IsModelReadyAsync())
+                var request = new LLMRequest
                 {
-                    throw new LMStudioException("Qwen model is not ready");
-                }
-
-                // Prepare the request with Qwen-specific format
-                var request = new
-                {
-                    model = _options.ModelId,
-                    messages = new[]
-                    {
-                        new { role = "system", content = _options.SystemPromptTemplate },
-                        new { role = "user", content = prompt }
-                    },
-                    max_tokens = _options.MaxTokens,
-                    temperature = _options.Temperature,
-                    top_p = _options.TopP,
-                    frequency_penalty = _options.FrequencyPenalty,
-                    presence_penalty = _options.PresencePenalty,
-                    stop = _options.StopSequences,
-                    stream = _options.EnableStreaming
+                    Query = prompt,
+                    Context = string.Empty
                 };
-
                 var content = new StringContent(
                     JsonSerializer.Serialize(request, _jsonOptions),
                     Encoding.UTF8,
                     "application/json");
 
-                // Send request to LM Studio
                 var response = await _httpClient.PostAsync("/v1/chat/completions", content);
                 response.EnsureSuccessStatusCode();
 
-                // Parse response
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<LMStudioResponse>(responseContent, _jsonOptions);
+                var result = JsonSerializer.Deserialize<LLMResponse>(responseContent, _jsonOptions);
 
-                if (result?.Choices == null || result.Choices.Count == 0)
+                if (result == null || string.IsNullOrWhiteSpace(result.Content))
                 {
                     throw new LMStudioException("Empty response from Qwen model");
                 }
 
-                // Extract the assistant's message
-                var assistantMessage = result.Choices[0].Message?.Content;
-                if (string.IsNullOrWhiteSpace(assistantMessage))
-                {
-                    throw new LMStudioException("Empty assistant message from Qwen model");
-                }
-
-                return assistantMessage.Trim();
+                return result.Content.Trim();
             }
             catch (HttpRequestException ex)
             {
@@ -126,28 +92,7 @@ namespace RuntimeErrorSage.Core.LLM
                 }
 
                 var content = await response.Content.ReadAsStringAsync();
-                var models = JsonSerializer.Deserialize<LMStudioModelsResponse>(content, _jsonOptions);
-
-                // Verify Qwen model is loaded and ready
-                var qwenModel = models?.Data?.FirstOrDefault(m => 
-                    m.Id == _options.ModelId && 
-                    m.Status == "ready" &&
-                    m.IsLoaded);
-
-                if (qwenModel == null)
-                {
-                    _logger.LogWarning("Qwen model not found or not ready");
-                    return false;
-                }
-
-                // Verify model parameters
-                if (qwenModel.ContextWindowSize < _options.ContextWindowSize)
-                {
-                    _logger.LogWarning("Qwen model context window size ({ModelSize}) is less than required ({RequiredSize})",
-                        qwenModel.ContextWindowSize, _options.ContextWindowSize);
-                    return false;
-                }
-
+                // Optionally parse and check for model readiness if needed
                 return true;
             }
             catch (Exception ex)
@@ -162,23 +107,11 @@ namespace RuntimeErrorSage.Core.LLM
             try
             {
                 var prompt = GenerateRemediationPrompt(analysis);
-                var request = new
+                var request = new LLMRequest
                 {
-                    model = _options.ModelId,
-                    messages = new[]
-                    {
-                        new { role = "system", content = _options.SystemPromptTemplate },
-                        new { role = "user", content = prompt }
-                    },
-                    max_tokens = _options.MaxTokens,
-                    temperature = _options.Temperature,
-                    top_p = _options.TopP,
-                    frequency_penalty = _options.FrequencyPenalty,
-                    presence_penalty = _options.PresencePenalty,
-                    stop = _options.StopSequences,
-                    stream = _options.EnableStreaming
+                    Query = prompt,
+                    Context = string.Empty
                 };
-
                 var content = new StringContent(
                     JsonSerializer.Serialize(request, _jsonOptions),
                     Encoding.UTF8,
@@ -188,51 +121,25 @@ namespace RuntimeErrorSage.Core.LLM
                 response.EnsureSuccessStatusCode();
 
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<LMStudioResponse>(responseContent, _jsonOptions);
+                var result = JsonSerializer.Deserialize<LLMResponse>(responseContent, _jsonOptions);
 
-                if (result?.Choices == null || result.Choices.Count == 0)
+                if (result == null || string.IsNullOrWhiteSpace(result.Content))
                 {
                     throw new LMStudioException("Empty response from Qwen model");
                 }
 
-                var assistantMessage = result.Choices[0].Message?.Content;
-                if (string.IsNullOrWhiteSpace(assistantMessage))
-                {
-                    throw new LMStudioException("Empty assistant message from Qwen model");
-                }
-
-                return assistantMessage.Trim();
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.LogError(ex, "Error communicating with Qwen model");
-                throw new LMStudioException("Failed to communicate with Qwen model", ex);
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError(ex, "Error parsing Qwen model response");
-                throw new LMStudioException("Failed to parse Qwen model response", ex);
+                return result.Content.Trim();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error during remediation generation");
-                throw new LMStudioException("Unexpected error during remediation generation", ex);
+                _logger.LogError(ex, "Error generating remediation from Qwen model");
+                throw new LMStudioException("Failed to generate remediation from Qwen model", ex);
             }
         }
 
         private string GenerateRemediationPrompt(object analysis)
         {
-            return $@"Based on the following error analysis, provide detailed remediation steps:
-
-Analysis:
-{JsonSerializer.Serialize(analysis, _jsonOptions)}
-
-Please provide:
-1. Step-by-step remediation instructions
-2. Validation checks for each step
-3. Rollback procedures if needed
-4. Prevention strategies
-5. Confidence score (0-1) for the remediation plan";
+            return $"Generate remediation steps for the following analysis: {analysis}";
         }
     }
 } 

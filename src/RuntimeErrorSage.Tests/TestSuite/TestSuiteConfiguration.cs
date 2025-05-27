@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Metrics;
 

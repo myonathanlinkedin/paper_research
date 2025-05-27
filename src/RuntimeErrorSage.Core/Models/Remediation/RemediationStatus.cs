@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
@@ -8,53 +9,129 @@ namespace RuntimeErrorSage.Core.Models.Remediation
     /// </summary>
     public class RemediationStatus
     {
-        public string Status { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public DateTime StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
-        public List<string> Steps { get; set; } = new();
+        /// <summary>
+        /// Gets or sets the state of the remediation.
+        /// </summary>
+        public RemediationState State { get; set; } = RemediationState.NotStarted;
+
+        /// <summary>
+        /// Gets or sets the message describing the status.
+        /// </summary>
+        public string Message { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets when the status was last updated.
+        /// </summary>
+        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the progress percentage (0-100).
+        /// </summary>
+        public double Progress { get; set; }
+
+        /// <summary>
+        /// Gets or sets any error details.
+        /// </summary>
+        public string ErrorDetails { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets any warnings.
+        /// </summary>
+        public List<string> Warnings { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the status history.
+        /// </summary>
+        public List<StatusHistoryEntry> History { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets any additional status metadata.
+        /// </summary>
         public Dictionary<string, object> Metadata { get; set; } = new();
-        public ExecutionMetrics Metrics { get; set; } = new();
 
-        public void AddStep(string step)
-        {
-            Steps.Add(step);
-        }
-
-        public void AddMetadata(string key, object value)
-        {
-            Metadata[key] = value;
-        }
-
-        public void Complete()
-        {
-            EndTime = DateTime.UtcNow;
-            Status = "Completed";
-        }
-
-        public void Fail(string error)
-        {
-            EndTime = DateTime.UtcNow;
-            Status = "Failed";
-            Description = error;
-        }
-
-        public static RemediationStatus Started()
+        /// <summary>
+        /// Creates a new status with the specified state and message.
+        /// </summary>
+        /// <param name="state">The remediation state.</param>
+        /// <param name="message">The status message.</param>
+        /// <returns>A new status instance.</returns>
+        public static RemediationStatus Create(RemediationState state, string message = null)
         {
             return new RemediationStatus
             {
-                Status = "Started",
-                StartTime = DateTime.UtcNow
+                State = state,
+                Message = message ?? string.Empty,
+                LastUpdated = DateTime.UtcNow
             };
         }
 
-        public static RemediationStatus InProgress()
+        /// <summary>
+        /// Creates a new status with the NotStarted state.
+        /// </summary>
+        /// <param name="message">The status message.</param>
+        /// <returns>A new status instance.</returns>
+        public static RemediationStatus NotStarted(string message = null)
         {
-            return new RemediationStatus
-            {
-                Status = "InProgress",
-                StartTime = DateTime.UtcNow
-            };
+            return Create(RemediationState.NotStarted, message);
         }
+
+        /// <summary>
+        /// Creates a new status with the InProgress state.
+        /// </summary>
+        /// <param name="message">The status message.</param>
+        /// <param name="progress">The progress percentage (0-100).</param>
+        /// <returns>A new status instance.</returns>
+        public static RemediationStatus InProgress(string message = null, double progress = 0)
+        {
+            var status = Create(RemediationState.InProgress, message);
+            status.Progress = progress;
+            return status;
+        }
+
+        /// <summary>
+        /// Creates a new status with the Completed state.
+        /// </summary>
+        /// <param name="message">The status message.</param>
+        /// <returns>A new status instance.</returns>
+        public static RemediationStatus Completed(string message = null)
+        {
+            var status = Create(RemediationState.Completed, message);
+            status.Progress = 100;
+            return status;
+        }
+
+        /// <summary>
+        /// Creates a new status with the Failed state.
+        /// </summary>
+        /// <param name="errorDetails">The error details.</param>
+        /// <param name="message">The status message.</param>
+        /// <returns>A new status instance.</returns>
+        public static RemediationStatus Failed(string errorDetails, string message = null)
+        {
+            var status = Create(RemediationState.Failed, message ?? "Remediation failed");
+            status.ErrorDetails = errorDetails ?? string.Empty;
+            return status;
+        }
+    }
+
+    /// <summary>
+    /// Represents a status history entry.
+    /// </summary>
+    public class StatusHistoryEntry
+    {
+        /// <summary>
+        /// Gets or sets the state.
+        /// </summary>
+        public RemediationState State { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status message.
+        /// </summary>
+        public string Message { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets when the status was recorded.
+        /// </summary>
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 } 

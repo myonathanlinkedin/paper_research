@@ -7,8 +7,9 @@ using System.Diagnostics;
 using System.Text.Json;
 using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Interfaces.MCP;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.MCP.Interfaces;
+using RuntimeErrorSage.Core.Runtime.Interfaces;
 
 namespace RuntimeErrorSage.Core.Middleware;
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Common
 {
@@ -9,9 +10,24 @@ namespace RuntimeErrorSage.Core.Models.Common
     public class RemediationStatusInfo
     {
         /// <summary>
+        /// Gets the Running status constant.
+        /// </summary>
+        public static readonly RemediationStatusEnum Running = RemediationStatusEnum.InProgress;
+
+        /// <summary>
+        /// Gets the Completed status constant.
+        /// </summary>
+        public static readonly RemediationStatusEnum Completed = RemediationStatusEnum.Completed;
+
+        /// <summary>
+        /// Gets the Failed status constant.
+        /// </summary>
+        public static readonly RemediationStatusEnum Failed = RemediationStatusEnum.Failed;
+
+        /// <summary>
         /// Gets or sets the current status.
         /// </summary>
-        public RemediationStatus Status { get; set; }
+        public RemediationStatusEnum Status { get; set; }
 
         /// <summary>
         /// Gets or sets the status message.
@@ -57,7 +73,7 @@ namespace RuntimeErrorSage.Core.Models.Common
         /// <summary>
         /// Gets or sets the status.
         /// </summary>
-        public RemediationStatus Status { get; set; }
+        public RemediationStatusEnum Status { get; set; }
 
         /// <summary>
         /// Gets or sets the status message.

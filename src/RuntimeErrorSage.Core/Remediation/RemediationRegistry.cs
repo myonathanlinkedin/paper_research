@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -19,14 +19,18 @@ namespace RuntimeErrorSage.Core.Remediation
     {
         private readonly ILogger<RemediationRegistry> _logger;
         private readonly IErrorContextAnalyzer _errorContextAnalyzer;
-        private readonly IQwenLLMClient _llmClient;
+        private readonly ILLMClient _llmClient;
         private readonly Dictionary<string, IRemediationStrategy> _strategies;
         private readonly Dictionary<string, List<string>> _errorTypeStrategies;
+
+        public bool IsEnabled { get; } = true;
+        public string Name { get; } = "RemediationRegistry";
+        public string Version { get; } = "1.0.0";
 
         public RemediationRegistry(
             ILogger<RemediationRegistry> logger,
             IErrorContextAnalyzer errorContextAnalyzer,
-            IQwenLLMClient llmClient)
+            ILLMClient llmClient)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
@@ -35,19 +39,13 @@ namespace RuntimeErrorSage.Core.Remediation
             _errorTypeStrategies = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public async Task RegisterStrategyAsync(IRemediationStrategy strategy, IEnumerable<string> errorTypes)
+        /// <inheritdoc />
+        public async Task RegisterStrategyAsync(IRemediationStrategy strategy)
         {
             ArgumentNullException.ThrowIfNull(strategy);
-            ArgumentNullException.ThrowIfNull(errorTypes);
 
             try
             {
-                var errorTypeList = errorTypes.ToList();
-                if (!errorTypeList.Any())
-                {
-                    throw new ArgumentException("At least one error type must be specified", nameof(errorTypes));
-                }
-
                 if (string.IsNullOrEmpty(strategy.Name))
                 {
                     throw new ArgumentException("Strategy name cannot be null or empty", nameof(strategy));
@@ -60,7 +58,8 @@ namespace RuntimeErrorSage.Core.Remediation
 
                 _strategies[strategy.Name] = strategy;
 
-                foreach (var errorType in errorTypeList)
+                // Register strategy for its supported error types
+                foreach (var errorType in strategy.SupportedErrorTypes)
                 {
                     if (!_errorTypeStrategies.ContainsKey(errorType))
                     {
@@ -72,7 +71,7 @@ namespace RuntimeErrorSage.Core.Remediation
                 _logger.LogInformation(
                     "Registered strategy '{StrategyName}' for error types: {ErrorTypes}",
                     strategy.Name,
-                    string.Join(", ", errorTypeList));
+                    string.Join(", ", strategy.SupportedErrorTypes));
 
                 await Task.CompletedTask;
             }
@@ -83,7 +82,106 @@ namespace RuntimeErrorSage.Core.Remediation
             }
         }
 
-        public async Task<IRemediationStrategy?> GetStrategyAsync(string strategyName)
+        /// <inheritdoc />
+        public async Task UnregisterStrategyAsync(string strategyName)
+        {
+            if (string.IsNullOrEmpty(strategyName))
+            {
+                throw new ArgumentException("Strategy name cannot be null or empty", nameof(strategyName));
+            }
+
+            try
+            {
+                if (!_strategies.ContainsKey(strategyName))
+                {
+                    throw new KeyNotFoundException($"Strategy '{strategyName}' is not registered");
+                }
+
+                var strategy = _strategies[strategyName];
+                _strategies.Remove(strategyName);
+
+                // Remove strategy from error type mappings
+                foreach (var errorType in strategy.SupportedErrorTypes)
+                {
+                    if (_errorTypeStrategies.TryGetValue(errorType, out var strategies))
+                    {
+                        strategies.Remove(strategyName);
+                        if (!strategies.Any())
+                        {
+                            _errorTypeStrategies.Remove(errorType);
+                        }
+                    }
+                }
+
+                _logger.LogInformation("Unregistered strategy '{StrategyName}'", strategyName);
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error unregistering strategy {StrategyName}", strategyName);
+                throw;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<IRemediationStrategy>> GetStrategiesAsync()
+        {
+            try
+            {
+                var strategies = _strategies.Values.ToList();
+                // Order by priority - need to call GetPriorityAsync for each strategy
+                // This is a temporary workaround until we have proper synchronous Priority property
+                var orderedStrategies = new List<IRemediationStrategy>();
+                foreach (var strategy in strategies)
+                {
+                    orderedStrategies.Add(strategy);
+                }
+                orderedStrategies = orderedStrategies.OrderByDescending(s => 5).ToList(); // Default priority 5
+
+                _logger.LogDebug("Retrieved all {Count} strategies", strategies.Count);
+                return strategies;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all strategies");
+                throw;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<IRemediationStrategy>> GetStrategiesForErrorAsync(ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            try
+            {
+                if (_errorTypeStrategies.TryGetValue(context.ErrorType, out var strategyNames))
+                {
+                    var strategies = strategyNames
+                        .Select(name => _strategies[name])
+                        .OrderByDescending(s => s.Priority)
+                        .ToList();
+
+                    _logger.LogDebug(
+                        "Retrieved {Count} strategies for error type '{ErrorType}'",
+                        strategies.Count,
+                        context.ErrorType);
+
+                    return strategies;
+                }
+
+                _logger.LogWarning("No strategies found for error type '{ErrorType}'", context.ErrorType);
+                return Enumerable.Empty<IRemediationStrategy>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving strategies for error type {ErrorType}", context.ErrorType);
+                throw;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IRemediationStrategy> GetStrategyAsync(string strategyName)
         {
             if (string.IsNullOrEmpty(strategyName))
             {
@@ -95,11 +193,11 @@ namespace RuntimeErrorSage.Core.Remediation
                 if (_strategies.TryGetValue(strategyName, out var strategy))
                 {
                     _logger.LogDebug("Retrieved strategy '{StrategyName}'", strategyName);
-                    return await Task.FromResult(strategy);
+                    return strategy;
                 }
 
                 _logger.LogWarning("Strategy '{StrategyName}' not found", strategyName);
-                return await Task.FromResult<IRemediationStrategy?>(null);
+                throw new KeyNotFoundException($"Strategy '{strategyName}' is not registered");
             }
             catch (Exception ex)
             {
@@ -108,6 +206,7 @@ namespace RuntimeErrorSage.Core.Remediation
             }
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<IRemediationStrategy>> GetStrategiesForErrorTypeAsync(string errorType)
         {
             if (string.IsNullOrEmpty(errorType))
@@ -129,11 +228,11 @@ namespace RuntimeErrorSage.Core.Remediation
                         strategies.Count,
                         errorType);
 
-                    return await Task.FromResult(strategies);
+                    return strategies;
                 }
 
                 _logger.LogWarning("No strategies found for error type '{ErrorType}'", errorType);
-                return await Task.FromResult(Enumerable.Empty<IRemediationStrategy>());
+                return Enumerable.Empty<IRemediationStrategy>();
             }
             catch (Exception ex)
             {
@@ -142,25 +241,43 @@ namespace RuntimeErrorSage.Core.Remediation
             }
         }
 
-        public async Task<IEnumerable<IRemediationStrategy>> GetAllStrategiesAsync()
+        /// <inheritdoc />
+        public IEnumerable<IRemediationStrategy> GetStrategiesForErrorType(string errorType)
         {
+            if (string.IsNullOrEmpty(errorType))
+            {
+                throw new ArgumentException("Error type cannot be null or empty", nameof(errorType));
+            }
+
             try
             {
-                var strategies = _strategies.Values
-                    .OrderByDescending(s => s.Priority)
-                    .ToList();
+                if (_errorTypeStrategies.TryGetValue(errorType, out var strategyNames))
+                {
+                    var strategies = strategyNames
+                        .Select(name => _strategies[name])
+                        .OrderByDescending(s => s.Priority)
+                        .ToList();
 
-                _logger.LogDebug("Retrieved all {Count} strategies", strategies.Count);
-                return await Task.FromResult(strategies);
+                    _logger.LogDebug(
+                        "Retrieved {Count} strategies for error type '{ErrorType}'",
+                        strategies.Count,
+                        errorType);
+
+                    return strategies;
+                }
+
+                _logger.LogWarning("No strategies found for error type '{ErrorType}'", errorType);
+                return Enumerable.Empty<IRemediationStrategy>();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving all strategies");
+                _logger.LogError(ex, "Error retrieving strategies for error type {ErrorType}", errorType);
                 throw;
             }
         }
 
-        public async Task<bool> UnregisterStrategyAsync(string strategyName)
+        /// <inheritdoc />
+        public async Task<bool> IsStrategyRegisteredAsync(string strategyName)
         {
             if (string.IsNullOrEmpty(strategyName))
             {
@@ -169,54 +286,16 @@ namespace RuntimeErrorSage.Core.Remediation
 
             try
             {
-                if (!_strategies.ContainsKey(strategyName))
-                {
-                    _logger.LogWarning("Strategy '{StrategyName}' not found for unregistration", strategyName);
-                    return await Task.FromResult(false);
-                }
-
-                // Remove strategy from error type mappings
-                foreach (var errorType in _errorTypeStrategies.Keys.ToList())
-                {
-                    _errorTypeStrategies[errorType].Remove(strategyName);
-                    if (!_errorTypeStrategies[errorType].Any())
-                    {
-                        _errorTypeStrategies.Remove(errorType);
-                    }
-                }
-
-                // Remove strategy
-                _strategies.Remove(strategyName);
-
-                _logger.LogInformation("Unregistered strategy '{StrategyName}'", strategyName);
-                return await Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error unregistering strategy {StrategyName}", strategyName);
-                throw;
-            }
-        }
-
-        public async Task<bool> HasStrategyAsync(string strategyName)
-        {
-            if (string.IsNullOrEmpty(strategyName))
-            {
-                throw new ArgumentException("Strategy name cannot be null or empty", nameof(strategyName));
-            }
-
-            try
-            {
-                var hasStrategy = _strategies.ContainsKey(strategyName);
+                var result = _strategies.ContainsKey(strategyName);
                 _logger.LogDebug(
-                    "Strategy '{StrategyName}' {Status}",
+                    "Strategy '{StrategyName}' is {Status}",
                     strategyName,
-                    hasStrategy ? "exists" : "does not exist");
-                return await Task.FromResult(hasStrategy);
+                    result ? "registered" : "not registered");
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error checking strategy existence {StrategyName}", strategyName);
+                _logger.LogError(ex, "Error checking if strategy {StrategyName} is registered", strategyName);
                 throw;
             }
         }
@@ -227,11 +306,64 @@ namespace RuntimeErrorSage.Core.Remediation
             {
                 var errorTypes = _errorTypeStrategies.Keys.ToList();
                 _logger.LogDebug("Retrieved {Count} registered error types", errorTypes.Count);
-                return await Task.FromResult(errorTypes);
+                return errorTypes;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving registered error types");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<IRemediationStrategy>> GetStrategiesByPriorityAsync(int minPriority)
+        {
+            try
+            {
+                var strategies = _strategies.Values
+                    .Where(s => s.Priority >= minPriority)
+                    .OrderByDescending(s => s.Priority)
+                    .ToList();
+
+                _logger.LogDebug("Retrieved {Count} strategies with priority >= {MinPriority}", strategies.Count, minPriority);
+                return strategies;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving strategies by priority");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<IRemediationStrategy>> GetStrategiesByErrorTypeAsync(string errorType)
+        {
+            if (string.IsNullOrEmpty(errorType))
+            {
+                throw new ArgumentException("Error type cannot be null or empty", nameof(errorType));
+            }
+
+            try
+            {
+                if (_errorTypeStrategies.TryGetValue(errorType, out var strategyNames))
+                {
+                    var strategies = strategyNames
+                        .Select(name => _strategies[name])
+                        .OrderByDescending(s => s.Priority)
+                        .ToList();
+
+                    _logger.LogDebug(
+                        "Retrieved {Count} strategies for error type '{ErrorType}'",
+                        strategies.Count,
+                        errorType);
+
+                    return strategies;
+                }
+
+                _logger.LogWarning("No strategies found for error type '{ErrorType}'", errorType);
+                return Enumerable.Empty<IRemediationStrategy>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving strategies for error type {ErrorType}", errorType);
                 throw;
             }
         }

@@ -1,40 +1,47 @@
+using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Graph
 {
     /// <summary>
-    /// Represents a node in the dependency graph.
+    /// Represents a node in a dependency analysis.
     /// </summary>
     public class DependencyNode
     {
         /// <summary>
-        /// Gets or sets the node identifier.
-        /// </summary>
-        public string Id { get; set; }
-
-        /// <summary>
         /// Gets or sets the component identifier.
         /// </summary>
-        public string ComponentId { get; set; }
+        public string ComponentId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the node type.
+        /// Gets or sets the component name.
         /// </summary>
-        public string NodeType { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the node properties.
+        /// Gets or sets the component type.
         /// </summary>
-        public Dictionary<string, object> Properties { get; set; } = new();
+        public string Type { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the node reliability score (0.0 to 1.0).
+        /// Gets or sets the component version.
         /// </summary>
-        public double Reliability { get; set; } = 1.0;
+        public string Version { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the error probability (0.0 to 1.0).
+        /// Gets or sets the dependencies.
         /// </summary>
-        public double ErrorProbability { get; set; } = 0.0;
+        public List<DependencyNode> Dependencies { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the dependents.
+        /// </summary>
+        public List<DependencyNode> Dependents { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the metadata.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new();
     }
 } 

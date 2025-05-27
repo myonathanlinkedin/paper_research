@@ -1,13 +1,13 @@
-using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Models.Analysis;
+using RuntimeErrorSage.Core.Models.Graph;
 
 namespace RuntimeErrorSage.Core.Remediation.Interfaces
 {
     /// <summary>
     /// Interface for analyzing error context graphs for remediation purposes.
     /// </summary>
-    public interface IRemediationGraphAnalyzer
+    public interface IGraphAnalyzer
     {
         /// <summary>
         /// Analyzes the error context graph to determine component health, relationships, and error propagation.

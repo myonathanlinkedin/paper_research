@@ -2,7 +2,17 @@ using RuntimeErrorSage.Core.Analysis;
 using RuntimeErrorSage.Core.Remediation;
 using RuntimeErrorSage.Core.MCP;
 using Moq;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using RuntimeErrorSage.Core.MCP.Interfaces;
+using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Execution;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Tests.Helpers;
 
@@ -19,66 +29,72 @@ public static class TestHelper
     public static Mock<IRemediationExecutor> CreateRemediationExecutorMock()
     {
         var mock = new Mock<IRemediationExecutor>();
-        mock.Setup(x => x.ExecuteRemediationAsync(It.IsAny<RemediationPlan>()))
-            .ReturnsAsync(new RemediationExecution { IsSuccessful = true });
+        mock.Setup(x => x.ExecuteRemediationAsync(It.IsAny<ErrorAnalysisResult>(), It.IsAny<ErrorContext>()))
+            .ReturnsAsync(new RemediationExecution { Success = true });
         return mock;
     }
 
     public static ErrorContext CreateErrorContext(
         string errorType,
-        string errorMessage,
+        string message,
         string source,
-        Dictionary<string, object>? additionalContext = null)
+        Dictionary<string, string>? additionalContext = null)
     {
-        return new ErrorContext
-        {
-            ErrorType = errorType,
-            ErrorMessage = errorMessage,
-            Source = source,
-            Timestamp = DateTime.UtcNow,
-            AdditionalContext = additionalContext ?? new Dictionary<string, object>()
-        };
+        var error = new Error(
+            type: errorType,
+            message: message,
+            source: source,
+            stackTrace: "Test stack trace",
+            metadata: additionalContext);
+
+        return new ErrorContext(error);
     }
 
     public static RemediationPlan CreateRemediationPlan(
         string errorType,
-        IEnumerable<RemediationStrategy> strategies)
+        IEnumerable<IRemediationStrategy> strategies)
     {
-        return new RemediationPlan
+        var context = CreateErrorContext(errorType, "Test error", "Test source");
+        return new RemediationPlan(
+            name: "Test plan",
+            description: "Test description",
+            actions: new List<RemediationAction>(),
+            parameters: new Dictionary<string, object>(),
+            estimatedDuration: TimeSpan.FromMinutes(5))
         {
-            ErrorType = errorType,
+            Context = context,
             Strategies = strategies.ToList(),
-            CreatedAt = DateTime.UtcNow,
-            Status = RemediationStatus.Pending
+            Status = RemediationStatusEnum.Pending
         };
     }
 
-    public static RemediationStrategy CreateRemediationStrategy(
+    public static Mock<IRemediationStrategy> CreateRemediationStrategy(
         string name,
         string description,
         int priority = 0)
     {
-        return new RemediationStrategy
-        {
-            Name = name,
-            Description = description,
-            Priority = priority,
-            CreatedAt = DateTime.UtcNow,
-            Status = RemediationStrategyStatus.Created
-        };
+        var mock = new Mock<IRemediationStrategy>();
+        mock.Setup(x => x.Name).Returns(name);
+        mock.Setup(x => x.Description).Returns(description);
+        mock.Setup(x => x.GetPriorityAsync(It.IsAny<ErrorContext>()))
+            .ReturnsAsync(priority);
+        mock.Setup(x => x.CreatedAt).Returns(DateTime.UtcNow);
+        mock.Setup(x => x.Status).Returns(RemediationStatusEnum.NotStarted);
+        return mock;
     }
 
     public static RemediationExecution CreateRemediationExecution(
         bool isSuccessful = true,
         string? errorMessage = null)
     {
+        var now = DateTime.UtcNow;
         return new RemediationExecution
         {
-            IsSuccessful = isSuccessful,
+            Success = isSuccessful,
             ErrorMessage = errorMessage,
-            StartedAt = DateTime.UtcNow,
-            CompletedAt = DateTime.UtcNow.AddSeconds(1),
-            Status = isSuccessful ? RemediationActionStatus.Completed : RemediationActionStatus.Failed
+            StartTime = now,
+            EndTime = now.AddSeconds(1),
+            Status = isSuccessful ? RemediationStatusEnum.Completed : RemediationStatusEnum.Failed
         };
     }
 

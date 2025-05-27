@@ -1,50 +1,41 @@
-using Microsoft.OpenApi.Validations;
-using RuntimeErrorSage.Core.Models.Error;
+using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Validation;
-using System.ComponentModel.DataAnnotations;
 
-namespace RuntimeErrorSage.Core.Validation.Interfaces
+namespace RuntimeErrorSage.Core.Interfaces
 {
     /// <summary>
-    /// Defines the interface for managing validation rules.
+    /// Interface for managing validators.
     /// </summary>
     public interface IValidationRegistry
     {
         /// <summary>
-        /// Registers a validation rule.
+        /// Validates a context using a specific validator.
         /// </summary>
-        /// <param name="rule">The rule to register</param>
-        void RegisterRule(ValidationRule rule);
+        /// <param name="validationId">The validation identifier.</param>
+        /// <param name="context">The context to validate.</param>
+        /// <returns>The validation result.</returns>
+        Task<ValidationResult> ValidateAsync(string validationId, object context);
 
         /// <summary>
-        /// Unregisters a validation rule.
+        /// Registers a validator for a validation type.
         /// </summary>
-        /// <param name="ruleId">The ID of the rule to unregister</param>
-        void UnregisterRule(string ruleId);
+        /// <param name="validationType">The validation type.</param>
+        /// <param name="validator">The validator to register.</param>
+        /// <returns>True if registration was successful, false otherwise.</returns>
+        Task<bool> RegisterValidatorAsync(string validationType, IValidator validator);
 
         /// <summary>
-        /// Validates an error context against all registered rules.
+        /// Unregisters a validator for a validation type.
         /// </summary>
-        /// <param name="context">The error context to validate</param>
-        /// <returns>The validation result</returns>
-        Task<ValidationResult> ValidateAsync(ErrorContext context);
+        /// <param name="validationType">The validation type.</param>
+        /// <returns>True if unregistration was successful, false otherwise.</returns>
+        Task<bool> UnregisterValidatorAsync(string validationType);
 
         /// <summary>
-        /// Gets all registered validation rules.
+        /// Gets a validator for a validation type.
         /// </summary>
-        /// <returns>An ordered collection of validation rules</returns>
-        IEnumerable<ValidationRule> GetRules();
-
-        /// <summary>
-        /// Gets a specific validation rule by ID.
-        /// </summary>
-        /// <param name="ruleId">The ID of the rule</param>
-        /// <returns>The validation rule if found, null otherwise</returns>
-        ValidationRule? GetRule(string ruleId);
-
-        /// <summary>
-        /// Clears the validation result cache.
-        /// </summary>
-        void ClearCache();
+        /// <param name="validationType">The validation type.</param>
+        /// <returns>The validator if found, null otherwise.</returns>
+        Task<IValidator> GetValidatorAsync(string validationType);
     }
 } 

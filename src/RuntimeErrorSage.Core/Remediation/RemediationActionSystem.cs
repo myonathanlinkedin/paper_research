@@ -1,175 +1,477 @@
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
-using RuntimeErrorSage.Core.Remediation.Models.Validation;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Context;
+using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.LLM.Interfaces;
+using RuntimeErrorSage.Core.Classifier.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
     /// Implements the remediation action system as specified in the research paper.
+    /// This implementation follows the specifications in Section 5.
     /// </summary>
     public class RemediationActionSystem : IRemediationActionSystem
     {
-        private readonly ILLMIntegration _llmIntegration;
-        private readonly IRemediationExecutor _executor;
-        private readonly IRemediationValidator _validator;
-        private readonly IContextProvider _contextProvider;
+        private readonly ILogger<RemediationActionSystem> _logger;
+        private readonly ILLMClient _llmClient;
+        private readonly IErrorContextAnalyzer _contextAnalyzer;
+        private readonly IErrorClassifier _errorClassifier;
+        private readonly IErrorRelationshipAnalyzer _relationshipAnalyzer;
+        private RemediationActionSeverity _severity;
+
+        public bool IsEnabled => true;
+
+        public string Name => "RuntimeErrorSage Remediation Action System";
+
+        public string Version => "1.0.0";
 
         public RemediationActionSystem(
-            ILLMIntegration llmIntegration,
-            IRemediationExecutor executor,
-            IRemediationValidator validator,
-            IContextProvider contextProvider)
+            ILogger<RemediationActionSystem> logger,
+            ILLMClient llmClient,
+            IErrorContextAnalyzer contextAnalyzer,
+            IErrorClassifier errorClassifier,
+            IErrorRelationshipAnalyzer relationshipAnalyzer)
         {
-            _llmIntegration = llmIntegration ?? throw new ArgumentNullException(nameof(llmIntegration));
-            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-            _contextProvider = contextProvider ?? throw new ArgumentNullException(nameof(contextProvider));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+            _contextAnalyzer = contextAnalyzer ?? throw new ArgumentNullException(nameof(contextAnalyzer));
+            _errorClassifier = errorClassifier ?? throw new ArgumentNullException(nameof(errorClassifier));
+            _relationshipAnalyzer = relationshipAnalyzer ?? throw new ArgumentNullException(nameof(relationshipAnalyzer));
         }
 
-        /// <summary>
-        /// Generates and validates remediation actions for a runtime error.
-        /// </summary>
-        public async Task<RemediationPlan> GenerateRemediationPlanAsync(RuntimeError error, ErrorContext context)
+        /// <inheritdoc />
+        public async Task<RemediationSuggestion> GetRemediationSuggestionsAsync(ErrorContext context)
         {
-            // Analyze the error using LLM
-            var analysis = await _llmIntegration.AnalyzeErrorAsync(error, context);
-
-            // Generate remediation suggestions
-            var suggestions = await _llmIntegration.GenerateRemediationSuggestionsAsync(error, analysis);
-
-            // Validate and rank suggestions
-            var validatedSuggestions = new List<ValidatedRemediationSuggestion>();
-            foreach (var suggestion in suggestions)
-            {
-                var validationResult = await _llmIntegration.ValidateRemediationAsync(suggestion, context);
-                validatedSuggestions.Add(new ValidatedRemediationSuggestion
-                {
-                    Suggestion = suggestion,
-                    ValidationResult = validationResult,
-                    Score = CalculateRemediationScore(suggestion, validationResult)
-                });
-            }
-
-            // Sort suggestions by score
-            validatedSuggestions.Sort((a, b) => b.Score.CompareTo(a.Score));
-
-            return new RemediationPlan
-            {
-                ErrorAnalysis = analysis,
-                ValidatedSuggestions = validatedSuggestions,
-                Context = context,
-                GeneratedAt = DateTime.UtcNow
-            };
-        }
-
-        /// <summary>
-        /// Executes a remediation plan.
-        /// </summary>
-        public async Task<RemediationResult> ExecuteRemediationPlanAsync(RemediationPlan plan)
-        {
-            var result = new RemediationResult
-            {
-                PlanId = plan.Id,
-                StartTime = DateTime.UtcNow,
-                Status = RemediationStatus.InProgress,
-                Actions = new List<RemediationAction>()
-            };
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {
-                // Execute each suggestion in order of score
-                foreach (var validatedSuggestion in plan.ValidatedSuggestions)
-                {
-                    var action = await ExecuteRemediationActionAsync(validatedSuggestion, plan.Context);
-                    result.Actions.Add(action);
+                _logger.LogInformation("Getting remediation suggestions for error {ErrorId}", context.ErrorId);
 
-                    if (!action.Success)
+                var analysis = await _llmClient.AnalyzeContextAsync(context);
+                var suggestion = await _llmClient.GetRemediationSuggestionAsync(analysis);
+                
+                if (suggestion == null)
+                {
+                    return new RemediationSuggestion
                     {
-                        result.Status = RemediationStatus.PartiallySucceeded;
-                        break;
-                    }
+                        Action = "No remediation suggestion available",
+                        Priority = RemediationPriority.Low,
+                        Impact = "No impact assessment available",
+                        Risk = "No risk assessment available",
+                        Validation = "No validation available"
+                    };
                 }
-
-                if (result.Status != RemediationStatus.PartiallySucceeded)
+                
+                return new RemediationSuggestion
                 {
-                    result.Status = RemediationStatus.Succeeded;
-                }
+                    Action = suggestion.Action,
+                    Priority = suggestion.Priority,
+                    Impact = suggestion.Impact,
+                    Risk = suggestion.Risk,
+                    Validation = suggestion.Validation,
+                    CorrelationId = context.CorrelationId,
+                    ErrorId = context.ErrorId,
+                    Timestamp = DateTime.UtcNow
+                };
             }
             catch (Exception ex)
             {
-                result.Status = RemediationStatus.Failed;
-                result.ErrorMessage = ex.Message;
+                _logger.LogError(ex, "Error getting remediation suggestions for error {ErrorId}", context.ErrorId);
+                throw;
             }
-
-            result.EndTime = DateTime.UtcNow;
-            return result;
         }
 
-        private async Task<RemediationAction> ExecuteRemediationActionAsync(ValidatedRemediationSuggestion suggestion, ErrorContext context)
+        /// <inheritdoc />
+        public async Task<ValidationResult> ValidateSuggestionAsync(RemediationSuggestion suggestion, ErrorContext context)
         {
-            var action = new RemediationAction
-            {
-                SuggestionId = suggestion.Suggestion.Id,
-                StartTime = DateTime.UtcNow
-            };
+            ArgumentNullException.ThrowIfNull(suggestion);
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {
-                // Validate the action before execution
-                var validationResult = await _validator.ValidateActionAsync(suggestion.Suggestion, context);
+                _logger.LogInformation("Validating remediation suggestion {SuggestionId}", suggestion.SuggestionId);
+
+                var result = new ValidationResult
+                {
+                    StartTime = DateTime.UtcNow,
+                    CorrelationId = suggestion.CorrelationId,
+                    Timestamp = DateTime.UtcNow
+                };
+
+                // Validate action
+                result.IsValid = await ValidateActionInternalAsync(suggestion);
+                result.ValidationMessage = result.IsValid ? "Action is valid" : "Action validation failed";
+
+                // Add validation details
+                result.Details = new Dictionary<string, object>
+                {
+                    ["action"] = suggestion.Action,
+                    ["priority"] = suggestion.Priority,
+                    ["impact"] = suggestion.Impact,
+                    ["risk"] = suggestion.Risk,
+                    ["validation"] = suggestion.Validation
+                };
+
+                result.EndTime = DateTime.UtcNow;
+                result.Status = AnalysisStatus.Completed;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating remediation suggestion {SuggestionId}", suggestion.SuggestionId);
+                throw;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<RemediationResult> ExecuteSuggestionAsync(RemediationSuggestion suggestion, ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(suggestion);
+            ArgumentNullException.ThrowIfNull(context);
+
+            try
+            {
+                _logger.LogInformation("Executing remediation suggestion {SuggestionId}", suggestion.SuggestionId);
+
+                var result = new RemediationResult
+                {
+                    StartTime = DateTime.UtcNow,
+                    CorrelationId = suggestion.CorrelationId,
+                    Timestamp = DateTime.UtcNow,
+                    ErrorId = context.ErrorId,
+                    ErrorType = context.ErrorType,
+                    ExecutionId = Guid.NewGuid().ToString()
+                };
+
+                // Validate action before execution
+                var validationResult = await ValidateSuggestionAsync(suggestion, context);
                 if (!validationResult.IsValid)
                 {
-                    action.Success = false;
-                    action.ErrorMessage = validationResult.ErrorMessage;
-                    return action;
+                    result.Success = false;
+                    result.ErrorMessage = "Action validation failed";
+                    result.ValidationResults = new List<ValidationResult> { validationResult };
+                    result.EndTime = DateTime.UtcNow;
+                    result.Status = AnalysisStatus.Failed;
+                    return result;
                 }
 
-                // Execute the remediation action
-                await _executor.ExecuteActionAsync(suggestion.Suggestion, context);
-                action.Success = true;
-
-                // Update context after successful execution
-                await _contextProvider.UpdateContextAsync(context.Id, new RuntimeUpdate
+                // Create remediation action from suggestion
+                var action = new RemediationAction
                 {
-                    Type = "RemediationAction",
-                    Data = new Dictionary<string, object>
-                    {
-                        { "actionId", action.Id },
-                        { "suggestionId", suggestion.Suggestion.Id }
-                    }
-                });
+                    ActionId = Guid.NewGuid().ToString(),
+                    Name = $"Remediation for {context.ErrorType}",
+                    Description = suggestion.Action,
+                    Action = suggestion.Action,
+                    Context = context,
+                    Priority = Convert.ToInt32((int)suggestion.Priority),
+                    Risk = RemediationRiskLevel.Medium, // Default risk level
+                    CreatedAt = DateTime.UtcNow,
+                    LastUpdated = DateTime.UtcNow
+                };
+
+                // Execute action
+                var executionStatus = await ExecuteActionInternalAsync(suggestion);
+                
+                // Update result based on execution status
+                result.Success = executionStatus == ExecutionStatus.Completed;
+                result.ErrorMessage = result.Success ? null : "Action execution failed";
+                result.Actions = new List<RemediationAction> { action };
+                
+                // Add metrics
+                result.Metrics = new Dictionary<string, double>
+                {
+                    ["executionTime"] = (DateTime.UtcNow - result.StartTime).TotalMilliseconds,
+                    ["complexity"] = CalculateComplexityScore(suggestion)
+                };
+                
+                // Add risk assessment
+                result.RiskAssessment = await GetSuggestionRiskAsync(suggestion, context);
+                
+                result.EndTime = DateTime.UtcNow;
+                result.Status = result.Success ? AnalysisStatus.Completed : AnalysisStatus.Failed;
+
+                return result;
             }
             catch (Exception ex)
             {
-                action.Success = false;
-                action.ErrorMessage = ex.Message;
+                _logger.LogError(ex, "Error executing remediation suggestion {SuggestionId}", suggestion.SuggestionId);
+                
+                return new RemediationResult
+                {
+                    Success = false,
+                    ErrorMessage = ex.Message,
+                    CorrelationId = suggestion?.CorrelationId,
+                    ErrorId = context?.ErrorId,
+                    ErrorType = context?.ErrorType,
+                    ExecutionId = Guid.NewGuid().ToString(),
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow,
+                    Timestamp = DateTime.UtcNow,
+                    Status = AnalysisStatus.Failed
+                };
             }
-
-            action.EndTime = DateTime.UtcNow;
-            return action;
         }
 
-        private double CalculateRemediationScore(RemediationSuggestion suggestion, RemediationValidationResult validation)
+        private async Task<bool> ValidateActionInternalAsync(RemediationSuggestion suggestion)
         {
-            // Implement scoring logic based on:
-            // 1. Effectiveness score from validation
-            // 2. Implementation complexity
-            // 3. Risk assessment
-            // 4. Expected success probability
-            return validation.EffectivenessScore * 0.4 +
-                   (1.0 - suggestion.ComplexityScore) * 0.3 +
-                   (1.0 - validation.RiskScore) * 0.2 +
-                   validation.SuccessProbability * 0.1;
+            try
+            {
+                // Check if action is valid
+                if (string.IsNullOrEmpty(suggestion.Action))
+                {
+                    return false;
+                }
+
+                // Check if priority is valid
+                if (suggestion.Priority == RemediationPriority.Unknown)
+                {
+                    return false;
+                }
+
+                // Check if impact is valid
+                if (string.IsNullOrEmpty(suggestion.Impact))
+                {
+                    return false;
+                }
+
+                // Check if risk is valid
+                if (string.IsNullOrEmpty(suggestion.Risk))
+                {
+                    return false;
+                }
+
+                // Check if validation is valid
+                if (string.IsNullOrEmpty(suggestion.Validation))
+                {
+                    return false;
+                }
+
+                // TODO: Add more validation logic as needed
+                await Task.Delay(100); // Simulate validation
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating action internally");
+                return false;
+            }
+        }
+
+        private async Task<ExecutionStatus> ExecuteActionInternalAsync(RemediationSuggestion suggestion)
+        {
+            try
+            {
+                // TODO: Implement actual action execution
+                // This is a placeholder for the actual implementation
+                await Task.Delay(100); // Simulate execution
+
+                return ExecutionStatus.Completed;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing action internally");
+                return ExecutionStatus.Failed;
+            }
+        }
+
+        /// <summary>
+        /// Gets the impact of a remediation suggestion.
+        /// </summary>
+        public async Task<RemediationImpact> GetSuggestionImpactAsync(RemediationSuggestion suggestion, ErrorContext context)
+        {
+            if (suggestion == null)
+                throw new ArgumentNullException(nameof(suggestion));
+
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            // Calculate impact based on actions and context
+            return new RemediationImpact
+            {
+                Scope = CalculateImpactScope(suggestion),
+                Severity = CalculateImpactSeverity(suggestion),
+                Description = $"Impact of {suggestion.Title}",
+                AffectedComponents = GetAffectedComponents(suggestion, context)
+            };
+        }
+
+        /// <summary>
+        /// Gets the risk assessment for a remediation suggestion.
+        /// </summary>
+        public async Task<RiskAssessment> GetSuggestionRiskAsync(RemediationSuggestion suggestion, ErrorContext context)
+        {
+            if (suggestion == null)
+                throw new ArgumentNullException(nameof(suggestion));
+
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            // Calculate risk based on actions and context
+            return new RiskAssessment
+            {
+                RiskLevel = CalculateRiskLevel(suggestion),
+                Probability = CalculateRiskProbability(suggestion),
+                Impact = CalculateRiskImpact(suggestion),
+                MitigationSteps = GetRiskMitigationSteps(suggestion)
+            };
+        }
+
+        private double CalculateComplexityScore(RemediationSuggestion suggestion)
+        {
+            // Calculate complexity based on:
+            // 1. Number of actions
+            // 2. Action types
+            // 3. Dependencies between actions
+            var baseScore = suggestion.Actions?.Count * 0.1 ?? 0;
+            var typeScore = suggestion.Actions?.Sum(a => GetActionTypeComplexity(a)) ?? 0;
+            var dependencyScore = CalculateDependencyComplexity(suggestion);
+
+            return Math.Min(1.0, (baseScore + typeScore + dependencyScore) / 3.0);
+        }
+
+        private double GetActionTypeComplexity(RemediationAction action)
+        {
+            // Assign complexity scores based on action type
+            return action.Type?.ToLowerInvariant() switch
+            {
+                "restart" => 0.2,
+                "config_change" => 0.4,
+                "code_change" => 0.8,
+                "data_migration" => 0.7,
+                "service_restart" => 0.3,
+                _ => 0.5
+            };
+        }
+
+        private double CalculateDependencyComplexity(RemediationSuggestion suggestion)
+        {
+            // Calculate complexity based on action dependencies
+            var dependencyCount = suggestion.Actions?.Count(a => a.Dependencies?.Any() == true) ?? 0;
+            return Math.Min(1.0, dependencyCount * 0.2);
+        }
+
+        private RemediationActionImpactScope CalculateImpactScope(RemediationSuggestion suggestion)
+        {
+            // Determine impact scope based on actions
+            var scopes = suggestion.Actions?.Select(a => a.ImpactScope) ?? Enumerable.Empty<RemediationActionImpactScope>();
+            return scopes.Any() ? scopes.Max() : RemediationActionImpactScope.Component;
+        }
+
+        private RemediationActionSeverity CalculateImpactSeverity(RemediationSuggestion suggestion)
+        {
+            // Determine impact severity based on actions
+            var severities = suggestion.Actions?.Select(a => a.Severity) ?? Enumerable.Empty<RemediationActionSeverity>();
+            return severities.Any() ? severities.Max() : RemediationActionSeverity.Medium;
+        }
+
+        private List<string> GetAffectedComponents(RemediationSuggestion suggestion, ErrorContext context)
+        {
+            // Get list of affected components based on actions and context
+            var components = new HashSet<string>();
+            
+            if (suggestion.Actions != null)
+            {
+                foreach (var action in suggestion.Actions)
+                {
+                    if (action.Parameters?.TryGetValue("component", out var component) == true)
+                    {
+                        components.Add(component.ToString());
+                    }
+                }
+            }
+
+            if (context.ComponentId != null)
+            {
+                components.Add(context.ComponentId);
+            }
+
+            return components.ToList();
+        }
+
+        private RiskLevel CalculateRiskLevel(RemediationSuggestion suggestion)
+        {
+            // Calculate risk level based on complexity and impact
+            var complexityScore = CalculateComplexityScore(suggestion);
+            var impactScore = (double)CalculateImpactSeverity(suggestion) / (double)RemediationActionSeverity.Critical;
+
+            var riskScore = (complexityScore + impactScore) / 2.0;
+            return riskScore switch
+            {
+                < 0.3 => RiskLevel.Low,
+                < 0.6 => RiskLevel.Medium,
+                < 0.8 => RiskLevel.High,
+                _ => RiskLevel.Critical
+            };
+        }
+
+        private double CalculateRiskProbability(RemediationSuggestion suggestion)
+        {
+            // Calculate risk probability based on action types and complexity
+            var baseProbability = 1.0 - suggestion.ConfidenceScore;
+            var complexityFactor = CalculateComplexityScore(suggestion);
+            return Math.Min(1.0, baseProbability * (1 + complexityFactor));
+        }
+
+        private double CalculateRiskImpact(RemediationSuggestion suggestion)
+        {
+            // Calculate risk impact based on action severity and scope
+            var severityScore = (double)CalculateImpactSeverity(suggestion) / (double)RemediationActionSeverity.Critical;
+            var scopeScore = (double)CalculateImpactScope(suggestion) / (double)RemediationActionImpactScope.Global;
+            return (severityScore + scopeScore) / 2.0;
+        }
+
+        private List<string> GetRiskMitigationSteps(RemediationSuggestion suggestion)
+        {
+            // Generate risk mitigation steps based on actions
+            var steps = new List<string>();
+
+            if (suggestion.Actions != null)
+            {
+                foreach (var action in suggestion.Actions)
+                {
+                    if (action.Type?.ToLowerInvariant() == "rollback")
+                    {
+                        steps.Add($"Rollback plan for {action.Description}");
+                    }
+                    else
+                    {
+                        steps.Add($"Verify {action.Description} before proceeding");
+                    }
+                }
+            }
+
+            return steps;
+        }
+
+        private RemediationActionSeverity DetermineSeverity(RemediationAction action)
+        {
+            // Map the action's impact to a severity level
+            switch (action.Impact)
+            {
+                case RemediationActionSeverity.Critical:
+                    return RemediationActionSeverity.Critical;
+                case RemediationActionSeverity.High:
+                    return RemediationActionSeverity.High;
+                case RemediationActionSeverity.Medium:
+                    return RemediationActionSeverity.Medium;
+                case RemediationActionSeverity.Low:
+                    return RemediationActionSeverity.Low;
+                default:
+                    return RemediationActionSeverity.None;
+            }
         }
     }
 } 

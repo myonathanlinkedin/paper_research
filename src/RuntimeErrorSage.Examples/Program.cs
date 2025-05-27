@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RuntimeErrorSage.Core.Extensions;
-using RuntimeErrorSage.Core.Analysis;
 using RuntimeErrorSage.Examples.Models;
 using RuntimeErrorSage.Examples.Services;
 using RuntimeErrorSage.Examples.Exceptions;
 using RuntimeErrorSage.Examples.Models.Responses;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

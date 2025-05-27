@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.LLM;
 using System.Text.Json;
 using System.Text;
 using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.LLM.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation
 {

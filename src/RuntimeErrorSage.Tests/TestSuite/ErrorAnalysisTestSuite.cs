@@ -8,6 +8,7 @@ using Moq;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 using RuntimeErrorSage.Tests.TestSuite.Enums;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Tests.TestSuite
 {

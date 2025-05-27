@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Services.Interfaces;
-using RuntimeErrorSage.Core.Graph.Interfaces;
-using RelatedErrorModel = RuntimeErrorSage.Core.Models.Error.RelatedError;
 
 namespace RuntimeErrorSage.Core.Services;
 
@@ -102,7 +103,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelatedError>> FindRelatedErrorsAsync(ErrorContext context, DependencyGraph graph)
+    public async Task<IEnumerable<Models.Error.RelatedError>> FindRelatedErrorsAsync(ErrorContext context, DependencyGraph graph)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(graph);
@@ -137,5 +138,19 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             _logger.LogError(ex, "Error validating graph analyzer configuration");
             throw;
         }
+    }
+
+    /// <summary>
+    /// Analyzes relationships between errors.
+    /// </summary>
+    /// <param name="primaryError">The primary error to analyze.</param>
+    /// <param name="relatedErrors">The potentially related errors.</param>
+    /// <returns>A list of related errors with relationship information.</returns>
+    public async Task<IEnumerable<Models.Error.RelatedError>> AnalyzeRelationshipsAsync(
+        RuntimeError primaryError, 
+        IEnumerable<RuntimeError> relatedErrors)
+    {
+        // ... existing code ...
+        return null; // Placeholder return, actual implementation needed
     }
 } 

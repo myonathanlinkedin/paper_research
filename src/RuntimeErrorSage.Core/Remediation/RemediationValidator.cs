@@ -7,20 +7,46 @@ using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using System.Collections.Concurrent;
-using CoreIRemediationValidator = RuntimeErrorSage.Core.Interfaces.IRemediationValidator;
-using RemediationIRemediationValidator = RuntimeErrorSage.Core.Remediation.Interfaces.IRemediationValidator;
-using ValidationResult = RuntimeErrorSage.Core.Models.Validation.RemediationValidationResult;
+using IRemediationValidator = RuntimeErrorSage.Core.Remediation.Interfaces.IRemediationValidator;
+using ValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
 using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Graph;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.LLM.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Validation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
 /// <summary>
+/// Options for the remediation validator.
+/// </summary>
+public class RemediationValidatorOptions
+{
+    /// <summary>
+    /// Gets or sets whether the validator is enabled.
+    /// </summary>
+    public bool IsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the timeout for validation operations.
+    /// </summary>
+    public TimeSpan ValidationTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Gets or sets the minimum health score for system health validation.
+    /// </summary>
+    public double MinimumHealthScore { get; set; } = 70.0;
+}
+
+/// <summary>
 /// Validates remediation actions and strategies.
 /// </summary>
-public class RemediationValidator : CoreIRemediationValidator, RemediationIRemediationValidator, IDisposable
+public class RemediationValidator : IRemediationValidator, IDisposable
 {
     private readonly ILogger<RemediationValidator> _logger;
     private readonly IReadOnlyCollection<IValidationRule> _rules;
@@ -31,10 +57,16 @@ public class RemediationValidator : CoreIRemediationValidator, RemediationIRemed
     private readonly IErrorContextAnalyzer _errorContextAnalyzer;
     private readonly IRemediationMetricsCollector _metricsCollector;
     private readonly IRemediationRegistry _registry;
-    private readonly IQwenLLMClient _llmClient;
+    private readonly ILLMClient _llmClient;
+    private readonly Dictionary<string, IRemediationActionValidator> _supportedActions;
 
+    /// <inheritdoc/>
     public bool IsEnabled => !_disposed && _options.IsEnabled;
+
+    /// <inheritdoc/>
     public string Name => "RuntimeErrorSage Remediation Validator";
+
+    /// <inheritdoc/>
     public string Version => "1.0.0";
 
     private static readonly Action<ILogger, string, Exception?> LogValidationError =
@@ -51,7 +83,8 @@ public class RemediationValidator : CoreIRemediationValidator, RemediationIRemed
         IErrorContextAnalyzer errorContextAnalyzer,
         IRemediationMetricsCollector metricsCollector,
         IRemediationRegistry registry,
-        IQwenLLMClient llmClient)
+        ILLMClient llmClient,
+        Dictionary<string, IRemediationActionValidator> supportedActions)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -62,93 +95,20 @@ public class RemediationValidator : CoreIRemediationValidator, RemediationIRemed
         _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+        _supportedActions = supportedActions ?? throw new ArgumentNullException(nameof(supportedActions));
     }
 
-    public async Task<RemediationValidationResult> ValidateRemediationAsync(ErrorContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ThrowIfDisposed();
-
-        var result = new RemediationValidationResult
-        {
-            IsValid = true,
-            Timestamp = DateTime.UtcNow
-        };
-
-        try
-        {
-            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(_globalCts.Token);
-            timeoutCts.CancelAfter(_options.ValidationTimeout);
-
-            foreach (var rule in _rules)
-            {
-                var ruleResult = await rule.ValidateAsync(context, timeoutCts.Token).ConfigureAwait(false);
-                if (!ruleResult.IsValid)
-                {
-                    result.IsValid = false;
-                    result.Errors.Add(new ValidationError
-                    {
-                        Code = ruleResult.Code,
-                        Message = ruleResult.Message,
-                        Severity = ruleResult.Severity,
-                        PropertyName = ruleResult.PropertyName,
-                        Timestamp = DateTime.UtcNow
-                    });
-                }
-            }
-
-            foreach (var warning in _warnings)
-            {
-                var warningResult = await warning.ValidateAsync(context, timeoutCts.Token).ConfigureAwait(false);
-                if (!warningResult.IsValid)
-                {
-                    result.Warnings.Add(new ValidationWarning
-                    {
-                        Code = warningResult.Code,
-                        Message = warningResult.Message,
-                        Severity = warningResult.Severity,
-                        WarningId = Guid.NewGuid().ToString(),
-                        Timestamp = DateTime.UtcNow
-                    });
-                }
-            }
-        }
-        catch (OperationCanceledException) when (!_globalCts.Token.IsCancellationRequested)
-        {
-            result.IsValid = false;
-            result.Errors.Add(new ValidationError
-            {
-                Code = "ValidationTimeout",
-                Message = "Validation timed out",
-                Severity = SeverityLevel.Error,
-                Timestamp = DateTime.UtcNow
-            });
-        }
-        catch (Exception ex)
-        {
-            LogValidationError(_logger, ex.Message, ex);
-            result.IsValid = false;
-            result.Errors.Add(new ValidationError
-            {
-                Code = "ValidationError",
-                Message = ex.Message,
-                Severity = SeverityLevel.Error,
-                Timestamp = DateTime.UtcNow
-            });
-        }
-
-        return result;
-    }
-
-    public async Task<RemediationValidationResult> ValidatePlanAsync(RemediationPlan plan, ErrorContext context)
+    /// <inheritdoc/>
+    public async Task<ValidationResult> ValidatePlanAsync(RemediationPlan plan, ErrorContext context)
     {
         ArgumentNullException.ThrowIfNull(plan);
         ArgumentNullException.ThrowIfNull(context);
         ThrowIfDisposed();
 
-        var result = new RemediationValidationResult
+        var result = new ValidationResult
         {
-            IsValid = true,
+            StartTime = DateTime.UtcNow,
+            CorrelationId = context.CorrelationId,
             Timestamp = DateTime.UtcNow
         };
 
@@ -158,200 +118,71 @@ public class RemediationValidator : CoreIRemediationValidator, RemediationIRemed
             timeoutCts.CancelAfter(_options.ValidationTimeout);
 
             // Validate plan properties
-            if (string.IsNullOrEmpty(plan.PlanId))
+            if (string.IsNullOrEmpty(plan.Name))
             {
-                result.IsValid = false;
-                result.Errors.Add(new ValidationError
-                {
-                    Code = "InvalidPlanId",
-                    Message = "Plan ID is required",
-                    Severity = SeverityLevel.Error,
-                    Timestamp = DateTime.UtcNow
-                });
+                result.AddError("Plan name is required");
             }
 
-            if (plan.Steps == null || !plan.Steps.Any())
+            if (string.IsNullOrEmpty(plan.Description))
             {
-                result.IsValid = false;
-                result.Errors.Add(new ValidationError
-                {
-                    Code = "NoSteps",
-                    Message = "Plan must contain at least one step",
-                    Severity = SeverityLevel.Error,
-                    Timestamp = DateTime.UtcNow
-                });
+                result.AddError("Plan description is required");
             }
 
-            // Validate each step
-            if (plan.Steps != null)
+            if (plan.Actions == null || plan.Actions.Count == 0)
             {
-                foreach (var step in plan.Steps)
+                result.AddError("Plan must contain at least one action");
+            }
+
+            // Validate each action
+            if (plan.Actions != null)
+            {
+                foreach (var action in plan.Actions)
                 {
-                    var stepResult = await ValidateStepAsync(step, context).ConfigureAwait(false);
-                    if (!stepResult.IsValid)
+                    var actionResult = await ValidateActionAsync(action as RemediationAction, context);
+                    if (!actionResult.IsValid)
                     {
                         result.IsValid = false;
-                        result.Errors.AddRange(stepResult.Errors);
-                    }
-                    result.Warnings.AddRange(stepResult.Warnings);
-                }
-            }
-
-            // Validate step dependencies
-            if (plan.Steps != null)
-            {
-                var stepIds = new HashSet<string>();
-                foreach (var step in plan.Steps)
-                {
-                    if (!stepIds.Add(step.StepId))
-                    {
-                        result.IsValid = false;
-                        result.Errors.Add(new ValidationError
+                        foreach (var error in actionResult.Errors)
                         {
-                            Code = "DuplicateStepId",
-                            Message = $"Duplicate step ID found: {step.StepId}",
-                            Severity = SeverityLevel.Error,
-                            Timestamp = DateTime.UtcNow
-                        });
-                    }
-                }
-            }
-        }
-        catch (OperationCanceledException) when (!_globalCts.Token.IsCancellationRequested)
-        {
-            result.IsValid = false;
-            result.Errors.Add(new ValidationError
-            {
-                Code = "ValidationTimeout",
-                Message = "Plan validation timed out",
-                Severity = SeverityLevel.Error,
-                Timestamp = DateTime.UtcNow
-            });
-        }
-        catch (Exception ex)
-        {
-            LogValidationError(_logger, ex.Message, ex);
-            result.IsValid = false;
-            result.Errors.Add(new ValidationError
-            {
-                Code = "PlanValidationError",
-                Message = ex.Message,
-                Severity = SeverityLevel.Error,
-                Timestamp = DateTime.UtcNow
-            });
-        }
-
-        return result;
-    }
-
-    public async Task<RemediationValidationResult> ValidateStepAsync(RemediationStep step, ErrorContext context)
-    {
-        ArgumentNullException.ThrowIfNull(step);
-        ArgumentNullException.ThrowIfNull(context);
-        ThrowIfDisposed();
-
-        var result = new RemediationValidationResult
-        {
-            IsValid = true,
-            Timestamp = DateTime.UtcNow
-        };
-
-        try
-        {
-            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(_globalCts.Token);
-            timeoutCts.CancelAfter(_options.ValidationTimeout);
-
-            if (string.IsNullOrEmpty(step.StepId))
-            {
-                result.IsValid = false;
-                result.Errors.Add(new ValidationError
-                {
-                    Code = "InvalidStepId",
-                    Message = "Step ID is required",
-                    Severity = SeverityLevel.Error,
-                    Timestamp = DateTime.UtcNow
-                });
-            }
-
-            if (step.Action == null)
-            {
-                result.IsValid = false;
-                result.Errors.Add(new ValidationError
-                {
-                    Code = "NoAction",
-                    Message = "Step must have an action",
-                    Severity = SeverityLevel.Error,
-                    Timestamp = DateTime.UtcNow
-                });
-            }
-            else if (_options.EnableStrictValidation)
-            {
-                if (!_options.AllowedStepTypes.TryGetValue(step.Action.Type.ToLowerInvariant(), out var allowedParams))
-                {
-                    result.IsValid = false;
-                    result.Errors.Add(new ValidationError
-                    {
-                        Code = "InvalidActionType",
-                        Message = $"Action type '{step.Action.Type}' is not allowed",
-                        Severity = SeverityLevel.Error,
-                        Timestamp = DateTime.UtcNow
-                    });
-                }
-                else
-                {
-                    // Validate action parameters
-                    foreach (var param in step.Action.Parameters)
-                    {
-                        if (!allowedParams.Contains(param.Key.ToLowerInvariant()))
-                        {
-                            result.Warnings.Add(new ValidationWarning
-                            {
-                                Code = "UnknownParameter",
-                                Message = $"Unknown parameter '{param.Key}' for action type '{step.Action.Type}'",
-                                Severity = SeverityLevel.Warning,
-                                Timestamp = DateTime.UtcNow
-                            });
+                            result.AddError(error);
                         }
                     }
                 }
             }
-        }
-        catch (OperationCanceledException) when (!_globalCts.Token.IsCancellationRequested)
-        {
-            result.IsValid = false;
-            result.Errors.Add(new ValidationError
+
+            // Add warning if no rollback plan
+            if (plan.RollbackPlan == null)
             {
-                Code = "ValidationTimeout",
-                Message = "Step validation timed out",
-                Severity = SeverityLevel.Error,
-                Timestamp = DateTime.UtcNow
-            });
+                result.AddWarning("Plan does not have a rollback plan");
+            }
+
+            result.EndTime = DateTime.UtcNow;
+            return result;
         }
         catch (Exception ex)
         {
-            LogValidationError(_logger, ex.Message, ex);
-            result.IsValid = false;
-            result.Errors.Add(new ValidationError
+            _logger.LogError(ex, "Error validating plan {PlanId}", plan.PlanId);
+            return new ValidationResult
             {
-                Code = "StepValidationError",
-                Message = ex.Message,
-                Severity = SeverityLevel.Error,
-                Timestamp = DateTime.UtcNow
-            });
+                IsValid = false,
+                ValidationMessage = $"Error validating plan: {ex.Message}",
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow
+            };
         }
-
-        return result;
     }
 
-    public async Task<RemediationValidationResult> ValidateStrategyAsync(IRemediationStrategy strategy, ErrorContext context)
+    /// <inheritdoc/>
+    public async Task<ValidationResult> ValidateStrategyAsync(IRemediationStrategy strategy, ErrorContext context)
     {
         ArgumentNullException.ThrowIfNull(strategy);
         ArgumentNullException.ThrowIfNull(context);
         ThrowIfDisposed();
 
-        var result = new RemediationValidationResult
+        var result = new ValidationResult
         {
-            IsValid = true,
+            StartTime = DateTime.UtcNow,
+            CorrelationId = context.CorrelationId,
             Timestamp = DateTime.UtcNow
         };
 
@@ -363,115 +194,47 @@ public class RemediationValidator : CoreIRemediationValidator, RemediationIRemed
             // Validate strategy properties
             if (string.IsNullOrEmpty(strategy.Name))
             {
-                result.IsValid = false;
-                result.Errors.Add(new ValidationError
-                {
-                    Code = "InvalidStrategyName",
-                    Message = "Strategy name is required",
-                    Severity = SeverityLevel.Error,
-                    Timestamp = DateTime.UtcNow
-                });
+                result.AddError("Strategy name is required");
             }
 
             if (string.IsNullOrEmpty(strategy.Description))
             {
-                result.IsValid = false;
-                result.Errors.Add(new ValidationError
-                {
-                    Code = "InvalidStrategyDescription",
-                    Message = "Strategy description is required",
-                    Severity = SeverityLevel.Error,
-                    Timestamp = DateTime.UtcNow
-                });
+                result.AddError("Strategy description is required");
             }
 
-            if (strategy.Priority < 1 || strategy.Priority > 5)
+            if (strategy.Actions == null || !strategy.Actions.Any())
             {
-                result.IsValid = false;
-                result.Errors.Add(new ValidationError
-                {
-                    Code = "InvalidStrategyPriority",
-                    Message = "Strategy priority must be between 1 and 5",
-                    Severity = SeverityLevel.Error,
-                    Timestamp = DateTime.UtcNow
-                });
+                result.AddError("Strategy must have at least one action");
             }
 
-            // Validate strategy parameters
-            if (strategy.Parameters == null)
-            {
-                result.Warnings.Add(new ValidationWarning
-                {
-                    Code = "NoParameters",
-                    Message = "Strategy has no parameters defined",
-                    Severity = SeverityLevel.Warning,
-                    Timestamp = DateTime.UtcNow
-                });
-            }
-            else if (!_options.AllowedStrategyTypes.TryGetValue(strategy.Name.ToLowerInvariant(), out var allowedParams))
-            {
-                result.Warnings.Add(new ValidationWarning
-                {
-                    Code = "UnknownStrategyType",
-                    Message = $"Strategy type '{strategy.Name}' is not in the allowed list",
-                    Severity = SeverityLevel.Warning,
-                    Timestamp = DateTime.UtcNow
-                });
-            }
-            else
-            {
-                foreach (var param in allowedParams)
-                {
-                    if (!strategy.Parameters.ContainsKey(param))
-                    {
-                        result.Warnings.Add(new ValidationWarning
-                        {
-                            Code = "MissingParameter",
-                            Message = $"Required parameter '{param}' is missing",
-                            Severity = SeverityLevel.Warning,
-                            Timestamp = DateTime.UtcNow
-                        });
-                    }
-                }
-            }
-        }
-        catch (OperationCanceledException) when (!_globalCts.Token.IsCancellationRequested)
-        {
-            result.IsValid = false;
-            result.Errors.Add(new ValidationError
-            {
-                Code = "ValidationTimeout",
-                Message = "Strategy validation timed out",
-                Severity = SeverityLevel.Error,
-                Timestamp = DateTime.UtcNow
-            });
+            result.EndTime = DateTime.UtcNow;
+            return result;
         }
         catch (Exception ex)
         {
-            LogValidationError(_logger, ex.Message, ex);
-            result.IsValid = false;
-            result.Errors.Add(new ValidationError
+            _logger.LogError(ex, "Error validating strategy {StrategyName}", strategy.Name);
+            return new ValidationResult
             {
-                Code = "ValidationError",
-                Message = ex.Message,
-                Severity = SeverityLevel.Error,
-                Timestamp = DateTime.UtcNow
-            });
+                IsValid = false,
+                ValidationMessage = $"Error validating strategy: {ex.Message}",
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow
+            };
         }
-
-        return result;
     }
 
-    public async Task<HealthStatusInfo> ValidateSystemHealthAsync(ErrorContext context)
+    /// <inheritdoc/>
+    public async Task<ValidationResult> ValidateActionAsync(RemediationAction action, ErrorContext context)
     {
+        ArgumentNullException.ThrowIfNull(action);
         ArgumentNullException.ThrowIfNull(context);
         ThrowIfDisposed();
 
-        var healthStatus = new HealthStatusInfo
+        var result = new ValidationResult
         {
-            IsHealthy = true,
-            StatusMessage = "System health check completed successfully",
-            LastCheckTime = DateTime.UtcNow
+            StartTime = DateTime.UtcNow,
+            CorrelationId = context.CorrelationId,
+            Timestamp = DateTime.UtcNow
         };
 
         try
@@ -479,100 +242,222 @@ public class RemediationValidator : CoreIRemediationValidator, RemediationIRemed
             using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(_globalCts.Token);
             timeoutCts.CancelAfter(_options.ValidationTimeout);
 
-            // Validate system metrics
-            var metricsValidation = await ValidateMetricsAsync(context, timeoutCts.Token).ConfigureAwait(false);
-            healthStatus.IsHealthy &= metricsValidation.IsHealthy;
-            healthStatus.Metrics = metricsValidation.Metrics;
-
-            if (!metricsValidation.IsHealthy)
+            // Validate action properties
+            if (string.IsNullOrEmpty(action.Name))
             {
-                healthStatus.Warnings.Add("System metrics exceeded thresholds");
+                result.AddError("Action name is required");
             }
 
-            // Add system details
-            healthStatus.Details["os_version"] = Environment.OSVersion.ToString();
-            healthStatus.Details["machine_name"] = Environment.MachineName;
-            healthStatus.Details["processor_count"] = Environment.ProcessorCount;
-        }
-        catch (OperationCanceledException) when (!_globalCts.Token.IsCancellationRequested)
-        {
-            healthStatus.IsHealthy = false;
-            healthStatus.Errors.Add("Health check timed out");
+            if (string.IsNullOrEmpty(action.Description))
+            {
+                result.AddError("Action description is required");
+            }
+
+            if (string.IsNullOrEmpty(action.Action))
+            {
+                result.AddError("Action cannot be empty");
+            }
+
+            // Perform risk assessment
+            var riskLevel = CalculateRiskLevel(action);
+            var potentialIssues = GeneratePotentialIssues(action);
+            var mitigationSteps = GenerateMitigationSteps(action);
+
+            if (riskLevel == RiskLevel.High || riskLevel == RiskLevel.Critical)
+            {
+                result.AddWarning($"Action has {riskLevel} risk level", ValidationSeverity.Warning);
+                foreach (var issue in potentialIssues)
+                {
+                    result.AddWarning($"Potential issue: {issue}", ValidationSeverity.Warning);
+                }
+            }
+
+            result.EndTime = DateTime.UtcNow;
+            return result;
         }
         catch (Exception ex)
         {
-            LogValidationError(_logger, ex.Message, ex);
-            healthStatus.IsHealthy = false;
-            healthStatus.Errors.Add($"Health check error: {ex.Message}");
+            _logger.LogError(ex, "Error validating action {ActionName}", action?.Name);
+            return new ValidationResult
+            {
+                IsValid = false,
+                ValidationMessage = $"Error validating action: {ex.Message}",
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow
+            };
         }
-
-        return healthStatus;
     }
 
-    private async Task<MetricsValidationResult> ValidateMetricsAsync(ErrorContext context, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public async Task<ValidationResult> ValidateStepAsync(RemediationStep step, ErrorContext context)
     {
-        var result = new MetricsValidationResult
+        ArgumentNullException.ThrowIfNull(step);
+        ArgumentNullException.ThrowIfNull(context);
+        ThrowIfDisposed();
+
+        var result = new ValidationResult
         {
-            IsHealthy = true,
-            HealthScore = 1.0,
-            Metrics = new Dictionary<string, double>()
+            StartTime = DateTime.UtcNow,
+            CorrelationId = context.CorrelationId,
+            Timestamp = DateTime.UtcNow
         };
 
         try
         {
-            var metrics = await CollectMetricsAsync(context, cancellationToken).ConfigureAwait(false);
-            foreach (var (key, value) in metrics)
-            {
-                var threshold = _options.DefaultMetricThreshold;
-                result.Metrics[key] = value;
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(_globalCts.Token);
+            timeoutCts.CancelAfter(_options.ValidationTimeout);
 
-                if (value > threshold)
-                {
-                    result.IsHealthy = false;
-                    result.HealthScore *= 0.8; // Reduce health score by 20% for each threshold exceeded
-                }
+            // Validate step properties
+            if (string.IsNullOrEmpty(step.Name))
+            {
+                result.AddError("Step name is required");
             }
+
+            if (string.IsNullOrEmpty(step.Description))
+            {
+                result.AddError("Step description is required");
+            }
+
+            result.EndTime = DateTime.UtcNow;
+            return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating metrics");
-            result.IsHealthy = false;
-            result.HealthScore = 0.0;
+            _logger.LogError(ex, "Error validating step {StepId}", step.StepId);
+            return new ValidationResult
+            {
+                IsValid = false,
+                ValidationMessage = $"Error validating step: {ex.Message}",
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow
+            };
         }
-
-        return result;
     }
 
-    private async Task<Dictionary<string, double>> CollectMetricsAsync(ErrorContext context, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public async Task<ValidationResult> ValidateRemediationAsync(ErrorAnalysisResult analysisResult, ErrorContext context)
     {
-        // This is a placeholder implementation. In a real system, you would collect actual metrics.
-        var metrics = new Dictionary<string, double>
+        ArgumentNullException.ThrowIfNull(analysisResult);
+        ArgumentNullException.ThrowIfNull(context);
+        ThrowIfDisposed();
+
+        var result = new ValidationResult
         {
-            ["cpu_usage"] = Random.Shared.NextDouble() * 100,
-            ["memory_usage"] = Random.Shared.NextDouble() * 100,
-            ["disk_usage"] = Random.Shared.NextDouble() * 100
+            StartTime = DateTime.UtcNow,
+            CorrelationId = context.CorrelationId,
+            Timestamp = DateTime.UtcNow
         };
 
-        return metrics;
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposed)
+        try
         {
-            if (disposing)
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(_globalCts.Token);
+            timeoutCts.CancelAfter(_options.ValidationTimeout);
+
+            // Validate analysis result properties
+            if (string.IsNullOrEmpty(analysisResult.AnalysisId))
             {
-                _globalCts.Cancel();
-                _globalCts.Dispose();
+                result.IsValid = false;
+                result.ValidationMessage = "Analysis ID is required";
+                result.Details = new Dictionary<string, object>
+                {
+                    ["code"] = "InvalidAnalysisId",
+                    ["severity"] = SeverityLevel.Error
+                };
+                return result;
             }
-            _disposed = true;
+
+            if (analysisResult.ErrorContext == null)
+            {
+                result.IsValid = false;
+                result.ValidationMessage = "Error context is required";
+                result.Details = new Dictionary<string, object>
+                {
+                    ["code"] = "MissingErrorContext",
+                    ["severity"] = SeverityLevel.Error
+                };
+                return result;
+            }
+
+            // Validate each suggested remediation strategy
+            if (analysisResult.SuggestedStrategies != null && analysisResult.SuggestedStrategies.Any())
+            {
+                foreach (var strategy in analysisResult.SuggestedStrategies)
+                {
+                    var strategyResult = await ValidateStrategyAsync(strategy, context);
+                    if (!strategyResult.IsValid)
+                    {
+                        result.IsValid = false;
+                        result.ValidationMessage = $"Invalid strategy: {strategyResult.ValidationMessage}";
+                        result.Details = strategyResult.Details;
+                        result.Errors.Add(new ValidationError 
+                        { 
+                            ErrorId = Guid.NewGuid().ToString(),
+                            Message = strategyResult.ValidationMessage,
+                            Severity = ValidationSeverity.Error,
+                            Code = "InvalidStrategy",
+                            Timestamp = DateTime.UtcNow
+                        });
+                    }
+                }
+            }
+
+            // Check system health
+            var healthStatus = await ValidateSystemHealthAsync(context);
+            if (!healthStatus.IsHealthy)
+            {
+                result.Warnings.Add(new ValidationWarning
+                {
+                    WarningId = Guid.NewGuid().ToString(),
+                    Message = "System health check failed",
+                    Severity = ValidationSeverity.Warning,
+                    Code = "UnhealthySystem",
+                    Timestamp = DateTime.UtcNow
+                });
+            }
+
+            result.EndTime = DateTime.UtcNow;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating remediation");
+            return new ValidationResult
+            {
+                IsValid = false,
+                ValidationMessage = $"Error validating remediation: {ex.Message}",
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow
+            };
         }
     }
 
-    public void Dispose()
+    /// <inheritdoc/>
+    public async Task<RemediationHealthStatus> ValidateSystemHealthAsync(ErrorContext context)
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        ArgumentNullException.ThrowIfNull(context);
+        ThrowIfDisposed();
+
+        try
+        {
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(_globalCts.Token);
+            timeoutCts.CancelAfter(_options.ValidationTimeout);
+
+            var metrics = await CollectMetricsAsync(context, timeoutCts.Token);
+            var healthScore = CalculateHealthScore(metrics);
+
+            return new RemediationHealthStatus
+            {
+                IsHealthy = healthScore >= _options.MinimumHealthScore,
+                HealthScore = healthScore,
+                Metrics = metrics,
+                Timestamp = DateTime.UtcNow
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating system health");
+            throw new RemediationValidationException("Error validating system health", ex);
+        }
     }
 
     private void ThrowIfDisposed()
@@ -583,52 +468,81 @@ public class RemediationValidator : CoreIRemediationValidator, RemediationIRemed
         }
     }
 
-    Task<Models.Remediation.RemediationValidationResult> CoreIRemediationValidator.ValidatePlanAsync(RemediationPlan plan, ErrorContext context)
+    public void Dispose()
     {
-        ArgumentNullException.ThrowIfNull(plan);
-        ArgumentNullException.ThrowIfNull(context);
-        ThrowIfDisposed();
-
-        return ValidatePlanAsync(plan, context);
-    }
-
-    Task<Models.Remediation.RemediationValidationResult> CoreIRemediationValidator.ValidateRemediationAsync(ErrorContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ThrowIfDisposed();
-
-        return ValidateRemediationAsync(context);
-    }
-
-    Task<Models.Remediation.RemediationValidationResult> CoreIRemediationValidator.ValidateStepAsync(RemediationStep remediationStep, ErrorContext context)
-    {
-        ArgumentNullException.ThrowIfNull(remediationStep);
-        ArgumentNullException.ThrowIfNull(context);
-        ThrowIfDisposed();
-
-        return ValidateStepAsync(remediationStep, context);
-    }
-
-    Task<RemediationHealthStatus> RemediationIRemediationValidator.ValidateSystemHealthAsync(ErrorContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ThrowIfDisposed();
-
-        return ValidateSystemHealthAsync(context).ContinueWith(t => new RemediationHealthStatus
+        if (!_disposed)
         {
-            IsHealthy = t.Result.IsHealthy,
-            HealthScore = t.Result.HealthScore,
-            Timestamp = t.Result.Timestamp,
-            Details = t.Result.Details,
-            Issues = t.Result.Issues,
-            Metrics = t.Result.Metrics
-        });
+            _globalCts.Cancel();
+            _globalCts.Dispose();
+            _disposed = true;
+        }
     }
-}
 
-public class MetricsValidationResult
-{
-    public required bool IsHealthy { get; set; }
-    public required double HealthScore { get; set; }
-    public required Dictionary<string, double> Metrics { get; set; } = new();
+    private async Task<Dictionary<string, double>> CollectMetricsAsync(ErrorContext context, CancellationToken cancellationToken)
+    {
+        var metrics = new Dictionary<string, double>();
+        try
+        {
+            var systemMetrics = await _metricsCollector.CollectSystemMetricsAsync(context, cancellationToken);
+            foreach (var metric in systemMetrics)
+            {
+                metrics[metric.Key] = metric.Value;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error collecting system metrics");
+        }
+        return metrics;
+    }
+
+    private double CalculateHealthScore(Dictionary<string, double> metrics)
+    {
+        if (metrics == null || !metrics.Any())
+        {
+            return 0;
+        }
+
+        var totalScore = 0.0;
+        var weightSum = 0.0;
+
+        foreach (var metric in metrics)
+        {
+            var weight = GetMetricWeight(metric.Key);
+            totalScore += metric.Value * weight;
+            weightSum += weight;
+        }
+
+        return weightSum > 0 ? totalScore / weightSum : 0;
+    }
+
+    private double GetMetricWeight(string metricKey)
+    {
+        return metricKey switch
+        {
+            "cpu_usage" => 0.3,
+            "memory_usage" => 0.3,
+            "disk_usage" => 0.2,
+            "network_usage" => 0.2,
+            _ => 0.1
+        };
+    }
+
+    private RiskLevel CalculateRiskLevel(RemediationAction action)
+    {
+        // Implement risk level calculation logic
+        return RiskLevel.Medium;
+    }
+
+    private List<string> GeneratePotentialIssues(RemediationAction action)
+    {
+        // Implement potential issues generation logic
+        return new List<string>();
+    }
+
+    private List<string> GenerateMitigationSteps(RemediationAction action)
+    {
+        // Implement mitigation steps generation logic
+        return new List<string>();
+    }
 }

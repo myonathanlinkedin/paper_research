@@ -3,45 +3,43 @@ using System;
 namespace RuntimeErrorSage.Core.Models.Common
 {
     /// <summary>
-    /// Represents a time range for metrics aggregation.
+    /// Represents a time range with start and end times.
     /// </summary>
     public class TimeRange
     {
         /// <summary>
         /// Gets or sets the start time of the range.
         /// </summary>
-        public DateTime Start { get; set; }
+        public DateTime StartTime { get; set; }
 
         /// <summary>
         /// Gets or sets the end time of the range.
         /// </summary>
-        public DateTime End { get; set; }
+        public DateTime EndTime { get; set; }
 
         /// <summary>
         /// Gets the duration of the time range.
         /// </summary>
-        public TimeSpan Duration => End - Start;
+        public TimeSpan Duration => EndTime - StartTime;
 
         /// <summary>
-        /// Creates a new time range.
+        /// Initializes a new instance of the <see cref="TimeRange"/> class.
         /// </summary>
         public TimeRange()
         {
-            Start = DateTime.UtcNow;
-            End = DateTime.UtcNow;
+            StartTime = DateTime.UtcNow;
+            EndTime = DateTime.UtcNow;
         }
 
         /// <summary>
-        /// Creates a new time range with the specified start and end times.
+        /// Initializes a new instance of the <see cref="TimeRange"/> class.
         /// </summary>
-        public TimeRange(DateTime start, DateTime end)
+        /// <param name="startTime">The start time.</param>
+        /// <param name="endTime">The end time.</param>
+        public TimeRange(DateTime startTime, DateTime endTime)
         {
-            if (end < start)
-            {
-                throw new ArgumentException("End time must be greater than or equal to start time.", nameof(end));
-            }
-            Start = start;
-            End = end;
+            StartTime = startTime;
+            EndTime = endTime;
         }
 
         /// <summary>
@@ -76,7 +74,7 @@ namespace RuntimeErrorSage.Core.Models.Common
         /// </summary>
         public bool Contains(DateTime time)
         {
-            return time >= Start && time <= End;
+            return time >= StartTime && time <= EndTime;
         }
 
         /// <summary>
@@ -86,7 +84,7 @@ namespace RuntimeErrorSage.Core.Models.Common
         /// <returns>True if the ranges overlap; otherwise, false.</returns>
         public bool Overlaps(TimeRange other)
         {
-            return Start <= other.End && other.Start <= End;
+            return StartTime <= other.EndTime && other.StartTime <= EndTime;
         }
 
         /// <summary>
@@ -101,8 +99,8 @@ namespace RuntimeErrorSage.Core.Models.Common
                 return null;
             }
 
-            var start = Start > other.Start ? Start : other.Start;
-            var end = End < other.End ? End : other.End;
+            var start = StartTime > other.StartTime ? StartTime : other.StartTime;
+            var end = EndTime < other.EndTime ? EndTime : other.EndTime;
 
             return new TimeRange(start, end);
         }

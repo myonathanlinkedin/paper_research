@@ -1,42 +1,57 @@
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Represents the status of a remediation execution.
+/// Defines the status of a remediation execution operation.
 /// </summary>
 public enum RemediationExecutionStatus
 {
     /// <summary>
-    /// The remediation has not started.
+    /// The execution has not started yet.
     /// </summary>
     NotStarted = 0,
 
     /// <summary>
-    /// The remediation is currently running.
+    /// The execution is in progress.
     /// </summary>
-    Running = 1,
+    InProgress = 1,
 
     /// <summary>
-    /// The remediation has completed successfully.
+    /// The execution has completed successfully.
     /// </summary>
     Completed = 2,
 
     /// <summary>
-    /// The remediation has failed.
+    /// The execution has failed.
     /// </summary>
     Failed = 3,
 
     /// <summary>
-    /// The remediation has been cancelled.
+    /// The execution has been cancelled.
     /// </summary>
     Cancelled = 4,
 
     /// <summary>
-    /// The remediation is waiting for external input or conditions.
+    /// The execution is waiting for approval.
     /// </summary>
-    Waiting = 5,
+    WaitingForApproval = 5,
 
     /// <summary>
-    /// The remediation has been partially completed.
+    /// The execution is being rolled back.
     /// </summary>
-    PartiallyCompleted = 6
+    RollingBack = 6,
+
+    /// <summary>
+    /// The execution has been rolled back successfully.
+    /// </summary>
+    RolledBack = 7,
+
+    /// <summary>
+    /// The execution has been partially completed.
+    /// </summary>
+    PartiallyCompleted = 8,
+
+    /// <summary>
+    /// The execution has timed out.
+    /// </summary>
+    TimedOut = 9
 } 

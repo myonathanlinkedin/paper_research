@@ -17,17 +17,17 @@ namespace RuntimeErrorSage.Tests.Scenarios;
 /// </summary>
 public class RemediationStrategyTests
 {
-    private readonly Mock<ILogger<RemediationStrategy>> _loggerMock;
+    private readonly Mock<ILogger<RemediationStrategyModel>> _loggerMock;
     private readonly Mock<IErrorContextAnalyzer> _errorContextAnalyzerMock;
     private readonly Mock<IRemediationRegistry> _registryMock;
     private readonly Mock<IRemediationValidator> _validatorMock;
     private readonly Mock<IRemediationMetricsCollector> _metricsCollectorMock;
     private readonly Mock<IQwenLLMClient> _llmClientMock;
-    private readonly RemediationStrategy _strategy;
+    private readonly RemediationStrategyModel _strategy;
 
     public RemediationStrategyTests()
     {
-        _loggerMock = new Mock<ILogger<RemediationStrategy>>();
+        _loggerMock = new Mock<ILogger<RemediationStrategyModel>>();
         _errorContextAnalyzerMock = new Mock<IErrorContextAnalyzer>();
         _registryMock = new Mock<IRemediationRegistry>();
         _validatorMock = new Mock<IRemediationValidator>();

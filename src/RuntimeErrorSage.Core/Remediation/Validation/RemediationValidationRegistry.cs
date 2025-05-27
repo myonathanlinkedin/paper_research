@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Models.Validation;
+using RuntimeErrorSage.Core.Models.Validation;
 using RemediationPlan = RuntimeErrorSage.Core.Models.Remediation.RemediationPlan;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
+using CoreValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
+using DataAnnotationsValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
 namespace RuntimeErrorSage.Core.Remediation.Validation;
 
@@ -64,9 +67,9 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
         }
     }
 
-    public async Task<ValidationResult> ValidateAsync(RemediationPlan plan, ErrorContext context)
+    public async Task<DataAnnotationsValidationResult> ValidateAsync(RemediationPlan plan, ErrorContext context)
     {
-        var results = new List<ValidationResult>();
+        var results = new List<CoreValidationResult>();
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
         try
@@ -90,38 +93,21 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
                 }
             }
 
-            // Aggregate results
-            var aggregatedResult = new ValidationResult
+            // Convert to System.ComponentModel.DataAnnotations.ValidationResult
+            if (results.Any(r => !r.IsSuccessful))
             {
-                IsSuccessful = results.All(r => r.IsSuccessful),
-                Message = results.Any(r => !r.IsSuccessful)
-                    ? string.Join("; ", results.Where(r => !r.IsSuccessful).Select(r => r.Message))
-                    : "All validation rules passed",
-                Details = new Dictionary<string, object>
-                {
-                    ["RuleResults"] = results,
-                    ["TotalRules"] = results.Count,
-                    ["FailedRules"] = results.Count(r => !r.IsSuccessful)
-                },
-                DurationMs = stopwatch.ElapsedMilliseconds
-            };
+                var errorMessages = results
+                    .Where(r => !r.IsSuccessful)
+                    .Select(r => r.Message);
+                return new DataAnnotationsValidationResult(string.Join("; ", errorMessages));
+            }
 
-            return aggregatedResult;
+            return DataAnnotationsValidationResult.Success;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during validation");
-            return new ValidationResult
-            {
-                IsSuccessful = false,
-                Message = $"Validation failed: {ex.Message}",
-                Details = new Dictionary<string, object>
-                {
-                    ["Exception"] = ex.ToString(),
-                    ["DurationMs"] = stopwatch.ElapsedMilliseconds
-                },
-                DurationMs = stopwatch.ElapsedMilliseconds
-            };
+            return new DataAnnotationsValidationResult($"Validation failed: {ex.Message}");
         }
         finally
         {
@@ -129,7 +115,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
         }
     }
 
-    private async Task<ValidationResult> ValidateWithRuleAsync(
+    private async Task<CoreValidationResult> ValidateWithRuleAsync(
         RemediationValidationRule rule,
         RemediationPlan plan,
         ErrorContext context)
@@ -144,7 +130,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
             .SetSlidingExpiration(rule.CacheDuration)
             .SetAbsoluteExpiration(rule.CacheDuration * 2);
 
-        if (_cache.TryGetValue<ValidationResult>(cacheKey, out var cachedResult))
+        if (_cache.TryGetValue<CoreValidationResult>(cacheKey, out var cachedResult))
         {
             cachedResult.IsFromCache = true;
             return cachedResult;
@@ -155,12 +141,14 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
         return result;
     }
 
+    /// <inheritdoc />
     public IEnumerable<RemediationValidationRule> GetRules()
     {
         return _rules.Values.OrderByDescending(r => r.Priority);
     }
 
-    public RemediationValidationRule? GetRule(string ruleId)
+    /// <inheritdoc />
+    public RemediationValidationRule GetRule(string ruleId)
     {
         return _rules.TryGetValue(ruleId, out var rule) ? rule : null;
     }

@@ -6,7 +6,6 @@ using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Options;
-using RuntimeErrorSage.Core.Services.Interfaces;
 using RuntimeErrorSage.Core.Validation;
 using RuntimeErrorSage.Core.Graph;
 using RuntimeErrorSage.Core.LLM;
@@ -18,6 +17,14 @@ using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.Context;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Runtime.Interfaces;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Core.Graph.Interfaces;
+using RuntimeErrorSage.Core.Runtime.Exceptions;
+using System.ComponentModel.DataAnnotations;
+using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Core.Services.Interfaces;
 
 namespace RuntimeErrorSage.Core.Services;
 
@@ -173,15 +180,15 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
 
             // Analyze context graph
             var graphAnalysis = await _errorContextAnalyzer.AnalyzeContextAsync(enrichedContext);
-            enrichedContext.Metadata["GraphAnalysis"] = graphAnalysis;
+            enrichedContext.AddMetadata("GraphAnalysis", graphAnalysis); // Use AddMetadata method to add data
 
             // Analyze with LLM
             var llmAnalysis = await _llmClient.AnalyzeContextAsync(enrichedContext);
-            enrichedContext.Metadata["LLMAnalysis"] = llmAnalysis;
+            enrichedContext.AddMetadata("LLMAnalysis", llmAnalysis); // Use AddMetadata method to add data
 
             // Add MCP analysis
             var mcpAnalysis = await _mcp.AnalyzeContextAsync(enrichedContext);
-            enrichedContext.Metadata["MCPAnalysis"] = mcpAnalysis;
+            enrichedContext.AddMetadata("MCPAnalysis", mcpAnalysis); // Use AddMetadata method to add data
 
             return enrichedContext;
         }
@@ -418,8 +425,19 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
     {
         try
         {
-            _logger.LogInformation("Analyzing with LLM");
-            return await _llmClient.AnalyzeContextAsync(context);
+            _logger.LogInformation("Analyzing error context with LLM");
+
+            // Analyze with LLM
+            var llmAnalysis = await _llmClient.AnalyzeContextAsync(context);
+
+            // Enrich with additional insights
+            var enrichedAnalysis = await _errorAnalyzer.EnrichLLMAnalysisAsync(llmAnalysis);
+
+            // Add graph analysis insights
+            var graphAnalysis = await _graphAnalyzer.AnalyzeContextAsync(context);
+            enrichedAnalysis.GraphInsights = graphAnalysis.Insights;
+
+            return enrichedAnalysis;
         }
         catch (Exception ex)
         {

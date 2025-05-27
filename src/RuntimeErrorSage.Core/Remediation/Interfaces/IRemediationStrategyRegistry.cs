@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
 
 namespace RuntimeErrorSage.Core.Remediation.Interfaces;
 
@@ -61,4 +59,25 @@ public interface IRemediationStrategyRegistry
     /// <returns>The strategy metadata</returns>
     /// <exception cref="KeyNotFoundException">Thrown when no metadata is found</exception>
     StrategyMetadata GetStrategyMetadata(string strategyName, string version);
+
+    /// <summary>
+    /// Gets a specific strategy by name asynchronously.
+    /// </summary>
+    /// <param name="strategyName">The name of the strategy</param>
+    /// <returns>The strategy if found, null otherwise</returns>
+    Task<IRemediationStrategy> GetStrategyAsync(string strategyName);
+
+    /// <summary>
+    /// Gets all strategies for a specific error type asynchronously.
+    /// </summary>
+    /// <param name="errorType">The error type</param>
+    /// <returns>A collection of strategies</returns>
+    Task<IEnumerable<IRemediationStrategy>> GetStrategiesForErrorTypeAsync(string errorType);
+
+    /// <summary>
+    /// Gets all strategies for a specific error type synchronously.
+    /// </summary>
+    /// <param name="errorType">The error type</param>
+    /// <returns>A collection of strategies</returns>
+    IEnumerable<IRemediationStrategy> GetStrategiesForErrorType(string errorType);
 } 

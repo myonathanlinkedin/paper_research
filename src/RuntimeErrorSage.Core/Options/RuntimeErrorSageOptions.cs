@@ -1,7 +1,7 @@
 using System;
 using RuntimeErrorSage.Core.LLM.Options;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Options
 {
@@ -180,7 +180,6 @@ namespace RuntimeErrorSage.Core.Options
         public int CacheExpirationMinutes { get; set; } = 30;
         public int LLMTimeoutSeconds { get; set; } = 30;
         public int ValidationTimeoutSeconds { get; set; } = 10;
-        public int RemediationTimeoutSeconds { get; set; } = 60;
         public int GraphAnalysisTimeoutSeconds { get; set; } = 30;
         public string LLMModel { get; set; } = "Qwen-2.5-7B-Instruct-1M";
         public string LLMEndpoint { get; set; } = "https://api.example.com/llm";
@@ -189,6 +188,31 @@ namespace RuntimeErrorSage.Core.Options
         public string RemediationEndpoint { get; set; } = "https://api.example.com/remediation";
         public string MetricsEndpoint { get; set; } = "https://api.example.com/metrics";
         public Dictionary<string, string> AdditionalSettings { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets whether auto-remediation is enabled.
+        /// </summary>
+        public bool EnableAutoRemediation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum number of remediation attempts.
+        /// </summary>
+        public int MaxRemediationAttempts { get; set; } = 3;
+
+        /// <summary>
+        /// Gets or sets whether to enable verbose logging.
+        /// </summary>
+        public bool EnableVerboseLogging { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to enable telemetry.
+        /// </summary>
+        public bool EnableTelemetry { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the timeout for remediation operations in seconds.
+        /// </summary>
+        public int RemediationTimeoutSeconds { get; set; } = 300;
     }
 
     /// <summary>

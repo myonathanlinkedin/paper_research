@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 using RelatedErrorModel = RuntimeErrorSage.Core.Models.Error.RelatedError;

@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Models.Execution;
+using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Execution;
 
 namespace RuntimeErrorSage.Core.Models.Metrics
 {
@@ -256,54 +255,6 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         {
             if (StepMetrics.Count == 0) return CpuUsage;
             return Math.Max(CpuUsage, StepMetrics.Max(m => m.CpuUsage));
-        }
-    }
-
-    public class StepMetrics
-    {
-        /// <summary>
-        /// Gets or sets the step name.
-        /// </summary>
-        public string StepName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the start time.
-        /// </summary>
-        public DateTime StartTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the end time.
-        /// </summary>
-        public DateTime EndTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the latency.
-        /// </summary>
-        public double Latency { get; set; }
-
-        /// <summary>
-        /// Gets or sets the CPU usage.
-        /// </summary>
-        public double CpuUsage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the memory usage.
-        /// </summary>
-        public double MemoryUsage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the metadata.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
-
-        /// <summary>
-        /// Adds metadata.
-        /// </summary>
-        /// <param name="key">The key of the metadata.</param>
-        /// <param name="value">The value of the metadata.</param>
-        public void AddMetadata(string key, object value)
-        {
-            Metadata[key] = value;
         }
     }
 } 

@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.LLM;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Remediation.Models.Analysis;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
-using RuntimeErrorSage.Core.Remediation.Models.Validation;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -25,7 +21,11 @@ namespace RuntimeErrorSage.Core.Remediation
         private readonly IRemediationValidator _validator;
         private readonly IRemediationStrategyProvider _strategyProvider;
         private readonly IRemediationMetricsCollector _metricsCollector;
-        private readonly IQwenLLMClient _llmClient;
+        private readonly ILLMClient _llmClient;
+
+        public bool IsEnabled { get; } = true;
+        public string Name { get; } = "RemediationAnalyzer";
+        public string Version { get; } = "1.0.0";
 
         public RemediationAnalyzer(
             ILogger<RemediationAnalyzer> logger,
@@ -34,7 +34,7 @@ namespace RuntimeErrorSage.Core.Remediation
             IRemediationValidator validator,
             IRemediationStrategyProvider strategyProvider,
             IRemediationMetricsCollector metricsCollector,
-            IQwenLLMClient llmClient)
+            ILLMClient llmClient)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
@@ -43,6 +43,46 @@ namespace RuntimeErrorSage.Core.Remediation
             _strategyProvider = strategyProvider ?? throw new ArgumentNullException(nameof(strategyProvider));
             _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
             _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+        }
+
+        public async Task<RiskAssessment> GetRiskAssessmentAsync(ErrorContext context)
+        {
+            var analysis = await AnalyzeErrorAsync(context);
+            return new RiskAssessment
+            {
+                RiskLevel = CalculateRiskLevel(analysis),
+                PotentialIssues = analysis.ApplicableStrategies.Select(s => s.Reasoning).ToList(),
+                MitigationSteps = GenerateMitigationSteps(analysis),
+                Timestamp = DateTime.UtcNow,
+                CorrelationId = context.CorrelationId
+            };
+        }
+
+        public async Task<RemediationImpact> GetImpactAsync(ErrorContext context)
+        {
+            var analysis = await AnalyzeErrorAsync(context);
+            return new RemediationImpact
+            {
+                Severity = analysis.ApplicableStrategies.Max(s => s.Priority),
+                AffectedComponents = analysis.GraphAnalysis.AffectedComponents,
+                EstimatedDuration = TimeSpan.FromMinutes(analysis.ApplicableStrategies.Count * 5),
+                RiskLevel = CalculateRiskLevel(analysis),
+                Timestamp = DateTime.UtcNow,
+                CorrelationId = context.CorrelationId
+            };
+        }
+
+        public async Task<RemediationStrategyModel> GetRecommendedStrategyAsync(ErrorContext context)
+        {
+            var analysis = await AnalyzeErrorAsync(context);
+            var bestStrategy = analysis.ApplicableStrategies.OrderByDescending(s => s.Confidence).FirstOrDefault();
+            return bestStrategy != null ? await _strategyProvider.GetStrategyAsync(bestStrategy.StrategyName) : null;
+        }
+
+        public async Task<double> GetConfidenceLevelAsync(ErrorContext context)
+        {
+            var analysis = await AnalyzeErrorAsync(context);
+            return analysis.ApplicableStrategies.Max(s => s.Confidence);
         }
 
         public async Task<RemediationAnalysis> AnalyzeErrorAsync(ErrorContext context)
@@ -193,6 +233,35 @@ namespace RuntimeErrorSage.Core.Remediation
             }
 
             return string.Join("; ", reasons);
+        }
+
+        private RemediationRiskLevel CalculateRiskLevel(RemediationAnalysis analysis)
+        {
+            if (!analysis.IsValid) return RemediationRiskLevel.Critical;
+            
+            var maxSeverity = analysis.ApplicableStrategies.Max(s => s.Priority);
+            return maxSeverity switch
+            {
+                1 => RemediationRiskLevel.Low,
+                2 => RemediationRiskLevel.Medium,
+                3 => RemediationRiskLevel.High,
+                _ => RemediationRiskLevel.Critical
+            };
+        }
+
+        private List<string> GenerateMitigationSteps(RemediationAnalysis analysis)
+        {
+            var steps = new List<string>();
+            
+            foreach (var strategy in analysis.ApplicableStrategies.OrderBy(s => s.Priority))
+            {
+                steps.Add($"Strategy: {strategy.StrategyName}");
+                steps.Add($"- Priority: {strategy.Priority}");
+                steps.Add($"- Confidence: {strategy.Confidence:P0}");
+                steps.Add($"- Reasoning: {strategy.Reasoning}");
+            }
+
+            return steps;
         }
     }
 } 

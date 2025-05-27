@@ -12,6 +12,7 @@ using RuntimeErrorSage.Core.Models.Metrics;
 using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -69,7 +70,7 @@ namespace RuntimeErrorSage.Core.Remediation
                     {
                         Success = false,
                         ErrorMessage = "Plan validation failed",
-                        Status = RemediationStatus.Failed
+                        Status = RemediationStatusEnum.Failed
                     };
                 }
 
@@ -79,7 +80,7 @@ namespace RuntimeErrorSage.Core.Remediation
                     MetricsId = Guid.NewGuid().ToString(),
                     RemediationId = Guid.NewGuid().ToString(),
                     StartTime = DateTime.UtcNow,
-                    Status = RemediationStatus.Analyzing,
+                    Status = RemediationStatusEnum.Analyzing,
                     ErrorType = context.ErrorType,
                     ServiceName = context.ServiceName
                 };
@@ -87,7 +88,7 @@ namespace RuntimeErrorSage.Core.Remediation
                 await _metricsCollector.RecordRemediationMetricsAsync(metrics);
 
                 // Execute remediation
-                metrics.Status = RemediationStatus.Executing;
+                metrics.Status = RemediationStatusEnum.Executing;
                 await _metricsCollector.RecordRemediationMetricsAsync(metrics);
 
                 var execution = await _executor.ExecuteRemediationAsync(plan, context);
@@ -123,7 +124,7 @@ namespace RuntimeErrorSage.Core.Remediation
                 {
                     Success = false,
                     ErrorMessage = ex.Message,
-                    Status = RemediationStatus.Failed
+                    Status = RemediationStatusEnum.Failed
                 };
             }
         }
@@ -135,14 +136,14 @@ namespace RuntimeErrorSage.Core.Remediation
             try
             {
                 // Analyze error
-                var analysis = await _errorContextAnalyzer.AnalyzeErrorAsync(context);
+                var analysis = await _errorContextAnalyzer.AnalyzeContextAsync(context);
 
                 // Get applicable strategies
                 var strategies = await _registry.GetStrategiesForErrorAsync(context);
 
-                var statusInfo = new RemediationStatusInfo
+                var statusInfo = new Models.Common.RemediationStatusInfo
                 {
-                    Status = RemediationStatus.Created,
+                    Status = RemediationStatusEnum.Created,
                     Message = "Remediation plan created",
                     LastUpdated = DateTime.UtcNow
                 };
@@ -152,7 +153,7 @@ namespace RuntimeErrorSage.Core.Remediation
                     PlanId = Guid.NewGuid().ToString(),
                     Context = context,
                     CreatedAt = DateTime.UtcNow,
-                    Status = RemediationStatus.Created,
+                    Status = RemediationStatusEnum.Created,
                     StatusInfo = statusInfo,
                     RollbackPlan = null
                 };
@@ -164,7 +165,7 @@ namespace RuntimeErrorSage.Core.Remediation
                     Context = context,
                     Strategies = strategies.ToList(),
                     CreatedAt = DateTime.UtcNow,
-                    Status = RemediationStatus.Created,
+                    Status = RemediationStatusEnum.Created,
                     StatusInfo = statusInfo,
                     RollbackPlan = rollbackPlan
                 };
@@ -192,7 +193,7 @@ namespace RuntimeErrorSage.Core.Remediation
             }
         }
 
-        public async Task<RemediationStatus> GetStatusAsync(string remediationId)
+        public async Task<RemediationStatusEnum> GetStatusAsync(string remediationId)
         {
             ArgumentNullException.ThrowIfNull(remediationId);
 
@@ -203,7 +204,7 @@ namespace RuntimeErrorSage.Core.Remediation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting remediation status for {RemediationId}", remediationId);
-                return RemediationStatus.Unknown;
+                return RemediationStatusEnum.Unknown;
             }
         }
 

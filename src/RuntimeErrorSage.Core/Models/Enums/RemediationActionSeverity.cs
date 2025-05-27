@@ -1,27 +1,32 @@
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Represents the severity level of a remediation action.
+/// Represents the severity of a remediation action.
 /// </summary>
 public enum RemediationActionSeverity
 {
     /// <summary>
-    /// Low severity action.
+    /// No severity level assigned.
+    /// </summary>
+    None,
+
+    /// <summary>
+    /// Low severity level.
     /// </summary>
     Low,
 
     /// <summary>
-    /// Medium severity action.
+    /// Medium severity level.
     /// </summary>
     Medium,
 
     /// <summary>
-    /// High severity action.
+    /// High severity level.
     /// </summary>
     High,
 
     /// <summary>
-    /// Critical severity action.
+    /// Critical severity level.
     /// </summary>
     Critical
 } 

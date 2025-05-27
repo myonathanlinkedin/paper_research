@@ -79,7 +79,7 @@ namespace RuntimeErrorSage.Core.Health.Middleware
             var drive = new DriveInfo(Path.GetPathRoot(Environment.CurrentDirectory)!);
             return new
             {
-                TotalSize = drive.TotalSize,
+                drive.TotalSize,
                 AvailableSpace = drive.AvailableFreeSpace,
                 UsedSpace = drive.TotalSize - drive.AvailableFreeSpace
             };

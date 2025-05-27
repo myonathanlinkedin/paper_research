@@ -10,10 +10,8 @@ using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Options;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Interfaces.MCP;
 using RemediationResult = RuntimeErrorSage.Core.Models.Remediation.RemediationResult;
-using SeverityLevel = RuntimeErrorSage.Core.Models.Common.SeverityLevel;
-using RuntimeErrorSage.Core.Analysis;
+using SeverityLevel = RuntimeErrorSage.Core.Models.Enums.SeverityLevel;
 using RuntimeErrorSage.Core.Remediation;
 using RuntimeErrorSage.Core.MCP;
 using RuntimeErrorSage.Core.LLM;
@@ -24,6 +22,13 @@ using RuntimeErrorSage.Core.Models.MCP;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Services;
 using RuntimeErrorSage.Core.Exceptions;
+using RuntimeErrorSage.Core.LLM.Interfaces;
+using RuntimeErrorSage.Core.MCP.Interfaces;
+using RuntimeErrorSage.Core.Runtime.Interfaces;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
+using System.ComponentModel.DataAnnotations;
+using RuntimeErrorSage.Core.Runtime.Exceptions;
 
 namespace RuntimeErrorSage.Core
 {
@@ -60,13 +65,13 @@ namespace RuntimeErrorSage.Core
             IErrorAnalyzer errorAnalyzer,
             IRemediationExecutor remediationExecutor,
             IRemediationTracker remediationTracker,
-            IQwenLLMClient? llmClient = null,
-            IValidationRegistry? validationRegistry = null,
             IErrorContextAnalyzer errorContextAnalyzer,
             IRemediationAnalyzer remediationAnalyzer,
             IRemediationValidator remediationValidator,
             IRemediationMetricsCollector metricsCollector,
-            ModelContextProtocol mcp)
+            ModelContextProtocol mcp,
+            IQwenLLMClient? llmClient = null,
+            IValidationRegistry? validationRegistry = null)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -79,13 +84,13 @@ namespace RuntimeErrorSage.Core
             _remediationStrategies = new List<IRemediationStrategy>();
             _analysisCache = new ConcurrentDictionary<string, ErrorAnalysisResult>();
             _remediationCache = new ConcurrentDictionary<string, RemediationResult>();
-            _llmClient = llmClient;
-            _validationRegistry = validationRegistry;
             _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
             _remediationAnalyzer = remediationAnalyzer ?? throw new ArgumentNullException(nameof(remediationAnalyzer));
             _remediationValidator = remediationValidator ?? throw new ArgumentNullException(nameof(remediationValidator));
             _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
             _mcp = mcp ?? throw new ArgumentNullException(nameof(mcp));
+            _llmClient = llmClient;
+            _validationRegistry = validationRegistry;
         }
 
         public async Task<ErrorAnalysisResult> ProcessExceptionAsync(Exception exception, ErrorContext context)

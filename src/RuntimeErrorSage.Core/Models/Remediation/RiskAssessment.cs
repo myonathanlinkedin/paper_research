@@ -1,87 +1,116 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Remediation;
 
 /// <summary>
-/// Represents a risk assessment for a remediation operation.
+/// Represents a risk assessment for a remediation action.
 /// </summary>
 public class RiskAssessment
 {
     /// <summary>
-    /// Gets or sets the unique identifier for this assessment.
+    /// Gets or sets the unique identifier.
     /// </summary>
-    public string AssessmentId { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Gets or sets the risk level (0-1).
+    /// Gets or sets the correlation ID for tracing.
     /// </summary>
-    public double RiskLevel { get; set; }
+    public string CorrelationId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the confidence level (0-1).
+    /// Gets or sets the risk level.
+    /// </summary>
+    public RiskLevel RiskLevel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the probability of the risk occurring (0-1).
+    /// </summary>
+    public double Probability { get; set; }
+
+    /// <summary>
+    /// Gets or sets the impact severity if the risk occurs (0-1).
+    /// </summary>
+    public double Impact { get; set; }
+
+    /// <summary>
+    /// Gets or sets the potential issues that may arise.
+    /// </summary>
+    public List<string> PotentialIssues { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the list of mitigation steps.
+    /// </summary>
+    public List<string> MitigationSteps { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the confidence level of the assessment (0-100).
     /// </summary>
     public double Confidence { get; set; }
 
     /// <summary>
-    /// Gets or sets the potential impact description.
-    /// </summary>
-    public string ImpactDescription { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the risk factors.
-    /// </summary>
-    public List<RiskFactor> RiskFactors { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the mitigation strategies.
-    /// </summary>
-    public List<string> MitigationStrategies { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets when the assessment was performed.
-    /// </summary>
-    public DateTime AssessedAt { get; set; }
-
-    /// <summary>
-    /// Gets or sets the assessment metadata.
+    /// Gets or sets any additional metadata.
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the severity level.
+    /// Gets or sets the timestamp of the assessment.
     /// </summary>
-    public ErrorSeverity Severity { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Gets or sets whether manual intervention is required.
+    /// Gets or sets the assessment notes.
     /// </summary>
-    public bool RequiresManualIntervention { get; set; }
-}
-
-/// <summary>
-/// Represents a risk factor in the assessment.
-/// </summary>
-public class RiskFactor
-{
-    /// <summary>
-    /// Gets or sets the risk factor name.
-    /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string Notes { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the risk factor description.
+    /// Gets or sets the status of the assessment.
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    public AnalysisStatus Status { get; set; }
 
     /// <summary>
-    /// Gets or sets the risk factor weight (0-1).
+    /// Gets or sets the start time of the assessment.
     /// </summary>
-    public double Weight { get; set; }
+    public DateTime StartTime { get; set; }
 
     /// <summary>
-    /// Gets or sets the risk factor score (0-1).
+    /// Gets or sets the end time of the assessment.
     /// </summary>
-    public double Score { get; set; }
+    public DateTime EndTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets the estimated duration of the remediation.
+    /// </summary>
+    public TimeSpan EstimatedDuration { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of affected components.
+    /// </summary>
+    public List<string> AffectedComponents { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the list of risk factors.
+    /// </summary>
+    public List<RiskFactor> RiskFactors { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the impact scope of the remediation.
+    /// </summary>
+    public RemediationActionImpactScope ImpactScope { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of warnings.
+    /// </summary>
+    public List<string> Warnings { get; set; } = new();
+
+    public RiskAssessment()
+    {
+        Timestamp = DateTime.UtcNow;
+        MitigationSteps = new List<string>();
+        Metadata = new Dictionary<string, object>();
+        Warnings = new List<string>();
+        RiskLevel = RiskLevel.Medium;
+        RiskFactors = new List<RiskFactor>();
+    }
 } 

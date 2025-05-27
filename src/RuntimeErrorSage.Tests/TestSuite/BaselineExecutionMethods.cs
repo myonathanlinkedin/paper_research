@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using RuntimeErrorSage.Core.Models.Error;
 using Xunit;
-using RuntimeErrorSage.Core.Analysis;
 using RuntimeErrorSage.Tests.TestSuite.Models;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Tests.TestSuite
 {

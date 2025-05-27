@@ -1,22 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Interfaces.MCP;
-using RuntimeErrorSage.Core.Models.Common;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Models.MCP;
-using RuntimeErrorSage.Core.Models.Remediation;
-using ContextHistory = RuntimeErrorSage.Core.Models.Common.ContextHistory;
-using TimeRange = RuntimeErrorSage.Core.Models.Common.TimeRange;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Core.Options;
-using RuntimeErrorSage.Core.Interfaces.Storage;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Core.Exceptions;
 using RuntimeErrorSage.Core.Extensions;
-using ConnectionState = RuntimeErrorSage.Core.Models.Common.ConnectionState;
-using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Core.MCP.Interfaces;
+using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Context;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Storage.Interfaces;
+using ConnectionState = RuntimeErrorSage.Core.Models.Enums.ConnectionState;
+using ContextHistory = RuntimeErrorSage.Core.Models.Context.ContextHistory;
+using TimeRange = RuntimeErrorSage.Core.Models.Common.TimeRange;
+using RuntimeErrorSage.Core.Models.MCP;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.MCP;
 
@@ -28,7 +24,7 @@ public class MCPClient : IMCPClient, IDisposable
 {
     private readonly ILogger<MCPClient> _logger;
     private readonly string _clientId;
-    private readonly ConnectionStatus _connectionStatus;
+    private readonly MCPConnectionStatus _connectionStatus;
     private readonly Dictionary<string, ErrorContext> _contextCache;
     private readonly Dictionary<string, List<ContextHistory>> _contextHistory;
     private readonly Dictionary<string, Func<ErrorContext, Task>> _contextSubscribers;
@@ -52,7 +48,7 @@ public class MCPClient : IMCPClient, IDisposable
         _errorAnalyzer = errorAnalyzer ?? throw new ArgumentNullException(nameof(errorAnalyzer));
         
         _clientId = Guid.NewGuid().ToString();
-        _connectionStatus = new ConnectionStatus { State = ConnectionState.Disconnected };
+        _connectionStatus = new MCPConnectionStatus { State = ConnectionState.Disconnected };
         _contextCache = new Dictionary<string, ErrorContext>();
         _contextHistory = new Dictionary<string, List<ContextHistory>>();
         _contextSubscribers = new Dictionary<string, Func<ErrorContext, Task>>();
@@ -71,7 +67,7 @@ public class MCPClient : IMCPClient, IDisposable
     /// <summary>
     /// Gets the current connection status.
     /// </summary>
-    public ConnectionStatus ConnectionStatus => _connectionStatus;
+    public MCPConnectionStatus ConnectionStatus => _connectionStatus;
 
     /// <summary>
     /// Connects to the MCP server.
@@ -131,17 +127,17 @@ public class MCPClient : IMCPClient, IDisposable
             }
 
             // Analyze error using graph-based analysis
-            var analysis = await _errorAnalyzer.AnalyzeErrorAsync(context);
-            
+            var analysis = await _errorAnalyzer.AnalyzeContextAsync(context);
+
             // Update context with analysis results
-            context.AnalysisResults = analysis;
-            
+            context.AddMetadata("AnalysisResult", analysis);
+
             // Cache context
-            _contextCache[context.Id] = context;
-            
+            _contextCache[context.ErrorId] = context;
+
             // Update history
             await UpdateContextHistoryAsync(context);
-            
+
             // Notify subscribers
             await NotifySubscribersAsync(context);
 
@@ -149,7 +145,7 @@ public class MCPClient : IMCPClient, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error analyzing context: {ContextId}", context.Id);
+            _logger.LogError(ex, "Error analyzing context: {ErrorId}", context.ErrorId);
             throw new MCPException("Failed to analyze error context", ex);
         }
     }
@@ -182,7 +178,7 @@ public class MCPClient : IMCPClient, IDisposable
     /// </summary>
     /// <param name="clientId">The client identifier.</param>
     /// <returns>The connection status.</returns>
-    public async Task<ConnectionStatus> GetConnectionStatusAsync(string clientId)
+    public async Task<MCPConnectionStatus> GetConnectionStatusAsync(string clientId)
     {
         if (clientId != _clientId)
         {
@@ -358,9 +354,9 @@ public class MCPClient : IMCPClient, IDisposable
         }
 
         // Validate required fields
-        if (string.IsNullOrEmpty(context.Id) ||
+        if (string.IsNullOrEmpty(context.ErrorId) ||
             string.IsNullOrEmpty(context.ErrorType) ||
-            string.IsNullOrEmpty(context.ErrorMessage))
+            string.IsNullOrEmpty(context.Message))
         {
             return false;
         }
@@ -376,23 +372,25 @@ public class MCPClient : IMCPClient, IDisposable
 
     private async Task UpdateContextHistoryAsync(ErrorContext context)
     {
-        if (!_contextHistory.ContainsKey(context.Id))
+        if (!_contextHistory.ContainsKey(context.ErrorId))
         {
-            _contextHistory[context.Id] = new List<ContextHistory>();
+            _contextHistory[context.ErrorId] = new List<ContextHistory>();
         }
 
-        _contextHistory[context.Id].Add(new ContextHistory
+        _contextHistory[context.ErrorId].Add(new ContextHistory
         {
-            ContextId = context.Id,
+            ContextId = context.ErrorId,
             Timestamp = DateTime.UtcNow,
-            State = context.State,
-            AnalysisResults = context.AnalysisResults
+            ServiceName = context.ServiceName,
+            OperationName = context.OperationName,
+            MostRecentContext = context,
+            Metadata = new Dictionary<string, object>(context.Metadata)
         });
     }
 
     private async Task NotifySubscribersAsync(ErrorContext context)
     {
-        if (_contextSubscribers.TryGetValue(context.Id, out var callback))
+        if (_contextSubscribers.TryGetValue(context.ErrorId, out var callback))
         {
             try
             {
@@ -400,7 +398,7 @@ public class MCPClient : IMCPClient, IDisposable
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying subscriber for context: {ContextId}", context.Id);
+                _logger.LogError(ex, "Error notifying subscriber for context: {ErrorId}", context.ErrorId);
             }
         }
     }
@@ -414,5 +412,19 @@ public class MCPClient : IMCPClient, IDisposable
             _contextSubscribers.Clear();
             _disposed = true;
         }
+    }
+
+    public async Task UpdateErrorPatternsAsync(List<ErrorPattern> patterns)
+    {
+        if (patterns == null) throw new ArgumentNullException(nameof(patterns));
+        await _storage.SavePatternsAsync(patterns);
+    }
+
+    public async Task<List<ErrorPattern>> GetErrorPatternsAsync(string serviceName)
+    {
+        var allPatterns = await _storage.GetPatternsAsync();
+        if (string.IsNullOrEmpty(serviceName))
+            return allPatterns;
+        return allPatterns.FindAll(p => p.ServiceName == serviceName);
     }
 } 

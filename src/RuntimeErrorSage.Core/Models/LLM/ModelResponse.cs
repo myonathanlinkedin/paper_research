@@ -8,12 +8,39 @@ namespace RuntimeErrorSage.Core.Models.LLM
     /// </summary>
     public class ModelResponse
     {
-        public string ResponseId { get; set; }
-        public string ModelId { get; set; }
-        public string Content { get; set; }
-        public double ConfidenceScore { get; set; }
-        public Dictionary<string, object> Metadata { get; set; }
-        public DateTime Timestamp { get; set; }
-        public long ProcessingTimeMs { get; set; }
+        /// <summary>
+        /// Gets or sets the response text.
+        /// </summary>
+        public string Text { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confidence score (0-1).
+        /// </summary>
+        public double Confidence { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response metadata.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the response tokens.
+        /// </summary>
+        public List<string> Tokens { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the response latency in milliseconds.
+        /// </summary>
+        public double Latency { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the response was successful.
+        /// </summary>
+        public bool Success { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message if any.
+        /// </summary>
+        public string ErrorMessage { get; set; }
     }
 } 

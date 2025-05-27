@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.LLM;
 
 namespace RuntimeErrorSage.Core.Models.Graph;

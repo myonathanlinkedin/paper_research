@@ -12,7 +12,12 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// <summary>
         /// Gets or sets the step identifier.
         /// </summary>
-        public string StepId { get; set; } = string.Empty;
+        public string StepId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the step name.
+        /// </summary>
+        public string StepName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the action identifier.
@@ -25,9 +30,9 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         public double DurationMs { get; set; }
 
         /// <summary>
-        /// Gets or sets the step status.
+        /// Gets or sets the status.
         /// </summary>
-        public RemediationStatus Status { get; set; }
+        public string Status { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error type if any.
@@ -42,12 +47,12 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// <summary>
         /// Gets or sets the start time.
         /// </summary>
-        public DateTime StartTime { get; set; }
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the end time.
         /// </summary>
-        public DateTime? EndTime { get; set; }
+        public DateTime EndTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the resource usage metrics.

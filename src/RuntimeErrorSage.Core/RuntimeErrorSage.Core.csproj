@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5" />
@@ -19,6 +21,44 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.0-preview.1.24081.2" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="9.0.0-preview.1.24081.2" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.0-preview.2.24128.5" />
+    <PackageReference Include="Microsoft.OpenApi" Version="1.6.14" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Analysis\Errors\" />
+    <Folder Include="Context\Exceptions\" />
+    <Folder Include="Examples\Interfaces\" />
+    <Folder Include="Examples\Exceptions\" />
+    <Folder Include="Examples\Errors\" />
+    <Folder Include="Extensions\Interfaces\" />
+    <Folder Include="Extensions\Exceptions\" />
+    <Folder Include="Extensions\Errors\" />
+    <Folder Include="Graph\Exceptions\" />
+    <Folder Include="Graph\Errors\" />
+    <Folder Include="Health\Errors\" />
+    <Folder Include="LLM\Exceptions\" />
+    <Folder Include="LLM\Errors\" />
+    <Folder Include="LMStudio\Interfaces\" />
+    <Folder Include="LMStudio\Errors\" />
+    <Folder Include="MCP\Errors\" />
+    <Folder Include="Metrics\Errors\" />
+    <Folder Include="Middleware\Interfaces\" />
+    <Folder Include="Middleware\Errors\" />
+    <Folder Include="Options\Interfaces\" />
+    <Folder Include="Options\Errors\" />
+    <Folder Include="Options\Exceptions\" />
+    <Folder Include="Pattern\Errors\" />
+    <Folder Include="Remediation\Errors\" />
+    <Folder Include="Runtime\Errors\" />
+    <Folder Include="Services\Exceptions\" />
+    <Folder Include="Services\Errors\" />
+    <Folder Include="Storage\Errors\" />
+    <Folder Include="Utilities\Interfaces\" />
+    <Folder Include="Utilities\Exceptions\" />
+    <Folder Include="Utilities\Errors\" />
+    <Folder Include="Validation\Exceptions\" />
+    <Folder Include="Validation\Errors\" />
   </ItemGroup>
 
 </Project>

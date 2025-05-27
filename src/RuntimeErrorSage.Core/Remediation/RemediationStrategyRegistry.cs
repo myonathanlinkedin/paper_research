@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
+using RuntimeErrorSage.Core.Models.Remediation;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
@@ -19,6 +19,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry
     private readonly ConcurrentDictionary<string, IRemediationStrategy> _strategies;
     private readonly ConcurrentDictionary<string, StrategyMetadata> _strategyMetadata;
     private readonly ConcurrentDictionary<string, List<string>> _strategyVersions;
+    private readonly ConcurrentDictionary<string, List<string>> _errorTypeStrategies;
 
     public RemediationStrategyRegistry(ILogger<RemediationStrategyRegistry> logger)
     {
@@ -26,6 +27,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry
         _strategies = new ConcurrentDictionary<string, IRemediationStrategy>();
         _strategyMetadata = new ConcurrentDictionary<string, StrategyMetadata>();
         _strategyVersions = new ConcurrentDictionary<string, List<string>>();
+        _errorTypeStrategies = new ConcurrentDictionary<string, List<string>>();
     }
 
     public void RegisterStrategy(IRemediationStrategy strategy, StrategyMetadata metadata)
@@ -50,6 +52,20 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry
                     return versions;
                 });
 
+            // Register strategy for its supported error types
+            foreach (var errorType in strategy.SupportedErrorTypes)
+            {
+                _errorTypeStrategies.AddOrUpdate(
+                    errorType,
+                    new List<string> { strategy.Name },
+                    (_, strategies) =>
+                    {
+                        if (!strategies.Contains(strategy.Name))
+                            strategies.Add(strategy.Name);
+                        return strategies;
+                    });
+            }
+
             _logger.LogInformation(
                 "Registered remediation strategy {Strategy} version {Version}",
                 strategy.Name,
@@ -68,7 +84,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry
     {
         var strategyKey = GetStrategyKey(strategyName, version);
         
-        if (_strategies.TryRemove(strategyKey, out _))
+        if (_strategies.TryRemove(strategyKey, out var strategy))
         {
             _strategyMetadata.TryRemove(strategyKey, out _);
             _strategyVersions.AddOrUpdate(
@@ -80,6 +96,19 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry
                     return versions;
                 });
 
+            // Remove strategy from error type mappings
+            foreach (var errorType in strategy.SupportedErrorTypes)
+            {
+                _errorTypeStrategies.AddOrUpdate(
+                    errorType,
+                    new List<string>(),
+                    (_, strategies) =>
+                    {
+                        strategies.Remove(strategyName);
+                        return strategies;
+                    });
+            }
+
             _logger.LogInformation(
                 "Unregistered remediation strategy {Strategy} version {Version}",
                 strategyName,
@@ -89,6 +118,9 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry
 
     public IEnumerable<IRemediationStrategy> GetStrategiesForError(ErrorAnalysisResult analysis)
     {
+        if (analysis == null)
+            throw new ArgumentNullException(nameof(analysis));
+
         return _strategies.Values
             .Where(s => s.CanHandle(analysis))
             .OrderByDescending(s => s.Priority)
@@ -98,7 +130,8 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry
     public IRemediationStrategy? GetStrategy(string strategyName, string version)
     {
         var strategyKey = GetStrategyKey(strategyName, version);
-        return _strategies.TryGetValue(strategyKey, out var strategy) ? strategy : null;
+        _strategies.TryGetValue(strategyKey, out var strategy);
+        return strategy;
     }
 
     public IEnumerable<string> GetStrategyVersions(string strategyName)
@@ -121,6 +154,141 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry
         return _strategyMetadata.TryGetValue(strategyKey, out var metadata)
             ? metadata
             : throw new KeyNotFoundException($"No metadata found for strategy {strategyName} version {version}");
+    }
+
+    /// <inheritdoc />
+    public async Task<IRemediationStrategy> GetStrategyAsync(string strategyName)
+    {
+        if (string.IsNullOrEmpty(strategyName))
+            throw new ArgumentException("Strategy name cannot be null or empty", nameof(strategyName));
+
+        try
+        {
+            // Get the latest version of the strategy
+            var latestVersion = GetLatestVersion(strategyName);
+            var strategyKey = GetStrategyKey(strategyName, latestVersion);
+
+            if (_strategies.TryGetValue(strategyKey, out var strategy))
+            {
+                _logger.LogDebug("Retrieved strategy '{StrategyName}' version '{Version}'", 
+                    strategyName, latestVersion);
+                return strategy;
+            }
+
+            _logger.LogWarning("Strategy '{StrategyName}' not found", strategyName);
+            throw new KeyNotFoundException($"Strategy '{strategyName}' is not registered");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving strategy {StrategyName}", strategyName);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<IRemediationStrategy>> GetStrategiesForErrorTypeAsync(string errorType)
+    {
+        if (string.IsNullOrEmpty(errorType))
+            throw new ArgumentException("Error type cannot be null or empty", nameof(errorType));
+
+        try
+        {
+            if (_errorTypeStrategies.TryGetValue(errorType, out var strategyNames))
+            {
+                var strategies = new List<IRemediationStrategy>();
+                
+                foreach (var name in strategyNames)
+                {
+                    try
+                    {
+                        var latestVersion = GetLatestVersion(name);
+                        var strategyKey = GetStrategyKey(name, latestVersion);
+                        
+                        if (_strategies.TryGetValue(strategyKey, out var strategy))
+                        {
+                            strategies.Add(strategy);
+                        }
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                        // Skip if we can't find the latest version
+                        _logger.LogWarning("Could not find latest version for strategy {StrategyName}", name);
+                    }
+                }
+                
+                var orderedStrategies = strategies
+                    .OrderByDescending(s => s.Priority)
+                    .ToList();
+
+                _logger.LogDebug(
+                    "Retrieved {Count} strategies for error type '{ErrorType}'",
+                    orderedStrategies.Count,
+                    errorType);
+
+                return orderedStrategies;
+            }
+
+            _logger.LogWarning("No strategies found for error type '{ErrorType}'", errorType);
+            return Enumerable.Empty<IRemediationStrategy>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving strategies for error type {ErrorType}", errorType);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<IRemediationStrategy> GetStrategiesForErrorType(string errorType)
+    {
+        if (string.IsNullOrEmpty(errorType))
+            throw new ArgumentException("Error type cannot be null or empty", nameof(errorType));
+
+        try
+        {
+            if (_errorTypeStrategies.TryGetValue(errorType, out var strategyNames))
+            {
+                var strategies = new List<IRemediationStrategy>();
+                
+                foreach (var name in strategyNames)
+                {
+                    try
+                    {
+                        var latestVersion = GetLatestVersion(name);
+                        var strategyKey = GetStrategyKey(name, latestVersion);
+                        
+                        if (_strategies.TryGetValue(strategyKey, out var strategy))
+                        {
+                            strategies.Add(strategy);
+                        }
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                        // Skip if we can't find the latest version
+                        _logger.LogWarning("Could not find latest version for strategy {StrategyName}", name);
+                    }
+                }
+                
+                var orderedStrategies = strategies
+                    .OrderByDescending(s => s.Priority)
+                    .ToList();
+
+                _logger.LogDebug(
+                    "Retrieved {Count} strategies for error type '{ErrorType}'",
+                    orderedStrategies.Count,
+                    errorType);
+
+                return orderedStrategies;
+            }
+
+            _logger.LogWarning("No strategies found for error type '{ErrorType}'", errorType);
+            return Enumerable.Empty<IRemediationStrategy>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving strategies for error type {ErrorType}", errorType);
+            throw;
+        }
     }
 
     private static string GetStrategyKey(string strategyName, string version) => $"{strategyName}:{version}";

@@ -1,87 +1,19 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Remediation;
 
 namespace RuntimeErrorSage.Core.Interfaces
 {
     /// <summary>
-    /// Interface for collecting and managing remediation metrics.
+    /// Interface for collecting remediation metrics.
     /// </summary>
     public interface IRemediationMetricsCollector
     {
         /// <summary>
-        /// Gets whether the metrics collector is enabled.
-        /// </summary>
-        bool IsEnabled { get; }
-
-        /// <summary>
-        /// Gets the metrics collector name.
-        /// </summary>
-        string Name { get; }
-
-        /// <summary>
-        /// Gets the metrics collector version.
-        /// </summary>
-        string Version { get; }
-
-        /// <summary>
-        /// Collects metrics for a remediation operation.
-        /// </summary>
-        /// <param name="context">The error context</param>
-        /// <returns>A dictionary of metrics</returns>
-        Task<Dictionary<string, object>> CollectMetricsAsync(ErrorContext context);
-
-        /// <summary>
-        /// Records a metric value for a specific remediation.
-        /// </summary>
-        /// <param name="remediationId">The remediation ID</param>
-        /// <param name="metricName">The metric name</param>
-        /// <param name="value">The metric value</param>
-        Task RecordMetricAsync(string remediationId, string metricName, object value);
-
-        /// <summary>
-        /// Gets the metrics history for a specific remediation.
-        /// </summary>
-        /// <param name="remediationId">The remediation ID</param>
-        /// <returns>A dictionary of metric histories</returns>
-        Task<Dictionary<string, List<MetricValue>>> GetMetricsHistoryAsync(string remediationId);
-
-        /// <summary>
-        /// Records metrics for a remediation operation.
-        /// </summary>
-        /// <param name="metrics">The remediation metrics.</param>
-        Task RecordRemediationMetricsAsync(RemediationMetrics metrics);
-
-        /// <summary>
-        /// Records metrics for a remediation step.
-        /// </summary>
-        /// <param name="metrics">The step metrics.</param>
-        Task RecordStepMetricsAsync(StepMetrics metrics);
-
-        /// <summary>
-        /// Gets the current metrics for a remediation operation.
+        /// Gets the execution history for a remediation.
         /// </summary>
         /// <param name="remediationId">The remediation ID.</param>
-        /// <returns>The remediation metrics.</returns>
-        Task<RemediationMetrics> GetMetricsAsync(string remediationId);
-
-        /// <summary>
-        /// Gets the aggregated metrics for a time period.
-        /// </summary>
-        /// <param name="range">The time range.</param>
-        /// <returns>The aggregated metrics.</returns>
-        Task<RemediationMetrics> GetAggregatedMetricsAsync(TimeRange range);
-
-        /// <summary>
-        /// Validates metrics against theoretical thresholds.
-        /// </summary>
-        /// <param name="metrics">The remediation metrics.</param>
-        /// <returns>The validation result.</returns>
-        Task<ValidationResult> ValidateMetricsAsync(RemediationMetrics metrics);
+        /// <returns>The list of execution history entries.</returns>
+        Task<IEnumerable<RemediationExecution>> GetExecutionHistoryAsync(string remediationId);
     }
 } 

@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Remediation.Models.Analysis;
-using RuntimeErrorSage.Core.Remediation.Models.Common;
+using System.Linq;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -106,7 +103,7 @@ namespace RuntimeErrorSage.Core.Remediation
                     var strength = CalculateRelationshipStrength(source, target, context);
                     var type = DetermineRelationshipType(source, target, context);
 
-                    relationships.Add(new ComponentRelationship
+                    relationships.Add(new Models.Graph.ComponentRelationship
                     {
                         SourceComponent = source,
                         TargetComponent = target,
@@ -249,22 +246,19 @@ namespace RuntimeErrorSage.Core.Remediation
             ErrorContext context)
         {
             // Check if it's a direct dependency
-            if (context.ComponentDependencies.TryGetValue(source, out var dependencies) &&
-                dependencies.Contains(target))
+            if (context.ComponentDependencies.Any(dep => dep.Source == source && dep.Target == target))
             {
                 return RelationshipType.DirectDependency;
             }
 
             // Check if it's a service call
-            if (context.ServiceCalls.TryGetValue(source, out var calls) &&
-                calls.Contains(target))
+            if (context.ServiceCalls.Any(call => call.Source == source && call.Target == target))
             {
                 return RelationshipType.ServiceCall;
             }
 
             // Check if it's a data flow
-            if (context.DataFlows.TryGetValue(source, out var flows) &&
-                flows.Contains(target))
+            if (context.DataFlows.Any(flow => flow.Source == source && flow.Target == target))
             {
                 return RelationshipType.DataFlow;
             }

@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Models.Remediation;
 
@@ -17,7 +21,7 @@ public class RemediationAnalysis
     /// <summary>
     /// Gets or sets the error context.
     /// </summary>
-    public ErrorContext Context { get; set; }
+    public ErrorContext ErrorContext { get; set; }
 
     /// <summary>
     /// Gets or sets the analysis timestamp.
@@ -32,7 +36,7 @@ public class RemediationAnalysis
     /// <summary>
     /// Gets or sets the analysis severity.
     /// </summary>
-    public RemediationSeverity Severity { get; set; }
+    public RemediationActionSeverity Severity { get; set; }
 
     /// <summary>
     /// Gets or sets the analysis priority.
@@ -43,6 +47,26 @@ public class RemediationAnalysis
     /// Gets or sets the analysis impact.
     /// </summary>
     public RemediationImpact Impact { get; set; }
+
+    /// <summary>
+    /// Gets or sets the applicable strategies for this analysis.
+    /// </summary>
+    public List<StrategyRecommendation> ApplicableStrategies { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the graph analysis result.
+    /// </summary>
+    public GraphAnalysis GraphAnalysis { get; set; }
+
+    /// <summary>
+    /// Gets or sets the LLM analysis result.
+    /// </summary>
+    public LLMAnalysis LLMAnalysis { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the analysis is valid.
+    /// </summary>
+    public bool IsValid { get; set; }
 
     /// <summary>
     /// Gets or sets the analysis metrics.
@@ -62,62 +86,10 @@ public class RemediationAnalysis
     /// <summary>
     /// Gets or sets the analysis status.
     /// </summary>
-    public RemediationStatus Status { get; set; }
+    public RemediationStatusInfo Status { get; set; }
 
     /// <summary>
     /// Gets or sets the error message if analysis failed.
     /// </summary>
     public string ErrorMessage { get; set; }
-}
-
-/// <summary>
-/// Specifies the remediation severity.
-/// </summary>
-public enum RemediationSeverity
-{
-    /// <summary>
-    /// Low severity.
-    /// </summary>
-    Low,
-
-    /// <summary>
-    /// Medium severity.
-    /// </summary>
-    Medium,
-
-    /// <summary>
-    /// High severity.
-    /// </summary>
-    High,
-
-    /// <summary>
-    /// Critical severity.
-    /// </summary>
-    Critical
-}
-
-/// <summary>
-/// Specifies the remediation priority.
-/// </summary>
-public enum RemediationPriority
-{
-    /// <summary>
-    /// Low priority.
-    /// </summary>
-    Low,
-
-    /// <summary>
-    /// Medium priority.
-    /// </summary>
-    Medium,
-
-    /// <summary>
-    /// High priority.
-    /// </summary>
-    High,
-
-    /// <summary>
-    /// Critical priority.
-    /// </summary>
-    Critical
 } 

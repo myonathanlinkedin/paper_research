@@ -6,175 +6,279 @@ using RuntimeErrorSage.Core.Models.Common;
 namespace RuntimeErrorSage.Core.Models.Graph
 {
     /// <summary>
-    /// Represents a dependency graph for analyzing component relationships and error propagation.
+    /// Represents a dependency graph for analyzing component relationships.
     /// </summary>
     public class DependencyGraph
     {
         /// <summary>
-        /// Gets or sets the graph identifier.
+        /// Gets or sets the unique identifier of the graph.
         /// </summary>
-        public string GraphId { get; set; }
+        public string GraphId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the name of the graph.
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the description of the graph.
+        /// </summary>
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the nodes in the graph.
         /// </summary>
-        public List<DependencyNode> Nodes { get; set; } = new();
+        public Dictionary<string, GraphNode> Nodes { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the edges in the graph.
         /// </summary>
-        public List<DependencyEdge> Edges { get; set; } = new();
+        public List<GraphEdge> Edges { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the graph metadata.
+        /// Gets or sets the timestamp when the graph was created.
+        /// </summary>
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the timestamp when the graph was last updated.
+        /// </summary>
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the metadata of the graph.
         /// </summary>
         public Dictionary<string, object> Metadata { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the graph metrics.
-        /// </summary>
-        public Dictionary<string, double> Metrics { get; set; } = new();
 
         /// <summary>
         /// Adds a node to the graph.
         /// </summary>
         /// <param name="node">The node to add.</param>
-        public void AddNode(DependencyNode node)
+        public void AddNode(GraphNode node)
         {
-            if (!Nodes.Any(n => n.Id == node.Id))
+            if (node == null)
             {
-                Nodes.Add(node);
+                throw new ArgumentNullException(nameof(node));
             }
+
+            Nodes[node.Id] = node;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         /// <summary>
         /// Adds an edge to the graph.
         /// </summary>
         /// <param name="edge">The edge to add.</param>
-        public void AddEdge(DependencyEdge edge)
+        public void AddEdge(GraphEdge edge)
         {
-            if (!Edges.Any(e => e.SourceId == edge.SourceId && e.TargetId == edge.TargetId))
+            if (edge == null)
             {
-                Edges.Add(edge);
-            }
-        }
-
-        /// <summary>
-        /// Updates the graph metrics.
-        /// </summary>
-        public void UpdateMetrics()
-        {
-            Metrics["complexity"] = CalculateComplexity();
-            Metrics["reliability"] = CalculateReliability();
-            Metrics["connectivity"] = CalculateConnectivity();
-        }
-
-        private double CalculateComplexity()
-        {
-            return Edges.Count / (double)Math.Max(1, Nodes.Count);
-        }
-
-        private double CalculateReliability()
-        {
-            if (Nodes.Count == 0) return 1.0;
-            return Nodes.Average(n => n.Reliability);
-        }
-
-        private double CalculateConnectivity()
-        {
-            if (Nodes.Count <= 1) return 1.0;
-            return Edges.Count / (double)(Nodes.Count * (Nodes.Count - 1));
-        }
-
-        /// <summary>
-        /// Gets the neighbors of a node.
-        /// </summary>
-        /// <param name="nodeId">The ID of the node.</param>
-        /// <returns>The list of neighboring nodes.</returns>
-        public List<DependencyNode> GetNeighbors(string nodeId)
-        {
-            var neighbors = new List<DependencyNode>();
-            var edges = Edges.Where(e => e.SourceId == nodeId || e.TargetId == nodeId);
-
-            foreach (var edge in edges)
-            {
-                var neighborId = edge.SourceId == nodeId ? edge.TargetId : edge.SourceId;
-                var neighbor = Nodes.FirstOrDefault(n => n.Id == neighborId);
-                if (neighbor != null)
-                {
-                    neighbors.Add(neighbor);
-                }
+                throw new ArgumentNullException(nameof(edge));
             }
 
-            return neighbors;
+            if (!Nodes.ContainsKey(edge.Source.Id))
+            {
+                throw new ArgumentException($"Source node {edge.Source.Id} does not exist in the graph.");
+            }
+
+            if (!Nodes.ContainsKey(edge.Target.Id))
+            {
+                throw new ArgumentException($"Target node {edge.Target.Id} does not exist in the graph.");
+            }
+
+            Edges.Add(edge);
+            Nodes[edge.Source.Id].AddOutgoingEdge(edge);
+            Nodes[edge.Target.Id].AddIncomingEdge(edge);
+            UpdatedAt = DateTime.UtcNow;
         }
 
         /// <summary>
         /// Gets the outgoing edges from a node.
         /// </summary>
-        /// <param name="nodeId">The ID of the node.</param>
-        /// <returns>The list of outgoing edges.</returns>
-        public List<DependencyEdge> GetOutgoingEdges(string nodeId)
+        /// <param name="nodeId">The node identifier.</param>
+        /// <returns>The outgoing edges.</returns>
+        public IEnumerable<GraphEdge> GetOutgoingEdges(string nodeId)
         {
-            return Edges.Where(e => e.SourceId == nodeId).ToList();
+            if (!Nodes.ContainsKey(nodeId))
+            {
+                throw new ArgumentException($"Node {nodeId} does not exist in the graph.");
+            }
+
+            return Nodes[nodeId].OutgoingEdges;
         }
 
         /// <summary>
         /// Gets the incoming edges to a node.
         /// </summary>
-        /// <param name="nodeId">The ID of the node.</param>
-        /// <returns>The list of incoming edges.</returns>
-        public List<DependencyEdge> GetIncomingEdges(string nodeId)
+        /// <param name="nodeId">The node identifier.</param>
+        /// <returns>The incoming edges.</returns>
+        public IEnumerable<GraphEdge> GetIncomingEdges(string nodeId)
         {
-            return Edges.Where(e => e.TargetId == nodeId).ToList();
+            if (!Nodes.ContainsKey(nodeId))
+            {
+                throw new ArgumentException($"Node {nodeId} does not exist in the graph.");
+            }
+
+            return Nodes[nodeId].IncomingEdges;
         }
 
         /// <summary>
-        /// Gets the path between two nodes.
+        /// Removes a node from the graph.
         /// </summary>
-        /// <param name="sourceId">The ID of the source node.</param>
-        /// <param name="targetId">The ID of the target node.</param>
-        /// <returns>The list of nodes in the path, or null if no path exists.</returns>
-        public List<DependencyNode> GetPath(string sourceId, string targetId)
+        /// <param name="nodeId">The ID of the node to remove.</param>
+        public void RemoveNode(string nodeId)
         {
-            var visited = new HashSet<string>();
-            var path = new List<DependencyNode>();
-            var found = FindPath(sourceId, targetId, visited, path);
-            return found ? path : null;
+            if (!Nodes.TryGetValue(nodeId, out var node))
+            {
+                throw new ArgumentException($"Node with ID {nodeId} not found in the graph.");
+            }
+
+            // Remove all edges connected to this node
+            var edgesToRemove = node.IncomingEdges.Concat(node.OutgoingEdges).ToList();
+            foreach (var edge in edgesToRemove)
+            {
+                RemoveEdge(edge.Id);
+            }
+
+            Nodes.Remove(nodeId);
+            UpdatedAt = DateTime.UtcNow;
         }
 
-        private bool FindPath(string currentId, string targetId, HashSet<string> visited, List<DependencyNode> path)
+        /// <summary>
+        /// Removes an edge from the graph.
+        /// </summary>
+        /// <param name="edgeId">The ID of the edge to remove.</param>
+        public void RemoveEdge(string edgeId)
         {
-            if (currentId == targetId)
+            if (!Edges.Contains(Edges.FirstOrDefault(e => e.Id == edgeId)))
             {
-                var node = Nodes.FirstOrDefault(n => n.Id == currentId);
-                if (node != null)
+                throw new ArgumentException($"Edge with ID {edgeId} not found in the graph.");
+            }
+
+            var edge = Edges.First(e => e.Id == edgeId);
+            edge.Remove();
+            Edges.Remove(edge);
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Gets all nodes that depend on the specified node.
+        /// </summary>
+        /// <param name="nodeId">The ID of the node.</param>
+        /// <returns>A list of nodes that depend on the specified node.</returns>
+        public List<GraphNode> GetDependentNodes(string nodeId)
+        {
+            if (!Nodes.TryGetValue(nodeId, out var node))
+            {
+                throw new ArgumentException($"Node with ID {nodeId} not found in the graph.");
+            }
+
+            return node.OutgoingEdges.Select(e => e.Target).ToList();
+        }
+
+        /// <summary>
+        /// Gets all nodes that the specified node depends on.
+        /// </summary>
+        /// <param name="nodeId">The ID of the node.</param>
+        /// <returns>A list of nodes that the specified node depends on.</returns>
+        public List<GraphNode> GetDependencyNodes(string nodeId)
+        {
+            if (!Nodes.TryGetValue(nodeId, out var node))
+            {
+                throw new ArgumentException($"Node with ID {nodeId} not found in the graph.");
+            }
+
+            return node.IncomingEdges.Select(e => e.Source).ToList();
+        }
+
+        /// <summary>
+        /// Gets all nodes in the graph that have no incoming edges.
+        /// </summary>
+        /// <returns>A list of root nodes.</returns>
+        public List<GraphNode> GetRootNodes()
+        {
+            return Nodes.Values.Where(n => n.IncomingEdges.Count == 0).ToList();
+        }
+
+        /// <summary>
+        /// Gets all nodes in the graph that have no outgoing edges.
+        /// </summary>
+        /// <returns>A list of leaf nodes.</returns>
+        public List<GraphNode> GetLeafNodes()
+        {
+            return Nodes.Values.Where(n => n.OutgoingEdges.Count == 0).ToList();
+        }
+
+        /// <summary>
+        /// Gets the neighboring nodes for a given node.
+        /// </summary>
+        /// <param name="nodeId">The ID of the node.</param>
+        /// <returns>A list of neighboring nodes.</returns>
+        public List<GraphNode> GetNeighbors(string nodeId)
+        {
+            if (!Nodes.TryGetValue(nodeId, out var node))
+            {
+                throw new ArgumentException($"Node with ID {nodeId} not found in the graph.");
+            }
+
+            var dependencyNodes = node.IncomingEdges.Select(e => e.Source);
+            var dependentNodes = node.OutgoingEdges.Select(e => e.Target);
+            
+            return dependencyNodes.Concat(dependentNodes).Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Gets the shortest path between two nodes.
+        /// </summary>
+        /// <param name="sourceId">The source node ID.</param>
+        /// <param name="targetId">The target node ID.</param>
+        /// <returns>A list of node IDs representing the path, or an empty list if no path exists.</returns>
+        public List<string> GetPath(string sourceId, string targetId)
+        {
+            if (!Nodes.ContainsKey(sourceId))
+            {
+                throw new ArgumentException($"Source node with ID {sourceId} not found in the graph.");
+            }
+
+            if (!Nodes.ContainsKey(targetId))
+            {
+                throw new ArgumentException($"Target node with ID {targetId} not found in the graph.");
+            }
+
+            var visited = new HashSet<string>();
+            var queue = new Queue<(string NodeId, List<string> Path)>();
+            queue.Enqueue((sourceId, new List<string> { sourceId }));
+
+            while (queue.Count > 0)
+            {
+                var (currentId, path) = queue.Dequeue();
+
+                if (currentId == targetId)
                 {
-                    path.Add(node);
+                    return path;
                 }
-                return true;
-            }
 
-            visited.Add(currentId);
-            var currentNode = Nodes.FirstOrDefault(n => n.Id == currentId);
-            if (currentNode != null)
-            {
-                path.Add(currentNode);
-            }
-
-            foreach (var edge in GetOutgoingEdges(currentId))
-            {
-                if (!visited.Contains(edge.TargetId))
+                if (visited.Contains(currentId))
                 {
-                    if (FindPath(edge.TargetId, targetId, visited, path))
+                    continue;
+                }
+
+                visited.Add(currentId);
+
+                if (Nodes.TryGetValue(currentId, out var node))
+                {
+                    foreach (var edge in node.OutgoingEdges)
                     {
-                        return true;
+                        if (!visited.Contains(edge.Target.Id))
+                        {
+                            var newPath = new List<string>(path) { edge.Target.Id };
+                            queue.Enqueue((edge.Target.Id, newPath));
+                        }
                     }
                 }
             }
 
-            path.RemoveAt(path.Count - 1);
-            return false;
+            return new List<string>(); // No path found
         }
     }
 }

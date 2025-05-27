@@ -1,4 +1,4 @@
-# .NET build output
+# .NET Core build folders
 bin/
 obj/
 
@@ -10,8 +10,6 @@ obj/
 *.userprefs
 *.dbmdl
 *.jfm
-*.pfx
-*.publishsettings
 
 # Build results
 [Dd]ebug/
@@ -20,13 +18,14 @@ obj/
 [Rr]eleases/
 x64/
 x86/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
+build/
 bld/
 [Bb]in/
 [Oo]bj/
-[Ll]og/
-[Ll]ogs/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
 
 # Visual Studio Code
 .vscode/
@@ -52,6 +51,77 @@ bld/
 # except build/, which is used as an MSBuild target.
 !**/[Pp]ackages/build/
 
+# Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Files built by Visual Studio
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+# Visual Studio code coverage results
+*.coverage
+*.coveragexml
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# VS Code directories
+.vscode/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
 # LaTeX temporary files
 *.aux
 *.log
@@ -70,6 +140,16 @@ bld/
 *.xdv
 *.run.xml
 
+# LaTeX and auxiliary output files
+main.aux
+main.bbl
+main.blg
+main.log
+main.out
+texput.log
+list1.txt
+list2.txt
+
 # PDF output (uncomment if you don't want to track PDFs)
 # *.pdf
 
@@ -85,4 +165,7 @@ bld/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db 
+Thumbs.db
+
+# Text files
+*.txt 

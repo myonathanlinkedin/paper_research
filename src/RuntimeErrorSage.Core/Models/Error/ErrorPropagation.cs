@@ -1,23 +1,33 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Error;
 
 /// <summary>
-/// Represents error propagation information.
+/// Represents error propagation information in the system.
 /// </summary>
 public class ErrorPropagation
 {
     /// <summary>
-    /// Gets or sets the unique identifier of the propagation.
+    /// Gets or sets the unique identifier for this propagation.
     /// </summary>
     public string PropagationId { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Gets or sets the source error identifier.
+    /// Gets or sets the source error ID.
     /// </summary>
     public string SourceErrorId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the source component ID.
+    /// </summary>
+    public string SourceComponentId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the target component ID.
+    /// </summary>
+    public string TargetComponentId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the propagation path.
@@ -25,88 +35,37 @@ public class ErrorPropagation
     public List<string> PropagationPath { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the relationship type.
+    /// </summary>
+    public RelationshipType RelationType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error severity.
+    /// </summary>
+    public ErrorSeverity Severity { get; set; }
+
+    /// <summary>
+    /// Gets or sets the timestamp of propagation.
+    /// </summary>
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets or sets whether the propagation is active.
+    /// </summary>
+    public bool IsActive { get; set; }
+
+    /// <summary>
+    /// Gets or sets the propagation metadata.
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the affected components.
     /// </summary>
     public List<string> AffectedComponents { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the propagation depth.
+    /// Gets or sets the propagation impact.
     /// </summary>
-    public int PropagationDepth { get; set; }
-
-    /// <summary>
-    /// Gets or sets the propagation direction.
-    /// </summary>
-    public PropagationDirection Direction { get; set; }
-
-    /// <summary>
-    /// Gets or sets the propagation type.
-    /// </summary>
-    public RelationshipType PropagationType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the propagation severity.
-    /// </summary>
-    public ErrorSeverity Severity { get; set; }
-
-    /// <summary>
-    /// Gets or sets the confidence score.
-    /// </summary>
-    public double ConfidenceScore { get; set; }
-
-    /// <summary>
-    /// Gets or sets the impact weight.
-    /// </summary>
-    public double ImpactWeight { get; set; }
-
-    /// <summary>
-    /// Gets or sets when the propagation was detected.
-    /// </summary>
-    public DateTime DetectedAt { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// Gets or sets when the propagation was last updated.
-    /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// Gets or sets whether the propagation is active.
-    /// </summary>
-    public bool IsActive { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets any additional properties.
-    /// </summary>
-    public Dictionary<string, object> Properties { get; set; } = new();
-}
-
-/// <summary>
-/// Defines the direction of error propagation.
-/// </summary>
-public enum PropagationDirection
-{
-    /// <summary>
-    /// Propagation flows upstream.
-    /// </summary>
-    Upstream,
-
-    /// <summary>
-    /// Propagation flows downstream.
-    /// </summary>
-    Downstream,
-
-    /// <summary>
-    /// Propagation flows bidirectionally.
-    /// </summary>
-    Bidirectional,
-
-    /// <summary>
-    /// Propagation flows laterally.
-    /// </summary>
-    Lateral,
-
-    /// <summary>
-    /// Propagation direction is unknown.
-    /// </summary>
-    Unknown
+    public Dictionary<string, ImpactSeverity> Impact { get; set; } = new();
 } 

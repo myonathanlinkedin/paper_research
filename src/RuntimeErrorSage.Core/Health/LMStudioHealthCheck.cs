@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Core.LLM;
 using RuntimeErrorSage.Core.LLM.Options;
 using RuntimeErrorSage.Core.Options;
-using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.LLM.Interfaces;
 
 namespace RuntimeErrorSage.Core.Health
 {

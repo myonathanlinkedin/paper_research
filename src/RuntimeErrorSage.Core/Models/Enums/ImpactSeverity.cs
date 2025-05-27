@@ -6,22 +6,32 @@ namespace RuntimeErrorSage.Core.Models.Enums;
 public enum ImpactSeverity
 {
     /// <summary>
+    /// No impact.
+    /// </summary>
+    None = 0,
+
+    /// <summary>
     /// Low severity impact.
     /// </summary>
-    Low,
+    Low = 1,
 
     /// <summary>
     /// Medium severity impact.
     /// </summary>
-    Medium,
+    Medium = 2,
 
     /// <summary>
     /// High severity impact.
     /// </summary>
-    High,
+    High = 3,
 
     /// <summary>
     /// Critical severity impact.
     /// </summary>
-    Critical
+    Critical = 4,
+
+    /// <summary>
+    /// Catastrophic severity impact.
+    /// </summary>
+    Catastrophic = 5
 } 

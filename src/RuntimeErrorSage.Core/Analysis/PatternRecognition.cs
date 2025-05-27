@@ -1,10 +1,13 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Core.Exceptions;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Interfaces.MCP;
+using RuntimeErrorSage.Core.MCP.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Interfaces;
 using RuntimeErrorSage.Core.Options;
+using RuntimeErrorSage.Core.Pattern.Interfaces;
+using RuntimeErrorSage.Core.Storage.Interfaces;
 using RuntimeErrorSage.Core.Utilities;
 using System.Collections.Concurrent;
 
@@ -45,32 +48,19 @@ namespace RuntimeErrorSage.Core.Analysis
             _storage = storage;
         }
 
-        public async Task<ErrorPattern?> IdentifyPatternAsync(ErrorContext context)
+        public async Task InitializeAsync()
         {
-            ArgumentNullException.ThrowIfNull(context, nameof(context)); // Validate parameter is non-null
-
             try
             {
-                // Retrieve known patterns for the service
-                var knownPatterns = await _mcpClient.GetErrorPatternsAsync(context.ServiceName).ConfigureAwait(false);
-
-                // Find a matching pattern
-                var matchingPattern = FindMatchingPattern(context, knownPatterns);
-
-                if (matchingPattern != null)
-                {
-                    _logger.LogInformation(
-                        "Found matching pattern for error type {ErrorType} in service {ServiceName}",
-                        matchingPattern.ErrorType,
-                        context.ServiceName);
-                }
-
-                return matchingPattern;
+                // Initialize pattern recognition system
+                await LoadPatternsAsync();
+                await InitializeModelAsync();
+                await ValidatePatternsAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error identifying pattern");
-                throw new PatternRecognitionException("Failed to identify pattern", ex);
+                _logger.LogError(ex, "Error initializing pattern recognition");
+                throw new PatternRecognitionException("Failed to initialize pattern recognition", ex);
             }
         }
 
@@ -115,19 +105,21 @@ namespace RuntimeErrorSage.Core.Analysis
             }
         }
 
-        private ErrorPattern? FindMatchingPattern(ErrorContext context, List<ErrorPattern> patterns)
+        private async Task<List<ErrorPattern>> GetPatternsAsync(string serviceName)
         {
-            return patterns.FirstOrDefault(p => 
-                p.ErrorType == context.ErrorType &&
-                CompareAdditionalContext(p.Context, context.AdditionalContext));
+            if (!_patternCache.TryGetValue(serviceName, out var patterns))
+            {
+                patterns = await _mcpClient.GetErrorPatternsAsync(serviceName);
+                _patternCache[serviceName] = patterns;
+            }
+            return patterns;
         }
 
-        public async Task InitializeAsync()
+        private bool CompareAdditionalContext(
+            Dictionary<string, object> patternContext,
+            Dictionary<string, string> currentContext)
         {
-            // Initialize pattern recognition system
-            await LoadPatternsAsync();
-            await InitializeModelAsync();
-            await ValidatePatternsAsync();
+            return ContextComparer.CompareAdditionalContext(patternContext, currentContext);
         }
 
         private async Task LoadPatternsAsync()
@@ -158,51 +150,6 @@ namespace RuntimeErrorSage.Core.Analysis
             {
                 throw new InvalidOperationException($"Invalid pattern: {pattern.Id}");
             }
-        }
-
-        private async Task<List<ErrorPattern>> GetPatternsAsync(string serviceName)
-        {
-            if (!_patternCache.TryGetValue(serviceName, out var patterns))
-            {
-                patterns = await _mcpClient.GetErrorPatternsAsync(serviceName);
-                _patternCache[serviceName] = patterns;
-            }
-            return patterns;
-        }
-
-        private bool CompareAdditionalContext(
-            Dictionary<string, object> patternContext,
-            Dictionary<string, string> currentContext)
-        {
-            return ContextComparer.CompareAdditionalContext(patternContext, currentContext);
-        }
-
-        private List<ErrorPattern> MergePatterns(
-            List<ErrorPattern> existing,
-            List<ErrorPattern> newPatterns)
-        {
-            var merged = new List<ErrorPattern>(existing);
-
-            foreach (var newPattern in newPatterns)
-            {
-                var existingPattern = merged.FirstOrDefault(p =>
-                    p.ErrorType == newPattern.ErrorType &&
-                    p.OperationName == newPattern.OperationName);
-
-                if (existingPattern != null)
-                {
-                    existingPattern.LastUpdated = newPattern.LastUpdated;
-                    existingPattern.OccurrenceCount += newPattern.OccurrenceCount;
-                    existingPattern.Context = newPattern.Context;
-                    existingPattern.Confidence = Math.Max(existingPattern.Confidence, newPattern.Confidence);
-                }
-                else
-                {
-                    merged.Add(newPattern);
-                }
-            }
-
-            return merged;
         }
     }
 } 

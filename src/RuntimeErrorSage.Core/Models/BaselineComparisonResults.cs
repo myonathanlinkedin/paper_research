@@ -1,3 +1,4 @@
+using RuntimeErrorSage.Core.Models.Metrics;
 using System;
 
 namespace RuntimeErrorSage.Core.Models

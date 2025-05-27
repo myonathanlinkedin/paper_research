@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Models.LLM;
 
 namespace RuntimeErrorSage.Core.LLM;
 
@@ -50,34 +51,22 @@ public class QwenLLMService : ILLMService
 
         try
         {
-            var request = new
+            var request = new LLMRequest
             {
-                model = "qwen-7b-instruct",
-                messages = new[]
-                {
-                    new { role = "system", content = "You are a helpful assistant that analyzes runtime errors and provides remediation steps." },
-                    new { role = "user", content = prompt }
-                },
-                temperature = 0.7,
-                max_tokens = 1000
+                Query = prompt,
+                Context = string.Empty
             };
 
-            var content = new StringContent(
-                JsonSerializer.Serialize(request),
-                Encoding.UTF8,
-                "application/json");
+            var json = JsonSerializer.Serialize(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync($"{_baseUrl}/v1/chat/completions", content);
             response.EnsureSuccessStatusCode();
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var responseObject = JsonSerializer.Deserialize<JsonElement>(responseContent);
+            var responseObject = JsonSerializer.Deserialize<LLMResponse>(responseContent);
 
-            return responseObject
-                .GetProperty("choices")[0]
-                .GetProperty("message")
-                .GetProperty("content")
-                .GetString();
+            return responseObject?.Content;
         }
         catch (Exception ex)
         {

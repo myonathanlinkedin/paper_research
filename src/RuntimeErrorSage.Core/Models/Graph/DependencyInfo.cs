@@ -1,3 +1,5 @@
+using RuntimeErrorSage.Core.Models.Enums;
+
 namespace RuntimeErrorSage.Core.Models.Graph;
 
 /// <summary>

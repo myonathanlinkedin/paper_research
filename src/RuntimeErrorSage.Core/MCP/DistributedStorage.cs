@@ -1,39 +1,16 @@
-using StackExchange.Redis;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Collections.Concurrent;
-using System.Timers;
-using System.IO;
-using System.Linq;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.LLM.Options;
 using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Models.Storage;
 using RuntimeErrorSage.Core.MCP.Options;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Storage;
+using StackExchange.Redis;
+using System.Collections.Concurrent;
+using System.Text.Json;
 using RuntimeErrorSage.Core.MCP.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.MCP;
-
-public class DistributedStorageOptions
-{
-    public string ConnectionString { get; set; } = "localhost:6379";
-    public string KeyPrefix { get; set; } = "RuntimeErrorSage:mcp:";
-    public TimeSpan ContextRetentionPeriod { get; set; } = TimeSpan.FromDays(30);
-    public TimeSpan PatternRetentionPeriod { get; set; } = TimeSpan.FromDays(90);
-    public bool EnableDataPartitioning { get; set; } = true;
-    public int PartitionCount { get; set; } = 4;
-    public bool EnableBackup { get; set; } = true;
-    public TimeSpan BackupInterval { get; set; } = TimeSpan.FromHours(1);
-    public string BackupPath { get; set; } = "backups/redis";
-    public int MaxBackupCount { get; set; } = 24;
-    public bool EnableDistributedCache { get; set; } = true;
-    public TimeSpan CacheExpiration { get; set; } = TimeSpan.FromMinutes(5);
-    public int CacheMaxSize { get; set; } = 10000;
-}
 
 public class RedisDistributedStorage : IDistributedStorage, IDisposable
 {
@@ -230,12 +207,14 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
 
             return new StorageMetrics
             {
-                TotalPatterns = _cache.Count,
-                TotalStorageSize = long.Parse(memory),
+                TotalSizeBytes = long.Parse(memory),
+                UsedSizeBytes = long.Parse(memory),
+                AvailableSizeBytes = 0, // Not available from Redis info
+                ItemCount = _cache.Count,
                 CacheHitRate = hitRate,
-                CacheSize = _cache.Count,
-                LastBackupTime = null, // TODO: Track last backup time
-                AdditionalMetrics = new Dictionary<string, object>
+                CacheMissRate = 1 - hitRate,
+                Timestamp = DateTime.UtcNow,
+                Metadata = new Dictionary<string, object>
                 {
                     ["CacheHits"] = totalHits,
                     ["CacheMisses"] = totalMisses,
@@ -566,20 +545,3 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
         Dispose(false);
     }
 }
-
-public class DistributedStorageException : Exception
-{
-    public DistributedStorageException() { }
-
-    public DistributedStorageException(string message) : base(message) { }
-
-    public DistributedStorageException(string message, Exception inner) : base(message, inner) { }
-}
-
-public static class DateTimeExtensions
-{
-    public static long ToUnixTimeSeconds(this DateTime dateTime)
-    {
-        return new DateTimeOffset(dateTime).ToUnixTimeSeconds();
-    }
-} 
