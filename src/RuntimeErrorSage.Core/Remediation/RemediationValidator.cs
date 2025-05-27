@@ -23,27 +23,6 @@ using RuntimeErrorSage.Core.Validation.Interfaces;
 namespace RuntimeErrorSage.Core.Remediation;
 
 /// <summary>
-/// Options for the remediation validator.
-/// </summary>
-public class RemediationValidatorOptions
-{
-    /// <summary>
-    /// Gets or sets whether the validator is enabled.
-    /// </summary>
-    public bool IsEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the timeout for validation operations.
-    /// </summary>
-    public TimeSpan ValidationTimeout { get; set; } = TimeSpan.FromSeconds(30);
-
-    /// <summary>
-    /// Gets or sets the minimum health score for system health validation.
-    /// </summary>
-    public double MinimumHealthScore { get; set; } = 70.0;
-}
-
-/// <summary>
 /// Validates remediation actions and strategies.
 /// </summary>
 public class RemediationValidator : IRemediationValidator, IDisposable
@@ -59,6 +38,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
     private readonly IRemediationRegistry _registry;
     private readonly ILLMClient _llmClient;
     private readonly Dictionary<string, IRemediationActionValidator> _supportedActions;
+    private readonly EventId _validationErrorEventId;
 
     /// <inheritdoc/>
     public bool IsEnabled => !_disposed && _options.IsEnabled;
@@ -69,12 +49,6 @@ public class RemediationValidator : IRemediationValidator, IDisposable
     /// <inheritdoc/>
     public string Version => "1.0.0";
 
-    private static readonly Action<ILogger, string, Exception?> LogValidationError =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(1, nameof(ValidateRemediationAsync)),
-            "Validation error: {Message}");
-
     public RemediationValidator(
         ILogger<RemediationValidator> logger,
         IOptions<RemediationValidatorOptions> options,
@@ -84,7 +58,8 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         IRemediationMetricsCollector metricsCollector,
         IRemediationRegistry registry,
         ILLMClient llmClient,
-        Dictionary<string, IRemediationActionValidator> supportedActions)
+        Dictionary<string, IRemediationActionValidator> supportedActions,
+        EventId? validationErrorEventId = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -96,6 +71,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
         _supportedActions = supportedActions ?? throw new ArgumentNullException(nameof(supportedActions));
+        _validationErrorEventId = validationErrorEventId ?? new EventId(1, nameof(ValidateRemediationAsync));
     }
 
     /// <inheritdoc/>

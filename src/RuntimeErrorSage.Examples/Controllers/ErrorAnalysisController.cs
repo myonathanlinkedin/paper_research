@@ -66,8 +66,8 @@ namespace RuntimeErrorSage.Examples.Controllers
                     Timestamp = DateTime.UtcNow,
                     AdditionalContext = new Dictionary<string, object>
                     {
-                        { "Operation", context.Operation },
-                        { "Table", context.Table },
+                        { "Operation", context.OperationName },
+                        { "Database", context.DatabaseName },
                         { "Query", context.Query }
                     }
                 };
@@ -102,7 +102,7 @@ namespace RuntimeErrorSage.Examples.Controllers
                         { "Method", context.Method },
                         { "Url", context.Url },
                         { "StatusCode", context.StatusCode },
-                        { "ResponseContent", context.ResponseContent }
+                        { "ResponseContent", context.ResponseBody }
                     }
                 };
 
@@ -119,33 +119,5 @@ namespace RuntimeErrorSage.Examples.Controllers
                 });
             }
         }
-    }
-
-    public class DatabaseErrorContext
-    {
-        public string ServiceName { get; set; }
-        public string OperationName { get; set; }
-        public string CorrelationId { get; set; }
-        public Exception Exception { get; set; }
-        public string DatabaseName { get; set; }
-        public string ConnectionString { get; set; }
-        public string Query { get; set; }
-        public Dictionary<string, object> Parameters { get; set; }
-        public TimeSpan Timeout { get; set; }
-    }
-
-    public class HttpErrorContext
-    {
-        public string ServiceName { get; set; }
-        public string OperationName { get; set; }
-        public string CorrelationId { get; set; }
-        public Exception Exception { get; set; }
-        public string Url { get; set; }
-        public string Method { get; set; }
-        public int StatusCode { get; set; }
-        public Dictionary<string, string> RequestHeaders { get; set; }
-        public Dictionary<string, string> ResponseHeaders { get; set; }
-        public string RequestBody { get; set; }
-        public string ResponseBody { get; set; }
     }
 } 

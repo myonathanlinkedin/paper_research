@@ -182,13 +182,15 @@ public class ErrorHandlingMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-        var response = new
+        var response = new ErrorResponse
         {
-            CorrelationId = correlationId,
+            ErrorId = correlationId,
             Message = "An internal server error occurred.",
-            Details = ex?.Message,
-            Analysis = analysisResult, // Include analysis result in response
-            Remediation = remediationResult // Include remediation result in response
+            Type = ex?.GetType().Name ?? "Unknown",
+            Severity = DetermineSeverity(ex),
+            Analysis = analysisResult.Summary,
+            Remediation = remediationResult?.Status.ToString(),
+            Timestamp = DateTime.UtcNow
         };
 
         await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true }));
@@ -251,24 +253,4 @@ public class ErrorHandlingMiddleware
             _logger.LogError(ex, "Failed to record request metrics");
         }
     }
-}
-
-public class RequestContext
-{
-    public string Path { get; set; } = string.Empty;
-    public string Method { get; set; } = string.Empty;
-    public string QueryString { get; set; } = string.Empty;
-    public Dictionary<string, string> Headers { get; set; } = new();
-    public DateTime Timestamp { get; set; }
-}
-
-public class ErrorResponse
-{
-    public string ErrorId { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty;
-    public ErrorSeverity Severity { get; set; }
-    public string? Analysis { get; set; }
-    public string? Remediation { get; set; }
-    public DateTime Timestamp { get; set; }
 } 

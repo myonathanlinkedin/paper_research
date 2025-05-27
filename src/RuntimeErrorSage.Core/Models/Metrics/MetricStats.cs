@@ -1,0 +1,13 @@
+using System;
+
+namespace RuntimeErrorSage.Core.Models.Metrics
+{
+    public class MetricStats
+    {
+        public double Sum { get; set; }
+        public int Count { get; set; }
+        public double Min { get; set; }
+        public double Max { get; set; }
+        public double Average { get; set; }
+    }
+} 

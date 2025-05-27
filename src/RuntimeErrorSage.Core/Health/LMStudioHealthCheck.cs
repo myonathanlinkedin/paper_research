@@ -15,15 +15,18 @@ namespace RuntimeErrorSage.Core.Health
         private readonly ILMStudioClient _llmClient;
         private readonly LMStudioOptions _options;
         private readonly IOptions<RuntimeErrorSageOptions> _RuntimeErrorSageOptions;
+        private readonly IHealthCheckDataFactory _dataFactory;
 
         public LMStudioHealthCheck(
             ILMStudioClient llmClient,
             IOptions<LMStudioOptions> options,
-            IOptions<RuntimeErrorSageOptions> RuntimeErrorSageOptions)
+            IOptions<RuntimeErrorSageOptions> RuntimeErrorSageOptions,
+            IHealthCheckDataFactory dataFactory)
         {
             _llmClient = llmClient;
             _options = options.Value;
             _RuntimeErrorSageOptions = RuntimeErrorSageOptions;
+            _dataFactory = dataFactory;
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(
@@ -44,11 +47,7 @@ namespace RuntimeErrorSage.Core.Health
                 {
                     return HealthCheckResult.Unhealthy(
                         "LM Studio model is not ready",
-                        new Dictionary<string, object>
-                        {
-                            ["ModelId"] = _options.ModelId,
-                            ["BaseUrl"] = _options.BaseUrl
-                        });
+                        _dataFactory.CreateModelInfo(_options.ModelId, _options.BaseUrl));
                 }
 
                 // Perform a simple test analysis
@@ -59,33 +58,19 @@ namespace RuntimeErrorSage.Core.Health
                 {
                     return HealthCheckResult.Degraded(
                         "LM Studio returned empty response",
-                        new Dictionary<string, object>
-                        {
-                            ["ModelId"] = _options.ModelId,
-                            ["BaseUrl"] = _options.BaseUrl
-                        });
+                        _dataFactory.CreateModelInfo(_options.ModelId, _options.BaseUrl));
                 }
 
                 return HealthCheckResult.Healthy(
                     "LM Studio is healthy",
-                    new Dictionary<string, object>
-                    {
-                        ["ModelId"] = _options.ModelId,
-                        ["BaseUrl"] = _options.BaseUrl,
-                        ["ResponseLength"] = response.Length
-                    });
+                    _dataFactory.CreateModelInfoWithResponse(_options.ModelId, _options.BaseUrl, response.Length));
             }
             catch (Exception ex)
             {
                 return HealthCheckResult.Unhealthy(
                     "LM Studio health check failed",
                     ex,
-                    new Dictionary<string, object>
-                    {
-                        ["ModelId"] = _options.ModelId,
-                        ["BaseUrl"] = _options.BaseUrl,
-                        ["Error"] = ex.Message
-                    });
+                    _dataFactory.CreateModelInfoWithError(_options.ModelId, _options.BaseUrl, ex.Message));
             }
         }
     }

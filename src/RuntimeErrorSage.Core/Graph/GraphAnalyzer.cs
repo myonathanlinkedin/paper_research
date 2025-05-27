@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Classifier.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.Models.Metrics;
 
 namespace RuntimeErrorSage.Core.Graph;
 
@@ -24,19 +25,22 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     private readonly IImpactAnalyzer _impactAnalyzer;
     private readonly IErrorRelationshipAnalyzer _relationshipAnalyzer;
     private readonly IErrorClassifier _errorClassifier;
+    private readonly IErrorFactory _errorFactory;
 
     public GraphAnalyzer(
         ILogger<GraphAnalyzer> logger,
         IGraphBuilder graphBuilder,
         IImpactAnalyzer impactAnalyzer,
         IErrorRelationshipAnalyzer relationshipAnalyzer,
-        IErrorClassifier errorClassifier)
+        IErrorClassifier errorClassifier,
+        IErrorFactory errorFactory)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
         _impactAnalyzer = impactAnalyzer ?? throw new ArgumentNullException(nameof(impactAnalyzer));
         _relationshipAnalyzer = relationshipAnalyzer ?? throw new ArgumentNullException(nameof(relationshipAnalyzer));
         _errorClassifier = errorClassifier ?? throw new ArgumentNullException(nameof(errorClassifier));
+        _errorFactory = errorFactory ?? throw new ArgumentNullException(nameof(errorFactory));
     }
 
     /// <inheritdoc />
@@ -683,7 +687,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         foreach (var node in graph.Nodes)
         {
             var errorContext = new ErrorContext(
-                new Error(
+                _errorFactory.CreateError(
                     type: node.NodeType,
                     message: "Node error analysis",
                     source: node.Id,
@@ -723,7 +727,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         foreach (var errorNode in errorNodes)
         {
             var errorContext = new ErrorContext(
-                new Error(
+                _errorFactory.CreateError(
                     type: errorNode.NodeType,
                     message: "Error spread analysis",
                     source: errorNode.Id,

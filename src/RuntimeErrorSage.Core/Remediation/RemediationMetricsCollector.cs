@@ -33,29 +33,37 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
     private readonly RemediationMetricsCollectorOptions _options;
     private readonly Process _currentProcess;
     private readonly Timer _collectionTimer;
-    private readonly ConcurrentDictionary<string, List<RemediationMetrics>> _metricsHistory = new();
-    private readonly ConcurrentDictionary<string, List<MetricsStepMetrics>> _stepMetricsHistory = new();
-    private readonly ConcurrentDictionary<string, RemediationResult> _remediationResults = new();
-    private readonly ConcurrentDictionary<string, RemediationActionResult> _actionResults = new();
+    private readonly ConcurrentDictionary<string, List<RemediationMetrics>> _metricsHistory;
+    private readonly ConcurrentDictionary<string, List<MetricsStepMetrics>> _stepMetricsHistory;
+    private readonly ConcurrentDictionary<string, RemediationResult> _remediationResults;
+    private readonly ConcurrentDictionary<string, RemediationActionResult> _actionResults;
     private readonly object _lock = new();
     private readonly CancellationTokenSource _cts = new();
     private bool _disposed;
     private readonly IErrorContextAnalyzer _errorContextAnalyzer;
     private readonly IRemediationRegistry _registry;
     private readonly ILLMClient _llmClient;
-
-    private static readonly Action<ILogger, string, Exception?> LogMetricsError =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(1, nameof(CollectMetricsAsync)),
-            "Error collecting metrics: {Message}");
+    private readonly Dictionary<string, EventId> _eventIds;
+    private readonly Func<List<RemediationMetrics>> _remediationMetricsListFactory;
+    private readonly Func<List<MetricsStepMetrics>> _stepMetricsListFactory;
+    private readonly Func<List<MetricValue>> _metricValueListFactory;
+    private readonly Func<List<ValidationWarning>> _validationWarningListFactory;
 
     public RemediationMetricsCollector(
         ILogger<RemediationMetricsCollector> logger,
         IOptions<RemediationMetricsCollectorOptions> options,
         IErrorContextAnalyzer errorContextAnalyzer,
         IRemediationRegistry registry,
-        ILLMClient llmClient)
+        ILLMClient llmClient,
+        ConcurrentDictionary<string, List<RemediationMetrics>>? metricsHistory = null,
+        ConcurrentDictionary<string, List<MetricsStepMetrics>>? stepMetricsHistory = null,
+        ConcurrentDictionary<string, RemediationResult>? remediationResults = null,
+        ConcurrentDictionary<string, RemediationActionResult>? actionResults = null,
+        Dictionary<string, EventId>? eventIds = null,
+        Func<List<RemediationMetrics>>? remediationMetricsListFactory = null,
+        Func<List<MetricsStepMetrics>>? stepMetricsListFactory = null,
+        Func<List<MetricValue>>? metricValueListFactory = null,
+        Func<List<ValidationWarning>>? validationWarningListFactory = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -63,6 +71,31 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+        _metricsHistory = metricsHistory ?? new ConcurrentDictionary<string, List<RemediationMetrics>>();
+        _stepMetricsHistory = stepMetricsHistory ?? new ConcurrentDictionary<string, List<MetricsStepMetrics>>();
+        _remediationResults = remediationResults ?? new ConcurrentDictionary<string, RemediationResult>();
+        _actionResults = actionResults ?? new ConcurrentDictionary<string, RemediationActionResult>();
+        _eventIds = eventIds ?? new Dictionary<string, EventId>
+        {
+            { nameof(CollectMetricsAsync), new EventId(1, nameof(CollectMetricsAsync)) },
+            { nameof(RecordMetricAsync), new EventId(2, nameof(RecordMetricAsync)) },
+            { nameof(GetMetricsHistoryAsync), new EventId(3, nameof(GetMetricsHistoryAsync)) },
+            { nameof(RecordExecutionAsync), new EventId(4, nameof(RecordExecutionAsync)) },
+            { nameof(RecordRollbackAsync), new EventId(5, nameof(RecordRollbackAsync)) },
+            { nameof(GetRemediationResultAsync), new EventId(6, nameof(GetRemediationResultAsync)) },
+            { nameof(RecordActionExecutionAsync), new EventId(7, nameof(RecordActionExecutionAsync)) },
+            { nameof(RecordActionRollbackAsync), new EventId(8, nameof(RecordActionRollbackAsync)) },
+            { nameof(RecordRemediationMetricsAsync), new EventId(9, nameof(RecordRemediationMetricsAsync)) },
+            { nameof(RecordStepMetricsAsync), new EventId(10, nameof(RecordStepMetricsAsync)) },
+            { nameof(GetMetricsAsync), new EventId(11, nameof(GetMetricsAsync)) },
+            { nameof(GetAggregatedMetricsAsync), new EventId(12, nameof(GetAggregatedMetricsAsync)) },
+            { nameof(ValidateMetricsAsync), new EventId(13, nameof(ValidateMetricsAsync)) }
+        };
+
+        _remediationMetricsListFactory = remediationMetricsListFactory ?? (() => new List<RemediationMetrics>());
+        _stepMetricsListFactory = stepMetricsListFactory ?? (() => new List<MetricsStepMetrics>());
+        _metricValueListFactory = metricValueListFactory ?? (() => new List<MetricValue>());
+        _validationWarningListFactory = validationWarningListFactory ?? (() => new List<ValidationWarning>());
 
         // Setup collection timer with dueTime and period in milliseconds
         _collectionTimer = new Timer(
@@ -89,7 +122,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Collecting metrics for context {ContextId}", context.ContextId);
+            _logger.LogInformation(_eventIds[nameof(CollectMetricsAsync)], 
+                "Collecting metrics for context {ContextId}", context.ContextId);
 
             var metrics = new Dictionary<string, object>
             {
@@ -134,7 +168,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error collecting metrics for context {ContextId}", context.ContextId);
+            _logger.LogError(_eventIds[nameof(CollectMetricsAsync)], ex, 
+                "Error collecting metrics for context {ContextId}", context.ContextId);
             throw;
         }
     }
@@ -148,7 +183,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Recording metric {MetricName} for remediation {RemediationId}", metricName, remediationId);
+            _logger.LogInformation(_eventIds[nameof(RecordMetricAsync)], 
+                "Recording metric {MetricName} for remediation {RemediationId}", metricName, remediationId);
 
             var metrics = new RemediationMetrics
             {
@@ -159,12 +195,13 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
             _metricsHistory.AddOrUpdate(
                 remediationId,
-                new List<RemediationMetrics> { metrics },
+                _remediationMetricsListFactory().Append(metrics).ToList(),
                 (_, list) => { list.Add(metrics); return list; });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording metric {MetricName} for remediation {RemediationId}", metricName, remediationId);
+            _logger.LogError(_eventIds[nameof(RecordMetricAsync)], ex, 
+                "Error recording metric {MetricName} for remediation {RemediationId}", metricName, remediationId);
             throw;
         }
     }
@@ -177,7 +214,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Getting metrics history for remediation {RemediationId}", remediationId);
+            _logger.LogInformation(_eventIds[nameof(GetMetricsHistoryAsync)], 
+                "Getting metrics history for remediation {RemediationId}", remediationId);
 
             var history = new Dictionary<string, List<MetricValue>>();
             if (_metricsHistory.TryGetValue(remediationId, out var metrics))
@@ -188,7 +226,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                     {
                         if (!history.ContainsKey(key))
                         {
-                            history[key] = new List<MetricValue>();
+                            history[key] = _metricValueListFactory();
                         }
                         history[key].Add(new MetricValue
                         {
@@ -205,7 +243,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting metrics history for remediation {RemediationId}", remediationId);
+            _logger.LogError(_eventIds[nameof(GetMetricsHistoryAsync)], ex, 
+                "Error getting metrics history for remediation {RemediationId}", remediationId);
             throw;
         }
     }
@@ -219,12 +258,14 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Recording execution for remediation {RemediationId}", remediationId);
+            _logger.LogInformation(_eventIds[nameof(RecordExecutionAsync)], 
+                "Recording execution for remediation {RemediationId}", remediationId);
             _remediationResults[remediationId] = result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording execution for remediation {RemediationId}", remediationId);
+            _logger.LogError(_eventIds[nameof(RecordExecutionAsync)], ex, 
+                "Error recording execution for remediation {RemediationId}", remediationId);
             throw;
         }
     }
@@ -238,12 +279,14 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Recording rollback for remediation {RemediationId}", remediationId);
+            _logger.LogInformation(_eventIds[nameof(RecordRollbackAsync)], 
+                "Recording rollback for remediation {RemediationId}", remediationId);
             _remediationResults[remediationId] = result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording rollback for remediation {RemediationId}", remediationId);
+            _logger.LogError(_eventIds[nameof(RecordRollbackAsync)], ex, 
+                "Error recording rollback for remediation {RemediationId}", remediationId);
             throw;
         }
     }
@@ -256,7 +299,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Getting remediation result for {RemediationId}", remediationId);
+            _logger.LogInformation(_eventIds[nameof(GetRemediationResultAsync)], 
+                "Getting remediation result for {RemediationId}", remediationId);
 
             if (!_remediationResults.TryGetValue(remediationId, out var result))
             {
@@ -267,7 +311,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting remediation result for {RemediationId}", remediationId);
+            _logger.LogError(_eventIds[nameof(GetRemediationResultAsync)], ex, 
+                "Error getting remediation result for {RemediationId}", remediationId);
             throw;
         }
     }
@@ -281,12 +326,14 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Recording action execution for {ActionId}", actionId);
+            _logger.LogInformation(_eventIds[nameof(RecordActionExecutionAsync)], 
+                "Recording action execution for {ActionId}", actionId);
             _actionResults[actionId] = result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording action execution for {ActionId}", actionId);
+            _logger.LogError(_eventIds[nameof(RecordActionExecutionAsync)], ex, 
+                "Error recording action execution for {ActionId}", actionId);
             throw;
         }
     }
@@ -300,12 +347,14 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Recording action rollback for {ActionId}", actionId);
+            _logger.LogInformation(_eventIds[nameof(RecordActionRollbackAsync)], 
+                "Recording action rollback for {ActionId}", actionId);
             _actionResults[actionId] = result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording action rollback for {ActionId}", actionId);
+            _logger.LogError(_eventIds[nameof(RecordActionRollbackAsync)], ex, 
+                "Error recording action rollback for {ActionId}", actionId);
             throw;
         }
     }
@@ -318,16 +367,18 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Recording remediation metrics for {ExecutionId}", metrics.ExecutionId);
+            _logger.LogInformation(_eventIds[nameof(RecordRemediationMetricsAsync)], 
+                "Recording remediation metrics for {ExecutionId}", metrics.ExecutionId);
 
             _metricsHistory.AddOrUpdate(
                 metrics.ExecutionId,
-                new List<RemediationMetrics> { metrics },
+                _remediationMetricsListFactory().Append(metrics).ToList(),
                 (_, list) => { list.Add(metrics); return list; });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording remediation metrics for {ExecutionId}", metrics.ExecutionId);
+            _logger.LogError(_eventIds[nameof(RecordRemediationMetricsAsync)], ex, 
+                "Error recording remediation metrics for {ExecutionId}", metrics.ExecutionId);
             throw;
         }
     }
@@ -340,7 +391,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Recording step metrics for {StepId}", metrics.StepId);
+            _logger.LogInformation(_eventIds[nameof(RecordStepMetricsAsync)], 
+                "Recording step metrics for {StepId}", metrics.StepId);
 
             var metricsStepMetrics = new MetricsStepMetrics
             {
@@ -354,12 +406,13 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
             _stepMetricsHistory.AddOrUpdate(
                 metricsStepMetrics.StepId,
-                new List<MetricsStepMetrics> { metricsStepMetrics },
+                _stepMetricsListFactory().Append(metricsStepMetrics).ToList(),
                 (_, list) => { list.Add(metricsStepMetrics); return list; });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording step metrics for {StepId}", metrics.StepId);
+            _logger.LogError(_eventIds[nameof(RecordStepMetricsAsync)], ex, 
+                "Error recording step metrics for {StepId}", metrics.StepId);
             throw;
         }
     }
@@ -372,7 +425,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Getting metrics for remediation {RemediationId}", remediationId);
+            _logger.LogInformation(_eventIds[nameof(GetMetricsAsync)], 
+                "Getting metrics for remediation {RemediationId}", remediationId);
 
             if (!_metricsHistory.TryGetValue(remediationId, out var metrics) || !metrics.Any())
             {
@@ -383,7 +437,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting metrics for remediation {RemediationId}", remediationId);
+            _logger.LogError(_eventIds[nameof(GetMetricsAsync)], ex, 
+                "Error getting metrics for remediation {RemediationId}", remediationId);
             throw;
         }
     }
@@ -396,7 +451,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
         try
         {
-            _logger.LogInformation("Getting aggregated metrics for range {StartTime} to {EndTime}", range.StartTime, range.EndTime);
+            _logger.LogInformation(_eventIds[nameof(GetAggregatedMetricsAsync)], 
+                "Getting aggregated metrics for range {StartTime} to {EndTime}", range.StartTime, range.EndTime);
 
             var result = new RemediationMetrics
             {
@@ -457,7 +513,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting aggregated metrics for range {StartTime} to {EndTime}", range.StartTime, range.EndTime);
+            _logger.LogError(_eventIds[nameof(GetAggregatedMetricsAsync)], ex, 
+                "Error getting aggregated metrics for range {StartTime} to {EndTime}", range.StartTime, range.EndTime);
             throw;
         }
     }
@@ -465,167 +522,160 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
     /// <inheritdoc/>
     public async Task<ValidationResult> ValidateMetricsAsync(RemediationMetrics metrics)
     {
-        ArgumentNullException.ThrowIfNull(metrics);
-        ThrowIfDisposed();
-
         try
         {
-            _logger.LogInformation("Validating metrics for {ExecutionId}", metrics.ExecutionId);
+            _logger.LogInformation(_eventIds[nameof(ValidateMetricsAsync)], 
+                "Validating metrics for {ExecutionId}", metrics.ExecutionId);
 
-            var result = new ValidationResult
+            var result = new ValidationResult();
+            var warnings = _validationWarningListFactory();
+
+            // Validate required fields
+            if (string.IsNullOrEmpty(metrics.ExecutionId))
             {
-                StartTime = DateTime.UtcNow,
-                CorrelationId = metrics.ExecutionId,
-                Timestamp = DateTime.UtcNow
-            };
+                warnings.Add(new ValidationWarning
+                {
+                    Message = "Execution ID is required",
+                    Severity = ValidationSeverity.Error
+                });
+            }
 
-            // Validate metrics against thresholds
+            if (metrics.Timestamp == default)
+            {
+                warnings.Add(new ValidationWarning
+                {
+                    Message = "Timestamp is required",
+                    Severity = ValidationSeverity.Error
+                });
+            }
+
+            // Validate metric values
             foreach (var (key, value) in metrics.Values)
             {
-                if (value is double doubleValue)
+                if (value == null)
                 {
-                    if (key == "cpu_usage" && doubleValue > 80)
+                    warnings.Add(new ValidationWarning
                     {
-                        result.Warnings.Add(new ValidationWarning
-                        {
-                            WarningId = Guid.NewGuid().ToString(),
-                            Message = "CPU usage exceeds threshold",
-                            Severity = ValidationSeverity.Warning,
-                            Code = "HighCpuUsage",
-                            Timestamp = DateTime.UtcNow
-                        });
-                    }
-                    else if (key == "memory_usage" && doubleValue > 80)
-                    {
-                        result.Warnings.Add(new ValidationWarning
-                        {
-                            WarningId = Guid.NewGuid().ToString(),
-                            Message = "Memory usage exceeds threshold",
-                            Severity = ValidationSeverity.Warning,
-                            Code = "HighMemoryUsage",
-                            Timestamp = DateTime.UtcNow
-                        });
-                    }
-                    else if (key == "disk_usage" && doubleValue > 80)
-                    {
-                        result.Warnings.Add(new ValidationWarning
-                        {
-                            WarningId = Guid.NewGuid().ToString(),
-                            Message = "Disk usage exceeds threshold",
-                            Severity = ValidationSeverity.Warning,
-                            Code = "HighDiskUsage",
-                            Timestamp = DateTime.UtcNow
-                        });
-                    }
+                        Message = $"Metric value for {key} is null",
+                        Severity = ValidationSeverity.Warning
+                    });
                 }
             }
 
-            result.IsValid = !result.Warnings.Any();
-            result.EndTime = DateTime.UtcNow;
+            result.Warnings = warnings;
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating metrics for {ExecutionId}", metrics.ExecutionId);
+            _logger.LogError(_eventIds[nameof(ValidateMetricsAsync)], ex, 
+                "Error validating metrics for {ExecutionId}", metrics.ExecutionId);
             throw;
         }
     }
 
     private async Task<Dictionary<string, object>> CollectSystemMetricsAsync(CancellationToken cancellationToken)
     {
-        var metrics = new Dictionary<string, object>
+        try
         {
-            ["cpu_usage"] = await GetCpuUsageAsync(cancellationToken),
-            ["memory_usage"] = await GetMemoryUsageAsync(cancellationToken),
-            ["disk_usage"] = await GetDiskUsageAsync(cancellationToken),
-            ["cpu_frequency"] = GetCpuFrequency(),
-            ["total_memory"] = GetTotalMemory(),
-            ["available_memory"] = GetAvailableMemory(),
-            ["total_disk_space"] = GetTotalDiskSpace(),
-            ["free_disk_space"] = GetFreeDiskSpace()
-        };
+            _logger.LogInformation(_eventIds[nameof(CollectMetricsAsync)], 
+                "Collecting system metrics");
 
-        return metrics;
+            var metrics = new Dictionary<string, object>
+            {
+                ["cpu_usage"] = _currentProcess.TotalProcessorTime.TotalMilliseconds,
+                ["memory_usage"] = _currentProcess.WorkingSet64,
+                ["thread_count"] = _currentProcess.Threads.Count,
+                ["handle_count"] = _currentProcess.HandleCount,
+                ["start_time"] = _currentProcess.StartTime,
+                ["runtime"] = (DateTime.Now - _currentProcess.StartTime).TotalMilliseconds
+            };
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                metrics["is_windows"] = true;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                metrics["is_linux"] = true;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                metrics["is_osx"] = true;
+            }
+
+            return metrics;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(_eventIds[nameof(CollectMetricsAsync)], ex, 
+                "Error collecting system metrics");
+            throw;
+        }
     }
 
     private async Task<Dictionary<string, object>> CollectNetworkMetricsAsync(ErrorContext context)
     {
-        var metrics = new Dictionary<string, object>
+        try
         {
-            ["network_latency"] = 0.0,
-            ["network_bandwidth"] = 0.0,
-            ["network_errors"] = 0
-        };
+            _logger.LogInformation(_eventIds[nameof(CollectMetricsAsync)], 
+                "Collecting network metrics for context {ContextId}", context.ContextId);
 
-        return metrics;
+            var metrics = new Dictionary<string, object>();
+
+            if (context is HttpErrorContext httpContext)
+            {
+                metrics["request_url"] = httpContext.Url;
+                metrics["request_method"] = httpContext.Method;
+                metrics["status_code"] = httpContext.StatusCode;
+                metrics["response_time"] = httpContext.ResponseTime;
+                metrics["request_size"] = httpContext.RequestBody?.Length ?? 0;
+                metrics["response_size"] = httpContext.ResponseBody?.Length ?? 0;
+            }
+
+            return metrics;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(_eventIds[nameof(CollectMetricsAsync)], ex, 
+                "Error collecting network metrics for context {ContextId}", context.ContextId);
+            throw;
+        }
     }
 
     private async Task<Dictionary<string, object>> CollectErrorMetricsAsync(ErrorContext context)
     {
-        var metrics = new Dictionary<string, object>
-        {
-            ["error_count"] = 1,
-            ["error_severity"] = context.Severity.ToString(),
-            ["error_type"] = context.ErrorType
-        };
-
-        return metrics;
-    }
-
-    private static async Task<double> GetCpuUsageAsync(CancellationToken cancellationToken)
-    {
         try
         {
-            var startTime = DateTime.UtcNow;
-            var startCpuUsage = _currentProcess.TotalProcessorTime;
-            await Task.Delay(1000, cancellationToken);
-            var endTime = DateTime.UtcNow;
-            var endCpuUsage = _currentProcess.TotalProcessorTime;
-            var cpuUsedMs = (endCpuUsage - startCpuUsage).TotalMilliseconds;
-            var totalMsPassed = (endTime - startTime).TotalMilliseconds * Environment.ProcessorCount;
-            var cpuUsageTotal = cpuUsedMs / totalMsPassed * 100;
-            return cpuUsageTotal;
+            _logger.LogInformation(_eventIds[nameof(CollectMetricsAsync)], 
+                "Collecting error metrics for context {ContextId}", context.ContextId);
+
+            var metrics = new Dictionary<string, object>
+            {
+                ["error_type"] = context.ErrorType,
+                ["error_severity"] = context.Severity.ToString(),
+                ["error_message"] = context.Exception?.Message,
+                ["error_source"] = context.Exception?.Source,
+                ["error_stack_trace"] = context.Exception?.StackTrace,
+                ["error_inner_exception"] = context.Exception?.InnerException?.Message
+            };
+
+            if (context is DatabaseErrorContext dbContext)
+            {
+                metrics["database_name"] = dbContext.DatabaseName;
+                metrics["database_operation"] = dbContext.OperationName;
+                metrics["database_error_code"] = dbContext.ErrorCode;
+                metrics["database_error_state"] = dbContext.ErrorState;
+            }
+
+            return metrics;
         }
-        catch
+        catch (Exception ex)
         {
-            return 0.0;
+            _logger.LogError(_eventIds[nameof(CollectMetricsAsync)], ex, 
+                "Error collecting error metrics for context {ContextId}", context.ContextId);
+            throw;
         }
     }
-
-    private static async Task<double> GetMemoryUsageAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var process = Process.GetCurrentProcess();
-            var memoryUsage = process.WorkingSet64;
-            var totalMemory = GetTotalMemory();
-            return totalMemory > 0 ? (double)memoryUsage / totalMemory * 100 : 0;
-        }
-        catch
-        {
-            return 0.0;
-        }
-    }
-
-    private static async Task<double> GetDiskUsageAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var totalSpace = GetTotalDiskSpace();
-            var freeSpace = GetFreeDiskSpace();
-            return totalSpace > 0 ? (double)(totalSpace - freeSpace) / totalSpace * 100 : 0;
-        }
-        catch
-        {
-            return 0.0;
-        }
-    }
-
-    private static double GetCpuFrequency() => 0.0; // Implement platform-specific logic
-    private static long GetTotalMemory() => 0L; // Implement platform-specific logic
-    private static long GetAvailableMemory() => 0L; // Implement platform-specific logic
-    private static long GetTotalDiskSpace() => 0L; // Implement platform-specific logic
-    private static long GetFreeDiskSpace() => 0L; // Implement platform-specific logic
 
     private void ThrowIfDisposed()
     {
@@ -642,10 +692,10 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             return;
         }
 
+        _cts.Cancel();
+        _collectionTimer.Dispose();
+        _cts.Dispose();
         _disposed = true;
-        _collectionTimer?.Dispose();
-        _cts?.Cancel();
-        _cts?.Dispose();
     }
 
     private Dictionary<string, double> CalculateMetricTrends()
@@ -687,7 +737,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error calculating component health for {ComponentId}", node.ComponentId);
+            _logger.LogError(_eventIds[nameof(CalculateComponentHealthAsync)], ex, 
+                "Error calculating component health for {ComponentId}", node.ComponentId);
             throw;
         }
     }
@@ -712,7 +763,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error calculating reliability for {ComponentId}", node.ComponentId);
+            _logger.LogError(_eventIds[nameof(CalculateReliabilityAsync)], ex, 
+                "Error calculating reliability for {ComponentId}", node.ComponentId);
             throw;
         }
     }

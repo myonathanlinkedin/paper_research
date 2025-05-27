@@ -25,60 +25,6 @@ namespace RuntimeErrorSage.Core.Remediation;
 /// </summary>
 public class RemediationExecutor : IRemediationExecutor
 {
-    private static readonly Action<ILogger, string, Exception?> LogExecutionError =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(1, nameof(ExecuteStrategyAsync)),
-            "Error executing strategy {StrategyName}");
-
-    private static readonly Action<ILogger, string, Exception?> LogValidationError =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(2, nameof(ValidateRemediationAsync)),
-            "Error validating remediation {RemediationId}");
-
-    private static readonly Action<ILogger, string, Exception?> LogExecutionCancelled =
-        LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(3, nameof(CancelRemediationAsync)),
-            "Remediation {RemediationId} cancelled");
-
-    private static readonly Action<ILogger, string, string, Exception?> LogStrategyValidationFailed =
-        LoggerMessage.Define<string, string>(
-            LogLevel.Warning,
-            new EventId(4, nameof(ExecuteStrategiesForErrorTypeAsync)),
-            "Strategy {StrategyName} validation failed: {Errors}");
-
-    private static readonly Action<ILogger, string, Exception?> LogStrategyExecutionError =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(5, nameof(ExecuteStrategiesForErrorTypeAsync)),
-            "Error executing strategies for error type {ErrorType}");
-
-    private static readonly Action<ILogger, string, Exception?> LogRemediationExecutionError =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(6, nameof(ExecuteRemediationAsync)),
-            "Error during remediation execution {CorrelationId}");
-
-    private static readonly Action<ILogger, string, Exception?> LogStatusNotImplemented =
-        LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(7, nameof(GetRemediationStatusAsync)),
-            "GetRemediationStatusAsync not implemented for {RemediationId}");
-
-    private static readonly Action<ILogger, string, Exception?> LogHistoryNotImplemented =
-        LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(8, nameof(GetExecutionHistoryAsync)),
-            "GetExecutionHistoryAsync not implemented for {RemediationId}");
-
-    private static readonly Action<ILogger, string, Exception?> LogMetricsNotImplemented =
-        LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(9, nameof(GetExecutionMetricsAsync)),
-            "GetExecutionMetricsAsync not implemented for {RemediationId}");
-
     private readonly ILogger<RemediationExecutor> _logger;
     private readonly IErrorContextAnalyzer _errorContextAnalyzer;
     private readonly IRemediationValidator _validator;
@@ -86,6 +32,7 @@ public class RemediationExecutor : IRemediationExecutor
     private readonly IRemediationMetricsCollector _metricsCollector;
     private readonly IRemediationStrategyRegistry _registry;
     private readonly ILLMClient _llmClient;
+    private readonly Dictionary<string, EventId> _eventIds;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RemediationExecutor"/> class.
@@ -98,7 +45,8 @@ public class RemediationExecutor : IRemediationExecutor
         IRemediationTracker tracker,
         IRemediationMetricsCollector metricsCollector,
         ILLMClient llmClient,
-        IRemediationStrategyRegistry strategyRegistry)
+        IRemediationStrategyRegistry strategyRegistry,
+        Dictionary<string, EventId>? eventIds = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
@@ -107,6 +55,17 @@ public class RemediationExecutor : IRemediationExecutor
         _tracker = tracker ?? throw new ArgumentNullException(nameof(tracker));
         _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
         _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+        _eventIds = eventIds ?? new Dictionary<string, EventId>
+        {
+            { nameof(ExecuteStrategyAsync), new EventId(1, nameof(ExecuteStrategyAsync)) },
+            { nameof(ValidateRemediationAsync), new EventId(2, nameof(ValidateRemediationAsync)) },
+            { nameof(CancelRemediationAsync), new EventId(3, nameof(CancelRemediationAsync)) },
+            { nameof(ExecuteStrategiesForErrorTypeAsync), new EventId(4, nameof(ExecuteStrategiesForErrorTypeAsync)) },
+            { nameof(ExecuteRemediationAsync), new EventId(5, nameof(ExecuteRemediationAsync)) },
+            { nameof(GetRemediationStatusAsync), new EventId(6, nameof(GetRemediationStatusAsync)) },
+            { nameof(GetExecutionHistoryAsync), new EventId(7, nameof(GetExecutionHistoryAsync)) },
+            { nameof(GetExecutionMetricsAsync), new EventId(8, nameof(GetExecutionMetricsAsync)) }
+        };
     }
 
     /// <inheritdoc/>
@@ -131,7 +90,8 @@ public class RemediationExecutor : IRemediationExecutor
 
         try
         {
-            _logger.LogInformation("Executing strategy {StrategyName} for error type {ErrorType}", 
+            _logger.LogInformation(_eventIds[nameof(ExecuteStrategyAsync)], 
+                "Executing strategy {StrategyName} for error type {ErrorType}", 
                 strategy.Name, context.ErrorType);
 
             var result = await strategy.ExecuteAsync(context);
@@ -141,7 +101,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error executing strategy {StrategyName}", strategy.Name);
+            _logger.LogError(_eventIds[nameof(ExecuteStrategyAsync)], ex, 
+                "Error executing strategy {StrategyName}", strategy.Name);
             throw;
         }
     }
@@ -153,7 +114,8 @@ public class RemediationExecutor : IRemediationExecutor
 
         try
         {
-            _logger.LogInformation("Executing remediation plan {PlanId}", plan.PlanId);
+            _logger.LogInformation(_eventIds[nameof(ExecuteRemediationAsync)], 
+                "Executing remediation plan {PlanId}", plan.PlanId);
 
             var result = new RemediationResult
             {
@@ -178,7 +140,8 @@ public class RemediationExecutor : IRemediationExecutor
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error executing action {ActionName}", action.Name);
+                    _logger.LogError(_eventIds[nameof(ExecuteRemediationAsync)], ex, 
+                        "Error executing action {ActionName}", action.Name);
                     result.Success = false;
                     result.ErrorMessage = $"Action {action.Name} failed: {ex.Message}";
                     break;
@@ -195,7 +158,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error executing plan {PlanId}", plan.PlanId);
+            _logger.LogError(_eventIds[nameof(ExecuteRemediationAsync)], ex, 
+                "Error executing plan {PlanId}", plan.PlanId);
             throw;
         }
     }
@@ -207,7 +171,8 @@ public class RemediationExecutor : IRemediationExecutor
 
         try
         {
-            _logger.LogInformation("Rolling back remediation {ExecutionId}", result.ExecutionId);
+            _logger.LogInformation(_eventIds[nameof(ExecuteRemediationAsync)], 
+                "Rolling back remediation {ExecutionId}", result.ExecutionId);
 
             var rollbackResult = new RemediationResult
             {
@@ -237,7 +202,8 @@ public class RemediationExecutor : IRemediationExecutor
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error executing rollback action {ActionName}", action.RollbackAction.Name);
+                        _logger.LogError(_eventIds[nameof(ExecuteRemediationAsync)], ex, 
+                            "Error executing rollback action {ActionName}", action.RollbackAction.Name);
                         rollbackResult.Success = false;
                         rollbackResult.ErrorMessage = $"Rollback action {action.RollbackAction.Name} failed: {ex.Message}";
                         break;
@@ -255,7 +221,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error rolling back remediation {ExecutionId}", result.ExecutionId);
+            _logger.LogError(_eventIds[nameof(ExecuteRemediationAsync)], ex, 
+                "Error rolling back remediation {ExecutionId}", result.ExecutionId);
             throw;
         }
     }
@@ -270,7 +237,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            LogStatusNotImplemented(_logger, remediationId, ex);
+            _logger.LogInformation(_eventIds[nameof(GetRemediationStatusAsync)], ex,
+                "GetRemediationStatusAsync not implemented for {RemediationId}", remediationId);
             return RemediationStatusEnum.NotStarted;
         }
     }
@@ -284,7 +252,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting execution history {RemediationId}", remediationId);
+            _logger.LogError(_eventIds[nameof(GetExecutionHistoryAsync)], ex, 
+                "Error getting execution history {RemediationId}", remediationId);
             throw;
         }
     }
@@ -294,13 +263,15 @@ public class RemediationExecutor : IRemediationExecutor
     {
         try
         {
-            _logger.LogInformation("Cancelling remediation {RemediationId}", remediationId);
+            _logger.LogInformation(_eventIds[nameof(CancelRemediationAsync)], 
+                "Cancelling remediation {RemediationId}", remediationId);
             // Implementation for cancellation logic
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error cancelling remediation {RemediationId}", remediationId);
+            _logger.LogError(_eventIds[nameof(CancelRemediationAsync)], ex, 
+                "Error cancelling remediation {RemediationId}", remediationId);
             throw;
         }
     }
@@ -310,7 +281,8 @@ public class RemediationExecutor : IRemediationExecutor
     {
         try
         {
-            _logger.LogInformation("Executing remediation for error type {ErrorType}", context.ErrorType);
+            _logger.LogInformation(_eventIds[nameof(ExecuteRemediationAsync)], 
+                "Executing remediation for error type {ErrorType}", context.ErrorType);
 
             var plan = await CreatePlanAsync(analysis, context);
             var result = await ExecutePlanAsync(plan);
@@ -327,7 +299,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error executing remediation");
+            _logger.LogError(_eventIds[nameof(ExecuteRemediationAsync)], ex, 
+                "Error executing remediation");
             throw;
         }
     }
@@ -348,7 +321,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating remediation");
+            _logger.LogError(_eventIds[nameof(ValidateRemediationAsync)], ex, 
+                "Error validating remediation");
             throw;
         }
     }
@@ -367,7 +341,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting execution metrics {RemediationId}", remediationId);
+            _logger.LogError(_eventIds[nameof(GetExecutionMetricsAsync)], ex, 
+                "Error getting execution metrics {RemediationId}", remediationId);
             throw;
         }
     }
@@ -377,7 +352,8 @@ public class RemediationExecutor : IRemediationExecutor
     {
         try
         {
-            _logger.LogInformation("Executing action {ActionName}", action.Name);
+            _logger.LogInformation(_eventIds[nameof(ExecuteStrategyAsync)], 
+                "Executing action {ActionName}", action.Name);
 
             action.StartTime = DateTime.UtcNow;
             action.Status = RemediationStatus.InProgress;
@@ -414,7 +390,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error executing action {ActionName}", action.Name);
+            _logger.LogError(_eventIds[nameof(ExecuteStrategyAsync)], ex, 
+                "Error executing action {ActionName}", action.Name);
             throw;
         }
     }
@@ -428,7 +405,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating action {ActionName}", action.Name);
+            _logger.LogError(_eventIds[nameof(ValidateRemediationAsync)], ex, 
+                "Error validating action {ActionName}", action.Name);
             throw;
         }
     }
@@ -450,7 +428,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting action impact {ActionName}", action.Name);
+            _logger.LogError(_eventIds[nameof(ExecuteStrategyAsync)], ex, 
+                "Error getting action impact {ActionName}", action.Name);
             throw;
         }
     }
@@ -471,7 +450,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting action risk {ActionName}", action.Name);
+            _logger.LogError(_eventIds[nameof(ExecuteStrategyAsync)], ex, 
+                "Error getting action risk {ActionName}", action.Name);
             throw;
         }
     }
@@ -575,7 +555,9 @@ public class RemediationExecutor : IRemediationExecutor
                     var strategyValidation = await strategy.ValidateAsync(context).ConfigureAwait(false);
                     if (!strategyValidation.IsValid)
                     {
-                        LogStrategyValidationFailed(_logger, strategy.Name, string.Join(", ", strategyValidation.Errors), null);
+                        _logger.LogWarning(_eventIds[nameof(ExecuteStrategiesForErrorTypeAsync)], 
+                            "Strategy {StrategyName} validation failed: {Errors}", 
+                            strategy.Name, string.Join(", ", strategyValidation.Errors));
                         continue;
                     }
 
@@ -617,7 +599,8 @@ public class RemediationExecutor : IRemediationExecutor
                 }
                 catch (InvalidOperationException ex)
                 {
-                    LogStrategyExecutionError(_logger, errorType, ex);
+                    _logger.LogError(_eventIds[nameof(ExecuteStrategiesForErrorTypeAsync)], ex,
+                        "Error executing strategies for error type {ErrorType}", errorType);
                     var result = new RemediationResult
                     {
                         IsSuccessful = false,
@@ -629,7 +612,8 @@ public class RemediationExecutor : IRemediationExecutor
                 }
                 catch (ValidationException ex)
                 {
-                    LogStrategyExecutionError(_logger, errorType, ex);
+                    _logger.LogError(_eventIds[nameof(ExecuteStrategiesForErrorTypeAsync)], ex,
+                        "Error executing strategies for error type {ErrorType}", errorType);
                     var result = new RemediationResult
                     {
                         IsSuccessful = false,
@@ -641,7 +625,8 @@ public class RemediationExecutor : IRemediationExecutor
                 }
                 catch (Exception ex) when (ex is not InvalidOperationException && ex is not ValidationException)
                 {
-                    LogStrategyExecutionError(_logger, errorType, ex);
+                    _logger.LogError(_eventIds[nameof(ExecuteStrategiesForErrorTypeAsync)], ex,
+                        "Error executing strategies for error type {ErrorType}", errorType);
                     var result = new RemediationResult
                     {
                         IsSuccessful = false,
@@ -675,7 +660,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (InvalidOperationException ex)
         {
-            LogStrategyExecutionError(_logger, errorType, ex);
+            _logger.LogError(_eventIds[nameof(ExecuteStrategiesForErrorTypeAsync)], ex,
+                "Error executing strategies for error type {ErrorType}", errorType);
             var result = new RemediationResult
             {
                 IsSuccessful = false,
@@ -687,7 +673,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (ValidationException ex)
         {
-            LogStrategyExecutionError(_logger, errorType, ex);
+            _logger.LogError(_eventIds[nameof(ExecuteStrategiesForErrorTypeAsync)], ex,
+                "Error executing strategies for error type {ErrorType}", errorType);
             var result = new RemediationResult
             {
                 IsSuccessful = false,
@@ -699,7 +686,8 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex) when (ex is not InvalidOperationException && ex is not ValidationException)
         {
-            LogStrategyExecutionError(_logger, errorType, ex);
+            _logger.LogError(_eventIds[nameof(ExecuteStrategiesForErrorTypeAsync)], ex,
+                "Error executing strategies for error type {ErrorType}", errorType);
             var result = new RemediationResult
             {
                 IsSuccessful = false,
@@ -708,6 +696,35 @@ public class RemediationExecutor : IRemediationExecutor
                 Timestamp = DateTime.UtcNow
             };
             return result;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<RemediationResult> RollbackRemediationAsync(string remediationId)
+    {
+        ArgumentNullException.ThrowIfNull(remediationId);
+
+        try
+        {
+            _logger.LogInformation(_eventIds[nameof(ExecuteRemediationAsync)], 
+                "Rolling back remediation {RemediationId}", remediationId);
+
+            var execution = await GetExecutionHistoryAsync(remediationId);
+            if (execution == null)
+            {
+                throw new InvalidOperationException($"No execution found for remediation {remediationId}");
+            }
+
+            var result = await RollbackAsync(execution.Result);
+            await _metricsCollector.RecordRollbackAsync(remediationId, result);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(_eventIds[nameof(ExecuteRemediationAsync)], ex, 
+                "Error rolling back remediation {RemediationId}", remediationId);
+            throw;
         }
     }
 } 

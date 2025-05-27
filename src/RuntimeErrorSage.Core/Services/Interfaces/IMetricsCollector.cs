@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Services.Models;
 
 namespace RuntimeErrorSage.Core.Services.Interfaces
 {
@@ -27,26 +28,5 @@ namespace RuntimeErrorSage.Core.Services.Interfaces
         /// </summary>
         /// <returns>A dictionary of metric names and values</returns>
         Task<Dictionary<string, MetricValue>> CollectMetricsAsync();
-    }
-
-    /// <summary>
-    /// Represents a metric value with its unit and metadata.
-    /// </summary>
-    public class MetricValue
-    {
-        /// <summary>
-        /// Gets or sets the metric value.
-        /// </summary>
-        public double Value { get; set; }
-
-        /// <summary>
-        /// Gets or sets the metric unit.
-        /// </summary>
-        public string Unit { get; set; }
-
-        /// <summary>
-        /// Gets or sets the metric metadata.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
     }
 } 

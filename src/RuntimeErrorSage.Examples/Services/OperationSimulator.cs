@@ -13,6 +13,12 @@ namespace RuntimeErrorSage.Examples.Services;
 public class OperationSimulator : IOperationSimulator
 {
     private readonly Random _random = new Random();
+    private readonly Func<Dictionary<string, object>> _dictFactory;
+
+    public OperationSimulator(Func<Dictionary<string, object>>? dictFactory = null)
+    {
+        _dictFactory = dictFactory ?? (() => new Dictionary<string, object>());
+    }
 
     public async Task<OperationResponse> SimulateDatabaseOperationAsync(ProcessRequest request)
     {
@@ -26,13 +32,13 @@ public class OperationSimulator : IOperationSimulator
             {
                 throw new DatabaseOperationException(
                     "Database operation failed",
-                    new Dictionary<string, object>
+                    _dictFactory().AddRange(new[]
                     {
-                        { "Operation", request.Operation },
-                        { "DataLength", request.Data?.Length ?? 0 },
-                        { "Priority", request.Priority },
-                        { "TimeoutSeconds", request.TimeoutSeconds }
-                    }
+                        new KeyValuePair<string, object>("Operation", request.Operation),
+                        new KeyValuePair<string, object>("DataLength", request.Data?.Length ?? 0),
+                        new KeyValuePair<string, object>("Priority", request.Priority),
+                        new KeyValuePair<string, object>("TimeoutSeconds", request.TimeoutSeconds)
+                    })
                 );
             }
 
@@ -54,13 +60,13 @@ public class OperationSimulator : IOperationSimulator
                     Message = ex.Message,
                     Details = "Database operation failed due to simulated error",
                     StackTrace = ex.StackTrace,
-                    Context = new Dictionary<string, object>
+                    Context = _dictFactory().AddRange(new[]
                     {
-                        { "Operation", request.Operation },
-                        { "DataLength", request.Data?.Length ?? 0 },
-                        { "Priority", request.Priority },
-                        { "TimeoutSeconds", request.TimeoutSeconds }
-                    }
+                        new KeyValuePair<string, object>("Operation", request.Operation),
+                        new KeyValuePair<string, object>("DataLength", request.Data?.Length ?? 0),
+                        new KeyValuePair<string, object>("Priority", request.Priority),
+                        new KeyValuePair<string, object>("TimeoutSeconds", request.TimeoutSeconds)
+                    })
                 }
             };
         }
@@ -77,12 +83,12 @@ public class OperationSimulator : IOperationSimulator
             {
                 throw new FileOperationException(
                     "File upload failed",
-                    new Dictionary<string, object>
+                    _dictFactory().AddRange(new[]
                     {
-                        { "FileName", request.FileName },
-                        { "FileSize", request.FileSize },
-                        { "ContentType", request.ContentType }
-                    }
+                        new KeyValuePair<string, object>("FileName", request.FileName),
+                        new KeyValuePair<string, object>("FileSize", request.FileSize),
+                        new KeyValuePair<string, object>("ContentType", request.ContentType)
+                    })
                 );
             }
 
@@ -104,12 +110,12 @@ public class OperationSimulator : IOperationSimulator
                     Message = ex.Message,
                     Details = "File upload failed due to simulated error",
                     StackTrace = ex.StackTrace,
-                    Context = new Dictionary<string, object>
+                    Context = _dictFactory().AddRange(new[]
                     {
-                        { "FileName", request.FileName },
-                        { "FileSize", request.FileSize },
-                        { "ContentType", request.ContentType }
-                    }
+                        new KeyValuePair<string, object>("FileName", request.FileName),
+                        new KeyValuePair<string, object>("FileSize", request.FileSize),
+                        new KeyValuePair<string, object>("ContentType", request.ContentType)
+                    })
                 }
             };
         }
@@ -126,12 +132,12 @@ public class OperationSimulator : IOperationSimulator
             {
                 throw new ServiceIntegrationException(
                     "External service call failed",
-                    new Dictionary<string, object>
+                    _dictFactory().AddRange(new[]
                     {
-                        { "ServiceUrl", request.ServiceUrl },
-                        { "Method", request.Method },
-                        { "TimeoutSeconds", request.TimeoutSeconds }
-                    }
+                        new KeyValuePair<string, object>("ServiceUrl", request.ServiceUrl),
+                        new KeyValuePair<string, object>("Method", request.Method),
+                        new KeyValuePair<string, object>("TimeoutSeconds", request.TimeoutSeconds)
+                    })
                 );
             }
 
@@ -153,12 +159,12 @@ public class OperationSimulator : IOperationSimulator
                     Message = ex.Message,
                     Details = "External service call failed due to simulated error",
                     StackTrace = ex.StackTrace,
-                    Context = new Dictionary<string, object>
+                    Context = _dictFactory().AddRange(new[]
                     {
-                        { "ServiceUrl", request.ServiceUrl },
-                        { "Method", request.Method },
-                        { "TimeoutSeconds", request.TimeoutSeconds }
-                    }
+                        new KeyValuePair<string, object>("ServiceUrl", request.ServiceUrl),
+                        new KeyValuePair<string, object>("Method", request.Method),
+                        new KeyValuePair<string, object>("TimeoutSeconds", request.TimeoutSeconds)
+                    })
                 }
             };
         }
@@ -175,12 +181,12 @@ public class OperationSimulator : IOperationSimulator
             {
                 throw new ResourceAllocationException(
                     "Resource allocation failed",
-                    new Dictionary<string, object>
+                    _dictFactory().AddRange(new[]
                     {
-                        { "ResourceType", request.ResourceType },
-                        { "RequestedAmount", request.RequestedAmount },
-                        { "Priority", request.Priority }
-                    }
+                        new KeyValuePair<string, object>("ResourceType", request.ResourceType),
+                        new KeyValuePair<string, object>("RequestedAmount", request.RequestedAmount),
+                        new KeyValuePair<string, object>("Priority", request.Priority)
+                    })
                 );
             }
 
@@ -202,14 +208,27 @@ public class OperationSimulator : IOperationSimulator
                     Message = ex.Message,
                     Details = "Resource allocation failed due to simulated error",
                     StackTrace = ex.StackTrace,
-                    Context = new Dictionary<string, object>
+                    Context = _dictFactory().AddRange(new[]
                     {
-                        { "ResourceType", request.ResourceType },
-                        { "RequestedAmount", request.RequestedAmount },
-                        { "Priority", request.Priority }
-                    }
+                        new KeyValuePair<string, object>("ResourceType", request.ResourceType),
+                        new KeyValuePair<string, object>("RequestedAmount", request.RequestedAmount),
+                        new KeyValuePair<string, object>("Priority", request.Priority)
+                    })
                 }
             };
         }
     }
+}
+
+public static class DictionaryExtensions
+{
+    public static Dictionary<string, object> AddRange(this Dictionary<string, object> dict, IEnumerable<KeyValuePair<string, object>> items)
+    {
+        foreach (var item in items)
+        {
+            dict[item.Key] = item.Value;
+        }
+        return dict;
+    }
 } 
+

@@ -15,13 +15,4 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         public DateTime EndTime { get; set; }
         public Dictionary<string, string> Labels { get; set; } = new();
     }
-
-    public class MetricStats
-    {
-        public double Sum { get; set; }
-        public int Count { get; set; }
-        public double Min { get; set; }
-        public double Max { get; set; }
-        public double Average { get; set; }
-    }
 } 

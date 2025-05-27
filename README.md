@@ -1,7 +1,44 @@
-# RuntimeErrorSage
+# RuntimeErrorSage: Intelligent Runtime Error Analysis and Remediation
 
-## Prerequisites
+This repository contains the implementation of RuntimeErrorSage, a research project focused on intelligent runtime error analysis and remediation in .NET applications using local Large Language Models (LLMs).
 
+## Research Overview
+
+RuntimeErrorSage introduces a novel approach to runtime error handling by combining:
+- Graph-based context analysis
+- Local LLM-powered error understanding
+- Automated remediation strategies
+- Model Context Protocol (MCP) for distributed context management
+
+## Key Research Contributions
+
+### Model Context Protocol (MCP)
+- Distributed context management system
+- Real-time error pattern analysis
+- Cross-service communication framework
+- Context graph construction and analysis
+
+### Graph-based Context Analysis
+- Error pattern recognition algorithms
+- Context relationship modeling
+- Similarity analysis techniques
+- Pattern clustering methodologies
+
+### LLM Integration
+- Integration with Qwen 2.5 7B Instruct 1M model via LM Studio
+- Local error analysis and understanding
+- Remediation plan generation
+- Validation and verification mechanisms
+
+### Remediation Action System
+- Step-by-step remediation execution
+- Action validation and safety checks
+- Metrics collection and analysis
+- Result tracking and reporting
+
+## Implementation Details
+
+### Prerequisites
 - .NET 9 SDK and runtime
 - LM Studio with Qwen 2.5 7B Instruct 1M model (local, HTTP API)
 - Windows 11 (evaluation performed on Windows 11)
@@ -12,61 +49,38 @@
 
 > **Note:** The above configuration matches the evaluation environment described in the paper. For smaller workloads, a modern CPU, 16GB+ RAM, and SSD may suffice, but performance will be lower.
 
-RuntimeErrorSage is a research implementation of an intelligent runtime error analysis and remediation system. This project implements the concepts described in our research paper on automated error handling and remediation in .NET applications using local LLM inference.
+### Project Structure
 
-## Overview
+```
+RuntimeErrorSage/
+├── src/
+│   ├── RuntimeErrorSage.Core/           # Core implementation
+│   │   ├── Analysis/                    # Error analysis
+│   │   ├── MCP/                         # Model Context Protocol
+│   │   ├── LLM/                         # LLM integration
+│   │   └── Remediation/                 # Remediation system
+│   ├── RuntimeErrorSage.Tests/          # Test suite
+│   └── RuntimeErrorSage.Examples/       # Example implementations
+├── paper/                               # Research paper
+│   ├── sections/                        # Paper sections
+│   └── figures/                         # Paper figures
+└── docs/                                # Documentation
+```
 
-RuntimeErrorSage provides a comprehensive framework for:
-- Real-time error detection and analysis
-- Graph-based context analysis for error patterns
-- Local LLM-powered error understanding and remediation
-- Automated remediation action execution
-- Metrics collection and validation
+## Evaluation Results
 
-## Key Components
-
-### Model Context Protocol (MCP)
-- Distributed context management
-- Real-time error pattern analysis
-- Cross-service communication
-- Context graph construction and analysis
-
-### Graph-based Context Analysis
-- Error pattern recognition
-- Context relationship modeling
-- Similarity analysis
-- Pattern clustering
-
-### LLM Integration
-- Qwen 2.5 7B Instruct 1M model integration via LM Studio
-- Local error analysis and understanding
-- Remediation plan generation
-- Validation and verification
-
-### Remediation Action System
-- Step-by-step remediation execution
-- Action validation and safety checks
-- Metrics collection
-- Result tracking and reporting
-
-## Implementation Status
-
-This implementation is a research prototype that demonstrates the concepts described in our paper. Key points:
-
-1. The implementation includes:
-   - LM Studio API client with Qwen 2.5 7B Instruct 1M model integration
-   - Model Context Protocol (MCP) implementation
-   - Graph-based context analysis
-   - Remediation action system
-   - Test framework and benchmark infrastructure
-
-2. Current evaluation results:
+Our implementation demonstrates:
+1. Error Classification
    - 80% accuracy in error classification
+   - Context-aware pattern matching
+   - Severity determination
+
+2. Remediation Performance
    - 70% success rate in automated remediation
    - Average resolution time of 3.5 seconds
    - Runtime overhead under 8%
 
-3. Test suite coverage:
+3. Test Coverage
    - 100 standardized error scenarios
    - 20 real-world error cases
    - Performance benchmark suite
@@ -99,24 +113,6 @@ dotnet build
 ### Running Tests
 ```bash
 dotnet test
-```
-
-## Project Structure
-
-```
-RuntimeErrorSage/
-├── src/
-│   ├── RuntimeErrorSage.Core/           # Core implementation
-│   │   ├── Analysis/                    # Error analysis
-│   │   ├── MCP/                         # Model Context Protocol
-│   │   ├── LLM/                         # LLM integration
-│   │   └── Remediation/                 # Remediation system
-│   ├── RuntimeErrorSage.Tests/          # Test suite
-│   └── RuntimeErrorSage.Console/        # CLI interface
-├── paper/                               # Research paper
-│   ├── sections/                        # Paper sections
-│   └── figures/                         # Paper figures
-└── docs/                                # Documentation
 ```
 
 ## Research Paper

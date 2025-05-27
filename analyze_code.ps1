@@ -1,5 +1,23 @@
 $report = @()
-$excludePatterns = @("*Test*.cs", "*Tests*.cs", "*\Test*\*", "*\Tests*\*")
+$excludePatterns = @(
+    "*Test*.cs",
+    "*Tests*.cs",
+    "*\Test*\*",
+    "*\Tests*\*",
+    "*\UnitTests\*",
+    "*\IntegrationTests\*",
+    "*\TestHelpers\*",
+    "*\TestData\*",
+    "*\TestFixtures\*",
+    "*\TestUtils\*",
+    "*\TestInfrastructure\*",
+    "*\TestSupport\*",
+    "*\TestCommon\*",
+    "*\TestBase\*",
+    "*\TestFramework\*",
+    "*\TestRunner\*",
+    "*\TestResults\*"
+)
 
 Get-ChildItem -Path . -Filter *.cs -Recurse | Where-Object {
     $file = $_
@@ -9,9 +27,9 @@ Get-ChildItem -Path . -Filter *.cs -Recurse | Where-Object {
     $content = Get-Content $file.FullName -Raw
     
     # Count types more accurately by looking for class/interface/enum declarations
-    $classMatches = [regex]::Matches($content, "(?m)^\s*(?:public|private|internal|protected)?\s*class\s+\w+")
-    $enumMatches = [regex]::Matches($content, "(?m)^\s*(?:public|private|internal|protected)?\s*enum\s+\w+")
-    $interfaceMatches = [regex]::Matches($content, "(?m)^\s*(?:public|private|internal|protected)?\s*interface\s+\w+")
+    $classMatches = [regex]::Matches($content, "(?m)^\s*(?:public|private|internal|protected)?\s*class\s+(\w+)")
+    $enumMatches = [regex]::Matches($content, "(?m)^\s*(?:public|private|internal|protected)?\s*enum\s+(\w+)")
+    $interfaceMatches = [regex]::Matches($content, "(?m)^\s*(?:public|private|internal|protected)?\s*interface\s+(\w+)")
     
     $totalTypes = $classMatches.Count + $enumMatches.Count + $interfaceMatches.Count
     
@@ -65,26 +83,45 @@ Get-ChildItem -Path . -Filter *.cs -Recurse | Where-Object {
         $tightCouplings += "Line $($match.Index): new $($match.Groups[1].Value)"
     }
     
-    $report += "File: $($file.FullName)"
+    $hasViolation = $false
+    $violationReport = "`nFile: $($file.FullName)"
     if ($totalTypes -gt 1) {
-        $report += "VIOLATION: Multiple types found ($totalTypes total)"
-        $report += "- Classes: $($classMatches.Count)"
-        $report += "- Enums: $($enumMatches.Count)"
-        $report += "- Interfaces: $($interfaceMatches.Count)"
+        $hasViolation = $true
+        $violationReport += "VIOLATION: Multiple types found ($totalTypes total)"
+        $violationReport += "Types found:"
+        foreach ($match in $classMatches) {
+            $violationReport += "- Class: $($match.Groups[1].Value)"
+        }
+        foreach ($match in $enumMatches) {
+            $violationReport += "- Enum: $($match.Groups[1].Value)"
+        }
+        foreach ($match in $interfaceMatches) {
+            $violationReport += "- Interface: $($match.Groups[1].Value)"
+        }
+        $violationReport += "SUGGESTION: Consider splitting these types into separate files following the Single Responsibility Principle"
     }
     if ($largeTypes.Count -gt 0) {
-        $report += "Large Types:"
-        $largeTypes | ForEach-Object { $report += "- $_" }
+        $hasViolation = $true
+        $violationReport += "`nLarge Types (over 200 lines):"
+        $largeTypes | ForEach-Object { $violationReport += "- $_" }
+        $violationReport += "SUGGESTION: Consider breaking down these large types into smaller, more focused components"
     }
     if ($largeMethods.Count -gt 0) {
-        $report += "Large Methods:"
-        $largeMethods | ForEach-Object { $report += "- $_" }
+        $hasViolation = $true
+        $violationReport += "`nLarge Methods (over 50 lines):"
+        $largeMethods | ForEach-Object { $violationReport += "- $_" }
+        $violationReport += "SUGGESTION: Consider refactoring these methods into smaller, more focused methods"
     }
     if ($tightCouplings.Count -gt 0) {
-        $report += "Tight Couplings:"
-        $tightCouplings | ForEach-Object { $report += "- $_" }
+        $hasViolation = $true
+        $violationReport += "`nTight Couplings (direct instantiation):"
+        $tightCouplings | ForEach-Object { $violationReport += "- $_" }
+        $violationReport += "SUGGESTION: Consider using dependency injection instead of direct instantiation"
     }
-    $report += "`n"
+    if ($hasViolation) {
+        $violationReport += "`n----------------------------------------"
+        $report += $violationReport
+    }
 }
 
 $report | Out-File -FilePath solid_report.txt 

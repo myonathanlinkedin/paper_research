@@ -32,45 +32,4 @@ public class RemediationRegistry
     /// Gets or sets the registry metadata.
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
-}
-
-/// <summary>
-/// Represents a condition for applying a remediation strategy.
-/// </summary>
-public class RemediationCondition
-{
-    /// <summary>
-    /// Gets or sets the unique identifier of the condition.
-    /// </summary>
-    public string ConditionId { get; set; } = Guid.NewGuid().ToString();
-
-    /// <summary>
-    /// Gets or sets the name of the condition.
-    /// </summary>
-    public string Name { get; set; }
-
-    /// <summary>
-    /// Gets or sets the description of the condition.
-    /// </summary>
-    public string Description { get; set; }
-
-    /// <summary>
-    /// Gets or sets the type of the condition.
-    /// </summary>
-    public string Type { get; set; }
-
-    /// <summary>
-    /// Gets or sets the expression for the condition.
-    /// </summary>
-    public string Expression { get; set; }
-
-    /// <summary>
-    /// Gets or sets the parameters for the condition.
-    /// </summary>
-    public Dictionary<string, object> Parameters { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the condition metadata.
-    /// </summary>
-    public Dictionary<string, object> Metadata { get; set; } = new();
 } 

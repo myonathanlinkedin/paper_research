@@ -250,15 +250,9 @@ namespace RuntimeErrorSage.Core.Models.Error
             string environment = null,
             DateTime? timestamp = null)
         {
-            if (error == null)
-                throw new ArgumentNullException(nameof(error));
-
             Error = error;
-            Environment = environment;
+            Environment = environment ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown";
             Timestamp = timestamp ?? DateTime.UtcNow;
-            AffectedComponents = new List<GraphNode>();
-            Metrics = new Dictionary<string, double>();
-            PreviousErrors = new List<ErrorContext>();
         }
 
         /// <summary>
@@ -267,54 +261,58 @@ namespace RuntimeErrorSage.Core.Models.Error
         public Error Error { get; }
 
         /// <summary>
-        /// Adds metadata.
+        /// Adds metadata to the error context.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="key">The metadata key.</param>
+        /// <param name="value">The metadata value.</param>
         public void AddMetadata(string key, object value)
         {
             if (string.IsNullOrEmpty(key))
-                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+                throw new ArgumentNullException(nameof(key));
+
             _metadata[key] = value;
         }
 
         /// <summary>
-        /// Gets the metadata.
+        /// Gets metadata from the error context.
         /// </summary>
-        /// <param name="key">The key.</param>
+        /// <param name="key">The metadata key.</param>
         /// <returns>The metadata value.</returns>
         public object GetMetadata(string key)
         {
             if (string.IsNullOrEmpty(key))
-                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+                throw new ArgumentNullException(nameof(key));
+
             return _metadata.TryGetValue(key, out var value) ? value : null;
         }
 
         /// <summary>
-        /// Gets the metadata.
+        /// Gets typed metadata from the error context.
         /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <param name="key">The key.</param>
-        /// <returns>The metadata value.</returns>
+        /// <typeparam name="T">The type of the metadata value.</typeparam>
+        /// <param name="key">The metadata key.</param>
+        /// <returns>The typed metadata value.</returns>
         public T GetMetadata<T>(string key)
         {
             if (string.IsNullOrEmpty(key))
-                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
-            if (!_metadata.TryGetValue(key, out var value))
-                return default;
-            return value is T typedValue ? typedValue : default;
+                throw new ArgumentNullException(nameof(key));
+
+            return _metadata.TryGetValue(key, out var value) && value is T typedValue ? typedValue : default;
         }
 
         /// <summary>
-        /// Validates the context.
+        /// Validates the error context.
         /// </summary>
-        /// <returns>True if the context is valid; otherwise, false.</returns>
+        /// <returns>True if the error context is valid, false otherwise.</returns>
         public bool Validate()
         {
-            if (Error == null)
+            if (string.IsNullOrEmpty(ErrorId))
                 return false;
 
-            if (!Error.Validate())
+            if (string.IsNullOrEmpty(ComponentId))
+                return false;
+
+            if (Exception == null && string.IsNullOrEmpty(Message))
                 return false;
 
             return true;
@@ -323,135 +321,117 @@ namespace RuntimeErrorSage.Core.Models.Error
         /// <summary>
         /// Converts the error context to a dictionary.
         /// </summary>
-        /// <returns>A dictionary containing the error context properties.</returns>
+        /// <returns>A dictionary representation of the error context.</returns>
         public Dictionary<string, object> ToDictionary()
         {
             var dict = new Dictionary<string, object>
             {
-                { nameof(ErrorId), ErrorId },
-                { nameof(Message), Message },
-                { nameof(ErrorType), ErrorType },
-                { nameof(ServiceName), ServiceName },
-                { nameof(Timestamp), Timestamp },
-                { nameof(StackTrace), StackTrace },
-                { nameof(Source), Source },
-                { nameof(Severity), Severity },
-                { nameof(Category), Category },
-                { nameof(Tags), Tags },
-                { nameof(Metadata), Metadata },
-                { nameof(OperationName), OperationName },
-                { nameof(CorrelationId), CorrelationId },
-                { nameof(OperationId), OperationId },
-                { nameof(ParentOperationId), ParentOperationId },
-                { nameof(OperationStartTime), OperationStartTime },
-                { nameof(OperationDuration), OperationDuration },
-                { nameof(OperationStatus), OperationStatus },
-                { nameof(OperationType), OperationType },
-                { nameof(OperationVersion), OperationVersion },
-                { nameof(OperationResult), OperationResult },
-                { nameof(OperationTarget), OperationTarget },
-                { nameof(OperationMetrics), OperationMetrics },
-                { nameof(OperationDependencies), OperationDependencies },
-                { nameof(OperationTags), OperationTags },
-                { nameof(DependencyGraph), DependencyGraph },
-                { nameof(AffectedComponents), AffectedComponents },
-                { nameof(Metrics), Metrics },
-                { nameof(PreviousErrors), PreviousErrors },
-                { nameof(AnalysisResult), AnalysisResult },
-                { nameof(ServiceCalls), ServiceCalls },
-                { nameof(DataFlows), DataFlows },
-                { nameof(ComponentMetrics), ComponentMetrics },
-                { nameof(ComponentDependencies), ComponentDependencies },
-                { nameof(ContextData), ContextData },
-                { nameof(InnerError), InnerError }
+                ["Id"] = Id,
+                ["ErrorId"] = ErrorId,
+                ["CorrelationId"] = CorrelationId,
+                ["ComponentId"] = ComponentId,
+                ["Timestamp"] = Timestamp,
+                ["Environment"] = Environment,
+                ["ErrorType"] = ErrorType,
+                ["Severity"] = Severity,
+                ["Category"] = Category,
+                ["Message"] = Message,
+                ["StackTrace"] = StackTrace,
+                ["ServiceName"] = ServiceName,
+                ["OperationName"] = OperationName,
+                ["OperationId"] = OperationId,
+                ["ParentOperationId"] = ParentOperationId,
+                ["OperationStartTime"] = OperationStartTime,
+                ["OperationDuration"] = OperationDuration,
+                ["OperationStatus"] = OperationStatus,
+                ["OperationType"] = OperationType,
+                ["OperationVersion"] = OperationVersion,
+                ["OperationResult"] = OperationResult,
+                ["OperationTarget"] = OperationTarget
             };
+
+            if (AdditionalContext != null)
+                dict["AdditionalContext"] = AdditionalContext;
+
+            if (_metadata.Count > 0)
+                dict["Metadata"] = _metadata;
+
+            if (Tags != null && Tags.Count > 0)
+                dict["Tags"] = Tags;
+
+            if (OperationMetrics != null && OperationMetrics.Count > 0)
+                dict["OperationMetrics"] = OperationMetrics;
+
+            if (OperationDependencies != null && OperationDependencies.Count > 0)
+                dict["OperationDependencies"] = OperationDependencies;
+
+            if (OperationTags != null && OperationTags.Count > 0)
+                dict["OperationTags"] = OperationTags;
+
+            if (ServiceCalls != null && ServiceCalls.Count > 0)
+                dict["ServiceCalls"] = ServiceCalls;
+
+            if (DataFlows != null && DataFlows.Count > 0)
+                dict["DataFlows"] = DataFlows;
+
+            if (ComponentMetrics != null && ComponentMetrics.Count > 0)
+                dict["ComponentMetrics"] = ComponentMetrics;
+
+            if (ComponentDependencies != null && ComponentDependencies.Count > 0)
+                dict["ComponentDependencies"] = ComponentDependencies;
+
+            if (ContextData != null && ContextData.Count > 0)
+                dict["ContextData"] = ContextData;
 
             return dict;
         }
 
         /// <summary>
-        /// Explicit conversion operator from ErrorContext to Dictionary<string, object>.
+        /// Adds an affected component to the error context.
         /// </summary>
-        /// <param name="context">The error context to convert.</param>
-        public static explicit operator Dictionary<string, object>(ErrorContext context)
-        {
-            return context.ToDictionary();
-        }
-
-        /// <summary>
-        /// Adds a component to the list of affected components.
-        /// </summary>
-        /// <param name="component">The component to add.</param>
+        /// <param name="component">The affected component.</param>
         public void AddAffectedComponent(GraphNode component)
         {
             if (component == null)
-            {
                 throw new ArgumentNullException(nameof(component));
-            }
+
+            if (AffectedComponents == null)
+                AffectedComponents = new List<GraphNode>();
 
             if (!AffectedComponents.Contains(component))
-            {
                 AffectedComponents.Add(component);
-            }
         }
 
         /// <summary>
-        /// Adds a previous error to the list of previous errors.
+        /// Adds a previous error to the error context.
         /// </summary>
-        /// <param name="error">The error to add.</param>
+        /// <param name="error">The previous error.</param>
         public void AddPreviousError(ErrorContext error)
         {
             if (error == null)
-            {
                 throw new ArgumentNullException(nameof(error));
-            }
+
+            if (PreviousErrors == null)
+                PreviousErrors = new List<ErrorContext>();
 
             if (!PreviousErrors.Contains(error))
-            {
                 PreviousErrors.Add(error);
-            }
         }
 
         /// <summary>
-        /// Adds a metric to the metrics dictionary.
+        /// Adds a metric to the error context.
         /// </summary>
-        /// <param name="name">The name of the metric.</param>
-        /// <param name="value">The value of the metric.</param>
+        /// <param name="name">The metric name.</param>
+        /// <param name="value">The metric value.</param>
         public void AddMetric(string name, double value)
         {
             if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("Metric name cannot be null or empty.", nameof(name));
-            }
+                throw new ArgumentNullException(nameof(name));
+
+            if (Metrics == null)
+                Metrics = new Dictionary<string, double>();
 
             Metrics[name] = value;
         }
-    }
-
-    // Add definitions for ServiceCall, DataFlow, ComponentDependency if not present
-    public class ServiceCall
-    {
-        public string Source { get; set; } = string.Empty;
-        public string Target { get; set; } = string.Empty;
-        public string Operation { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-        public bool Success { get; set; }
-    }
-
-    public class DataFlow
-    {
-        public string Source { get; set; } = string.Empty;
-        public string Target { get; set; } = string.Empty;
-        public string DataType { get; set; } = string.Empty;
-        public double Volume { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-    }
-
-    public class ComponentDependency
-    {
-        public string Source { get; set; } = string.Empty;
-        public string Target { get; set; } = string.Empty;
-        public string DependencyType { get; set; } = string.Empty;
-        public double Strength { get; set; }
     }
 } 
