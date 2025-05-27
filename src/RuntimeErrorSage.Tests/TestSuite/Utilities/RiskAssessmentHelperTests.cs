@@ -3,6 +3,7 @@ using System.Linq;
 using Xunit;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Utilities;
+using RemediationSeverity = RuntimeErrorSage.Models.Enums.RemediationSeverity;
 
 namespace RuntimeErrorSage.Tests.TestSuite.Utilities
 {

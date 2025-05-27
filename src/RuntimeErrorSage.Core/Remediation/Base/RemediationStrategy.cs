@@ -7,6 +7,7 @@ using RuntimeErrorSage.Core.Remediation.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using RemediationSeverity = RuntimeErrorSage.Models.Enums.RemediationSeverity;
 
 namespace RuntimeErrorSage.Core.Remediation.Base
 {
@@ -172,7 +173,7 @@ namespace RuntimeErrorSage.Core.Remediation.Base
             // Default implementation returns a medium impact
             return Task.FromResult(new RemediationImpact
             {
-                Severity = Models.Enums.RemediationSeverity.Medium,
+                Severity = RemediationSeverity.Medium,
                 Description = "Default impact assessment"
             });
         }

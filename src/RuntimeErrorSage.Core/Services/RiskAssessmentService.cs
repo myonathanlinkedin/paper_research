@@ -7,6 +7,7 @@ using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Utilities;
+using RemediationSeverity = RuntimeErrorSage.Models.Enums.RemediationSeverity;
 
 namespace RuntimeErrorSage.Core.Services
 {
@@ -191,10 +192,10 @@ namespace RuntimeErrorSage.Core.Services
             // Calculate base risk level from severity
             var baseRiskLevel = severity switch
             {
-                RemediationSeverity.Critical => RemediationRiskLevel.Critical,
-                RemediationSeverity.High => RemediationRiskLevel.High,
-                RemediationSeverity.Medium => RemediationRiskLevel.Medium,
-                RemediationSeverity.Low => RemediationRiskLevel.Low,
+                RemediationRiskLevel.Critical => RemediationRiskLevel.Critical,
+                RemediationRiskLevel.High => RemediationRiskLevel.High,
+                RemediationRiskLevel.Medium => RemediationRiskLevel.Medium,
+                RemediationRiskLevel.Low => RemediationRiskLevel.Low,
                 _ => RemediationRiskLevel.None
             };
 
@@ -258,16 +259,16 @@ namespace RuntimeErrorSage.Core.Services
         /// </summary>
         /// <param name="action">The remediation action.</param>
         /// <returns>The determined severity level.</returns>
-        private RemediationSeverity DetermineSeverity(RemediationAction action)
+        private RemediationRiskLevel DetermineSeverity(RemediationAction action)
         {
             // Map the action's impact to a severity level
             return action.Impact switch
             {
-                RemediationActionSeverity.Critical => RemediationSeverity.Critical,
-                RemediationActionSeverity.High => RemediationSeverity.High,
-                RemediationActionSeverity.Medium => RemediationSeverity.Medium,
-                RemediationActionSeverity.Low => RemediationSeverity.Low,
-                _ => RemediationSeverity.None
+                RemediationActionSeverity.Critical => RemediationRiskLevel.Critical,
+                RemediationActionSeverity.High => RemediationRiskLevel.High,
+                RemediationActionSeverity.Medium => RemediationRiskLevel.Medium,
+                RemediationActionSeverity.Low => RemediationRiskLevel.Low,
+                _ => RemediationRiskLevel.None
             };
         }
 

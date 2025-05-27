@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Enums;
+using RemediationSeverity = RuntimeErrorSage.Models.Enums.RemediationSeverity;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {

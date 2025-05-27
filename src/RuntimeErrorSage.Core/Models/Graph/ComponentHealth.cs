@@ -16,7 +16,7 @@ public class ComponentHealth
     /// <summary>
     /// Gets or sets the health status.
     /// </summary>
-    public HealthStatusEnum Status { get; set; }
+    public HealthStatus Status { get; set; }
 
     /// <summary>
     /// Gets or sets the metrics associated with the component.

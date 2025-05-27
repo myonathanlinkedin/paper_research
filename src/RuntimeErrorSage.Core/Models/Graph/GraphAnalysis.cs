@@ -38,36 +38,4 @@ public class GraphAnalysis
     /// Gets or sets the error propagation analysis result.
     /// </summary>
     public ErrorPropagation ErrorPropagation { get; set; }
-}
-
-/// <summary>
-/// Represents the health status of a component.
-/// </summary>
-public class ComponentHealth
-{
-    /// <summary>
-    /// Gets or sets the name of the component.
-    /// </summary>
-    public string Name { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the health status.
-    /// </summary>
-    public HealthStatus Status { get; set; }
-
-    /// <summary>
-    /// Gets or sets the metrics associated with the component.
-    /// </summary>
-    public Dictionary<string, double> Metrics { get; set; } = new();
-}
-
-/// <summary>
-/// Represents the health status of a component.
-/// </summary>
-public enum HealthStatus
-{
-    Healthy,
-    Degraded,
-    Unhealthy,
-    Unknown
 } 
