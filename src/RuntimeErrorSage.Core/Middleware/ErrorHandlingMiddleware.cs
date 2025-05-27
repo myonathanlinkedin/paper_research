@@ -13,22 +13,9 @@ using RuntimeErrorSage.Core.Runtime.Interfaces;
 
 namespace RuntimeErrorSage.Core.Middleware;
 
-public class ErrorHandlingMiddlewareOptions
-{
-    public bool EnableErrorAnalysis { get; set; } = true;
-    public bool EnableAutomatedRemediation { get; set; } = true;
-    public bool EnableRequestCorrelation { get; set; } = true;
-    public bool EnablePerformanceMonitoring { get; set; } = true;
-    public TimeSpan AnalysisTimeout { get; set; } = TimeSpan.FromSeconds(30);
-    public TimeSpan RemediationTimeout { get; set; } = TimeSpan.FromMinutes(5);
-    public Dictionary<string, string[]> ExcludedPaths { get; set; } = new()
-    {
-        ["/health"] = new[] { "GET" },
-        ["/metrics"] = new[] { "GET" },
-        ["/swagger"] = new[] { "GET" }
-    };
-}
-
+/// <summary>
+/// Middleware for handling errors in the application.
+/// </summary>
 public class ErrorHandlingMiddleware
 {
     private readonly RequestDelegate _next;
@@ -37,13 +24,18 @@ public class ErrorHandlingMiddleware
     private readonly IMCPClient _mcpClient;
     private readonly IRemediationMetricsCollector _metricsCollector;
     private readonly ActivitySource _activitySource;
+    private readonly ErrorHandlingMiddlewareOptions _options;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ErrorHandlingMiddleware"/> class.
+    /// </summary>
     public ErrorHandlingMiddleware(
         RequestDelegate next,
         ILogger<ErrorHandlingMiddleware> logger,
         IRuntimeErrorSageService RuntimeErrorSageService,
         IMCPClient mcpClient,
-        IRemediationMetricsCollector metricsCollector)
+        IRemediationMetricsCollector metricsCollector,
+        IOptions<ErrorHandlingMiddlewareOptions> options)
     {
         _next = next;
         _logger = logger;
@@ -51,8 +43,12 @@ public class ErrorHandlingMiddleware
         _mcpClient = mcpClient;
         _metricsCollector = metricsCollector;
         _activitySource = new ActivitySource("RuntimeErrorSage.ErrorHandling");
+        _options = options.Value;
     }
 
+    /// <summary>
+    /// Invokes the middleware.
+    /// </summary>
     public async Task InvokeAsync(HttpContext context)
     {
         var path = context.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
@@ -248,18 +244,11 @@ public class ErrorHandlingMiddleware
                 }
             }
 
-            await _metricsCollector.CollectMetricsAsync(
-                errorContext ?? new ErrorContext
-                {
-                    ServiceName = context.Request.Host.Value,
-                    ErrorType = "RequestMetrics",
-                    Severity = ErrorSeverity.Low,
-                    Timestamp = DateTime.UtcNow
-                });
+            await _metricsCollector.RecordMetricsAsync(metrics);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording request metrics");
+            _logger.LogError(ex, "Failed to record request metrics");
         }
     }
 }

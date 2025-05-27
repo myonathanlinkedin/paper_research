@@ -168,4 +168,7 @@ ehthumbs.db
 Thumbs.db
 
 # Text files
-*.txt 
+*.txt
+
+projectstructure.txt
+solid_report.txt 
