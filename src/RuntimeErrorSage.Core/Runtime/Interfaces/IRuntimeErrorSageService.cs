@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Options;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RemediationResult = RuntimeErrorSage.Core.Models.Remediation.RemediationResult;
 using RuntimeErrorSage.Core.Analysis;
 using RuntimeErrorSage.Core.Remediation;
@@ -13,7 +13,6 @@ using RuntimeErrorSage.Core.Graph;
 using System.ComponentModel.DataAnnotations;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.LLM;
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Runtime.Interfaces
 {

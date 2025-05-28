@@ -144,9 +144,9 @@ namespace RuntimeErrorSage.Core.Services.Graph
             return factors > 0 ? score / factors : 0;
         }
 
-        public async Task<Models.Graph.ComponentHealth> AnalyzeComponentHealthAsync(string componentId)
+        public async Task<RuntimeErrorSage.Core.Models.Graph.ComponentHealth> AnalyzeComponentHealthAsync(string componentId)
         {
-            return new Models.Graph.ComponentHealth
+            return new RuntimeErrorSage.Core.Models.Graph.ComponentHealth
             {
                 ComponentId = componentId,
                 ComponentName = componentId,
