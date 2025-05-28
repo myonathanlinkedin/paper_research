@@ -23,7 +23,7 @@ public class ErrorScenario
         string name,
         string errorType,
         string source,
-        Error error,
+        RuntimeError error,
         ErrorAnalysis analysis = null)
     {
         if (string.IsNullOrEmpty(name))
@@ -35,8 +35,7 @@ public class ErrorScenario
         if (string.IsNullOrEmpty(source))
             throw new ArgumentException("Source cannot be null or empty.", nameof(source));
 
-        if (error == null)
-            throw new ArgumentNullException(nameof(error));
+        ArgumentNullException.ThrowIfNull(error);
 
         Name = name;
         ErrorType = errorType;
@@ -64,7 +63,7 @@ public class ErrorScenario
     /// <summary>
     /// Gets the error.
     /// </summary>
-    public Error Error { get; }
+    public RuntimeError Error { get; }
 
     /// <summary>
     /// Gets the analysis.

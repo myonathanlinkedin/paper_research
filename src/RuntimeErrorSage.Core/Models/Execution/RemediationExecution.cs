@@ -79,7 +79,7 @@ namespace RuntimeErrorSage.Core.Models.Execution
         /// <summary>
         /// Gets whether the remediation was successful.
         /// </summary>
-        public bool IsSuccessful => Status == RemediationStatusEnum.Completed && string.IsNullOrEmpty(Error);
+        public bool IsSuccessful => Status == RemediationStatusEnum.Success && string.IsNullOrEmpty(Error);
 
         /// <summary>
         /// Gets the total duration of the remediation in seconds.
@@ -150,3 +150,4 @@ namespace RuntimeErrorSage.Core.Models.Execution
         public void AddMetadata(string key, object value) => _metadata[key] = value;
     }
 }
+

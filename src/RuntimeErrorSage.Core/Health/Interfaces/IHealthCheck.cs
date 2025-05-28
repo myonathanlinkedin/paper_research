@@ -8,8 +8,14 @@ namespace RuntimeErrorSage.Core.Health.Interfaces
     public interface ICustomHealthCheck
     {
         /// <summary>
+        /// Gets the name of the health check.
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
         /// Gets the current health status.
         /// </summary>
         Task<bool> CheckHealthAsync();
     }
 } 
+

@@ -100,34 +100,88 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
         }
 
         [Theory]
-        [InlineData(RemediationActionSeverity.Critical, RemediationActionImpactScope.System, RemediationRiskLevel.Critical)]
-        [InlineData(RemediationActionSeverity.Critical, RemediationActionImpactScope.Module, RemediationRiskLevel.Critical)]
-        [InlineData(RemediationActionSeverity.Critical, RemediationActionImpactScope.Local, RemediationRiskLevel.High)]
-        [InlineData(RemediationActionSeverity.High, RemediationActionImpactScope.Service, RemediationRiskLevel.Critical)]
-        [InlineData(RemediationActionSeverity.High, RemediationActionImpactScope.Module, RemediationRiskLevel.High)]
-        [InlineData(RemediationActionSeverity.Medium, RemediationActionImpactScope.System, RemediationRiskLevel.High)]
-        [InlineData(RemediationActionSeverity.Medium, RemediationActionImpactScope.Module, RemediationRiskLevel.Medium)]
-        [InlineData(RemediationActionSeverity.Low, RemediationActionImpactScope.Local, RemediationRiskLevel.Low)]
-        [InlineData(RemediationActionSeverity.None, RemediationActionImpactScope.None, RemediationRiskLevel.None)]
-        public async Task AssessRiskAsync_WithDifferentSeverityAndScope_ReturnsCorrectRiskLevel(
-            RemediationActionSeverity severity, 
-            RemediationActionImpactScope scope, 
+        [InlineData(SeverityLevel.Critical, RemediationActionImpactScope.System, RemediationRiskLevel.Critical)]
+        [InlineData(SeverityLevel.Critical, RemediationActionImpactScope.Module, RemediationRiskLevel.Critical)]
+        [InlineData(SeverityLevel.Critical, RemediationActionImpactScope.Local, RemediationRiskLevel.High)]
+        [InlineData(SeverityLevel.High, RemediationActionImpactScope.Service, RemediationRiskLevel.Critical)]
+        [InlineData(SeverityLevel.High, RemediationActionImpactScope.Module, RemediationRiskLevel.High)]
+        [InlineData(SeverityLevel.Medium, RemediationActionImpactScope.System, RemediationRiskLevel.High)]
+        [InlineData(SeverityLevel.Medium, RemediationActionImpactScope.Module, RemediationRiskLevel.Medium)]
+        [InlineData(SeverityLevel.Low, RemediationActionImpactScope.Local, RemediationRiskLevel.Low)]
+        [InlineData(SeverityLevel.Info, RemediationActionImpactScope.None, RemediationRiskLevel.None)]
+        public void CalculateRiskLevel_ReturnsExpectedRiskLevel(
+            SeverityLevel severity,
+            RemediationActionImpactScope impactScope,
             RemediationRiskLevel expectedRiskLevel)
         {
             // Arrange
             var action = new RemediationAction
             {
-                ActionId = Guid.NewGuid().ToString(),
                 Name = "Test Action",
-                Impact = severity,
-                ImpactScope = scope
+                Description = "Test Description",
+                Type = RemediationActionType.Monitor,
+                Severity = severity.ToRemediationActionSeverity(),
+                ImpactScope = impactScope,
+                Status = RemediationActionStatus.Pending
             };
 
             // Act
-            var result = await _service.AssessRiskAsync(action);
+            var result = _service.CalculateRiskLevel(action);
 
             // Assert
-            Assert.Equal(expectedRiskLevel, result.RiskLevel);
+            Assert.Equal(expectedRiskLevel, result);
+        }
+
+        [Fact]
+        public void CalculateRiskLevel_WithNullAction_ReturnsNone()
+        {
+            // Act
+            var result = _service.CalculateRiskLevel(null);
+
+            // Assert
+            Assert.Equal(RemediationRiskLevel.None, result);
+        }
+
+        [Fact]
+        public void CalculateRiskLevel_WithNullSeverity_ReturnsNone()
+        {
+            // Arrange
+            var action = new RemediationAction
+            {
+                Name = "Test Action",
+                Description = "Test Description",
+                Type = RemediationActionType.Monitor,
+                Severity = null,
+                ImpactScope = RemediationActionImpactScope.Local,
+                Status = RemediationActionStatus.Pending
+            };
+
+            // Act
+            var result = _service.CalculateRiskLevel(action);
+
+            // Assert
+            Assert.Equal(RemediationRiskLevel.None, result);
+        }
+
+        [Fact]
+        public void CalculateRiskLevel_WithNullImpactScope_ReturnsNone()
+        {
+            // Arrange
+            var action = new RemediationAction
+            {
+                Name = "Test Action",
+                Description = "Test Description",
+                Type = RemediationActionType.Monitor,
+                Severity = SeverityLevel.Medium.ToRemediationActionSeverity(),
+                ImpactScope = null,
+                Status = RemediationActionStatus.Pending
+            };
+
+            // Act
+            var result = _service.CalculateRiskLevel(action);
+
+            // Assert
+            Assert.Equal(RemediationRiskLevel.None, result);
         }
 
         [Fact]

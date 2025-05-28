@@ -5,7 +5,7 @@ namespace RuntimeErrorSage.Core.Models.Error;
 /// <summary>
 /// Represents a data flow in the error context.
 /// </summary>
-public class DataFlow
+public class ErrorDataFlow
 {
     /// <summary>
     /// Gets or sets the source of the data flow.

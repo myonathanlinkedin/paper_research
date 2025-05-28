@@ -155,7 +155,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             if (!validationResult.IsValid)
             {
                 plan.Status = RemediationPlanStatus.Invalid;
-                plan.Message = validationResult.ValidationMessage;
+                plan.Message = validationResult.Messages.FirstOrDefault() ?? "Validation failed";
             }
 
             return plan;
@@ -184,23 +184,23 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             {
                 return new RemediationImpact
                 {
-                    Severity = RemediationImpactSeverity.Low,
-                    Scope = RemediationImpactScope.Local,
+                    Severity = SeverityLevel.Low.ToImpactSeverity(),
+                    Scope = ImpactScope.Component,
                     AffectedComponents = new List<string> { context.ComponentId },
-                    EstimatedDuration = TimeSpan.Zero,
+                    EstimatedRecoveryTime = TimeSpan.Zero,
                     RiskLevel = RiskLevel.Low,
-                    Confidence = 0.0
+                    Confidence = ConfidenceLevel.Low
                 };
             }
 
             var impact = new RemediationImpact
             {
-                Severity = RemediationImpactSeverity.Low,
-                Scope = RemediationImpactScope.Local,
+                Severity = SeverityLevel.Low.ToImpactSeverity(),
+                Scope = ImpactScope.Component,
                 AffectedComponents = new List<string> { context.ComponentId },
-                EstimatedDuration = TimeSpan.Zero,
+                EstimatedRecoveryTime = TimeSpan.Zero,
                 RiskLevel = RiskLevel.Low,
-                Confidence = 0.0
+                Confidence = ConfidenceLevel.Low
             };
 
             // Aggregate impact from all strategies
@@ -213,10 +213,9 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
                 });
 
                 // Update impact based on strategy impact
-                impact.Severity = (RemediationImpactSeverity)Math.Max((int)impact.Severity, (int)strategyImpact.Severity);
-                impact.Scope = (RemediationImpactScope)Math.Max((int)impact.Scope, (int)strategyImpact.Scope);
+                UpdateImpactSeverity(impact, strategyImpact);
                 impact.AffectedComponents = impact.AffectedComponents.Union(strategyImpact.AffectedComponents).ToList();
-                impact.EstimatedDuration += strategyImpact.EstimatedDuration;
+                impact.EstimatedRecoveryTime += strategyImpact.EstimatedRecoveryTime;
                 impact.RiskLevel = (RiskLevel)Math.Max((int)impact.RiskLevel, (int)strategyImpact.RiskLevel);
                 impact.Confidence = Math.Max(impact.Confidence, strategyImpact.Confidence);
             }
@@ -228,13 +227,57 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             _logger.LogError(ex, "Error estimating impact for error type {ErrorType}", context.ErrorType);
             return new RemediationImpact
             {
-                Severity = RemediationImpactSeverity.Unknown,
-                Scope = RemediationImpactScope.Unknown,
+                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+                Scope = ImpactScope.Component,
                 AffectedComponents = new List<string> { context.ComponentId },
-                EstimatedDuration = TimeSpan.Zero,
+                EstimatedRecoveryTime = TimeSpan.Zero,
                 RiskLevel = RiskLevel.Unknown,
-                Confidence = 0.0
+                Confidence = ConfidenceLevel.Low
             };
         }
+    }
+
+    private RemediationImpact CreateDefaultImpact()
+    {
+        return new RemediationImpact
+        {
+            Severity = SeverityLevel.Low.ToImpactSeverity(),
+            Scope = ImpactScope.Component,
+            AffectedComponents = new List<string>(),
+            EstimatedRecoveryTime = TimeSpan.FromMinutes(5)
+        };
+    }
+
+    private RemediationImpact CreateUnknownImpact()
+    {
+        return new RemediationImpact
+        {
+            Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+            Scope = ImpactScope.Component,
+            AffectedComponents = new List<string>(),
+            EstimatedRecoveryTime = TimeSpan.Zero
+        };
+    }
+
+    private void UpdateImpactSeverity(RemediationImpact impact, RemediationImpact strategyImpact)
+    {
+        var currentSeverity = impact.Severity.ToSeverityLevel();
+        var strategySeverity = strategyImpact.Severity.ToSeverityLevel();
+        impact.Severity = (currentSeverity > strategySeverity ? currentSeverity : strategySeverity).ToImpactSeverity();
+    }
+
+    public async Task<RemediationPlan> CreatePlanAsync(ErrorContext context, IRemediationStrategy strategy)
+    {
+        var plan = new RemediationPlan(
+            strategy.Name,
+            strategy.Description,
+            strategy.Actions,
+            strategy.Parameters,
+            strategy.EstimatedDuration);
+
+        plan.Status = RemediationStatusEnum.NotStarted;
+        plan.Message = "Plan created successfully";
+
+        return plan;
     }
 } 

@@ -1,5 +1,8 @@
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Error;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Validation;
@@ -8,129 +11,127 @@ using RuntimeErrorSage.Core.Models.Remediation;
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
     /// <summary>
-    /// Represents the result of a single remediation action.
+    /// Handles results of remediation actions.
     /// </summary>
     public class RemediationActionResult
     {
-        /// <summary>
-        /// Gets or sets the unique identifier for the action result.
-        /// </summary>
-        public string ActionId { get; set; } = Guid.NewGuid().ToString();
+        private readonly Dictionary<string, ActionResult> _results = new();
+        private readonly List<Action<ActionResult>> _resultHandlers = new();
 
         /// <summary>
-        /// Gets or sets the name of the action.
+        /// Records a result for a remediation action.
         /// </summary>
-        public string ActionName { get; set; } = string.Empty;
+        /// <param name="action">The action.</param>
+        /// <param name="result">The result to record.</param>
+        public void RecordResult(IRemediationAction action, ActionResult result)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            ArgumentNullException.ThrowIfNull(result);
+
+            _results[action.ActionId] = result;
+            NotifyResultHandlers(result);
+        }
 
         /// <summary>
-        /// Gets or sets the status of the action.
+        /// Gets the result for an action.
         /// </summary>
-        public RemediationStatusEnum Status { get; set; }
+        /// <param name="actionId">The action ID.</param>
+        /// <returns>The result, or null if not found.</returns>
+        public ActionResult GetResult(string actionId)
+        {
+            ArgumentNullException.ThrowIfNull(actionId);
+            return _results.TryGetValue(actionId, out var result) ? result : null;
+        }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the action was successful.
+        /// Registers a handler for action results.
+        /// </summary>
+        /// <param name="handler">The handler to register.</param>
+        public void RegisterResultHandler(Action<ActionResult> handler)
+        {
+            ArgumentNullException.ThrowIfNull(handler);
+            _resultHandlers.Add(handler);
+        }
+
+        /// <summary>
+        /// Unregisters a handler for action results.
+        /// </summary>
+        /// <param name="handler">The handler to unregister.</param>
+        public void UnregisterResultHandler(Action<ActionResult> handler)
+        {
+            ArgumentNullException.ThrowIfNull(handler);
+            _resultHandlers.Remove(handler);
+        }
+
+        /// <summary>
+        /// Clears all results.
+        /// </summary>
+        public void ClearResults()
+        {
+            _results.Clear();
+        }
+
+        private void NotifyResultHandlers(ActionResult result)
+        {
+            foreach (var handler in _resultHandlers)
+            {
+                try
+                {
+                    handler(result);
+                }
+                catch
+                {
+                    // Ignore handler exceptions
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents the result of a remediation action.
+    /// </summary>
+    public class ActionResult
+    {
+        /// <summary>
+        /// Gets or sets the ID of the action.
+        /// </summary>
+        public string ActionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timestamp of the result.
+        /// </summary>
+        public DateTime Timestamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the action was successful.
         /// </summary>
         public bool Success { get; set; }
 
         /// <summary>
-        /// Gets or sets the start time of the action.
+        /// Gets or sets the error that occurred, if any.
         /// </summary>
-        public DateTime StartTime { get; set; } = DateTime.UtcNow;
+        public Exception Error { get; set; }
 
         /// <summary>
-        /// Gets or sets the end time of the action.
+        /// Gets or sets the execution time in milliseconds.
         /// </summary>
-        public DateTime? EndTime { get; set; }
+        public long ExecutionTimeMs { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration of the action.
+        /// Gets or sets the validation result.
         /// </summary>
-        public TimeSpan Duration { get; set; }
+        public ValidationResult ValidationResult { get; set; }
 
         /// <summary>
-        /// Gets or sets the error message if the action failed.
+        /// Gets or sets the execution result.
         /// </summary>
-        public string ErrorMessage { get; set; } = string.Empty;
+        public ExecutionResult ExecutionResult { get; set; }
 
         /// <summary>
-        /// Gets or sets the output of the action.
+        /// Gets or sets additional data associated with the result.
         /// </summary>
-        public string Output { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the metadata associated with the action.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the validation results for the action.
-        /// </summary>
-        public List<ValidationResult> ValidationResults { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the rollback status.
-        /// </summary>
-        public RollbackStatus? RollbackStatus { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the action can be rolled back.
-        /// </summary>
-        public bool CanRollback { get; set; }
-
-        /// <summary>
-        /// Gets or sets the rollback action if available.
-        /// </summary>
-        public RemediationAction RollbackAction { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RemediationActionResult"/> class.
-        /// </summary>
-        public RemediationActionResult()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RemediationActionResult"/> class.
-        /// </summary>
-        /// <param name="isSuccessful">Whether the action was successful.</param>
-        public RemediationActionResult(bool isSuccessful)
-        {
-            Success = isSuccessful;
-        }
-
-        /// <summary>
-        /// Sets the success state of this result.
-        /// </summary>
-        /// <param name="isSuccessful">Whether the action was successful.</param>
-        public void SetSuccess(bool isSuccessful)
-        {
-            Success = isSuccessful;
-        }
-
-        /// <summary>
-        /// Creates a successful action result.
-        /// </summary>
-        /// <returns>A successful action result.</returns>
-        public static RemediationActionResult CreateSuccessResult()
-        {
-            return new RemediationActionResult
-            {
-                Success = true
-            };
-        }
-
-        /// <summary>
-        /// Creates a failed action result with the specified error message.
-        /// </summary>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns>A failed action result.</returns>
-        public static RemediationActionResult Failure(string errorMessage)
-        {
-            return new RemediationActionResult
-            {
-                Success = false,
-                ErrorMessage = errorMessage
-            };
-        }
+        public Dictionary<string, object> Data { get; set; } = new Dictionary<string, object>();
     }
 } 
+
+

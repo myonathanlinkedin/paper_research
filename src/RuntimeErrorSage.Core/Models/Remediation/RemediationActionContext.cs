@@ -1,3 +1,5 @@
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Remediation;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Error;
@@ -103,7 +105,7 @@ public class RemediationActionContext
     /// <summary>
     /// Gets or sets the severity of the context.
     /// </summary>
-    public RemediationActionSeverity Severity { get; set; }
+    public RemediationActionSeverity Severity { get; set; } = RemediationActionSeverity.Medium;
 
     /// <summary>
     /// Gets or sets the risk level of the context.
@@ -175,3 +177,5 @@ public class RemediationActionContext
     /// </summary>
     public bool IsTransactional { get; set; }
 } 
+
+

@@ -31,3 +31,4 @@ namespace RuntimeErrorSage.Core.Pattern.Interfaces
         Task<ErrorPattern?> FindMatchingPatternAsync(ErrorContext context, string serviceName);
     }
 } 
+

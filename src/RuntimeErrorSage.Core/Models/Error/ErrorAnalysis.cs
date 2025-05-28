@@ -143,10 +143,14 @@ public class ErrorAnalysis
         double confidence,
         IEnumerable<string> remediationSteps)
     {
-        ErrorType = errorType ?? throw new ArgumentNullException(nameof(errorType));
-        RootCause = rootCause ?? throw new ArgumentNullException(nameof(rootCause));
+        ArgumentNullException.ThrowIfNull(errorType);
+        ArgumentNullException.ThrowIfNull(rootCause);
+        ArgumentNullException.ThrowIfNull(remediationSteps);
+
+        ErrorType = errorType;
+        RootCause = rootCause;
         Confidence = confidence;
-        RemediationSteps = remediationSteps?.ToList() ?? throw new ArgumentNullException(nameof(remediationSteps));
+        RemediationSteps = remediationSteps.ToList();
     }
 
     /// <summary>

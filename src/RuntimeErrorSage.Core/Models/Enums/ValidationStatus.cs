@@ -1,37 +1,45 @@
+using System;
+
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Defines validation status values.
+/// Represents the status of a validation operation.
 /// </summary>
 public enum ValidationStatus
 {
     /// <summary>
-    /// Validation has not been performed.
+    /// The validation is pending.
     /// </summary>
-    NotValidated,
+    Pending,
 
     /// <summary>
-    /// Validation is in progress.
+    /// The validation is in progress.
     /// </summary>
     InProgress,
 
     /// <summary>
-    /// Validation passed successfully.
+    /// The validation has completed successfully.
     /// </summary>
-    Valid,
+    Completed,
 
     /// <summary>
-    /// Validation failed.
+    /// The validation has failed.
     /// </summary>
-    Invalid,
+    Failed,
 
     /// <summary>
-    /// Validation was skipped.
+    /// The validation has been cancelled.
     /// </summary>
-    Skipped,
+    Cancelled,
 
     /// <summary>
-    /// Validation encountered an error.
+    /// The validation has timed out.
     /// </summary>
-    Error
+    TimedOut,
+
+    /// <summary>
+    /// The validation has been skipped.
+    /// </summary>
+    Skipped
 } 
+

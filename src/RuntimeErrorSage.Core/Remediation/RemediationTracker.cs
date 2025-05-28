@@ -37,7 +37,7 @@ public class RemediationTracker : IRemediationTracker, IDisposable
             var status = execution.Status switch
             {
                 RemediationExecutionStatus.Running => RemediationStatusEnum.InProgress,
-                RemediationExecutionStatus.Completed => RemediationStatusEnum.Completed,
+                RemediationExecutionStatus.Completed => RemediationStatusEnum.Success,
                 RemediationExecutionStatus.Failed => RemediationStatusEnum.Failed,
                 RemediationExecutionStatus.Cancelled => RemediationStatusEnum.Cancelled,
                 RemediationExecutionStatus.Partial => RemediationStatusEnum.InProgress,
@@ -49,26 +49,26 @@ public class RemediationTracker : IRemediationTracker, IDisposable
         return Task.FromResult(RemediationStatusEnum.NotStarted);
     }
 
-    public Task UpdateStatusAsync(string remediationId, RemediationStatusEnum status, string? message = null)
+    public Task UpdateStatusAsync(string planId, RemediationStatusEnum status, string? details = null)
     {
-        if (_executionTracker.TryGetValue(remediationId, out var execution))
+        if (_executionTracker.TryGetValue(planId, out var execution))
         {
             // Map RemediationStatus to RemediationExecutionStatus
             execution.Status = status switch
             {
                 RemediationStatusEnum.InProgress => RemediationExecutionStatus.Running,
-                RemediationStatusEnum.Completed => RemediationExecutionStatus.Completed,
+                RemediationStatusEnum.Success => RemediationExecutionStatus.Completed,
                 RemediationStatusEnum.Failed => RemediationExecutionStatus.Failed,
                 RemediationStatusEnum.Cancelled => RemediationExecutionStatus.Cancelled,
                 _ => RemediationExecutionStatus.Unknown
             };
 
-            if (message != null)
+            if (details != null)
             {
-                execution.Error = message;
+                execution.Error = details;
             }
 
-            if (status is RemediationStatusEnum.Completed or RemediationStatusEnum.Failed or RemediationStatusEnum.Cancelled)
+            if (status is RemediationStatusEnum.Success or RemediationStatusEnum.Failed or RemediationStatusEnum.Cancelled)
             {
                 execution.EndTime = DateTime.UtcNow;
             }
@@ -77,34 +77,34 @@ public class RemediationTracker : IRemediationTracker, IDisposable
         return Task.CompletedTask;
     }
 
-    public async Task RecordStepAsync(string remediationId, RemediationStep step)
+    public async Task RecordStepAsync(string planId, RemediationStep step)
     {
-        ArgumentNullException.ThrowIfNull(remediationId);
+        ArgumentNullException.ThrowIfNull(planId);
         ArgumentNullException.ThrowIfNull(step);
         ThrowIfDisposed();
 
         try
         {
-            await _stepHistoryTracker.AddStepAsync(remediationId, step);
+            await _stepHistoryTracker.AddStepAsync(planId, step);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recording step for remediation {RemediationId}", remediationId);
+            _logger.LogError(ex, "Error recording step for remediation {PlanId}", planId);
             throw;
         }
     }
 
-    public async Task<IEnumerable<RemediationStep>> GetStepHistoryAsync(string remediationId)
+    public async Task<IEnumerable<RemediationStep>> GetStepHistoryAsync(string planId)
     {
-        ArgumentNullException.ThrowIfNull(remediationId);
+        ArgumentNullException.ThrowIfNull(planId);
         ThrowIfDisposed();
 
-        return await _stepHistoryTracker.GetStepHistoryAsync(remediationId);
+        return await _stepHistoryTracker.GetStepHistoryAsync(planId);
     }
 
-    public Task<RemediationMetrics> GetMetricsAsync(string remediationId)
+    public Task<RemediationMetrics> GetMetricsAsync(string planId)
     {
-        return _metricsTracker.GetMetricsAsync(remediationId);
+        return _metricsTracker.GetMetricsAsync(planId);
     }
 
     public Task RecordMetricsAsync(string planId, RemediationMetrics metrics)
@@ -135,6 +135,33 @@ public class RemediationTracker : IRemediationTracker, IDisposable
     public Task TrackActionCompletionAsync(string planId, string actionId, bool success, string? errorMessage = null)
     {
         return _actionExecutionTracker.TrackActionCompletionAsync(planId, actionId, success, errorMessage);
+    }
+
+    public async Task<bool> IsActionCompletedAsync(string actionId)
+    {
+        if (_executionTracker.TryGetValue(actionId, out var execution))
+        {
+            return execution.Status == RemediationStatusEnum.Success || execution.Status == RemediationStatusEnum.Failed;
+        }
+        return false;
+    }
+
+    public async Task<bool> IsPlanCompletedAsync(string planId)
+    {
+        if (_executionTracker.TryGetValue(planId, out var execution))
+        {
+            return execution.Status == RemediationStatusEnum.Success || execution.Status == RemediationStatusEnum.Failed;
+        }
+        return false;
+    }
+
+    public async Task<bool> IsExecutionCompletedAsync(string executionId)
+    {
+        if (_executionTracker.TryGetValue(executionId, out var execution))
+        {
+            return execution.Status == RemediationStatusEnum.Success || execution.Status == RemediationStatusEnum.Failed;
+        }
+        return false;
     }
 
     private void ThrowIfDisposed()

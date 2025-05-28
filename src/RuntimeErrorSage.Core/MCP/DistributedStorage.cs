@@ -545,3 +545,4 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
         Dispose(false);
     }
 }
+

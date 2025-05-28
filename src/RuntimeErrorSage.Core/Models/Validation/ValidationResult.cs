@@ -7,34 +7,49 @@ using RuntimeErrorSage.Core.Models.Enums;
 namespace RuntimeErrorSage.Core.Models.Validation
 {
     /// <summary>
-    /// Represents the result of a validation operation.
+    /// Represents the result of a validation.
     /// </summary>
     public class ValidationResult
     {
+        /// <summary>
+        /// Gets or sets the ID of the action that was validated.
+        /// </summary>
+        public string ActionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timestamp of the validation.
+        /// </summary>
+        public DateTime Timestamp { get; set; }
+
         /// <summary>
         /// Gets or sets whether the validation was successful.
         /// </summary>
         public bool IsValid { get; set; }
 
         /// <summary>
-        /// Gets or sets the validation messages.
-        /// </summary>
-        public List<string> Messages { get; set; } = new List<string>();
-
-        /// <summary>
-        /// Gets or sets the validation errors.
+        /// Gets or sets the list of validation errors.
         /// </summary>
         public List<string> Errors { get; set; } = new List<string>();
 
         /// <summary>
-        /// Gets or sets the validation warnings.
+        /// Gets or sets the list of validation warnings.
         /// </summary>
         public List<string> Warnings { get; set; } = new List<string>();
 
         /// <summary>
-        /// Gets or sets the timestamp of the validation.
+        /// Gets or sets the list of validation rules that were applied.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public List<string> ValidationRules { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Gets or sets the validation duration in milliseconds.
+        /// </summary>
+        public long DurationMs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the validation messages.
+        /// </summary>
+        public List<string> Messages { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets additional metadata.
@@ -45,6 +60,31 @@ namespace RuntimeErrorSage.Core.Models.Validation
         /// Gets or sets the severity of the validation result.
         /// </summary>
         public ValidationSeverity Severity { get; set; } = ValidationSeverity.Info;
+
+        /// <summary>
+        /// Gets or sets the validation status.
+        /// </summary>
+        public ValidationStatus Status { get; set; } = ValidationStatus.Pending;
+
+        /// <summary>
+        /// Gets or sets the validation context.
+        /// </summary>
+        public ValidationContext Context { get; set; }
+
+        /// <summary>
+        /// Gets or sets the validation suggestions.
+        /// </summary>
+        public List<ValidationSuggestion> Suggestions { get; set; } = new List<ValidationSuggestion>();
+
+        /// <summary>
+        /// Gets or sets the validation metrics.
+        /// </summary>
+        public MetricsValidation Metrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the correlation ID for tracking related validations.
+        /// </summary>
+        public string CorrelationId { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidationResult"/> class.
@@ -82,11 +122,7 @@ namespace RuntimeErrorSage.Core.Models.Validation
         /// <param name="error">The error to add.</param>
         public void AddError(ValidationError error)
         {
-            if (error == null)
-            {
-                throw new ArgumentNullException(nameof(error));
-            }
-
+            ArgumentNullException.ThrowIfNull(error);
             Errors.Add(error.Message);
             IsValid = false;
         }
@@ -97,11 +133,7 @@ namespace RuntimeErrorSage.Core.Models.Validation
         /// <param name="warning">The warning to add.</param>
         public void AddWarning(ValidationWarning warning)
         {
-            if (warning == null)
-            {
-                throw new ArgumentNullException(nameof(warning));
-            }
-
+            ArgumentNullException.ThrowIfNull(warning);
             Warnings.Add(warning.Message);
         }
 
@@ -216,3 +248,5 @@ namespace RuntimeErrorSage.Core.Models.Validation
         }
     }
 } 
+
+

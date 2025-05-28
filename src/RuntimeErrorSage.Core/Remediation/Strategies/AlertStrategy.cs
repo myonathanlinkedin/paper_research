@@ -237,5 +237,26 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 return result;
             }
         }
+
+        private RemediationImpact CreateDefaultImpact()
+        {
+            return new RemediationImpact
+            {
+                Severity = SeverityLevel.Low.ToImpactSeverity(),
+                Scope = RemediationActionImpactScope.Local,
+                AffectedComponents = new List<string>(),
+                EstimatedDuration = TimeSpan.FromMinutes(5)
+            };
+        }
+
+        private void AddValidationResult(ValidationResult result, string message, SeverityLevel severity)
+        {
+            result.AddError(message, severity.ToValidationSeverity());
+        }
+
+        private void AddValidationWarning(ValidationResult result, string message, SeverityLevel severity)
+        {
+            result.AddWarning(message, severity.ToValidationSeverity());
+        }
     }
 } 

@@ -56,11 +56,7 @@ namespace RuntimeErrorSage.Core.Models.Analysis
         /// <param name="node">The node to add.</param>
         public void AddNode(DependencyNode node)
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
+            ArgumentNullException.ThrowIfNull(node);
             Nodes.Add(node);
         }
 
@@ -70,11 +66,7 @@ namespace RuntimeErrorSage.Core.Models.Analysis
         /// <param name="edge">The edge to add.</param>
         public void AddEdge(DependencyEdge edge)
         {
-            if (edge == null)
-            {
-                throw new ArgumentNullException(nameof(edge));
-            }
-
+            ArgumentNullException.ThrowIfNull(edge);
             Edges.Add(edge);
         }
 
@@ -85,6 +77,7 @@ namespace RuntimeErrorSage.Core.Models.Analysis
         /// <returns>The dependencies.</returns>
         public List<DependencyNode> GetDependencies(string nodeId)
         {
+            ArgumentNullException.ThrowIfNull(nodeId);
             var dependencies = new List<DependencyNode>();
             foreach (var edge in Edges)
             {

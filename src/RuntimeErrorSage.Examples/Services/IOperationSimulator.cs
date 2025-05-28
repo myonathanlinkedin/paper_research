@@ -37,3 +37,4 @@ public interface IOperationSimulator
     /// <returns>Operation response with status and error details if any</returns>
     Task<OperationResponse> SimulateResourceAllocationAsync(ResourceRequest request);
 } 
+

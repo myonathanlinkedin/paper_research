@@ -130,7 +130,7 @@ namespace RuntimeErrorSage.Core.Examples
                 {
                     var strategyResult = await ExecuteStrategyAsync(strategy, plan.Context);
                     
-                    if (strategyResult.Status != RemediationStatusEnum.Completed)
+                    if (strategyResult.Status != RemediationStatusEnum.Success)
                     {
                         result.Status = RemediationStatusEnum.Failed;
                         result.Message = $"Strategy {strategy.Name} failed: {strategyResult.Message}";
@@ -142,7 +142,7 @@ namespace RuntimeErrorSage.Core.Examples
 
                 if (result.Status == RemediationStatusEnum.InProgress)
                 {
-                    result.Status = RemediationStatusEnum.Completed;
+                    result.Status = RemediationStatusEnum.Success;
                     result.Message = "Plan executed successfully";
                 }
 
@@ -177,7 +177,7 @@ namespace RuntimeErrorSage.Core.Examples
                 return new RemediationResult
                 {
                     Context = result.Context,
-                    Status = RemediationStatusEnum.Completed,
+                    Status = RemediationStatusEnum.Success,
                     Message = "Rollback completed successfully",
                     IsRollback = true,
                     OriginalRemediationId = result.RemediationId
@@ -266,38 +266,45 @@ namespace RuntimeErrorSage.Core.Examples
         }
 
         /// <inheritdoc />
-        public async Task<RemediationExecution> ExecuteRemediationAsync(ErrorAnalysisResult analysis, ErrorContext errorContext)
+        public async Task<RemediationExecution> ExecuteRemediationAsync(ErrorAnalysisResult analysis, ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(analysis);
-            ArgumentNullException.ThrowIfNull(errorContext);
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {
                 _logger.LogInformation("Executing remediation for analysis {AnalysisId}", analysis.ErrorId);
                 
-                // Create a plan based on the analysis
-                var plan = new RemediationPlan
-                {
-                    PlanId = Guid.NewGuid().ToString(),
-                    Context = errorContext,
-                    Strategies = new List<Models.Remediation.Interfaces.IRemediationStrategy> { _strategy },
-                    CreatedAt = DateTime.UtcNow
-                };
-                
-                // Execute the plan
-                var result = await ExecutePlanAsync(plan);
-                
+                // Create execution record
                 var execution = new RemediationExecution
                 {
-                    RemediationId = result.RemediationId,
-                    Strategy = _strategy.Name,
-                    ErrorContext = errorContext,
-                    Result = result,
-                    StartTime = result.StartTime,
-                    EndTime = result.EndTime,
-                    Status = result.Status,
-                    ErrorMessage = result.Message
+                    RemediationId = Guid.NewGuid().ToString(),
+                    ErrorContext = context,
+                    StartTime = DateTime.UtcNow,
+                    Status = RemediationStatusEnum.InProgress
                 };
+                
+                // Store in history
+                _executionHistory[execution.RemediationId] = execution;
+                
+                // Check if the strategy can handle this error context
+                var canHandle = await _strategy.CanHandleErrorAsync(context);
+                if (!canHandle)
+                {
+                    execution.Status = RemediationStatusEnum.Failed;
+                    execution.ErrorMessage = $"Strategy {_strategy.Name} cannot handle error type {context.ErrorType}";
+                    execution.EndTime = DateTime.UtcNow;
+                    return execution;
+                }
+                
+                // Execute the strategy
+                var result = await _strategy.ExecuteAsync(context);
+                execution.RemediationPlanId = result.PlanId;
+                execution.CompletedActions = result.Actions.Count;
+                execution.TotalActions = result.Actions.Count;
+                execution.EndTime = DateTime.UtcNow;
+                execution.Status = result.Status;
+                execution.ErrorMessage = result.ErrorMessage;
                 
                 // Store in history
                 _executionHistory[execution.RemediationId] = execution;
@@ -311,7 +318,7 @@ namespace RuntimeErrorSage.Core.Examples
                 var execution = new RemediationExecution
                 {
                     RemediationId = Guid.NewGuid().ToString(),
-                    ErrorContext = errorContext,
+                    ErrorContext = context,
                     StartTime = DateTime.UtcNow,
                     EndTime = DateTime.UtcNow,
                     Status = RemediationStatusEnum.Failed,
@@ -326,22 +333,22 @@ namespace RuntimeErrorSage.Core.Examples
         }
 
         /// <inheritdoc />
-        public async Task<RemediationValidationResult> ValidateRemediationAsync(ErrorAnalysisResult analysis, ErrorContext errorContext)
+        public async Task<RemediationValidationResult> ValidateRemediationAsync(ErrorAnalysisResult analysis, ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(analysis);
-            ArgumentNullException.ThrowIfNull(errorContext);
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {
                 _logger.LogInformation("Validating remediation for analysis {AnalysisId}", analysis.ErrorId);
                 
                 // Check if the strategy can handle this error context
-                var validationResult = await _validator.ValidateStrategyAsync(_strategy, errorContext);
+                var validationResult = await _validator.ValidateStrategyAsync(_strategy, context);
                 
                 return new RemediationValidationResult
                 {
                     IsValid = validationResult.IsValid,
-                    ErrorContext = errorContext,
+                    ErrorContext = context,
                     Messages = validationResult.Messages,
                     Timestamp = DateTime.UtcNow,
                     ValidationResults = new List<ValidationResult> { validationResult }
@@ -354,7 +361,7 @@ namespace RuntimeErrorSage.Core.Examples
                 return new RemediationValidationResult
                 {
                     IsValid = false,
-                    ErrorContext = errorContext,
+                    ErrorContext = context,
                     Messages = new List<string> { $"Validation error: {ex.Message}" },
                     Timestamp = DateTime.UtcNow
                 };
@@ -386,20 +393,20 @@ namespace RuntimeErrorSage.Core.Examples
         }
 
         /// <inheritdoc />
-        public async Task<RemediationAction> ExecuteActionAsync(RemediationAction action, ErrorContext errorContext)
+        public async Task<RemediationAction> ExecuteActionAsync(RemediationAction action, ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(action);
-            ArgumentNullException.ThrowIfNull(errorContext);
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {
                 _logger.LogInformation("Executing action {ActionId} for error context {ErrorId}", 
-                    action.ActionId, errorContext.Id);
+                    action.ActionId, context.Id);
                 
                 action.StartTime = DateTime.UtcNow;
                 
                 // Validate
-                var validationResult = await ValidateActionAsync(action, errorContext);
+                var validationResult = await ValidateActionAsync(action, context);
                 if (!validationResult.IsValid)
                 {
                     action.Status = RemediationStatus.Failed;
@@ -419,7 +426,7 @@ namespace RuntimeErrorSage.Core.Examples
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error executing action {ActionId} for context {ErrorId}", 
-                    action.ActionId, errorContext.Id);
+                    action.ActionId, context.Id);
                 
                 action.Status = RemediationStatus.Failed;
                 action.ErrorMessage = ex.Message;
@@ -430,15 +437,15 @@ namespace RuntimeErrorSage.Core.Examples
         }
 
         /// <inheritdoc />
-        public async Task<ValidationResult> ValidateActionAsync(RemediationAction action, ErrorContext errorContext)
+        public async Task<ValidationResult> ValidateActionAsync(RemediationAction action, ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(action);
-            ArgumentNullException.ThrowIfNull(errorContext);
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {
                 _logger.LogInformation("Validating action {ActionId} for error context {ErrorId}", 
-                    action.ActionId, errorContext.Id);
+                    action.ActionId, context.Id);
                 
                 // Perform validation logic
                 
@@ -451,7 +458,7 @@ namespace RuntimeErrorSage.Core.Examples
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error validating action {ActionId} for context {ErrorId}", 
-                    action.ActionId, errorContext.Id);
+                    action.ActionId, context.Id);
                 
                 return new ValidationResult
                 {
@@ -462,15 +469,15 @@ namespace RuntimeErrorSage.Core.Examples
         }
 
         /// <inheritdoc />
-        public async Task<RemediationImpact> GetActionImpactAsync(RemediationAction action, ErrorContext errorContext)
+        public async Task<RemediationImpact> GetActionImpactAsync(RemediationAction action, ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(action);
-            ArgumentNullException.ThrowIfNull(errorContext);
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {
                 _logger.LogInformation("Calculating impact of action {ActionId} for error context {ErrorId}", 
-                    action.ActionId, errorContext.Id);
+                    action.ActionId, context.Id);
                 
                 // Calculate impact
                 
@@ -484,7 +491,7 @@ namespace RuntimeErrorSage.Core.Examples
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error calculating impact for action {ActionId} for context {ErrorId}", 
-                    action.ActionId, errorContext.Id);
+                    action.ActionId, context.Id);
                 
                 return new RemediationImpact
                 {
@@ -495,15 +502,15 @@ namespace RuntimeErrorSage.Core.Examples
         }
 
         /// <inheritdoc />
-        public async Task<RiskAssessment> GetActionRiskAsync(RemediationAction action, ErrorContext errorContext)
+        public async Task<RiskAssessment> GetActionRiskAsync(RemediationAction action, ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(action);
-            ArgumentNullException.ThrowIfNull(errorContext);
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {
                 _logger.LogInformation("Calculating risk of action {ActionId} for error context {ErrorId}", 
-                    action.ActionId, errorContext.Id);
+                    action.ActionId, context.Id);
                 
                 // Calculate risk
                 
@@ -518,7 +525,7 @@ namespace RuntimeErrorSage.Core.Examples
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error calculating risk for action {ActionId} for context {ErrorId}", 
-                    action.ActionId, errorContext.Id);
+                    action.ActionId, context.Id);
                 
                 return new RiskAssessment
                 {
@@ -694,10 +701,10 @@ namespace RuntimeErrorSage.Core.Examples
             var analysisStatus = AnalysisStatus.Completed;
             
             // INCORRECT: Using ambiguous RemediationStatusEnum
-            // var remediationStatus = RemediationStatusEnum.Completed;
+            // var remediationStatus = RemediationStatusEnum.Success;
             
             // CORRECT: Using fully qualified name
-            var remediationStatus = RuntimeErrorSage.Core.Models.Remediation.RemediationStatusEnum.Completed;
+            var remediationStatus = RuntimeErrorSage.Core.Models.Remediation.RemediationStatusEnum.Success;
             
             // INCORRECT: Using ambiguous ValidationResult
             // var validationResult = new ValidationResult();

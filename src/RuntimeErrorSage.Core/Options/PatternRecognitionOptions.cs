@@ -48,3 +48,4 @@ namespace RuntimeErrorSage.Core.Options
         public bool EnableCrossServicePatterns { get; set; } = true;
     }
 } 
+

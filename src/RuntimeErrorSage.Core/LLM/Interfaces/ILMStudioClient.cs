@@ -8,3 +8,4 @@ namespace RuntimeErrorSage.Core.LLM.Interfaces
         Task<string> GenerateRemediationAsync(object analysis);
     }
 } 
+

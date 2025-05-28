@@ -18,3 +18,4 @@ namespace RuntimeErrorSage.Core.Models.Validation
         public Dictionary<string, object> Details { get; set; } = new();
     }
 } 
+

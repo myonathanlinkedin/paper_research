@@ -548,3 +548,4 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
             report.Entries.ToDictionary(e => e.Key, e => e.Value as object)); // Use the component results
     }
 } 
+

@@ -1,3 +1,4 @@
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -6,6 +7,7 @@ using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
+using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -20,9 +22,13 @@ namespace RuntimeErrorSage.Core.Remediation
             IRemediationValidator validator,
             IRemediationExecutor executor)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(validator);
+            ArgumentNullException.ThrowIfNull(executor);
+
+            _logger = logger;
+            _validator = validator;
+            _executor = executor;
         }
 
         public async Task<RemediationResult> ExecuteActionAsync(RemediationAction action)
@@ -46,12 +52,12 @@ namespace RuntimeErrorSage.Core.Remediation
 
             try
             {
-                return await _validator.ValidateActionAsync(action, new ErrorContext());
+                return await _validator.ValidateActionAsync(action);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error validating action {ActionName}", action.Name);
-                return new ValidationResult { IsValid = false, Message = ex.Message };
+                return new ValidationResult { IsValid = false, Errors = new List<string> { ex.Message } };
             }
         }
 
@@ -92,3 +98,5 @@ namespace RuntimeErrorSage.Core.Remediation
         }
     }
 } 
+
+

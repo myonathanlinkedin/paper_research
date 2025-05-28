@@ -8,3 +8,4 @@ namespace RuntimeErrorSage.Core.Health.Models
         public DateTime Timestamp { get; set; }
     }
 } 
+

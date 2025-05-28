@@ -88,9 +88,9 @@ namespace RuntimeErrorSage.Core.Examples
                 }
             }
             
-            // INCORRECT: Trying to access non-existent properties
-            // var metrics = result.ImpactMetrics; // 'ImpactAnalysisResult' does not contain definition for 'ImpactMetrics'
-            // var nodes = result.AffectedNodes; // 'ImpactAnalysisResult' does not contain definition for 'AffectedNodes'
+            // The commented lines below now reference properties that exist in RuntimeErrorSage.Core.Models.Graph.ImpactAnalysisResult
+            // var metrics = result.ImpactMetrics; // Now valid since we're using RuntimeErrorSage.Core.Models.Graph.ImpactAnalysisResult
+            // var nodes = result.AffectedNodes; // Now valid since we're using RuntimeErrorSage.Core.Models.Graph.ImpactAnalysisResult
             
             // CORRECT: Use the properties that actually exist on ImpactAnalysisResult
             Console.WriteLine($"Component ID: {result.ComponentId}");

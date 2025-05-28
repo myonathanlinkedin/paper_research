@@ -374,3 +374,4 @@ namespace RuntimeErrorSage.Tests.TestSuite
         public double CpuUsage { get; set; }
     }
 } 
+

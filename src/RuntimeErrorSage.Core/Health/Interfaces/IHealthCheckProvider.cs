@@ -9,3 +9,4 @@ namespace RuntimeErrorSage.Core.Health.Interfaces
         Task<Dictionary<string, double>> GetMetricsAsync();
     }
 } 
+

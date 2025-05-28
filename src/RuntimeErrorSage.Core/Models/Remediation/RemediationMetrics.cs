@@ -5,130 +5,83 @@ using RuntimeErrorSage.Core.Models.Metrics;
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
     /// <summary>
-    /// Contains metrics information for a remediation execution.
+    /// Represents metrics for a remediation operation.
     /// </summary>
     public class RemediationMetrics
     {
         /// <summary>
-        /// Gets or sets the execution ID.
+        /// Gets or sets the timestamp of the metrics.
         /// </summary>
-        public string ExecutionId { get; set; } = string.Empty;
-
+        public DateTime Timestamp { get; set; }
+        
         /// <summary>
-        /// Gets or sets the correlation ID.
+        /// Gets or sets the success rate of the remediation.
         /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
-
+        public double SuccessRate { get; set; }
+        
         /// <summary>
-        /// Gets or sets the execution start time.
+        /// Gets or sets the error rate of the remediation.
         /// </summary>
-        public DateTime StartTime { get; set; } = DateTime.UtcNow;
-
+        public double ErrorRate { get; set; }
+        
         /// <summary>
-        /// Gets or sets the execution end time.
+        /// Gets or sets the average execution time in milliseconds.
         /// </summary>
-        public DateTime? EndTime { get; set; }
-
+        public long AverageExecutionTimeMs { get; set; }
+        
         /// <summary>
-        /// Gets or sets the execution duration in milliseconds.
+        /// Gets or sets the total number of remediations.
         /// </summary>
-        public double DurationMs { get; set; }
-
+        public int TotalRemediations { get; set; }
+        
         /// <summary>
-        /// Gets or sets the number of actions executed.
+        /// Gets or sets the number of successful remediations.
         /// </summary>
-        public int ActionCount { get; set; }
-
+        public int SuccessfulRemediations { get; set; }
+        
         /// <summary>
-        /// Gets or sets the number of successful actions.
+        /// Gets or sets the number of failed remediations.
         /// </summary>
-        public int SuccessfulActionCount { get; set; }
-
+        public int FailedRemediations { get; set; }
+        
         /// <summary>
-        /// Gets or sets the number of failed actions.
+        /// Gets or sets the number of cancelled remediations.
         /// </summary>
-        public int FailedActionCount { get; set; }
-
+        public int CancelledRemediations { get; set; }
+        
         /// <summary>
-        /// Gets or sets the resource usage at the start of the execution.
+        /// Gets or sets the number of timed out remediations.
         /// </summary>
-        public ResourceUsage StartResourceUsage { get; set; } = new ResourceUsage();
-
+        public int TimedOutRemediations { get; set; }
+        
         /// <summary>
-        /// Gets or sets the resource usage at the end of the execution.
+        /// Gets or sets the number of validation failed remediations.
         /// </summary>
-        public ResourceUsage EndResourceUsage { get; set; } = new ResourceUsage();
-
+        public int ValidationFailedRemediations { get; set; }
+        
         /// <summary>
-        /// Gets or sets the step metrics for the execution.
+        /// Gets or sets the retry count.
         /// </summary>
-        public List<StepMetrics> StepMetrics { get; set; } = new List<StepMetrics>();
-
+        public int RetryCount { get; set; }
+        
         /// <summary>
-        /// Gets or sets additional metadata.
+        /// Gets or sets the metric values.
         /// </summary>
-        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
-
+        public Dictionary<string, double> Values { get; set; } = new();
+        
         /// <summary>
-        /// Gets the success rate as a percentage.
+        /// Gets or sets the metric labels.
         /// </summary>
-        public double SuccessRate => ActionCount > 0 ? (double)SuccessfulActionCount / ActionCount * 100 : 0;
-
+        public Dictionary<string, string> Labels { get; set; } = new();
+        
         /// <summary>
-        /// Gets the memory usage difference.
+        /// Gets or sets the success flag.
         /// </summary>
-        public long MemoryUsageDiff => EndResourceUsage.MemoryUsageBytes - StartResourceUsage.MemoryUsageBytes;
-
+        public bool Success { get; set; }
+        
         /// <summary>
-        /// Gets the CPU usage difference.
+        /// Gets or sets the error message.
         /// </summary>
-        public double CpuUsageDiff => EndResourceUsage.CpuUsagePercent - StartResourceUsage.CpuUsagePercent;
-
-        /// <summary>
-        /// Creates a new metrics instance for a specific action.
-        /// </summary>
-        /// <param name="actionName">The name of the action.</param>
-        /// <param name="parentExecutionId">The parent execution ID.</param>
-        /// <returns>A new metrics instance.</returns>
-        public static RemediationMetrics CreateForAction(string actionName, string parentExecutionId)
-        {
-            return new RemediationMetrics
-            {
-                ExecutionId = Guid.NewGuid().ToString(),
-                CorrelationId = parentExecutionId,
-                StartTime = DateTime.UtcNow,
-                Metadata = new Dictionary<string, string>
-                {
-                    { "ActionName", actionName },
-                    { "ParentExecutionId", parentExecutionId }
-                }
-            };
-        }
-    }
-
-    /// <summary>
-    /// Represents resource usage metrics.
-    /// </summary>
-    public class ResourceUsage
-    {
-        /// <summary>
-        /// Gets or sets the CPU usage percentage.
-        /// </summary>
-        public double CpuUsagePercent { get; set; }
-
-        /// <summary>
-        /// Gets or sets the memory usage in bytes.
-        /// </summary>
-        public double MemoryUsageBytes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the disk usage in bytes.
-        /// </summary>
-        public double DiskUsage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the network usage in bytes.
-        /// </summary>
-        public double NetworkUsage { get; set; }
+        public string? Error { get; set; }
     }
 } 

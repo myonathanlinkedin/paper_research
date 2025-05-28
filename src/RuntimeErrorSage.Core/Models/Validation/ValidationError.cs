@@ -68,7 +68,8 @@ public class ValidationError
     /// <param name="message">The error message.</param>
     public ValidationError(string message)
     {
-        Message = message ?? throw new ArgumentNullException(nameof(message));
+        ArgumentNullException.ThrowIfNull(message);
+        Message = message;
     }
 
     /// <summary>
@@ -78,8 +79,10 @@ public class ValidationError
     /// <param name="message">The error message.</param>
     public ValidationError(string code, string message)
     {
-        Code = code ?? throw new ArgumentNullException(nameof(code));
-        Message = message ?? throw new ArgumentNullException(nameof(message));
+        ArgumentNullException.ThrowIfNull(code);
+        ArgumentNullException.ThrowIfNull(message);
+        Code = code;
+        Message = message;
     }
 
     /// <summary>
@@ -90,8 +93,11 @@ public class ValidationError
     /// <param name="propertyName">The property name that caused the error.</param>
     public ValidationError(string code, string message, string propertyName)
     {
-        Code = code ?? throw new ArgumentNullException(nameof(code));
-        Message = message ?? throw new ArgumentNullException(nameof(message));
-        PropertyName = propertyName ?? throw new ArgumentNullException(nameof(propertyName));
+        ArgumentNullException.ThrowIfNull(code);
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(propertyName);
+        Code = code;
+        Message = message;
+        PropertyName = propertyName;
     }
 }

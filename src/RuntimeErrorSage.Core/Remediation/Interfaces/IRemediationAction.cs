@@ -1,3 +1,4 @@
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -66,3 +67,4 @@ namespace RuntimeErrorSage.Core.Remediation.Interfaces
         Task<RemediationImpact> GetEstimatedImpactAsync();
     }
 } 
+

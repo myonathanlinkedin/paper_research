@@ -11,6 +11,7 @@ using RuntimeErrorSage.Core.Classifier.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Core.Graph;
 
@@ -18,7 +19,7 @@ namespace RuntimeErrorSage.Core.Graph;
 /// Implements the graph-based context analysis as specified in the research paper.
 /// This implementation follows the mathematical framework described in Section 3.
 /// </summary>
-public class GraphAnalyzer : IDependencyGraphAnalyzer
+public class GraphAnalyzer : RuntimeErrorSage.Core.Graph.Interfaces.IDependencyGraphAnalyzer
 {
     private readonly ILogger<GraphAnalyzer> _logger;
     private readonly IGraphBuilder _graphBuilder;
@@ -35,12 +36,19 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         IErrorClassifier errorClassifier,
         IErrorFactory errorFactory)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
-        _impactAnalyzer = impactAnalyzer ?? throw new ArgumentNullException(nameof(impactAnalyzer));
-        _relationshipAnalyzer = relationshipAnalyzer ?? throw new ArgumentNullException(nameof(relationshipAnalyzer));
-        _errorClassifier = errorClassifier ?? throw new ArgumentNullException(nameof(errorClassifier));
-        _errorFactory = errorFactory ?? throw new ArgumentNullException(nameof(errorFactory));
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(graphBuilder);
+        ArgumentNullException.ThrowIfNull(impactAnalyzer);
+        ArgumentNullException.ThrowIfNull(relationshipAnalyzer);
+        ArgumentNullException.ThrowIfNull(errorClassifier);
+        ArgumentNullException.ThrowIfNull(errorFactory);
+
+        _logger = logger;
+        _graphBuilder = graphBuilder;
+        _impactAnalyzer = impactAnalyzer;
+        _relationshipAnalyzer = relationshipAnalyzer;
+        _errorClassifier = errorClassifier;
+        _errorFactory = errorFactory;
     }
 
     /// <inheritdoc />

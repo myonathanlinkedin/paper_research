@@ -22,7 +22,8 @@ public class TestSuiteConfiguration
     /// <param name="errorAnalyzer">The error analyzer.</param>
     public TestSuiteConfiguration(IErrorAnalyzer errorAnalyzer)
     {
-        _errorAnalyzer = errorAnalyzer ?? throw new ArgumentNullException(nameof(errorAnalyzer));
+        ArgumentNullException.ThrowIfNull(errorAnalyzer);
+        _errorAnalyzer = errorAnalyzer;
         _settings = new Dictionary<string, object>();
         _scenarios = new List<ErrorScenario>();
         _metrics = new List<PerformanceMetric>();

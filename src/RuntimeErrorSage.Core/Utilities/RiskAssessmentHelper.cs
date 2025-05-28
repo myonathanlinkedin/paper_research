@@ -17,37 +17,41 @@ namespace RuntimeErrorSage.Core.Utilities
         /// <param name="severity">The severity level.</param>
         /// <param name="impactScope">The impact scope.</param>
         /// <returns>The calculated risk level.</returns>
-        public static RemediationRiskLevel CalculateRiskLevel(RemediationActionSeverity severity, RemediationActionImpactScope impactScope)
+        public static RemediationRiskLevel CalculateRiskLevel(SeverityLevel severity, RemediationActionImpactScope impactScope)
         {
-            // Calculate risk level based on severity and impact scope
-            // Higher severity and wider impact scope result in higher risk level
-            
-            if (severity == RemediationActionSeverity.Critical)
+            // Critical severity always results in Critical risk for global/system impact
+            if (severity == SeverityLevel.Critical && (impactScope == RemediationActionImpactScope.Global || impactScope == RemediationActionImpactScope.System))
             {
-                return impactScope >= RemediationActionImpactScope.Module ? 
-                    RemediationRiskLevel.Critical : RemediationRiskLevel.High;
+                return RemediationRiskLevel.Critical;
             }
-            
-            if (severity == RemediationActionSeverity.High)
+
+            // High severity with global/system impact results in Critical risk
+            if (severity == SeverityLevel.High && (impactScope == RemediationActionImpactScope.Global || impactScope == RemediationActionImpactScope.System))
             {
-                return impactScope >= RemediationActionImpactScope.Service ? 
-                    RemediationRiskLevel.Critical : RemediationRiskLevel.High;
+                return RemediationRiskLevel.Critical;
             }
-            
-            if (severity == RemediationActionSeverity.Medium)
+
+            // Medium severity with global/system impact results in High risk
+            if (severity == SeverityLevel.Medium && (impactScope == RemediationActionImpactScope.Global || impactScope == RemediationActionImpactScope.System))
             {
-                return impactScope >= RemediationActionImpactScope.System ? 
-                    RemediationRiskLevel.High : RemediationRiskLevel.Medium;
+                return RemediationRiskLevel.High;
             }
-            
-            if (severity == RemediationActionSeverity.Low)
+
+            // Low severity with global/system impact results in Medium risk
+            if (severity == SeverityLevel.Low && (impactScope == RemediationActionImpactScope.Global || impactScope == RemediationActionImpactScope.System))
             {
-                return impactScope >= RemediationActionImpactScope.Global ? 
-                    RemediationRiskLevel.Medium : RemediationRiskLevel.Low;
+                return RemediationRiskLevel.Medium;
             }
-            
-            // If severity is None or not recognized, return None
-            return RemediationRiskLevel.None;
+
+            // For other combinations, map severity directly to risk level
+            return severity switch
+            {
+                SeverityLevel.Critical => RemediationRiskLevel.Critical,
+                SeverityLevel.High => RemediationRiskLevel.High,
+                SeverityLevel.Medium => RemediationRiskLevel.Medium,
+                SeverityLevel.Low => RemediationRiskLevel.Low,
+                _ => RemediationRiskLevel.None
+            };
         }
 
         /// <summary>

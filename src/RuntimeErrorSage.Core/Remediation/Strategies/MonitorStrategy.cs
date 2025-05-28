@@ -171,5 +171,17 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 StrategyName = Name
             });
         }
+
+        private RemediationAction CreateMonitorAction(string name, string description)
+        {
+            return new RemediationAction
+            {
+                Name = name,
+                Description = description,
+                Type = RemediationActionType.Monitor,
+                Severity = SeverityLevel.Low.ToRemediationActionSeverity(),
+                Status = RemediationActionStatus.Pending
+            };
+        }
     }
 } 

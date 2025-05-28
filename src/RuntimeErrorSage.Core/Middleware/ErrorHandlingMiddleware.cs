@@ -197,20 +197,19 @@ public class ErrorHandlingMiddleware
         await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true }));
     }
 
-    private ErrorSeverity DetermineSeverity(Exception ex)
+    private SeverityLevel DetermineSeverity(Exception ex)
     {
-        // Simple severity mapping (can be expanded)
         return ex switch
         {
-            System.Data.SqlClient.SqlException sqlEx when sqlEx.Number == -2 => ErrorSeverity.Critical, // Timeout
-            System.Data.SqlClient.SqlException => ErrorSeverity.Error,
-            HttpRequestException => ErrorSeverity.Error,
-            UnauthorizedAccessException => ErrorSeverity.Error,
-            System.IO.IOException => ErrorSeverity.Error,
-            OutOfMemoryException => ErrorSeverity.Critical,
-            NullReferenceException => ErrorSeverity.Error,
-            ArgumentException => ErrorSeverity.Error,
-            _ => ErrorSeverity.Error,
+            System.Data.SqlClient.SqlException sqlEx when sqlEx.Number == -2 => SeverityLevel.Critical, // Timeout
+            System.Data.SqlClient.SqlException => SeverityLevel.High,
+            HttpRequestException => SeverityLevel.High,
+            UnauthorizedAccessException => SeverityLevel.High,
+            System.IO.IOException => SeverityLevel.High,
+            OutOfMemoryException => SeverityLevel.Critical,
+            NullReferenceException => SeverityLevel.High,
+            ArgumentException => SeverityLevel.Medium,
+            _ => SeverityLevel.High
         };
     }
 
@@ -255,3 +254,4 @@ public class ErrorHandlingMiddleware
         }
     }
 } 
+

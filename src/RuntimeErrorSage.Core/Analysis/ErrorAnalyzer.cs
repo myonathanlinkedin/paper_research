@@ -57,13 +57,10 @@ public class ErrorAnalyzer : IErrorAnalyzer
     /// </summary>
     /// <param name="error">The error.</param>
     /// <returns>The analysis.</returns>
-    public async Task<ErrorAnalysis> AnalyzeAsync(Error error)
+    public async Task<ErrorAnalysis> AnalyzeAsync(RuntimeError error)
     {
         if (error == null)
             throw new ArgumentNullException(nameof(error));
-
-        if (!error.Validate())
-            throw new ArgumentException("Invalid error.", nameof(error));
 
         var context = new ErrorContext(error, null, DateTime.UtcNow);
 
@@ -494,4 +491,5 @@ public class ErrorAnalyzer : IErrorAnalyzer
         };
     }
 } 
+
 

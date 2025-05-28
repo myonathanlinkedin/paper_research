@@ -21,10 +21,11 @@ public static class DictionaryExtensions
     public static TValue GetOrAdd<TKey, TValue>(
         this Dictionary<TKey, TValue> dictionary,
         TKey key,
-        Func<TKey, TValue> valueFactory)
+        Func<TKey, TValue> valueFactory) where TKey : notnull
     {
         ArgumentNullException.ThrowIfNull(dictionary);
         ArgumentNullException.ThrowIfNull(valueFactory);
+        ArgumentNullException.ThrowIfNull(key);
 
         if (!dictionary.TryGetValue(key, out var value))
         {
@@ -48,9 +49,10 @@ public static class DictionaryExtensions
     public static TValue GetOrAdd<TKey, TValue>(
         this Dictionary<TKey, TValue> dictionary,
         TKey key,
-        TValue value)
+        TValue value) where TKey : notnull
     {
         ArgumentNullException.ThrowIfNull(dictionary);
+        ArgumentNullException.ThrowIfNull(key);
 
         if (!dictionary.TryGetValue(key, out var existingValue))
         {
@@ -71,9 +73,9 @@ public static class DictionaryExtensions
     /// <param name="defaultValue">Default value if key not found or dictionary is null.</param>
     /// <returns>The value or default if not found.</returns>
     public static TValue GetValueOrDefault<TKey, TValue>(
-        this Dictionary<TKey, TValue> dictionary,
-        TKey key,
-        TValue defaultValue = default)
+        this Dictionary<TKey, TValue>? dictionary,
+        TKey? key,
+        TValue defaultValue = default) where TKey : notnull
     {
         if (dictionary == null || key == null || !dictionary.TryGetValue(key, out var value))
         {
@@ -92,11 +94,14 @@ public static class DictionaryExtensions
     /// <param name="key">The key.</param>
     /// <param name="value">The value.</param>
     public static void AddSafely<TKey, TValue>(
-        this Dictionary<TKey, TValue> dictionary,
-        TKey key,
-        TValue value)
+        this Dictionary<TKey, TValue>? dictionary,
+        TKey? key,
+        TValue value) where TKey : notnull
     {
-        dictionary ??= new Dictionary<TKey, TValue>();
+        if (dictionary == null)
+        {
+            dictionary = new Dictionary<TKey, TValue>();
+        }
         
         if (key != null)
         {
@@ -113,9 +118,9 @@ public static class DictionaryExtensions
     /// <param name="defaultValue">Default value if key not found or value can't be converted.</param>
     /// <returns>The value as double or default if not found or not convertible.</returns>
     public static double GetNumericValueOrDefault<TKey>(
-        this Dictionary<TKey, object> dictionary,
-        TKey key,
-        double defaultValue = 0)
+        this Dictionary<TKey, object>? dictionary,
+        TKey? key,
+        double defaultValue = 0) where TKey : notnull
     {
         if (dictionary == null || key == null || !dictionary.TryGetValue(key, out var value))
         {
@@ -137,7 +142,7 @@ public static class DictionaryExtensions
             return floatValue;
         }
         
-        if (double.TryParse(value?.ToString(), out var parsedValue))
+        if (value != null && double.TryParse(value.ToString(), out var parsedValue))
         {
             return parsedValue;
         }

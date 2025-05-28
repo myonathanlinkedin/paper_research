@@ -24,9 +24,9 @@ public class ErrorResponse
     public string Type { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the error severity.
+    /// Gets or sets the severity level of the error.
     /// </summary>
-    public ErrorSeverity Severity { get; set; }
+    public SeverityLevel Severity { get; set; }
 
     /// <summary>
     /// Gets or sets the error analysis.

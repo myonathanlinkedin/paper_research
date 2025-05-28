@@ -11,3 +11,4 @@ namespace RuntimeErrorSage.Core.Health.Models
         public int ConsecutiveSuccesses { get; set; }
     }
 } 
+

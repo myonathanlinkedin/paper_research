@@ -25,3 +25,4 @@ public class IntegrationRequest
     /// </summary>
     public int TimeoutSeconds { get; set; }
 } 
+

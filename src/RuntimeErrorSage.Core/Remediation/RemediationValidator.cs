@@ -54,25 +54,35 @@ public class RemediationValidator : IRemediationValidator, IDisposable
     public RemediationValidator(
         ILogger<RemediationValidator> logger,
         IOptions<RemediationValidatorOptions> options,
-        IEnumerable<IValidationRule> rules,
-        IEnumerable<IValidationWarning> warnings,
+        IEnumerable<IRemediationValidationRule> rules,
+        IEnumerable<IRemediationValidationWarning> warnings,
         IErrorContextAnalyzer errorContextAnalyzer,
         IRemediationMetricsCollector metricsCollector,
         IRemediationRegistry registry,
         ILLMClient llmClient,
-        Dictionary<string, IRemediationActionValidator> supportedActions,
+        IEnumerable<string> supportedActions,
         EventId? validationErrorEventId = null)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-        _rules = rules?.ToList() ?? throw new ArgumentNullException(nameof(rules));
-        _warnings = warnings?.ToList() ?? throw new ArgumentNullException(nameof(warnings));
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(rules);
+        ArgumentNullException.ThrowIfNull(warnings);
+        ArgumentNullException.ThrowIfNull(errorContextAnalyzer);
+        ArgumentNullException.ThrowIfNull(metricsCollector);
+        ArgumentNullException.ThrowIfNull(registry);
+        ArgumentNullException.ThrowIfNull(llmClient);
+        ArgumentNullException.ThrowIfNull(supportedActions);
+
+        _logger = logger;
+        _options = options.Value;
+        _rules = rules.ToList();
+        _warnings = warnings.ToList();
         _globalCts = new CancellationTokenSource();
-        _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
-        _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-        _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-        _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
-        _supportedActions = supportedActions ?? throw new ArgumentNullException(nameof(supportedActions));
+        _errorContextAnalyzer = errorContextAnalyzer;
+        _metricsCollector = metricsCollector;
+        _registry = registry;
+        _llmClient = llmClient;
+        _supportedActions = supportedActions.ToDictionary(action => action, action => (IRemediationActionValidator)null);
         _validationErrorEventId = validationErrorEventId ?? new EventId(1, nameof(ValidateRemediationAsync));
     }
 
@@ -143,7 +153,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             return new ValidationResult
             {
                 IsValid = false,
-                ValidationMessage = $"Error validating plan: {ex.Message}",
+                Messages = new List<string> { $"Error validating plan: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
@@ -194,7 +204,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             return new ValidationResult
             {
                 IsValid = false,
-                ValidationMessage = $"Error validating strategy: {ex.Message}",
+                Messages = new List<string> { $"Error validating strategy: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
@@ -259,7 +269,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             return new ValidationResult
             {
                 IsValid = false,
-                ValidationMessage = $"Error validating action: {ex.Message}",
+                Messages = new List<string> { $"Error validating action: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
@@ -305,7 +315,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             return new ValidationResult
             {
                 IsValid = false,
-                ValidationMessage = $"Error validating step: {ex.Message}",
+                Messages = new List<string> { $"Error validating step: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
@@ -335,7 +345,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             if (string.IsNullOrEmpty(analysisResult.AnalysisId))
             {
                 result.IsValid = false;
-                result.ValidationMessage = "Analysis ID is required";
+                result.Messages.Add("Analysis ID is required");
                 result.Details = new Dictionary<string, object>
                 {
                     ["code"] = "InvalidAnalysisId",
@@ -347,7 +357,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             if (analysisResult.ErrorContext == null)
             {
                 result.IsValid = false;
-                result.ValidationMessage = "Error context is required";
+                result.Messages.Add("Error context is required");
                 result.Details = new Dictionary<string, object>
                 {
                     ["code"] = "MissingErrorContext",
@@ -365,12 +375,12 @@ public class RemediationValidator : IRemediationValidator, IDisposable
                     if (!strategyResult.IsValid)
                     {
                         result.IsValid = false;
-                        result.ValidationMessage = $"Invalid strategy: {strategyResult.ValidationMessage}";
+                        result.Messages.Add($"Invalid strategy: {strategyResult.Messages.FirstOrDefault() ?? "Validation failed"}");
                         result.Details = strategyResult.Details;
                         result.Errors.Add(new ValidationError 
                         { 
                             ErrorId = Guid.NewGuid().ToString(),
-                            Message = strategyResult.ValidationMessage,
+                            Message = strategyResult.Messages.FirstOrDefault() ?? "Validation failed",
                             Severity = ValidationSeverity.Error,
                             Code = "InvalidStrategy",
                             Timestamp = DateTime.UtcNow
@@ -398,11 +408,11 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating remediation");
+            _logger.LogError(ex, "Error validating remediation {ErrorId}", context.ErrorId);
             return new ValidationResult
             {
                 IsValid = false,
-                ValidationMessage = $"Error validating remediation: {ex.Message}",
+                Messages = new List<string> { $"Error validating remediation: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
@@ -551,5 +561,66 @@ public class RemediationValidator : IRemediationValidator, IDisposable
     {
         // Implement mitigation steps generation logic
         return new List<string>();
+    }
+
+    private void AddValidationWarning(ValidationResult result, string message, SeverityLevel severity)
+    {
+        result.AddWarning(message, severity.ToValidationSeverity());
+    }
+
+    private void AddValidationError(ValidationResult result, string message, SeverityLevel severity)
+    {
+        result.AddError(message, severity.ToValidationSeverity());
+    }
+
+    private ValidationResult ValidateAction(RemediationAction action)
+    {
+        var result = new ValidationResult();
+
+        // Check risk level
+        var riskLevel = RiskAssessmentHelper.CalculateRiskLevel(action.Severity.ToSeverityLevel(), action.ImpactScope);
+        if (riskLevel == RemediationRiskLevel.Critical)
+        {
+            AddValidationWarning(result, $"Action has {riskLevel} risk level", SeverityLevel.High);
+        }
+
+        // Check for potential issues
+        foreach (var issue in action.PotentialIssues)
+        {
+            AddValidationWarning(result, $"Potential issue: {issue}", SeverityLevel.Medium);
+        }
+
+        return result;
+    }
+
+    private ValidationResult ValidateSuggestion(RemediationSuggestion suggestion)
+    {
+        var result = new ValidationResult();
+
+        // Validate each action
+        foreach (var action in suggestion.Actions)
+        {
+            var actionResult = ValidateAction(action);
+            result.Merge(actionResult);
+        }
+
+        return result;
+    }
+
+    private ValidationResult ValidateImpact(RemediationImpact impact)
+    {
+        var result = new ValidationResult();
+
+        if (impact.Severity.ToSeverityLevel() == SeverityLevel.Critical)
+        {
+            AddValidationError(result, "Critical impact requires additional review", SeverityLevel.Critical);
+        }
+
+        if (impact.AffectedComponents?.Count > 5)
+        {
+            AddValidationWarning(result, "High number of affected components", SeverityLevel.High);
+        }
+
+        return result;
     }
 }

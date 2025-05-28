@@ -5,59 +5,34 @@ using RuntimeErrorSage.Core.Models.Enums;
 namespace RuntimeErrorSage.Core.Models.Error
 {
     /// <summary>
-    /// Represents a runtime error that occurs in the system.
+    /// Represents a runtime error in the system.
     /// </summary>
     public class RuntimeError
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the error.
+        /// Gets or sets the unique identifier for this error.
         /// </summary>
-        public string ErrorId { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// Gets or sets the error message.
-        /// </summary>
-        public string Message { get; set; } = string.Empty;
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the error type.
         /// </summary>
-        public string ErrorType { get; set; } = string.Empty;
+        public string Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the error code.
+        /// Gets or sets the error message.
         /// </summary>
-        public string ErrorCode { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the stack trace.
-        /// </summary>
-        public string StackTrace { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the inner exception message.
-        /// </summary>
-        public string InnerExceptionMessage { get; set; } = string.Empty;
+        public string Message { get; set; }
 
         /// <summary>
         /// Gets or sets the source of the error.
         /// </summary>
-        public string Source { get; set; } = string.Empty;
+        public string Source { get; set; }
 
         /// <summary>
-        /// Gets or sets the component ID.
+        /// Gets or sets the stack trace.
         /// </summary>
-        public string ComponentId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the component name.
-        /// </summary>
-        public string ComponentName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the severity of the error.
-        /// </summary>
-        public SeverityLevel Severity { get; set; } = SeverityLevel.Medium;
+        public string StackTrace { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp when the error occurred.
@@ -65,46 +40,63 @@ namespace RuntimeErrorSage.Core.Models.Error
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the correlation ID.
+        /// Gets or sets additional metadata.
         /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
+        public Dictionary<string, string> Metadata { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the additional context.
+        /// Initializes a new instance of the <see cref="RuntimeError"/> class.
         /// </summary>
-        public Dictionary<string, object> AdditionalContext { get; set; } = new Dictionary<string, object>();
+        public RuntimeError()
+        {
+        }
 
         /// <summary>
-        /// Gets or sets whether the error has been resolved.
+        /// Initializes a new instance of the <see cref="RuntimeError"/> class.
         /// </summary>
-        public bool IsResolved { get; set; } = false;
+        /// <param name="type">The error type.</param>
+        /// <param name="message">The error message.</param>
+        /// <param name="source">The error source.</param>
+        /// <param name="stackTrace">The stack trace.</param>
+        /// <param name="metadata">Additional metadata.</param>
+        public RuntimeError(
+            string type,
+            string message,
+            string source,
+            string stackTrace = null,
+            Dictionary<string, string> metadata = null)
+        {
+            ArgumentNullException.ThrowIfNull(type);
+            ArgumentNullException.ThrowIfNull(message);
+            ArgumentNullException.ThrowIfNull(source);
+
+            Type = type;
+            Message = message;
+            Source = source;
+            StackTrace = stackTrace;
+            if (metadata != null)
+            {
+                Metadata = metadata;
+            }
+        }
 
         /// <summary>
-        /// Gets or sets the resolution description.
-        /// </summary>
-        public string ResolutionDescription { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Creates a new RuntimeError from an exception.
+        /// Creates a runtime error from an exception.
         /// </summary>
         /// <param name="exception">The exception.</param>
-        /// <returns>The runtime error.</returns>
-        public static RuntimeError FromException(Exception exception)
+        /// <param name="source">The error source.</param>
+        /// <returns>A new runtime error.</returns>
+        public static RuntimeError FromException(Exception exception, string source)
         {
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
+            ArgumentNullException.ThrowIfNull(exception);
+            if (string.IsNullOrEmpty(source))
+                throw new ArgumentException("Source cannot be null or empty", nameof(source));
 
-            return new RuntimeError
-            {
-                Message = exception.Message,
-                ErrorType = exception.GetType().Name,
-                StackTrace = exception.StackTrace ?? string.Empty,
-                InnerExceptionMessage = exception.InnerException?.Message ?? string.Empty,
-                Source = exception.Source ?? string.Empty,
-                Timestamp = DateTime.UtcNow
-            };
+            return new RuntimeError(
+                type: exception.GetType().Name,
+                message: exception.Message,
+                source: source,
+                stackTrace: exception.StackTrace);
         }
     }
 } 

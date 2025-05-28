@@ -30,3 +30,4 @@ public enum ValidationImpact
     /// </summary>
     None
 } 
+

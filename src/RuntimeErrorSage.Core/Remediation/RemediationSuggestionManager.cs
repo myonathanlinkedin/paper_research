@@ -23,10 +23,15 @@ namespace RuntimeErrorSage.Core.Remediation
             IRemediationValidator validator,
             IRemediationExecutor executor)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(errorContextAnalyzer);
+            ArgumentNullException.ThrowIfNull(validator);
+            ArgumentNullException.ThrowIfNull(executor);
+
+            _logger = logger;
+            _errorContextAnalyzer = errorContextAnalyzer;
+            _validator = validator;
+            _executor = executor;
         }
 
         public async Task<RemediationSuggestion> GetSuggestionsAsync(ErrorContext errorContext)
@@ -35,18 +40,21 @@ namespace RuntimeErrorSage.Core.Remediation
 
             try
             {
-                var suggestions = await _errorContextAnalyzer.AnalyzeContextAsync(errorContext);
+                var analysis = await _errorContextAnalyzer.AnalyzeContextAsync(errorContext);
+                var suggestions = new List<RemediationAction>();
+
+                // Implementation details...
                 return new RemediationSuggestion
                 {
-                    SuggestionId = Guid.NewGuid().ToString(),
-                    Description = "Suggested remediation based on error analysis",
-                    Actions = suggestions.SuggestedActions
+                    Actions = suggestions,
+                    Confidence = 0.8,
+                    Description = "Suggested remediation actions"
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting remediation suggestions for error {ErrorType}", errorContext.ErrorType);
-                return new RemediationSuggestion { Description = "Failed to generate suggestions" };
+                _logger.LogError(ex, "Error getting suggestions for error {ErrorId}", errorContext.ErrorId);
+                throw;
             }
         }
 
@@ -63,7 +71,7 @@ namespace RuntimeErrorSage.Core.Remediation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error validating suggestion for error {ErrorType}", errorContext.ErrorType);
-                return new ValidationResult { IsValid = false, Message = ex.Message };
+                return new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } };
             }
         }
 

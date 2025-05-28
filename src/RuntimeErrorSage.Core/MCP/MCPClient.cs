@@ -428,3 +428,4 @@ public class MCPClient : IMCPClient, IDisposable
         return allPatterns.FindAll(p => p.ServiceName == serviceName);
     }
 } 
+

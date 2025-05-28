@@ -19,7 +19,8 @@ public class ImpactAnalyzer : IImpactAnalyzer
 
     public ImpactAnalyzer(ILogger<ImpactAnalyzer> logger)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(logger);
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -160,15 +161,15 @@ public class ImpactAnalyzer : IImpactAnalyzer
         }
     }
 
-    private ImpactSeverity CalculateSeverity(int blastRadius, GraphNodeType nodeType)
+    private SeverityLevel CalculateSeverity(int blastRadius, GraphNodeType nodeType)
     {
-        if (blastRadius > 10)
-            return ImpactSeverity.Critical;
-        if (blastRadius > 5)
-            return ImpactSeverity.High;
-        if (blastRadius > 2)
-            return ImpactSeverity.Medium;
-        return ImpactSeverity.Low;
+        if (blastRadius > 10 || nodeType == GraphNodeType.Critical)
+            return SeverityLevel.Critical;
+        if (blastRadius > 5 || nodeType == GraphNodeType.High)
+            return SeverityLevel.High;
+        if (blastRadius > 2 || nodeType == GraphNodeType.Medium)
+            return SeverityLevel.Medium;
+        return SeverityLevel.Low;
     }
 
     private ImpactScope CalculateScope(int blastRadius)

@@ -204,3 +204,4 @@ public static class BenchmarkRunner
         Console.WriteLine(stressSummary);
     }
 } 
+

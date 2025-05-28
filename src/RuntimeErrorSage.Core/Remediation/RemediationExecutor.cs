@@ -10,15 +10,13 @@ using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Utilities;
-using IRemediationStrategy = RuntimeErrorSage.Core.Models.Remediation.Interfaces.IRemediationStrategy;
-using IRemediationValidator = RuntimeErrorSage.Core.Remediation.Interfaces.IRemediationValidator;
-using RiskAssessment = RuntimeErrorSage.Core.Models.Remediation.RiskAssessment;
+using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Core.Models.Common;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using RuntimeErrorSage.Core.Analysis;
-using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
@@ -35,7 +33,7 @@ public class RemediationExecutor : IRemediationExecutor
     private readonly IRemediationStrategyRegistry _registry;
     private readonly ILLMClient _llmClient;
     private readonly Dictionary<string, EventId> _eventIds;
-    private readonly IRemediationRiskAssessment _riskAssessment;
+    private readonly RuntimeErrorSage.Core.Remediation.Interfaces.IRemediationRiskAssessment _riskAssessment;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RemediationExecutor"/> class.
@@ -48,17 +46,26 @@ public class RemediationExecutor : IRemediationExecutor
         IRemediationMetricsCollector metricsCollector,
         ILLMClient llmClient,
         IRemediationStrategyRegistry strategyRegistry,
-        IRemediationRiskAssessment riskAssessment,
+        RuntimeErrorSage.Core.Remediation.Interfaces.IRemediationRiskAssessment riskAssessment,
         Dictionary<string, EventId>? eventIds = null)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
-        _registry = strategyRegistry ?? throw new ArgumentNullException(nameof(strategyRegistry));
-        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-        _tracker = tracker ?? throw new ArgumentNullException(nameof(tracker));
-        _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-        _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
-        _riskAssessment = riskAssessment ?? throw new ArgumentNullException(nameof(riskAssessment));
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(errorContextAnalyzer);
+        ArgumentNullException.ThrowIfNull(validator);
+        ArgumentNullException.ThrowIfNull(tracker);
+        ArgumentNullException.ThrowIfNull(metricsCollector);
+        ArgumentNullException.ThrowIfNull(llmClient);
+        ArgumentNullException.ThrowIfNull(strategyRegistry);
+        ArgumentNullException.ThrowIfNull(riskAssessment);
+
+        _logger = logger;
+        _errorContextAnalyzer = errorContextAnalyzer;
+        _validator = validator;
+        _tracker = tracker;
+        _metricsCollector = metricsCollector;
+        _llmClient = llmClient;
+        _registry = strategyRegistry;
+        _riskAssessment = riskAssessment;
         _eventIds = eventIds ?? new Dictionary<string, EventId>
         {
             { nameof(ExecuteStrategyAsync), new EventId(1, nameof(ExecuteStrategyAsync)) },
@@ -86,7 +93,7 @@ public class RemediationExecutor : IRemediationExecutor
     }
 
     /// <inheritdoc/>
-    public async Task<RemediationResult> ExecuteStrategyAsync(Models.Remediation.Interfaces.IRemediationStrategy strategy, ErrorContext context)
+    public async Task<RemediationResult> ExecuteStrategyAsync(IRemediationStrategy strategy, ErrorContext context)
     {
         ArgumentNullException.ThrowIfNull(strategy);
         ArgumentNullException.ThrowIfNull(context);
@@ -160,7 +167,7 @@ public class RemediationExecutor : IRemediationExecutor
             {
                 var strategyResult = await ExecuteStrategyAsync(strategy, plan.Context);
                 
-                if (strategyResult.Status != RemediationStatusEnum.Completed)
+                if (strategyResult.Status != RemediationStatusEnum.Success)
                 {
                     result.Status = RemediationStatusEnum.Failed;
                     result.Message = $"Strategy {strategy.Name} failed: {strategyResult.Message}";
@@ -172,7 +179,7 @@ public class RemediationExecutor : IRemediationExecutor
 
             if (result.Status == RemediationStatusEnum.InProgress)
             {
-                result.Status = RemediationStatusEnum.Completed;
+                result.Status = RemediationStatusEnum.Success;
                 result.Message = "Plan executed successfully";
             }
 
@@ -219,7 +226,7 @@ public class RemediationExecutor : IRemediationExecutor
             await Task.Delay(100); // Placeholder for actual rollback logic
 
             rollbackResult.EndTime = DateTime.UtcNow;
-            rollbackResult.Status = RemediationStatusEnum.Completed;
+            rollbackResult.Status = RemediationStatusEnum.Success;
             rollbackResult.Message = "Rollback completed successfully";
 
             return rollbackResult;
@@ -452,7 +459,7 @@ public class RemediationExecutor : IRemediationExecutor
             var validationResult = await ValidateActionAsync(action, context);
             if (!validationResult.IsValid)
             {
-                action.Status = RemediationStatus.Failed;
+                action.Status = RemediationStatusEnum.Failed;
                 action.ErrorMessage = "Validation failed: " + string.Join(", ", validationResult.Messages);
                 action.EndTime = DateTime.UtcNow;
                 await _tracker.TrackActionAsync(action);
@@ -465,12 +472,12 @@ public class RemediationExecutor : IRemediationExecutor
                 // Actual execution logic would go here
                 await Task.Delay(100); // Placeholder
                 
-                action.Status = RemediationStatus.Success;
+                action.Status = RemediationStatusEnum.Success;
                 action.EndTime = DateTime.UtcNow;
             }
             catch (Exception ex)
             {
-                action.Status = RemediationStatus.Failed;
+                action.Status = RemediationStatusEnum.Failed;
                 action.ErrorMessage = ex.Message;
                 action.EndTime = DateTime.UtcNow;
             }
@@ -484,7 +491,7 @@ public class RemediationExecutor : IRemediationExecutor
         {
             _logger.LogError(ex, "Error executing action {ActionId}", action.ActionId);
             
-            action.Status = RemediationStatus.Failed;
+            action.Status = RemediationStatusEnum.Failed;
             action.ErrorMessage = $"Action execution failed: {ex.Message}";
             action.EndTime = DateTime.UtcNow;
             
@@ -545,9 +552,10 @@ public class RemediationExecutor : IRemediationExecutor
             
             var impact = new RemediationImpact
             {
-                Severity = ImpactSeverity.Low,
-                Description = $"Impact assessment for {action.Name}",
-                AffectedComponents = new List<string>()
+                Severity = SeverityLevel.Low.ToImpactSeverity(),
+                Scope = ImpactScope.Component,
+                AffectedComponents = new List<string>(),
+                EstimatedRecoveryTime = TimeSpan.FromMinutes(5)
             };
             
             // Impact assessment logic would go here based on action type
@@ -560,8 +568,10 @@ public class RemediationExecutor : IRemediationExecutor
             
             return new RemediationImpact
             {
-                Severity = ImpactSeverity.Unknown,
-                Description = $"Error in impact assessment: {ex.Message}"
+                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+                Scope = ImpactScope.Component,
+                AffectedComponents = new List<string>(),
+                EstimatedRecoveryTime = TimeSpan.Zero
             };
         }
     }
@@ -634,10 +644,33 @@ public class RemediationExecutor : IRemediationExecutor
         {
             PlanId = Guid.NewGuid().ToString(),
             Context = context,
-            Strategies = strategies.Cast<Models.Remediation.Interfaces.IRemediationStrategy>().ToList(),
+            Strategies = strategies.Cast<IRemediationStrategy>().ToList(),
             CreatedAt = DateTime.UtcNow,
             Analysis = analysis,
-            Status = RemediationStatusEnum.Pending
+            Status = RemediationStatusEnum.NotStarted
+        };
+    }
+
+    private RemediationImpact CreateDefaultImpact()
+    {
+        return new RemediationImpact
+        {
+            Severity = SeverityLevel.Low.ToImpactSeverity(),
+            Scope = ImpactScope.Component,
+            AffectedComponents = new List<string>(),
+            EstimatedRecoveryTime = TimeSpan.FromMinutes(5)
+        };
+    }
+
+    private RemediationImpact CreateUnknownImpact()
+    {
+        return new RemediationImpact
+        {
+            Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+            Scope = ImpactScope.Component,
+            AffectedComponents = new List<string>(),
+            EstimatedRecoveryTime = TimeSpan.Zero
         };
     }
 } 
+

@@ -14,3 +14,4 @@ namespace RuntimeErrorSage.Core.Health.Exceptions
         }
     }
 } 
+

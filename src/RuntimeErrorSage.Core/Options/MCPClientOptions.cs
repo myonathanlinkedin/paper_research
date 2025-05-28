@@ -28,3 +28,4 @@ namespace RuntimeErrorSage.Core.Options
         public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
     }
 } 
+

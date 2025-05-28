@@ -11,57 +11,42 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// <summary>
         /// Gets or sets the CPU usage percentage.
         /// </summary>
-        public double CpuUsagePercent { get; set; }
+        public double CpuUsage { get; set; }
 
         /// <summary>
         /// Gets or sets the memory usage in bytes.
         /// </summary>
-        public double MemoryUsageBytes { get; set; }
+        public long MemoryUsage { get; set; }
 
         /// <summary>
         /// Gets or sets the disk usage in bytes.
         /// </summary>
-        public double DiskUsage { get; set; }
+        public long DiskUsage { get; set; }
 
         /// <summary>
         /// Gets or sets the network usage in bytes.
         /// </summary>
-        public double NetworkUsage { get; set; }
+        public long NetworkUsage { get; set; }
 
         /// <summary>
-        /// Gets or sets the disk I/O operations per second.
+        /// Gets or sets the number of threads.
         /// </summary>
-        public double DiskIOPS { get; set; }
+        public int ThreadCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the network bandwidth usage in megabytes per second.
+        /// Gets or sets the number of handles.
         /// </summary>
-        public double NetworkBandwidthMBps { get; set; }
+        public int HandleCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of active threads.
+        /// Gets or sets the timestamp of the measurement.
         /// </summary>
-        public int ActiveThreads { get; set; }
+        public DateTime Timestamp { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of active connections.
+        /// Gets or sets additional metadata.
         /// </summary>
-        public int ActiveConnections { get; set; }
-
-        /// <summary>
-        /// Gets or sets the garbage collection time in milliseconds.
-        /// </summary>
-        public double GCTimeMs { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timestamp when these metrics were recorded.
-        /// </summary>
-        public DateTime RecordedAt { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets additional resource metrics.
-        /// </summary>
-        public Dictionary<string, double> AdditionalMetrics { get; set; } = new();
+        public Dictionary<string, string> Metadata { get; set; } = new();
 
         /// <summary>
         /// Creates a new instance of ResourceUsage with the current system metrics.
@@ -70,71 +55,51 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         {
             return new ResourceUsage
             {
-                CpuUsagePercent = GetCpuUsagePercent(),
-                MemoryUsageBytes = GetMemoryUsageBytes(),
+                CpuUsage = GetCpuUsage(),
+                MemoryUsage = GetMemoryUsage(),
                 DiskUsage = GetDiskUsage(),
                 NetworkUsage = GetNetworkUsage(),
-                DiskIOPS = GetDiskIOPS(),
-                NetworkBandwidthMBps = GetNetworkBandwidthMBps(),
-                ActiveThreads = GetActiveThreads(),
-                ActiveConnections = GetActiveConnections(),
-                GCTimeMs = GetGCTimeMs(),
-                RecordedAt = DateTime.UtcNow
+                ThreadCount = GetThreadCount(),
+                HandleCount = GetHandleCount(),
+                Timestamp = DateTime.UtcNow
             };
         }
 
-        private static double GetCpuUsagePercent()
+        private static double GetCpuUsage()
         {
             // TODO: Implement actual CPU usage measurement
             return 0;
         }
 
-        private static double GetMemoryUsageBytes()
+        private static long GetMemoryUsage()
         {
             // TODO: Implement actual memory usage measurement
             return 0;
         }
 
-        private static double GetDiskUsage()
+        private static long GetDiskUsage()
         {
             // TODO: Implement actual disk usage measurement
             return 0;
         }
 
-        private static double GetNetworkUsage()
+        private static long GetNetworkUsage()
         {
             // TODO: Implement actual network usage measurement
             return 0;
         }
 
-        private static double GetDiskIOPS()
-        {
-            // TODO: Implement actual disk I/O operations measurement
-            return 0;
-        }
-
-        private static double GetNetworkBandwidthMBps()
-        {
-            // TODO: Implement actual network bandwidth measurement
-            return 0;
-        }
-
-        private static int GetActiveThreads()
+        private static int GetThreadCount()
         {
             // TODO: Implement actual thread count measurement
             return 0;
         }
 
-        private static int GetActiveConnections()
+        private static int GetHandleCount()
         {
-            // TODO: Implement actual connection count measurement
-            return 0;
-        }
-
-        private static double GetGCTimeMs()
-        {
-            // TODO: Implement actual garbage collection time measurement
+            // TODO: Implement actual handle count measurement
             return 0;
         }
     }
 } 
+

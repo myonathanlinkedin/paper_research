@@ -67,6 +67,36 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the list of remediation actions.
+        /// </summary>
+        public List<RemediationAction> Actions { get; set; } = new List<RemediationAction>();
+
+        /// <summary>
+        /// Gets or sets the error context.
+        /// </summary>
+        public ErrorContext ErrorContext { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status of the suggestion.
+        /// </summary>
+        public SuggestionStatus Status { get; set; } = SuggestionStatus.Pending;
+
+        /// <summary>
+        /// Gets or sets the list of strategies.
+        /// </summary>
+        public List<string> Strategies { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Gets or sets the confidence score.
+        /// </summary>
+        public double ConfidenceScore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        public string Message { get; set; } = string.Empty;
+
+        /// <summary>
         /// Creates a suggestion from a strategy.
         /// </summary>
         /// <param name="strategy">The strategy.</param>

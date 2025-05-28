@@ -1,3 +1,4 @@
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,6 @@ using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Analysis.Interfaces;
 using RuntimeErrorSage.Core.Services.Interfaces;
 using AnalysisErrorRelationshipAnalyzer = RuntimeErrorSage.Core.Analysis.Interfaces.IErrorRelationshipAnalyzer;
-using ServicesErrorRelationshipAnalyzer = RuntimeErrorSage.Core.Services.Interfaces.IErrorRelationshipAnalyzer;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -32,6 +32,7 @@ namespace RuntimeErrorSage.Core.Remediation
         private readonly IErrorClassifier _errorClassifier;
         private readonly AnalysisErrorRelationshipAnalyzer _relationshipAnalyzer;
         private RemediationActionSeverity _severity;
+        private readonly Dictionary<string, IRemediationAction> _actions;
 
         public bool IsEnabled => true;
 
@@ -46,11 +47,18 @@ namespace RuntimeErrorSage.Core.Remediation
             IErrorClassifier errorClassifier,
             AnalysisErrorRelationshipAnalyzer relationshipAnalyzer)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
-            _contextAnalyzer = contextAnalyzer ?? throw new ArgumentNullException(nameof(contextAnalyzer));
-            _errorClassifier = errorClassifier ?? throw new ArgumentNullException(nameof(errorClassifier));
-            _relationshipAnalyzer = relationshipAnalyzer ?? throw new ArgumentNullException(nameof(relationshipAnalyzer));
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(llmClient);
+            ArgumentNullException.ThrowIfNull(contextAnalyzer);
+            ArgumentNullException.ThrowIfNull(errorClassifier);
+            ArgumentNullException.ThrowIfNull(relationshipAnalyzer);
+
+            _logger = logger;
+            _llmClient = llmClient;
+            _contextAnalyzer = contextAnalyzer;
+            _errorClassifier = errorClassifier;
+            _relationshipAnalyzer = relationshipAnalyzer;
+            _actions = new Dictionary<string, IRemediationAction>();
         }
 
         /// <inheritdoc />
@@ -115,7 +123,11 @@ namespace RuntimeErrorSage.Core.Remediation
 
                 // Validate action
                 result.IsValid = await ValidateActionInternalAsync(suggestion);
-                result.ValidationMessage = result.IsValid ? "Action is valid" : "Action validation failed";
+                if (result.IsValid) {
+                    result.Messages.Add("Action is valid");
+                } else {
+                    result.Messages.Add("Action validation failed");
+                }
 
                 // Add validation details
                 result.Details = new Dictionary<string, object>
@@ -308,7 +320,8 @@ namespace RuntimeErrorSage.Core.Remediation
                 Scope = CalculateImpactScope(suggestion),
                 Severity = CalculateImpactSeverity(suggestion),
                 Description = $"Impact of {suggestion.Title}",
-                AffectedComponents = GetAffectedComponents(suggestion, context)
+                AffectedComponents = GetAffectedComponents(suggestion, context),
+                EstimatedRecoveryTime = TimeSpan.FromMinutes(5) // Default value
             };
         }
 
@@ -367,7 +380,7 @@ namespace RuntimeErrorSage.Core.Remediation
             return Math.Min(1.0, dependencyCount * 0.2);
         }
 
-        private RemediationActionImpactScope CalculateImpactScope(RemediationSuggestion suggestion)
+        private ImpactScope CalculateImpactScope(RemediationSuggestion suggestion)
         {
             // Determine impact scope based on actions
             var scopes = suggestion.Actions?.Select(a => a.ImpactScope) ?? Enumerable.Empty<RemediationActionImpactScope>();
@@ -479,3 +492,5 @@ namespace RuntimeErrorSage.Core.Remediation
         }
     }
 } 
+
+

@@ -410,3 +410,4 @@ namespace RuntimeErrorSage.Tests.TestSuite
         public double FalseNegativeRate { get; set; }
     }
 } 
+

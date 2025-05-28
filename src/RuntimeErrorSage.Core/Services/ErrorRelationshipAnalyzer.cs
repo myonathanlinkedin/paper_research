@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
-using RuntimeErrorSage.Core.Services.Interfaces;
 using RelatedErrorModel = RuntimeErrorSage.Core.Models.Error.RelatedError;
 
 namespace RuntimeErrorSage.Core.Services;
@@ -23,8 +23,11 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         ILogger<ErrorRelationshipAnalyzer> logger,
         ErrorRelationshipAnalysis analysis)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _analysis = analysis ?? throw new ArgumentNullException(nameof(analysis));
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(analysis);
+
+        _logger = logger;
+        _analysis = analysis;
     }
 
     /// <inheritdoc />
@@ -380,5 +383,39 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
 
         await Task.CompletedTask;
         return errors;
+    }
+
+    public bool IsEnabled => true;
+    public string Name => "DefaultErrorRelationshipAnalyzer";
+    public string Version => "1.0.0";
+
+    public double AnalyzeRelationship(RuntimeError sourceError, RuntimeError targetError)
+    {
+        // Dummy implementation for interface compliance
+        return 0.5;
+    }
+
+    public async Task<List<RelatedErrorModel>> FindRelatedErrorsAsync(ErrorContext context)
+    {
+        // Dummy implementation for interface compliance
+        return new List<RelatedErrorModel>();
+    }
+
+    public async Task<List<RelatedErrorModel>> GetRelatedErrorsAsync(RuntimeError error)
+    {
+        var context = new ErrorContext(error, "Error context", DateTime.UtcNow);
+        return await FindRelatedErrorsAsync(context);
+    }
+
+    public async Task<List<ErrorRelationship>> AnalyzeRelationshipsAsync(List<RuntimeError> errors)
+    {
+        // Dummy implementation for interface compliance
+        return new List<ErrorRelationship>();
+    }
+
+    public async Task<double> CalculateRelationshipStrengthAsync(RuntimeError source, RuntimeError target)
+    {
+        // Dummy implementation for interface compliance
+        return 0.5;
     }
 } 

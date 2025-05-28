@@ -16,3 +16,4 @@ namespace RuntimeErrorSage.Core.Context.Interfaces
         Task HandleContextUpdateAsync(ErrorContext context, ErrorAnalysisResult analysis);
     }
 } 
+

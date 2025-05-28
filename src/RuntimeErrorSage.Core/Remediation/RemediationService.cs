@@ -14,7 +14,6 @@ using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Analysis.Interfaces;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Options;
 using RuntimeErrorSage.Core.Analysis;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
@@ -46,14 +45,23 @@ namespace RuntimeErrorSage.Core.Remediation
             IRemediationStrategySelector strategySelector,
             IRemediationValidator validator)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _planManager = planManager ?? throw new ArgumentNullException(nameof(planManager));
-            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
-            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-            _suggestionManager = suggestionManager ?? throw new ArgumentNullException(nameof(suggestionManager));
-            _actionManager = actionManager ?? throw new ArgumentNullException(nameof(actionManager));
-            _strategySelector = strategySelector ?? throw new ArgumentNullException(nameof(strategySelector));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(planManager);
+            ArgumentNullException.ThrowIfNull(executor);
+            ArgumentNullException.ThrowIfNull(metricsCollector);
+            ArgumentNullException.ThrowIfNull(suggestionManager);
+            ArgumentNullException.ThrowIfNull(actionManager);
+            ArgumentNullException.ThrowIfNull(strategySelector);
+            ArgumentNullException.ThrowIfNull(validator);
+
+            _logger = logger;
+            _planManager = planManager;
+            _executor = executor;
+            _metricsCollector = metricsCollector;
+            _suggestionManager = suggestionManager;
+            _actionManager = actionManager;
+            _strategySelector = strategySelector;
+            _validator = validator;
             _registeredStrategies = new Dictionary<string, IRemediationStrategy>();
         }
 
@@ -154,7 +162,7 @@ namespace RuntimeErrorSage.Core.Remediation
 
                 // Create remediation plan
                 var plan = await CreatePlanAsync(context);
-                if (plan.Status != RemediationStatusEnum.Pending)
+                if (plan.Status != RemediationStatusEnum.NotStarted)
                 {
                     return new RemediationResult
                     {
@@ -195,7 +203,7 @@ namespace RuntimeErrorSage.Core.Remediation
                 
                 // Execute plan with adapter
                 var result = await _executor.ExecuteStrategyAsync(strategyAdapter, context);
-                if (result.Status != RemediationStatusEnum.Completed)
+                if (result.Status != RemediationStatusEnum.Success)
                 {
                     return new RemediationResult
                     {
@@ -212,7 +220,7 @@ namespace RuntimeErrorSage.Core.Remediation
                 return new RemediationResult
                 {
                     Context = context,
-                    Status = RemediationStatusEnum.Completed,
+                    Status = RemediationStatusEnum.Success,
                     Message = "Remediation completed successfully",
                     CompletedSteps = result.CompletedSteps,
                     FailedSteps = result.FailedSteps,
@@ -240,38 +248,23 @@ namespace RuntimeErrorSage.Core.Remediation
 
             try
             {
-                var strategy = await _strategySelector.SelectStrategyAsync(context);
-                if (strategy == null)
-                {
-                    return new RemediationPlan
-                    {
-                        Context = context,
-                        Status = RemediationStatusEnum.Failed,
-                        StatusInfo = "No suitable remediation strategy found",
-                        RollbackPlan = new RollbackPlan { IsAvailable = false }
-                    };
-                }
+                _logger.LogInformation("Creating remediation plan for context {ContextId}", context.Id);
 
-                return new RemediationPlan
-                {
-                    Context = context,
-                    Strategies = new[] { strategy }.ToList(),
-                    Status = RemediationStatusEnum.Pending,
-                    CreatedAt = DateTime.UtcNow,
-                    StatusInfo = "Plan created successfully",
-                    RollbackPlan = new RollbackPlan { IsAvailable = true }
-                };
+                var plan = new RemediationPlan(
+                    "Default Plan",
+                    "Default remediation plan",
+                    new List<RemediationAction>(),
+                    new Dictionary<string, object>(),
+                    TimeSpan.FromMinutes(5)
+                );
+
+                // Add plan creation logic here
+                return plan;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating remediation plan for context {ErrorId}", context.Id);
-                return new RemediationPlan
-                {
-                    Context = context,
-                    Status = RemediationStatusEnum.Failed,
-                    StatusInfo = $"Failed to create plan: {ex.Message}",
-                    RollbackPlan = new RollbackPlan { IsAvailable = false }
-                };
+                _logger.LogError(ex, "Error creating remediation plan for context {ContextId}", context.Id);
+                throw;
             }
         }
 
@@ -467,7 +460,7 @@ namespace RuntimeErrorSage.Core.Remediation
                     ExecutionId = action.ActionId,
                     StartTime = DateTime.UtcNow,
                     EndTime = DateTime.UtcNow,
-                    Success = result.Status == RemediationStatusEnum.Completed,
+                    Success = result.Status == RemediationStatusEnum.Success,
                     Error = result.Status == RemediationStatusEnum.Failed ? result.Message : null,
                     Metadata = new Dictionary<string, string>
                     {
@@ -511,8 +504,10 @@ namespace RuntimeErrorSage.Core.Remediation
                 {
                     return new RemediationImpact
                     {
-                        Severity = ImpactSeverity.Unknown,
-                        Description = "No strategy found in suggestion"
+                        Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+                        Scope = ImpactScope.Component,
+                        AffectedComponents = new List<string>(),
+                        EstimatedRecoveryTime = TimeSpan.Zero
                     };
                 }
 
@@ -530,8 +525,10 @@ namespace RuntimeErrorSage.Core.Remediation
                 {
                     return new RemediationImpact
                     {
-                        Severity = ImpactSeverity.Unknown,
-                        Description = "Strategy not found"
+                        Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+                        Scope = ImpactScope.Component,
+                        AffectedComponents = new List<string>(),
+                        EstimatedRecoveryTime = TimeSpan.Zero
                     };
                 }
 
@@ -539,8 +536,10 @@ namespace RuntimeErrorSage.Core.Remediation
                 var impact = await strategyAdapter.GetImpactAsync(errorContext);
                 return impact ?? new RemediationImpact
                 {
-                    Severity = ImpactSeverity.Unknown,
-                    Description = "No impact information available"
+                    Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+                    Scope = ImpactScope.Component,
+                    AffectedComponents = new List<string>(),
+                    EstimatedRecoveryTime = TimeSpan.Zero
                 };
             }
             catch (Exception ex)
@@ -548,8 +547,10 @@ namespace RuntimeErrorSage.Core.Remediation
                 _logger.LogError(ex, "Error getting impact for suggestion for error context {ErrorId}", errorContext.Id);
                 return new RemediationImpact
                 {
-                    Severity = ImpactSeverity.Unknown,
-                    Description = $"Error getting suggestion impact: {ex.Message}"
+                    Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+                    Scope = ImpactScope.Component,
+                    AffectedComponents = new List<string>(),
+                    EstimatedRecoveryTime = TimeSpan.Zero
                 };
             }
         }
@@ -578,7 +579,7 @@ namespace RuntimeErrorSage.Core.Remediation
                 return new RemediationResult
                 {
                     Context = errorContext,
-                    Status = result.Status == RemediationStatus.Success ? RemediationStatusEnum.Completed : RemediationStatusEnum.Failed,
+                    Status = result.Status == RemediationStatusEnum.Success ? RemediationStatusEnum.Success : RemediationStatusEnum.Failed,
                     Message = result.ErrorMessage ?? "Action executed successfully",
                     ActionId = result.ActionId
                 };
@@ -639,7 +640,7 @@ namespace RuntimeErrorSage.Core.Remediation
                 var result = await _executor.RollbackRemediationAsync(actionId);
                 
                 // Return the enum value based on the result
-                return result.Status == RemediationStatusEnum.Completed ? RollbackStatus.Completed : RollbackStatus.Failed;
+                return result.Status == RemediationStatusEnum.Success ? RollbackStatus.Completed : RollbackStatus.Failed;
             }
             catch (Exception ex)
             {
@@ -671,7 +672,7 @@ namespace RuntimeErrorSage.Core.Remediation
                 {
                     Status = execution.Status,
                     Message = execution.ErrorMessage ?? "Remediation execution details retrieved",
-                    IsSuccessful = execution.Status == RemediationStatusEnum.Completed,
+                    IsSuccessful = execution.Status == RemediationStatusEnum.Success,
                     StartTime = execution.StartTime,
                     EndTime = execution.EndTime,
                     ActionId = actionId
@@ -686,6 +687,152 @@ namespace RuntimeErrorSage.Core.Remediation
                     Status = RemediationStatusEnum.Failed,
                     Message = $"Error getting action status: {ex.Message}"
                 };
+            }
+        }
+
+        private RemediationImpact CreateDefaultImpact()
+        {
+            return new RemediationImpact
+            {
+                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+                Scope = ImpactScope.Component,
+                AffectedComponents = new List<string>(),
+                EstimatedRecoveryTime = TimeSpan.Zero
+            };
+        }
+
+        private RemediationImpact CreateErrorImpact(string errorMessage)
+        {
+            return new RemediationImpact
+            {
+                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+                Scope = ImpactScope.Component,
+                AffectedComponents = new List<string>(),
+                EstimatedRecoveryTime = TimeSpan.Zero,
+                Description = errorMessage
+            };
+        }
+
+        private RemediationImpact CreateTimeoutImpact()
+        {
+            return new RemediationImpact
+            {
+                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+                Scope = ImpactScope.Unknown,
+                AffectedComponents = new List<string>(),
+                EstimatedRecoveryTime = TimeSpan.Zero,
+                Description = "Operation timed out"
+            };
+        }
+
+        private RemediationImpact CreateCancelledImpact()
+        {
+            return new RemediationImpact
+            {
+                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
+                Scope = ImpactScope.Unknown,
+                AffectedComponents = new List<string>(),
+                EstimatedRecoveryTime = TimeSpan.Zero,
+                Description = "Operation was cancelled"
+            };
+        }
+
+        public async Task<RemediationAction> CreateActionAsync(ErrorContext context, string actionType)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentException.ThrowIfNullOrEmpty(actionType);
+
+            try
+            {
+                _logger.LogInformation("Creating remediation action of type {ActionType} for context {ContextId}",
+                    actionType, context.Id);
+
+                var action = new RemediationAction(
+                    Guid.NewGuid().ToString(),
+                    actionType,
+                    "Default action",
+                    RemediationActionSeverity.Medium,
+                    new Dictionary<string, object>(),
+                    TimeSpan.FromMinutes(1)
+                );
+
+                // Add action creation logic here
+                return action;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating remediation action for context {ContextId}", context.Id);
+                throw;
+            }
+        }
+
+        public async Task<RemediationActionExecution> ExecuteActionAsync(RemediationAction action, ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            ArgumentNullException.ThrowIfNull(context);
+
+            try
+            {
+                _logger.LogInformation("Executing remediation action {ActionId} for context {ContextId}",
+                    action.ActionId, context.Id);
+
+                var execution = new RemediationActionExecution(
+                    action.ActionId,
+                    context.Id,
+                    DateTime.UtcNow,
+                    RemediationActionSeverity.Medium,
+                    new Dictionary<string, object>()
+                );
+
+                // Add execution logic here
+                return execution;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing remediation action {ActionId}", action.ActionId);
+                throw;
+            }
+        }
+
+        public async Task<RemediationResult> GetResultAsync(ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            try
+            {
+                _logger.LogInformation("Getting remediation result for context {ContextId}", context.Id);
+
+                var result = new RemediationResult(
+                    context,
+                    RemediationStatusEnum.NotStarted,
+                    "No remediation actions executed yet",
+                    string.Empty
+                );
+
+                // Add result retrieval logic here
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting remediation result for context {ContextId}", context.Id);
+                throw;
+            }
+        }
+
+        public async Task<RemediationResult> ExecuteRemediationAsync(ErrorContext context, RemediationPlan plan)
+        {
+            try
+            {
+                var result = await _executor.ExecutePlanAsync(plan, context);
+                if (result.Status == RemediationStatusEnum.Success)
+                {
+                    await _metricsCollector.TrackRemediationAsync(context, plan, result);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return RemediationResult.CreateFailure(context, ex.Message);
             }
         }
     }

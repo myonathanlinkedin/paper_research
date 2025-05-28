@@ -46,9 +46,9 @@ public class ValidationRegistryTests
 
         var validationResult = new ValidationResult
         {
-            IsSuccessful = true,
-            Message = "Context validation successful",
-            Details = new Dictionary<string, object>
+            IsValid = true,
+            Messages = new List<string> { "Context validation successful" },
+            Metadata = new Dictionary<string, object>
             {
                 { "ValidationTime", 100 },
                 { "ContextSize", 1024 },
@@ -66,9 +66,9 @@ public class ValidationRegistryTests
         result.Should().NotBeNull();
         result.IsAnalyzed.Should().BeTrue();
         result.ValidationResult.Should().NotBeNull();
-        result.ValidationResult.IsSuccessful.Should().BeTrue();
-        result.ValidationResult.Message.Should().Be("Context validation successful");
-        result.ValidationResult.Details.Should().HaveCount(3);
+        result.ValidationResult.IsValid.Should().BeTrue();
+        result.ValidationResult.Messages.Should().Contain("Context validation successful");
+        result.ValidationResult.Metadata.Should().HaveCount(3);
 
         _validationRegistryMock.Verify(x => x.ValidateContextAsync(It.IsAny<ErrorContext>()), Times.Once);
     }
@@ -88,9 +88,9 @@ public class ValidationRegistryTests
 
         var validationResult = new ValidationResult
         {
-            IsSuccessful = false,
-            Message = "Context validation failed: Missing required fields",
-            Details = new Dictionary<string, object>
+            IsValid = false,
+            Messages = new List<string> { "Context validation failed: Missing required fields" },
+            Metadata = new Dictionary<string, object>
             {
                 { "MissingFields", new[] { "Timestamp", "Source" } },
                 { "ValidationTime", 100 },
@@ -108,8 +108,8 @@ public class ValidationRegistryTests
         result.Should().NotBeNull();
         result.IsAnalyzed.Should().BeFalse();
         result.ValidationResult.Should().NotBeNull();
-        result.ValidationResult.IsSuccessful.Should().BeFalse();
-        result.ValidationResult.Message.Should().Be("Context validation failed: Missing required fields");
+        result.ValidationResult.IsValid.Should().BeFalse();
+        result.ValidationResult.Messages.Should().Contain("Context validation failed: Missing required fields");
         result.RemediationPlan.Strategies.Should().Contain(s => 
             s.Name == "ContextValidationFix" || 
             s.Name == "RetryWithValidContext");
@@ -196,9 +196,9 @@ public class ValidationRegistryTests
 
         var validationResult = new ValidationResult
         {
-            IsSuccessful = false,
-            Message = "Custom validation rule violation: Password policy not met",
-            Details = new Dictionary<string, object>
+            IsValid = false,
+            Messages = new List<string> { "Custom validation rule violation: Password policy not met" },
+            Metadata = new Dictionary<string, object>
             {
                 { "Rule", "PasswordPolicy" },
                 { "Violations", new[] { "Password too short", "Missing special character" } },
@@ -217,8 +217,8 @@ public class ValidationRegistryTests
         result.Should().NotBeNull();
         result.IsAnalyzed.Should().BeFalse();
         result.ValidationResult.Should().NotBeNull();
-        result.ValidationResult.IsSuccessful.Should().BeFalse();
-        result.ValidationResult.Message.Should().Be("Custom validation rule violation: Password policy not met");
+        result.ValidationResult.IsValid.Should().BeFalse();
+        result.ValidationResult.Messages.Should().Contain("Custom validation rule violation: Password policy not met");
         result.RemediationPlan.Strategies.Should().Contain(s => 
             s.Name == "FixPasswordPolicy" || 
             s.Name == "RetryWithValidPassword");
@@ -242,9 +242,9 @@ public class ValidationRegistryTests
 
         var validationResult = new ValidationResult
         {
-            IsSuccessful = true,
-            Message = "Using cached validation result",
-            Details = new Dictionary<string, object>
+            IsValid = true,
+            Messages = new List<string> { "Using cached validation result" },
+            Metadata = new Dictionary<string, object>
             {
                 { "CacheKey", "ctx-123456" },
                 { "CacheTimestamp", DateTime.UtcNow.AddMinutes(-5) },
@@ -263,9 +263,9 @@ public class ValidationRegistryTests
         result.Should().NotBeNull();
         result.IsAnalyzed.Should().BeTrue();
         result.ValidationResult.Should().NotBeNull();
-        result.ValidationResult.IsSuccessful.Should().BeTrue();
-        result.ValidationResult.Message.Should().Be("Using cached validation result");
-        result.ValidationResult.Details["IsFromCache"].Should().Be(true);
+        result.ValidationResult.IsValid.Should().BeTrue();
+        result.ValidationResult.Messages.Should().Contain("Using cached validation result");
+        result.ValidationResult.Metadata["IsFromCache"].Should().Be(true);
 
         _validationRegistryMock.Verify(x => x.ValidateContextAsync(It.IsAny<ErrorContext>()), Times.Once);
     }

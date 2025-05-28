@@ -40,7 +40,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets the severity of the plan.
         /// </summary>
-        public RemediationActionSeverity Severity { get; set; }
+        public RemediationActionSeverity Severity { get; set; } = RemediationActionSeverity.Medium;
 
         /// <summary>
         /// Gets or sets the estimated duration of the plan.
@@ -187,11 +187,17 @@ namespace RuntimeErrorSage.Core.Models.Remediation
             Dictionary<string, object> parameters,
             TimeSpan estimatedDuration)
         {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-            Description = description ?? throw new ArgumentNullException(nameof(description));
-            Actions = actions ?? throw new ArgumentNullException(nameof(actions));
+            ArgumentNullException.ThrowIfNull(name);
+            ArgumentNullException.ThrowIfNull(description);
+            ArgumentNullException.ThrowIfNull(actions);
+
+            Name = name;
+            Description = description;
+            Actions = actions;
             Parameters = parameters ?? new Dictionary<string, object>();
             EstimatedDuration = estimatedDuration;
+            Status = RemediationStatusEnum.NotStarted;
+            CreatedAt = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -200,9 +206,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <param name="action">The action to add.</param>
         public void AddAction(RemediationAction action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
+            ArgumentNullException.ThrowIfNull(action);
             Actions.Add(action);
         }
 

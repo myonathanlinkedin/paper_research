@@ -23,10 +23,15 @@ namespace RuntimeErrorSage.Core.Remediation
             IRemediationRegistry registry,
             IRemediationValidator validator)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
-            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(errorContextAnalyzer);
+            ArgumentNullException.ThrowIfNull(registry);
+            ArgumentNullException.ThrowIfNull(validator);
+
+            _logger = logger;
+            _errorContextAnalyzer = errorContextAnalyzer;
+            _registry = registry;
+            _validator = validator;
         }
 
         public async Task<RemediationPlan> CreatePlanAsync(ErrorContext context)
@@ -99,7 +104,7 @@ namespace RuntimeErrorSage.Core.Remediation
             try
             {
                 // Update plan status based on build success
-                var status = isSuccessful ? RemediationStatusEnum.Completed : RemediationStatusEnum.Failed;
+                var status = isSuccessful ? RemediationStatusEnum.Success : RemediationStatusEnum.Failed;
                 
                 // Create new status info
                 var statusInfo = new RemediationStatusInfo

@@ -21,3 +21,4 @@ public class ResourceRequest
     [System.ComponentModel.DataAnnotations.Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]
     public int? Priority { get; set; }
 } 
+

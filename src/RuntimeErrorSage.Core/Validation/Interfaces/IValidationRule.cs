@@ -25,9 +25,9 @@ public interface IValidationRule
     string Description { get; }
 
     /// <summary>
-    /// Gets the severity level of the rule.
+    /// Gets the severity level of the validation rule.
     /// </summary>
-    ValidationSeverity Severity { get; }
+    SeverityLevel Severity { get; }
 
     /// <summary>
     /// Gets whether the rule is enabled.

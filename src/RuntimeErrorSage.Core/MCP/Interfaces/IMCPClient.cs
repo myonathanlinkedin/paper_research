@@ -99,3 +99,4 @@ namespace RuntimeErrorSage.Core.MCP.Interfaces
         Task<List<ErrorPattern>> GetErrorPatternsAsync(string serviceName);
     }
 } 
+

@@ -94,7 +94,7 @@ public static class TestHelper
             ErrorMessage = errorMessage,
             StartTime = now,
             EndTime = now.AddSeconds(1),
-            Status = isSuccessful ? RemediationStatusEnum.Completed : RemediationStatusEnum.Failed
+            Status = isSuccessful ? RemediationStatusEnum.Success : RemediationStatusEnum.Failed
         };
     }
 
@@ -103,14 +103,18 @@ public static class TestHelper
         string? message = null,
         Dictionary<string, object>? details = null)
     {
-        return new ValidationResult
+        var result = new ValidationResult
         {
-            IsSuccessful = isSuccessful,
-            Message = message,
-            Details = details ?? new Dictionary<string, object>(),
-            Timestamp = DateTime.UtcNow,
-            DurationMs = 100,
-            IsFromCache = false
+            IsValid = isSuccessful,
+            Metadata = details ?? new Dictionary<string, object>(),
+            Timestamp = DateTime.UtcNow
         };
+        
+        if (!string.IsNullOrEmpty(message))
+        {
+            result.Messages.Add(message);
+        }
+        
+        return result;
     }
 } 

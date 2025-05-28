@@ -28,3 +28,4 @@ namespace RuntimeErrorSage.Core.Models
         public ErrorHandlingMetrics ManualDebugging { get; set; } = new();
     }
 } 
+

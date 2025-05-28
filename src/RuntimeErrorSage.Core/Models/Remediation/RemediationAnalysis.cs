@@ -36,7 +36,7 @@ public class RemediationAnalysis
     /// <summary>
     /// Gets or sets the analysis severity.
     /// </summary>
-    public RemediationActionSeverity Severity { get; set; }
+    public RemediationActionSeverity Severity { get; set; } = RemediationActionSeverity.Medium;
 
     /// <summary>
     /// Gets or sets the analysis priority.

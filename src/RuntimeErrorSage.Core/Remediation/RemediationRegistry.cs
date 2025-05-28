@@ -183,27 +183,27 @@ namespace RuntimeErrorSage.Core.Remediation
         }
 
         /// <inheritdoc />
-        public async Task<IRemediationStrategy> GetStrategyAsync(string strategyName)
+        public async Task<IRemediationStrategy> GetStrategyAsync(string id)
         {
-            if (string.IsNullOrEmpty(strategyName))
+            if (string.IsNullOrEmpty(id))
             {
-                throw new ArgumentException("Strategy name cannot be null or empty", nameof(strategyName));
+                throw new ArgumentException("Strategy id cannot be null or empty", nameof(id));
             }
 
             try
             {
-                if (_strategies.TryGetValue(strategyName, out var strategy))
+                if (_strategies.TryGetValue(id, out var strategy))
                 {
-                    _logger.LogDebug("Retrieved strategy '{StrategyName}'", strategyName);
+                    _logger.LogDebug("Retrieved strategy '{StrategyId}'", id);
                     return strategy;
                 }
 
-                _logger.LogWarning("Strategy '{StrategyName}' not found", strategyName);
-                throw new KeyNotFoundException($"Strategy '{strategyName}' is not registered");
+                _logger.LogWarning("Strategy '{StrategyId}' not found", id);
+                throw new KeyNotFoundException($"Strategy '{id}' is not registered");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving strategy {StrategyName}", strategyName);
+                _logger.LogError(ex, "Error retrieving strategy {StrategyId}", id);
                 throw;
             }
         }

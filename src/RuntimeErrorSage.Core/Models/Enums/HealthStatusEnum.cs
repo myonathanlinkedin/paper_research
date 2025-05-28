@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
@@ -29,4 +31,43 @@ public enum HealthStatusEnum
     /// The component's health status is unknown.
     /// </summary>
     Unknown = 4
+}
+
+/// <summary>
+/// Extension methods for HealthStatusEnum.
+/// </summary>
+public static class HealthStatusEnumExtensions
+{
+    /// <summary>
+    /// Converts a HealthStatusEnum to Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.
+    /// </summary>
+    /// <param name="status">The health status enum.</param>
+    /// <returns>The corresponding Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.</returns>
+    public static HealthStatus ToHealthStatus(this HealthStatusEnum status)
+    {
+        return status switch
+        {
+            HealthStatusEnum.Healthy => HealthStatus.Healthy,
+            HealthStatusEnum.Degraded => HealthStatus.Degraded,
+            HealthStatusEnum.Unhealthy => HealthStatus.Unhealthy,
+            HealthStatusEnum.Critical => HealthStatus.Unhealthy,
+            _ => HealthStatus.Unhealthy
+        };
+    }
+
+    /// <summary>
+    /// Converts a Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus to HealthStatusEnum.
+    /// </summary>
+    /// <param name="status">The health status.</param>
+    /// <returns>The corresponding HealthStatusEnum.</returns>
+    public static HealthStatusEnum ToHealthStatusEnum(this HealthStatus status)
+    {
+        return status switch
+        {
+            HealthStatus.Healthy => HealthStatusEnum.Healthy,
+            HealthStatus.Degraded => HealthStatusEnum.Degraded,
+            HealthStatus.Unhealthy => HealthStatusEnum.Unhealthy,
+            _ => HealthStatusEnum.Unknown
+        };
+    }
 } 

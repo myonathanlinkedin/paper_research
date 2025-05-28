@@ -13,9 +13,9 @@ namespace RuntimeErrorSage.Core.Validation.Interfaces
         string Message { get; }
 
         /// <summary>
-        /// Gets the warning severity
+        /// Gets the severity level of the warning.
         /// </summary>
-        ValidationSeverity Severity { get; }
+        SeverityLevel Severity { get; }
 
         /// <summary>
         /// Gets the warning code

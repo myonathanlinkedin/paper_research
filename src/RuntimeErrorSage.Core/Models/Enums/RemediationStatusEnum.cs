@@ -1,47 +1,67 @@
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Defines the status of a remediation operation.
+/// Defines the status of a remediation action or plan.
 /// </summary>
 public enum RemediationStatusEnum
 {
     /// <summary>
-    /// The remediation status is unknown.
+    /// Status is unknown.
     /// </summary>
     Unknown = 0,
     
     /// <summary>
-    /// The remediation is pending execution.
+    /// Remediation has not started.
     /// </summary>
-    Pending = 1,
+    NotStarted = 1,
     
     /// <summary>
-    /// The remediation is currently in progress.
+    /// Remediation is in progress.
     /// </summary>
     InProgress = 2,
     
     /// <summary>
-    /// The remediation completed successfully.
+    /// Remediation completed successfully.
     /// </summary>
-    Completed = 3,
+    Success = 3,
     
     /// <summary>
-    /// The remediation failed.
+    /// Remediation failed.
     /// </summary>
     Failed = 4,
     
     /// <summary>
-    /// The remediation was canceled.
+    /// Remediation was cancelled.
     /// </summary>
-    Canceled = 5,
+    Cancelled = 5,
     
     /// <summary>
-    /// The remediation was partially completed.
+    /// Remediation completed with partial success.
     /// </summary>
-    PartiallyCompleted = 6,
+    Partial = 6,
     
     /// <summary>
-    /// The remediation was rolled back.
+    /// Remediation is waiting for dependencies.
     /// </summary>
-    RolledBack = 7
+    Waiting = 7,
+    
+    /// <summary>
+    /// Remediation is blocked.
+    /// </summary>
+    Blocked = 8,
+    
+    /// <summary>
+    /// Remediation is paused.
+    /// </summary>
+    Paused = 9,
+    
+    /// <summary>
+    /// Remediation timed out.
+    /// </summary>
+    Timeout = 10,
+    
+    /// <summary>
+    /// Remediation validation failed.
+    /// </summary>
+    ValidationFailed = 11
 } 

@@ -53,8 +53,11 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <param name="plan">The remediation plan.</param>
         public RemediationContext(ErrorAnalysisResult analysisResult, RemediationPlan plan)
         {
-            AnalysisResult = analysisResult ?? throw new ArgumentNullException(nameof(analysisResult));
-            Plan = plan ?? throw new ArgumentNullException(nameof(plan));
+            ArgumentNullException.ThrowIfNull(analysisResult);
+            ArgumentNullException.ThrowIfNull(plan);
+
+            AnalysisResult = analysisResult;
+            Plan = plan;
             History = new List<RemediationResult>();
             ContextData = new Dictionary<string, object>();
             State = RemediationState.NotStarted;
@@ -66,8 +69,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <param name="result">The remediation result.</param>
         public void UpdateContext(RemediationResult result)
         {
-            if (result == null)
-                throw new ArgumentNullException(nameof(result));
+            ArgumentNullException.ThrowIfNull(result);
 
             History.Add(result);
             State = result.IsSuccessful ? RemediationState.Completed : RemediationState.Failed;
@@ -89,7 +91,9 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <param name="action">The remediation action.</param>
         public void SetCurrentAction(IRemediationAction action)
         {
-            CurrentAction = action ?? throw new ArgumentNullException(nameof(action));
+            ArgumentNullException.ThrowIfNull(action);
+            
+            CurrentAction = action;
             State = RemediationState.InProgress;
         }
     }

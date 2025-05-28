@@ -1,57 +1,67 @@
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Defines the status of a remediation execution operation.
+/// Defines the execution status of a remediation action.
 /// </summary>
 public enum RemediationExecutionStatus
 {
     /// <summary>
-    /// The execution has not started yet.
+    /// Execution status is unknown.
     /// </summary>
-    NotStarted = 0,
-
+    Unknown = 0,
+    
     /// <summary>
-    /// The execution is in progress.
+    /// Execution has not started.
     /// </summary>
-    InProgress = 1,
-
+    NotStarted = 1,
+    
     /// <summary>
-    /// The execution has completed successfully.
+    /// Execution is in progress.
     /// </summary>
-    Completed = 2,
-
+    Running = 2,
+    
     /// <summary>
-    /// The execution has failed.
+    /// Execution completed successfully.
     /// </summary>
-    Failed = 3,
-
+    Success = 3,
+    
     /// <summary>
-    /// The execution has been cancelled.
+    /// Execution failed.
     /// </summary>
-    Cancelled = 4,
-
+    Failed = 4,
+    
     /// <summary>
-    /// The execution is waiting for approval.
+    /// Execution was cancelled.
     /// </summary>
-    WaitingForApproval = 5,
-
+    Cancelled = 5,
+    
     /// <summary>
-    /// The execution is being rolled back.
+    /// Execution completed with partial success.
     /// </summary>
-    RollingBack = 6,
-
+    Partial = 6,
+    
     /// <summary>
-    /// The execution has been rolled back successfully.
+    /// Execution is waiting for dependencies.
     /// </summary>
-    RolledBack = 7,
-
+    Waiting = 7,
+    
     /// <summary>
-    /// The execution has been partially completed.
+    /// Execution is blocked.
     /// </summary>
-    PartiallyCompleted = 8,
-
+    Blocked = 8,
+    
     /// <summary>
-    /// The execution has timed out.
+    /// Execution is paused.
     /// </summary>
-    TimedOut = 9
+    Paused = 9,
+    
+    /// <summary>
+    /// Execution timed out.
+    /// </summary>
+    Timeout = 10,
+    
+    /// <summary>
+    /// Execution validation failed.
+    /// </summary>
+    ValidationFailed = 11
 } 

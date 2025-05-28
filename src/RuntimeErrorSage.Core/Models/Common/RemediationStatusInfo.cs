@@ -17,7 +17,7 @@ namespace RuntimeErrorSage.Core.Models.Common
         /// <summary>
         /// Gets the Completed status constant.
         /// </summary>
-        public static readonly RemediationStatusEnum Completed = RemediationStatusEnum.Completed;
+        public static readonly RemediationStatusEnum Completed = RemediationStatusEnum.Success;
 
         /// <summary>
         /// Gets the Failed status constant.

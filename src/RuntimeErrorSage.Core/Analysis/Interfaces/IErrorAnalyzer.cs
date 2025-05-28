@@ -13,7 +13,7 @@ public interface IErrorAnalyzer
     /// </summary>
     /// <param name="error">The error.</param>
     /// <returns>The analysis.</returns>
-    Task<ErrorAnalysis> AnalyzeAsync(Error error);
+    Task<ErrorAnalysis> AnalyzeAsync(RuntimeError error);
 
     /// <summary>
     /// Analyzes an error context.

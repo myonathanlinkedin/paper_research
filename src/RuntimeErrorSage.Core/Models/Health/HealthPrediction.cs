@@ -64,3 +64,4 @@ public class HealthPrediction
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
 } 
+

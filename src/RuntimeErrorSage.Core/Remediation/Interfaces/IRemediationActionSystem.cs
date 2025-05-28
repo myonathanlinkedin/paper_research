@@ -1,3 +1,4 @@
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
@@ -65,3 +66,5 @@ namespace RuntimeErrorSage.Core.Interfaces
         Task<RiskAssessment> GetSuggestionRiskAsync(RemediationSuggestion suggestion, ErrorContext context);
     }
 } 
+
+

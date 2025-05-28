@@ -67,19 +67,33 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
         IErrorAnalyzer errorAnalyzer,
         RuntimeErrorSage.Core.Analysis.Interfaces.IDependencyGraphAnalyzer graphAnalyzer)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _errorAnalysisService = errorAnalysisService ?? throw new ArgumentNullException(nameof(errorAnalysisService));
-        _remediationService = remediationService ?? throw new ArgumentNullException(nameof(remediationService));
-        _contextEnrichmentService = contextEnrichmentService ?? throw new ArgumentNullException(nameof(contextEnrichmentService));
-        _validationRegistry = validationRegistry ?? throw new ArgumentNullException(nameof(validationRegistry));
-        _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
-        _remediationAnalyzer = remediationAnalyzer ?? throw new ArgumentNullException(nameof(remediationAnalyzer));
-        _remediationValidator = remediationValidator ?? throw new ArgumentNullException(nameof(remediationValidator));
-        _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-        _mcp = mcp ?? throw new ArgumentNullException(nameof(mcp));
-        _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
-        _errorAnalyzer = errorAnalyzer ?? throw new ArgumentNullException(nameof(errorAnalyzer));
-        _graphAnalyzer = graphAnalyzer ?? throw new ArgumentNullException(nameof(graphAnalyzer));
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(errorAnalysisService);
+        ArgumentNullException.ThrowIfNull(remediationService);
+        ArgumentNullException.ThrowIfNull(contextEnrichmentService);
+        ArgumentNullException.ThrowIfNull(validationRegistry);
+        ArgumentNullException.ThrowIfNull(errorContextAnalyzer);
+        ArgumentNullException.ThrowIfNull(remediationAnalyzer);
+        ArgumentNullException.ThrowIfNull(remediationValidator);
+        ArgumentNullException.ThrowIfNull(metricsCollector);
+        ArgumentNullException.ThrowIfNull(mcp);
+        ArgumentNullException.ThrowIfNull(llmClient);
+        ArgumentNullException.ThrowIfNull(errorAnalyzer);
+        ArgumentNullException.ThrowIfNull(graphAnalyzer);
+
+        _logger = logger;
+        _errorAnalysisService = errorAnalysisService;
+        _remediationService = remediationService;
+        _contextEnrichmentService = contextEnrichmentService;
+        _validationRegistry = validationRegistry;
+        _errorContextAnalyzer = errorContextAnalyzer;
+        _remediationAnalyzer = remediationAnalyzer;
+        _remediationValidator = remediationValidator;
+        _metricsCollector = metricsCollector;
+        _mcp = mcp;
+        _llmClient = llmClient;
+        _errorAnalyzer = errorAnalyzer;
+        _graphAnalyzer = graphAnalyzer;
         _analysisCache = new Dictionary<string, ErrorAnalysisResult>();
         _remediationCache = new Dictionary<string, RemediationResult>();
     }

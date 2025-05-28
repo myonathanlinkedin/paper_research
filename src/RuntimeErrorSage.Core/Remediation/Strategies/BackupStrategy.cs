@@ -174,5 +174,17 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 StrategyName = Name
             });
         }
+
+        private RemediationAction CreateBackupAction(string name, string description)
+        {
+            return new RemediationAction
+            {
+                Name = name,
+                Description = description,
+                Type = RemediationActionType.Backup,
+                Severity = SeverityLevel.Low.ToRemediationActionSeverity(),
+                Status = RemediationActionStatus.Pending
+            };
+        }
     }
 } 

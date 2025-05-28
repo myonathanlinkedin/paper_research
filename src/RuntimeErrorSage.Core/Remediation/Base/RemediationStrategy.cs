@@ -122,7 +122,7 @@ public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemed
 
             result.EndTime = DateTime.UtcNow;
             result.Success = result.Actions.All(a => a.IsSuccessful);
-            result.Status = result.Success ? RemediationStatusEnum.Completed : RemediationStatusEnum.Failed;
+            result.Status = result.Success ? RemediationStatusEnum.Success : RemediationStatusEnum.Failed;
 
             return result;
         }
@@ -255,5 +255,17 @@ public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemed
     {
         // Default implementation returns a medium priority
         return Task.FromResult(RemediationPriority.Medium);
+    }
+
+    protected RemediationAction CreateAction(string name, string description, RemediationActionType type)
+    {
+        return new RemediationAction
+        {
+            Name = name,
+            Description = description,
+            Type = type,
+            Severity = SeverityLevel.Medium.ToRemediationActionSeverity(),
+            Status = RemediationActionStatus.Pending
+        };
     }
 } 

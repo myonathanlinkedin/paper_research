@@ -28,3 +28,4 @@ namespace RuntimeErrorSage.Core.Health
         public List<string> CustomHealthChecks { get; set; } = new();
     }
 } 
+

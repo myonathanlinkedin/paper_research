@@ -20,18 +20,23 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     private readonly ILogger<GraphAnalyzer> _logger;
     private readonly IGraphBuilder _graphBuilder;
     private readonly IImpactAnalyzer _impactAnalyzer;
-    private readonly RuntimeErrorSage.Core.Services.Interfaces.IErrorRelationshipAnalyzer _relationshipAnalyzer;
+    private readonly IErrorRelationshipAnalyzer _relationshipAnalyzer;
 
     public GraphAnalyzer(
         ILogger<GraphAnalyzer> logger,
         IGraphBuilder graphBuilder,
         IImpactAnalyzer impactAnalyzer,
-        RuntimeErrorSage.Core.Services.Interfaces.IErrorRelationshipAnalyzer relationshipAnalyzer)
+        IErrorRelationshipAnalyzer relationshipAnalyzer)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _graphBuilder = graphBuilder ?? throw new ArgumentNullException(nameof(graphBuilder));
-        _impactAnalyzer = impactAnalyzer ?? throw new ArgumentNullException(nameof(impactAnalyzer));
-        _relationshipAnalyzer = relationshipAnalyzer ?? throw new ArgumentNullException(nameof(relationshipAnalyzer));
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(graphBuilder);
+        ArgumentNullException.ThrowIfNull(impactAnalyzer);
+        ArgumentNullException.ThrowIfNull(relationshipAnalyzer);
+
+        _logger = logger;
+        _graphBuilder = graphBuilder;
+        _impactAnalyzer = impactAnalyzer;
+        _relationshipAnalyzer = relationshipAnalyzer;
     }
 
     /// <inheritdoc />
@@ -154,5 +159,116 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     {
         // ... existing code ...
         return new List<RelatedError>(); // Placeholder return, actual implementation needed
+    }
+
+    /// <inheritdoc />
+    public Dictionary<string, object> AnalyzeDependencies(DependencyGraph dependencyGraph)
+    {
+        ArgumentNullException.ThrowIfNull(dependencyGraph);
+
+        try
+        {
+            _logger.LogInformation("Analyzing dependencies in graph");
+            var result = new Dictionary<string, object>();
+            
+            // Analyze dependencies and store results
+            foreach (var node in dependencyGraph.Nodes)
+            {
+                var nodeAnalysis = new Dictionary<string, object>
+                {
+                    ["Dependencies"] = node.Dependencies,
+                    ["Dependents"] = node.Dependents,
+                    ["ImpactScore"] = CalculateImpactScore(dependencyGraph, node)
+                };
+                
+                result[node.Id] = nodeAnalysis;
+            }
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error analyzing dependencies");
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public List<GraphNode> IdentifyAffectedComponents(DependencyGraph dependencyGraph, string sourceComponentId)
+    {
+        ArgumentNullException.ThrowIfNull(dependencyGraph);
+        ArgumentNullException.ThrowIfNull(sourceComponentId);
+
+        try
+        {
+            _logger.LogInformation("Identifying affected components from source {SourceId}", sourceComponentId);
+            var affectedNodes = new List<GraphNode>();
+            
+            // Find the source node
+            var sourceNode = dependencyGraph.Nodes.FirstOrDefault(n => n.Id == sourceComponentId);
+            if (sourceNode == null)
+            {
+                _logger.LogWarning("Source component {SourceId} not found in graph", sourceComponentId);
+                return affectedNodes;
+            }
+            
+            // Use breadth-first search to find all affected nodes
+            var visited = new HashSet<string>();
+            var queue = new Queue<GraphNode>();
+            queue.Enqueue(sourceNode);
+            
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+                if (visited.Contains(current.Id))
+                    continue;
+                    
+                visited.Add(current.Id);
+                affectedNodes.Add(current);
+                
+                // Add all dependent nodes to the queue
+                foreach (var dependent in current.Dependents)
+                {
+                    var dependentNode = dependencyGraph.Nodes.FirstOrDefault(n => n.Id == dependent);
+                    if (dependentNode != null && !visited.Contains(dependentNode.Id))
+                    {
+                        queue.Enqueue(dependentNode);
+                    }
+                }
+            }
+            
+            return affectedNodes;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error identifying affected components from source {SourceId}", sourceComponentId);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public double CalculateImpactScore(DependencyGraph dependencyGraph, string componentId)
+    {
+        ArgumentNullException.ThrowIfNull(dependencyGraph);
+        ArgumentNullException.ThrowIfNull(componentId);
+
+        try
+        {
+            _logger.LogInformation("Calculating impact score for component {ComponentId}", componentId);
+            
+            var node = dependencyGraph.Nodes.FirstOrDefault(n => n.Id == componentId);
+            if (node == null)
+            {
+                _logger.LogWarning("Component {ComponentId} not found in graph", componentId);
+                return 0.0;
+            }
+            
+            return CalculateImpactScore(dependencyGraph, node);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error calculating impact score for component {ComponentId}", componentId);
+            throw;
+        }
     }
 } 

@@ -201,20 +201,20 @@ public class RedisPatternStorage : IPatternStorage
         }
     }
 
-    public async Task<Dictionary<string, string>> GetPatternsAsync(string category)
+    public async Task<Dictionary<string, string>> GetPatternsAsync(string pattern)
     {
         try
         {
             var db = _redis.GetDatabase();
-            var keys = await db.SetMembersAsync($"{_keyPrefix}category:{category}");
+            var keys = await db.SetMembersAsync($"{_keyPrefix}category:{pattern}");
             var result = new Dictionary<string, string>();
 
             foreach (var key in keys)
             {
-                var pattern = await GetPatternAsync(key.ToString());
-                if (!string.IsNullOrEmpty(pattern))
+                var patternValue = await GetPatternAsync(key.ToString());
+                if (!string.IsNullOrEmpty(patternValue))
                 {
-                    result.Add(key.ToString(), pattern);
+                    result.Add(key.ToString(), patternValue);
                 }
             }
 
@@ -222,8 +222,8 @@ public class RedisPatternStorage : IPatternStorage
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting patterns for category {Category}", category);
-            throw new PatternStorageException($"Failed to get patterns for category {category}", ex);
+            _logger.LogError(ex, "Error getting patterns for category {Pattern}", pattern);
+            throw new PatternStorageException($"Failed to get patterns for category {pattern}", ex);
         }
     }
 
@@ -305,3 +305,4 @@ public class RedisPatternStorage : IPatternStorage
         }
     }
 }
+

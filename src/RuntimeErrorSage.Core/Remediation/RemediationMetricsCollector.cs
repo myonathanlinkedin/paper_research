@@ -65,12 +65,18 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         Func<List<Models.Remediation.MetricValue>>? metricValueListFactory = null,
         Func<List<ValidationWarning>>? validationWarningListFactory = null)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(errorContextAnalyzer);
+        ArgumentNullException.ThrowIfNull(registry);
+        ArgumentNullException.ThrowIfNull(llmClient);
+
+        _logger = logger;
+        _options = options.Value;
         _currentProcess = Process.GetCurrentProcess();
-        _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
-        _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-        _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+        _errorContextAnalyzer = errorContextAnalyzer;
+        _registry = registry;
+        _llmClient = llmClient;
         _metricsHistory = metricsHistory ?? new ConcurrentDictionary<string, List<RemediationMetrics>>();
         _stepMetricsHistory = stepMetricsHistory ?? new ConcurrentDictionary<string, List<StepMetrics>>();
         _remediationResults = remediationResults ?? new ConcurrentDictionary<string, RemediationResult>();
@@ -768,4 +774,20 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             throw;
         }
     }
+
+    private void AddValidationMetric(ValidationResult result, string message, SeverityLevel severity)
+    {
+        result.AddWarning(message, severity.ToValidationSeverity());
+    }
+
+    private void AddErrorMetric(ValidationResult result, string message, SeverityLevel severity)
+    {
+        result.AddError(message, severity.ToValidationSeverity());
+    }
+
+    private void AddWarningMetric(ValidationResult result, string message, SeverityLevel severity)
+    {
+        result.AddWarning(message, severity.ToValidationSeverity());
+    }
 } 
+

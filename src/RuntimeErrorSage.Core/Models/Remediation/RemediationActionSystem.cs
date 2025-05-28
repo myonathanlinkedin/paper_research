@@ -1,9 +1,12 @@
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Remediation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Utilities;
+using System.Threading.Tasks;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
@@ -88,5 +91,29 @@ namespace RuntimeErrorSage.Core.Models.Remediation
 
             return factors.Any() ? factors.Average() : 0.5;
         }
+
+        public async Task<RemediationResult> ExecuteActionAsync(RemediationAction action, ErrorContext context)
+        {
+            try
+            {
+                var result = await action.ExecuteAsync(context);
+                if (result.Status == RemediationStatusEnum.Success)
+                {
+                    await _tracker.TrackActionCompletionAsync(action.ActionId, true);
+                }
+                else
+                {
+                    await _tracker.TrackActionCompletionAsync(action.ActionId, false, result.Error);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                await _tracker.TrackActionCompletionAsync(action.ActionId, false, ex.Message);
+                return RemediationResult.CreateFailure(context, ex.Message);
+            }
+        }
     }
 } 
+
+
