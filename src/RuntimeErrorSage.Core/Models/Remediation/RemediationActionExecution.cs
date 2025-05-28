@@ -14,7 +14,6 @@ namespace RuntimeErrorSage.Core.Models.Remediation
     /// </summary>
     public class RemediationActionExecution
     {
-        private readonly Dictionary<string, object> _metadata = new();
         private readonly Dictionary<string, ExecutionResult> _executionResults = new();
         private readonly List<Action<ExecutionResult>> _executionHandlers = new();
 
@@ -41,7 +40,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets the status of the execution.
         /// </summary>
-        public RemediationStatusEnum Status { get; set; }
+        public ExecutionStatus Status { get; set; } = ExecutionStatus.Pending;
 
         /// <summary>
         /// Gets or sets the timestamp when the action started.
@@ -71,7 +70,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets whether the action execution was successful.
         /// </summary>
-        public bool IsCompleted => Status == RemediationStatusEnum.Success || Status == RemediationStatusEnum.Failed;
+        public bool IsCompleted => Status == ExecutionStatus.Completed || Status == ExecutionStatus.Failed;
 
         /// <summary>
         /// Gets or sets the duration of the action execution in milliseconds.
@@ -101,54 +100,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets the severity of this action execution.
         /// </summary>
-        public RemediationActionSeverity Severity { get; set; } = RemediationActionSeverity.Medium;
-
-        /// <summary>
-        /// Gets or sets any additional metadata.
-        /// </summary>
-        public IReadOnlyDictionary<string, object> Metadata => _metadata;
-
-        /// <summary>
-        /// Adds metadata to the action execution.
-        /// </summary>
-        /// <param name="key">The metadata key.</param>
-        /// <param name="value">The metadata value.</param>
-        public void AddMetadata(string key, object value)
-        {
-            _metadata[key] = value;
-        }
-
-        /// <summary>
-        /// Completes the action execution.
-        /// </summary>
-        /// <param name="success">Whether the action was successful.</param>
-        /// <param name="result">The result of the action.</param>
-        /// <param name="error">Any error that occurred.</param>
-        public void Complete(bool success, Dictionary<string, object> result = null, string? error = null)
-        {
-            EndTime = DateTime.UtcNow;
-            Status = success ? RemediationStatusEnum.Success : RemediationStatusEnum.Failed;
-            Result = result ?? new Dictionary<string, object>();
-            Error = error;
-        }
-
-        public RemediationActionExecution(
-            string actionId,
-            string contextId,
-            DateTime startTime,
-            RemediationActionSeverity severity,
-            Dictionary<string, object> parameters)
-        {
-            ArgumentNullException.ThrowIfNull(actionId);
-            ArgumentNullException.ThrowIfNull(contextId);
-
-            ActionId = actionId;
-            ContextId = contextId;
-            StartTime = startTime;
-            Severity = severity;
-            Parameters = parameters ?? new Dictionary<string, object>();
-            Status = RemediationStatusEnum.NotStarted;
-        }
+        public string Severity { get; set; } = string.Empty;
 
         /// <summary>
         /// Executes a remediation action.
@@ -174,6 +126,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
                 if (action.RequiresManualApproval)
                 {
                     result.Status = ExecutionStatus.WaitingForApproval;
+                    Status = ExecutionStatus.WaitingForApproval;
                     NotifyExecutionHandlers(result);
                     return result;
                 }
@@ -184,6 +137,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
                 result.Status = ExecutionStatus.Completed;
                 result.EndTime = DateTime.UtcNow;
                 result.Success = true;
+                Status = ExecutionStatus.Completed;
             }
             catch (Exception ex)
             {
@@ -191,8 +145,11 @@ namespace RuntimeErrorSage.Core.Models.Remediation
                 result.EndTime = DateTime.UtcNow;
                 result.Success = false;
                 result.Error = ex;
+                Status = ExecutionStatus.Failed;
+                Error = ex.Message;
             }
 
+            EndTime = DateTime.UtcNow;
             _executionResults[action.ActionId] = result;
             NotifyExecutionHandlers(result);
             return result;
@@ -235,6 +192,15 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public void ClearResults()
         {
             _executionResults.Clear();
+            Status = ExecutionStatus.Pending;
+            StartTime = DateTime.UtcNow;
+            EndTime = null;
+            Error = null;
+            Result.Clear();
+            ValidationResults.Clear();
+            Metrics.Clear();
+            Parameters.Clear();
+            Warnings.Clear();
         }
 
         private void NotifyExecutionHandlers(ExecutionResult result)
@@ -252,78 +218,9 @@ namespace RuntimeErrorSage.Core.Models.Remediation
             }
         }
     }
-
-    /// <summary>
-    /// Represents the result of an action execution.
-    /// </summary>
-    public class ExecutionResult
-    {
-        /// <summary>
-        /// Gets or sets the ID of the action that was executed.
-        /// </summary>
-        public string ActionId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start time of the execution.
-        /// </summary>
-        public DateTime StartTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the end time of the execution.
-        /// </summary>
-        public DateTime? EndTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the status of the execution.
-        /// </summary>
-        public ExecutionStatus Status { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the execution was successful.
-        /// </summary>
-        public bool Success { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error that occurred during execution, if any.
-        /// </summary>
-        public Exception Error { get; set; }
-    }
-
-    /// <summary>
-    /// Represents the status of an action execution.
-    /// </summary>
-    public enum ExecutionStatus
-    {
-        /// <summary>
-        /// The action is waiting to be executed.
-        /// </summary>
-        Pending,
-
-        /// <summary>
-        /// The action is waiting for manual approval.
-        /// </summary>
-        WaitingForApproval,
-
-        /// <summary>
-        /// The action is currently running.
-        /// </summary>
-        Running,
-
-        /// <summary>
-        /// The action has completed successfully.
-        /// </summary>
-        Completed,
-
-        /// <summary>
-        /// The action has failed.
-        /// </summary>
-        Failed,
-
-        /// <summary>
-        /// The action has been cancelled.
-        /// </summary>
-        Cancelled
-    }
 } 
+
+
+
 
 

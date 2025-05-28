@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Remediation.Factories;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
@@ -21,18 +22,22 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
     {
         private readonly ILogger<MonitorStrategy> _logger;
         private readonly IMonitoringService _monitoringService;
+        private readonly IRemediationActionResultFactory _resultFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MonitorStrategy"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="monitoringService">The monitoring service.</param>
+        /// <param name="resultFactory">The remediation action result factory.</param>
         public MonitorStrategy(
             ILogger<MonitorStrategy> logger,
-            IMonitoringService monitoringService)
+            IMonitoringService monitoringService,
+            IRemediationActionResultFactory resultFactory)
         {
             _logger = logger;
             _monitoringService = monitoringService;
+            _resultFactory = resultFactory;
             Id = Guid.NewGuid().ToString();
             Name = "System Monitoring";
             Description = "Monitors system health metrics";
@@ -79,14 +84,11 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                     ErrorMessage = monitoringResult.Success ? null : monitoringResult.ErrorMessage,
                     Actions = new List<RemediationActionResult>
                     {
-                        new RemediationActionResult
-                        {
-                            ActionId = Guid.NewGuid().ToString(),
-                            Name = "Monitor System",
-                            Success = monitoringResult.Success,
-                            ErrorMessage = monitoringResult.Success ? null : monitoringResult.ErrorMessage,
-                            Timestamp = DateTime.UtcNow
-                        }
+                        _resultFactory.Create(
+                            "Monitor System",
+                            monitoringResult.Success,
+                            monitoringResult.Success ? null : monitoringResult.ErrorMessage
+                        )
                     },
                     StrategyId = Id,
                     StrategyName = Name,
@@ -185,3 +187,4 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
         }
     }
 } 
+

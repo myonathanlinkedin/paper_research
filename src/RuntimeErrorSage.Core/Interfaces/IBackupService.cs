@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RuntimeErrorSage.Core.Interfaces
@@ -30,7 +29,11 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// <returns>A list of available backups.</returns>
         Task<BackupListResult> ListBackupsAsync(string applicationId);
     }
+}
 
+// BackupResult.cs
+namespace RuntimeErrorSage.Core.Models.Backup
+{
     /// <summary>
     /// Represents the result of a backup operation.
     /// </summary>
@@ -51,7 +54,11 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// </summary>
         public string ErrorMessage { get; set; }
     }
+}
 
+// RestoreResult.cs
+namespace RuntimeErrorSage.Core.Models.Backup
+{
     /// <summary>
     /// Represents the result of a restore operation.
     /// </summary>
@@ -67,7 +74,13 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// </summary>
         public string ErrorMessage { get; set; }
     }
+}
 
+// BackupListResult.cs
+using System.Collections.Generic;
+
+namespace RuntimeErrorSage.Core.Models.Backup
+{
     /// <summary>
     /// Represents the result of listing backups.
     /// </summary>
@@ -89,3 +102,4 @@ namespace RuntimeErrorSage.Core.Interfaces
         public string ErrorMessage { get; set; }
     }
 } 
+

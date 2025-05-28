@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Monitoring;
 
 namespace RuntimeErrorSage.Core.Interfaces
 {
@@ -46,47 +45,8 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// <param name="componentName">The component name.</param>
         /// <returns>The component health status.</returns>
         Task<ComponentHealth> GetHealthStatusAsync(string componentName);
-    }
-    
-    /// <summary>
-    /// Represents the result of a monitoring operation.
-    /// </summary>
-    public class MonitoringResult
-    {
-        /// <summary>
-        /// Gets or sets whether the operation was successful.
-        /// </summary>
-        public bool Success { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the error message if the operation failed.
-        /// </summary>
-        public string ErrorMessage { get; set; }
-    }
-    
-    /// <summary>
-    /// Represents component health status.
-    /// </summary>
-    public class ComponentHealth
-    {
-        /// <summary>
-        /// Gets or sets the component name.
-        /// </summary>
-        public string ComponentName { get; set; }
-        
-        /// <summary>
-        /// Gets or sets whether the component is healthy.
-        /// </summary>
-        public bool IsHealthy { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the health score (0-100).
-        /// </summary>
-        public int HealthScore { get; set; }
-        
-        /// <summary>
-        /// Gets or sets any health issues detected.
-        /// </summary>
-        public List<string> Issues { get; set; } = new();
+
+        Task<MonitoringResult> MonitorAsync(string applicationId);
     }
 } 
+

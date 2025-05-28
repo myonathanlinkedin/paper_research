@@ -1,3 +1,4 @@
+using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using System;
@@ -26,14 +27,9 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the action to execute.
+        /// Gets or sets the context in which the action should be executed.
         /// </summary>
-        public string Action { get; set; }
-
-        /// <summary>
-        /// Gets or sets the context of the action.
-        /// </summary>
-        public Dictionary<string, object> Context { get; set; } = new();
+        public string Context { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the priority of the action.
@@ -41,14 +37,14 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public int Priority { get; set; }
 
         /// <summary>
-        /// Gets or sets the impact of the action.
+        /// Gets or sets the impact level of the action.
         /// </summary>
-        public RemediationActionSeverity Impact { get; set; }
+        public ImpactLevel Impact { get; set; }
 
         /// <summary>
         /// Gets or sets the risk level of the action.
         /// </summary>
-        public RemediationRiskLevel RiskLevel { get; set; }
+        public RiskLevel RiskLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the action.
@@ -56,198 +52,155 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public RemediationStatusEnum Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the parameters of the action.
-        /// </summary>
-        public Dictionary<string, object> Parameters { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the error type of the action.
-        /// </summary>
-        public string ErrorType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error message of the action.
-        /// </summary>
-        public string ErrorMessage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the stack trace of the action.
-        /// </summary>
-        public string StackTrace { get; set; }
-
-        /// <summary>
-        /// Gets or sets the potential issues associated with the action.
-        /// </summary>
-        public List<string> PotentialIssues { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the mitigation steps for the action.
-        /// </summary>
-        public List<string> MitigationSteps { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the timestamp when the action was created.
-        /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets the timestamp when the action was executed.
-        /// </summary>
-        public DateTime? ExecutedAt { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the action is executed.
-        /// </summary>
-        public bool IsExecuted { get; set; }
-
-        /// <summary>
-        /// Gets or sets the execution result of the action.
-        /// </summary>
-        public string ExecutionResult { get; set; }
-
-        /// <summary>
-        /// Gets or sets the state of the action.
-        /// </summary>
-        public RemediationState State { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the metadata of the action.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
-
-        /// <summary>
         /// Gets or sets whether the action requires manual approval.
         /// </summary>
         public bool RequiresManualApproval { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the action can be rolled back.
-        /// </summary>
-        public bool CanRollback => RollbackAction != null;
-
-        /// <summary>
-        /// Gets or sets the rollback action.
-        /// </summary>
-        public RemediationAction? RollbackAction { get; set; }
-
-        /// <summary>
-        /// Gets or sets the dependencies of the action.
-        /// </summary>
-        public List<string> Dependencies { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the prerequisites of the action.
+        /// Gets or sets the prerequisites for the action.
         /// </summary>
         public List<string> Prerequisites { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the type of the action.
+        /// Gets or sets the dependencies for the action.
         /// </summary>
-        public string Type { get; set; } = string.Empty;
+        public List<string> Dependencies { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the impact scope of this action.
+        /// Gets or sets the parameters for the action.
         /// </summary>
-        public RemediationActionImpactScope ImpactScope { get; set; }
+        public Dictionary<string, object> Parameters { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the confirmation message for manual approval.
+        /// Gets or sets the metadata for the action.
         /// </summary>
-        public string ConfirmationMessage { get; set; } = string.Empty;
+        public Dictionary<string, object> Metadata { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the timeout for this action in seconds.
+        /// Gets or sets the tags for the action.
         /// </summary>
-        public int TimeoutSeconds { get; set; } = 300;
+        public List<string> Tags { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the maximum number of retries for this action.
+        /// Gets or sets the version of the action.
         /// </summary>
-        public int MaxRetries { get; set; } = 3;
+        public string Version { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the delay between retries in seconds.
+        /// Gets or sets the author of the action.
         /// </summary>
-        public int RetryDelaySeconds { get; set; } = 30;
+        public string Author { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets any warnings associated with this action.
+        /// Gets or sets the creation date of the action.
         /// </summary>
-        public List<string> Warnings { get; set; } = new();
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the duration of the action execution in milliseconds.
+        /// Gets or sets the last modified date of the action.
         /// </summary>
-        public long Duration { get; set; }
+        public DateTime LastModifiedDate { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the duration of the action in milliseconds.
+        /// Gets or sets the execution timeout in milliseconds.
         /// </summary>
-        public double DurationMs => (ExecutedAt.HasValue && ExecutedAt.Value > CreatedAt) ? (ExecutedAt.Value - CreatedAt).TotalMilliseconds : 0;
+        public int ExecutionTimeoutMs { get; set; } = 300000; // 5 minutes default
 
         /// <summary>
-        /// Gets or sets any error that occurred during action execution.
+        /// Gets or sets the retry count for the action.
         /// </summary>
-        public string? Error { get; set; }
+        public int RetryCount { get; set; } = 3;
 
         /// <summary>
-        /// Gets or sets the result of the action execution.
+        /// Gets or sets the retry delay in milliseconds.
         /// </summary>
-        public Dictionary<string, object> Result { get; set; } = new();
+        public int RetryDelayMs { get; set; } = 30000; // 30 seconds default
 
         /// <summary>
-        /// Gets or sets the name of the strategy that created this action.
+        /// Gets or sets whether the action is enabled.
         /// </summary>
-        public string StrategyName { get; set; } = string.Empty;
+        public bool IsEnabled { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the timestamp when the action was started.
+        /// Gets or sets whether the action is visible.
         /// </summary>
-        public DateTime? StartTime { get; set; }
+        public bool IsVisible { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the timestamp when the action was completed.
+        /// Gets or sets the category of the action.
         /// </summary>
-        public DateTime? EndTime { get; set; }
+        public string Category { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets whether the action was successful.
+        /// Gets or sets the subcategory of the action.
         /// </summary>
-        public bool IsSuccessful => Status == RemediationStatusEnum.Success && string.IsNullOrEmpty(Error);
+        public string Subcategory { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the severity of the action.
         /// </summary>
-        public RemediationActionSeverity Severity { get; set; } = RemediationActionSeverity.Medium;
+        public string Severity { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the risk level of the action.
+        /// Gets or sets the complexity of the action.
         /// </summary>
-        public RemediationRiskLevel Risk { get; set; }
+        public string Complexity { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the timestamp when the action was last updated.
+        /// Gets or sets the estimated duration of the action.
         /// </summary>
-        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+        public TimeSpan EstimatedDuration { get; set; }
 
         /// <summary>
-        /// Gets whether the action is completed.
+        /// Gets or sets the actual duration of the action.
         /// </summary>
-        public bool IsCompleted => Status == RemediationStatusEnum.Success || Status == RemediationStatusEnum.Failed;
+        public TimeSpan? ActualDuration { get; set; }
 
         /// <summary>
-        /// Updates the state of the action.
+        /// Gets or sets the start time of the action.
         /// </summary>
-        /// <param name="newState">The new state.</param>
-        /// <param name="errorMessage">Optional error message.</param>
-        public void UpdateState(RemediationState newState, string errorMessage = null)
-        {
-            State = newState;
-            if (!string.IsNullOrEmpty(errorMessage))
-            {
-                Error = errorMessage;
-            }
-            LastUpdated = DateTime.UtcNow;
-        }
+        public DateTime? StartTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end time of the action.
+        /// </summary>
+        public DateTime? EndTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message if the action failed.
+        /// </summary>
+        public string ErrorMessage { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the stack trace if the action failed.
+        /// </summary>
+        public string StackTrace { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the output of the action.
+        /// </summary>
+        public string Output { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the validation results for the action.
+        /// </summary>
+        public List<ValidationResult> ValidationResults { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the rollback status.
+        /// </summary>
+        public RollbackStatus? RollbackStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the action can be rolled back.
+        /// </summary>
+        public bool CanRollback { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rollback action if available.
+        /// </summary>
+        public RemediationAction RollbackAction { get; set; }
     }
 } 
+
+

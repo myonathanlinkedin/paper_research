@@ -7,6 +7,7 @@ using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Remediation.Factories;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Validation;
 
@@ -20,6 +21,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
         private readonly ILogger<BackupStrategy> _logger;
         private readonly IBackupService _backupService;
         private readonly ILLMClient _llmClient;
+        private readonly IRemediationActionResultFactory _resultFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackupStrategy"/> class.
@@ -27,14 +29,17 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
         /// <param name="logger">The logger.</param>
         /// <param name="backupService">The backup service.</param>
         /// <param name="llmClient">The LLM client.</param>
+        /// <param name="resultFactory">The remediation action result factory.</param>
         public BackupStrategy(
             ILogger<BackupStrategy> logger,
             IBackupService backupService,
-            ILLMClient llmClient)
+            ILLMClient llmClient,
+            IRemediationActionResultFactory resultFactory)
         {
             _logger = logger;
             _backupService = backupService;
             _llmClient = llmClient;
+            _resultFactory = resultFactory;
             Id = Guid.NewGuid().ToString();
             Name = "Backup Strategy";
             Description = "Creates a backup before attempting remediation";
@@ -81,14 +86,11 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                     ErrorMessage = backupResult.Success ? null : backupResult.ErrorMessage,
                     Actions = new List<RemediationActionResult>
                     {
-                        new RemediationActionResult
-                        {
-                            ActionId = Guid.NewGuid().ToString(),
-                            Name = "Create Backup",
-                            Success = backupResult.Success,
-                            ErrorMessage = backupResult.Success ? null : backupResult.ErrorMessage,
-                            Timestamp = DateTime.UtcNow
-                        }
+                        _resultFactory.Create(
+                            "Create Backup",
+                            backupResult.Success,
+                            backupResult.Success ? null : backupResult.ErrorMessage
+                        )
                     },
                     StrategyId = Id,
                     StrategyName = Name,
@@ -188,3 +190,4 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
         }
     }
 } 
+

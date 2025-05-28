@@ -156,70 +156,32 @@ namespace RuntimeErrorSage.Core.Models.Remediation
             _availabilityWindows.Clear();
             _dependencies.Clear();
         }
+
+        public AvailabilityWindow Window { get; set; }
+        public AvailabilityStatus Status { get; set; }
     }
+}
 
-    /// <summary>
-    /// Defines the availability status of a remediation action.
-    /// </summary>
-    public enum AvailabilityStatus
-    {
-        /// <summary>
-        /// The action is enabled and available.
-        /// </summary>
-        Enabled,
-
-        /// <summary>
-        /// The action is disabled and unavailable.
-        /// </summary>
-        Disabled,
-
-        /// <summary>
-        /// The action is in maintenance mode.
-        /// </summary>
-        Maintenance,
-
-        /// <summary>
-        /// The action's availability status is unknown.
-        /// </summary>
-        Unknown
-    }
-
-    /// <summary>
-    /// Represents a time window during which a remediation action is available.
-    /// </summary>
+// AvailabilityWindow.cs
+namespace RuntimeErrorSage.Core.Models.Remediation
+{
     public class AvailabilityWindow
     {
-        /// <summary>
-        /// Gets or sets the start time of the window.
-        /// </summary>
-        public DateTime StartTime { get; set; }
+        public string StartTime { get; set; }
+        public string EndTime { get; set; }
+    }
+}
 
-        /// <summary>
-        /// Gets or sets the end time of the window.
-        /// </summary>
-        public DateTime EndTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the days of the week when the window is active.
-        /// </summary>
-        public DayOfWeek[] DaysOfWeek { get; set; }
-
-        /// <summary>
-        /// Gets or sets the time zone for the window.
-        /// </summary>
-        public TimeZoneInfo TimeZone { get; set; }
-
-        /// <summary>
-        /// Checks if a given time falls within this window.
-        /// </summary>
-        /// <param name="time">The time to check.</param>
-        /// <returns>True if the time is within the window, false otherwise.</returns>
-        public bool IsInWindow(DateTime time)
-        {
-            var localTime = TimeZoneInfo.ConvertTimeFromUtc(time, TimeZone);
-            return localTime >= StartTime && localTime <= EndTime && DaysOfWeek.Contains(localTime.DayOfWeek);
-        }
+// AvailabilityStatus.cs
+namespace RuntimeErrorSage.Core.Models.Remediation
+{
+    public class AvailabilityStatus
+    {
+        public string Status { get; set; }
     }
 } 
+
+
+
 
 

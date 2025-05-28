@@ -14,6 +14,10 @@ using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Classifier.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Core.Models.Error.Factories;
+using RuntimeErrorSage.Core.Models.Analysis;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Classification.Interfaces;
 
 namespace RuntimeErrorSage.Core.Models.Qwen;
 
@@ -28,6 +32,7 @@ public class QwenModelIntegration : ILLMClient
     private readonly IRemediationActionSystem _remediationSystem;
     private readonly IErrorClassifier _errorClassifier;
     private readonly RuntimeErrorSage.Core.Analysis.Interfaces.IErrorRelationshipAnalyzer _errorRelationshipAnalyzer;
+    private readonly IRuntimeErrorFactory _runtimeErrorFactory;
 
     private const string MODEL_NAME = "Qwen/Qwen2.5-7B-Instruct-1M";
     private const int MAX_TOKENS = 2048;
@@ -44,13 +49,15 @@ public class QwenModelIntegration : ILLMClient
         IErrorContextAnalyzer contextAnalyzer,
         IRemediationActionSystem remediationSystem,
         IErrorClassifier errorClassifier,
-        RuntimeErrorSage.Core.Analysis.Interfaces.IErrorRelationshipAnalyzer errorRelationshipAnalyzer)
+        RuntimeErrorSage.Core.Analysis.Interfaces.IErrorRelationshipAnalyzer errorRelationshipAnalyzer,
+        IRuntimeErrorFactory runtimeErrorFactory)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _contextAnalyzer = contextAnalyzer ?? throw new ArgumentNullException(nameof(contextAnalyzer));
         _remediationSystem = remediationSystem ?? throw new ArgumentNullException(nameof(remediationSystem));
         _errorClassifier = errorClassifier ?? throw new ArgumentNullException(nameof(errorClassifier));
         _errorRelationshipAnalyzer = errorRelationshipAnalyzer ?? throw new ArgumentNullException(nameof(errorRelationshipAnalyzer));
+        _runtimeErrorFactory = runtimeErrorFactory ?? throw new ArgumentNullException(nameof(runtimeErrorFactory));
         IsEnabled = true;
         IsConnected = true;
     }
@@ -189,7 +196,7 @@ public class QwenModelIntegration : ILLMClient
 
             // Create a minimal error context from the message and context
             var errorContext = new ErrorContext(
-                new RuntimeError { Message = errorMessage },
+                _runtimeErrorFactory.Create(errorMessage),
                 context,
                 DateTime.UtcNow
             );
@@ -326,3 +333,4 @@ public class QwenModelIntegration : ILLMClient
         };
     }
 } 
+

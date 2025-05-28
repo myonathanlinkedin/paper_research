@@ -7,6 +7,9 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Analysis;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Graph.Factories;
+using RuntimeErrorSage.Core.Models.Error.Factories;
+using RuntimeErrorSage.Core.Models.Common.Factories;
 
 namespace RuntimeErrorSage.Core.Analysis
 {
@@ -17,6 +20,10 @@ namespace RuntimeErrorSage.Core.Analysis
     {
         private readonly ILogger<ErrorContextAnalyzer> _logger;
         private readonly IErrorRelationshipAnalyzer _errorRelationshipAnalyzer;
+        private readonly IDependencyNodeFactory _dependencyNodeFactory;
+        private readonly IRuntimeErrorFactory _runtimeErrorFactory;
+        private readonly IRelatedErrorFactory _relatedErrorFactory;
+        private readonly ICollectionFactory _collectionFactory;
 
         /// <summary>
         /// Gets whether the analyzer is enabled.
@@ -38,12 +45,24 @@ namespace RuntimeErrorSage.Core.Analysis
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="errorRelationshipAnalyzer">The error relationship analyzer.</param>
+        /// <param name="dependencyNodeFactory">The dependency node factory.</param>
+        /// <param name="runtimeErrorFactory">The runtime error factory.</param>
+        /// <param name="relatedErrorFactory">The related error factory.</param>
+        /// <param name="collectionFactory">The collection factory.</param>
         public ErrorContextAnalyzer(
             ILogger<ErrorContextAnalyzer> logger,
-            IErrorRelationshipAnalyzer errorRelationshipAnalyzer)
+            IErrorRelationshipAnalyzer errorRelationshipAnalyzer,
+            IDependencyNodeFactory dependencyNodeFactory,
+            IRuntimeErrorFactory runtimeErrorFactory,
+            IRelatedErrorFactory relatedErrorFactory,
+            ICollectionFactory collectionFactory)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _errorRelationshipAnalyzer = errorRelationshipAnalyzer ?? throw new ArgumentNullException(nameof(errorRelationshipAnalyzer));
+            _dependencyNodeFactory = dependencyNodeFactory ?? throw new ArgumentNullException(nameof(dependencyNodeFactory));
+            _runtimeErrorFactory = runtimeErrorFactory ?? throw new ArgumentNullException(nameof(runtimeErrorFactory));
+            _relatedErrorFactory = relatedErrorFactory ?? throw new ArgumentNullException(nameof(relatedErrorFactory));
+            _collectionFactory = collectionFactory ?? throw new ArgumentNullException(nameof(collectionFactory));
         }
 
         /// <summary>
@@ -69,18 +88,16 @@ namespace RuntimeErrorSage.Core.Analysis
                 var rootCause = await GetRootCauseAsync(context);
 
                 // Create remediation suggestions based on analysis
-                var suggestions = new List<Models.Remediation.RemediationSuggestion>
+                var suggestions = _collectionFactory.CreateList<Models.Remediation.RemediationSuggestion>();
+                suggestions.Add(new Models.Remediation.RemediationSuggestion
                 {
-                    new Models.Remediation.RemediationSuggestion
-                    {
-                        Title = "Restart affected component",
-                        Description = "Restart the component where the error occurred.",
-                        StrategyName = "RestartStrategy",
-                        Priority = RemediationPriority.High,
-                        ConfidenceLevel = 0.8,
-                        ExpectedOutcome = "Component restored to working state."
-                    }
-                };
+                    Title = "Restart affected component",
+                    Description = "Restart the component where the error occurred.",
+                    StrategyName = "RestartStrategy",
+                    Priority = RemediationPriority.High,
+                    ConfidenceLevel = 0.8,
+                    ExpectedOutcome = "Component restored to working state."
+                });
 
                 // Create analysis result
                 var analysis = new RemediationAnalysis
@@ -116,20 +133,13 @@ namespace RuntimeErrorSage.Core.Analysis
             {
                 _logger.LogInformation("Getting related errors for context {ContextId}", context.ContextId);
 
-                // For demonstration, create sample related errors
-                var relatedErrors = new List<RelatedError>
-                {
-                    new RelatedError
-                    {
-                        ErrorId = Guid.NewGuid().ToString(),
-                        ErrorType = "Connection timeout",
-                        RelationshipType = ErrorRelationshipType.Causes,
-                        ComponentId = "database-service",
-                        ComponentName = "Database Service",
-                        Severity = SeverityLevel.Medium,
-                        Description = "Database connection timeout"
-                    }
-                };
+                var relatedErrors = _collectionFactory.CreateList<RelatedError>();
+                relatedErrors.Add(_relatedErrorFactory.Create(
+                    "Database connection timeout",
+                    "Connection timeout",
+                    "database-service",
+                    "Causes"
+                ));
 
                 await Task.Delay(10); // Simulate async work
                 return relatedErrors;
@@ -158,14 +168,12 @@ namespace RuntimeErrorSage.Core.Analysis
                 var graph = new ErrorDependencyGraph
                 {
                     GraphId = Guid.NewGuid().ToString(),
-                    RootNode = new DependencyNode
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Label = context.ErrorType,
-                        ComponentId = context.ComponentId,
-                        ComponentName = context.ComponentName,
-                        IsErrorSource = true
-                    },
+                    RootNode = _dependencyNodeFactory.Create(
+                        context.ErrorType,
+                        context.ComponentId,
+                        context.ComponentName,
+                        true
+                    ),
                     CorrelationId = context.CorrelationId
                 };
 
@@ -192,18 +200,17 @@ namespace RuntimeErrorSage.Core.Analysis
             {
                 _logger.LogInformation("Analyzing root cause for context {ContextId}", context.ContextId);
 
-                // For demonstration, create a sample root cause analysis
+                var possibleRootCauses = _collectionFactory.CreateDictionary<string, double>();
+                possibleRootCauses["Database connection failure"] = 0.8;
+                possibleRootCauses["Network connectivity issue"] = 0.6;
+                possibleRootCauses["Resource exhaustion"] = 0.4;
+
                 var rootCause = new RootCauseAnalysis
                 {
                     AnalysisId = Guid.NewGuid().ToString(),
                     Context = context,
                     PrimaryRootCause = "Database connection failure",
-                    PossibleRootCauses = new Dictionary<string, double>
-                    {
-                        { "Database connection failure", 0.8 },
-                        { "Network connectivity issue", 0.6 },
-                        { "Resource exhaustion", 0.4 }
-                    },
+                    PossibleRootCauses = possibleRootCauses,
                     ConfidenceLevel = 0.7,
                     Severity = SeverityLevel.Medium,
                     CorrelationId = context.CorrelationId
@@ -273,22 +280,20 @@ namespace RuntimeErrorSage.Core.Analysis
             {
                 _logger.LogInformation("Building dependency graph for {ContextId}", context.ContextId);
 
-                // For demonstration, create a sample dependency graph
+                var nodes = _collectionFactory.CreateList<DependencyNode>();
+                nodes.Add(_dependencyNodeFactory.Create(
+                    context.ErrorType,
+                    context.ComponentId,
+                    context.ComponentName,
+                    true
+                ));
+                var edges = _collectionFactory.CreateList<DependencyEdge>();
+
                 var graph = new DependencyGraph
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Nodes = new List<DependencyNode>
-                    {
-                        new DependencyNode
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            Label = context.ErrorType,
-                            ComponentId = context.ComponentId,
-                            ComponentName = context.ComponentName,
-                            IsErrorSource = true
-                        }
-                    },
-                    Edges = new List<DependencyEdge>(),
+                    Nodes = nodes,
+                    Edges = edges,
                     CorrelationId = context.CorrelationId,
                     Timestamp = DateTime.UtcNow
                 };
@@ -316,7 +321,9 @@ namespace RuntimeErrorSage.Core.Analysis
             {
                 _logger.LogInformation("Analyzing impact for {ContextId}", context.ContextId);
 
-                // For demonstration, create a sample impact analysis result
+                var affectedComponents = _collectionFactory.CreateList<string>();
+                affectedComponents.Add(context.ComponentId);
+
                 var result = new Models.Analysis.ImpactAnalysisResult
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -324,7 +331,7 @@ namespace RuntimeErrorSage.Core.Analysis
                     IsValid = true,
                     CorrelationId = context.CorrelationId,
                     Timestamp = DateTime.UtcNow,
-                    AffectedComponents = new List<string> { context.ComponentId }
+                    AffectedComponents = affectedComponents
                 };
 
                 await Task.Delay(10); // Simulate async work
@@ -352,13 +359,10 @@ namespace RuntimeErrorSage.Core.Analysis
             {
                 _logger.LogInformation("Calculating shortest path from {SourceId} to {TargetId}", sourceId, targetId);
 
-                // For demonstration, create a sample path
-                var path = new List<DependencyNode>
-                {
-                    new DependencyNode { Id = sourceId, Label = "Source" },
-                    new DependencyNode { Id = Guid.NewGuid().ToString(), Label = "Intermediate" },
-                    new DependencyNode { Id = targetId, Label = "Target" }
-                };
+                var path = _collectionFactory.CreateList<DependencyNode>();
+                path.Add(_dependencyNodeFactory.Create("Source", sourceId, "Source Component"));
+                path.Add(_dependencyNodeFactory.Create("Intermediate", Guid.NewGuid().ToString(), "Intermediate Component"));
+                path.Add(_dependencyNodeFactory.Create("Target", targetId, "Target Component"));
 
                 await Task.Delay(10); // Simulate async work
                 return path;

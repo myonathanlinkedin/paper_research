@@ -1,8 +1,11 @@
+using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Validation;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
@@ -394,7 +397,11 @@ namespace RuntimeErrorSage.Core.Models.Remediation
                 Success = result.Success,
                 Error = result.Error,
                 ExecutionTimeMs = result.EndTime.HasValue ? (long)(result.EndTime.Value - result.StartTime).TotalMilliseconds : 0,
-                ExecutionResult = result
+                ExecutionResult = result,
+                Status = Status,
+                Output = Output,
+                Warnings = new List<string>(),
+                Metrics = new Dictionary<string, object>()
             });
             return result;
         }
@@ -481,4 +488,6 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         }
     }
 } 
+
+
 

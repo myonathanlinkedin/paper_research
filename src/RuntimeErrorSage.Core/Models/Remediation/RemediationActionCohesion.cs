@@ -108,28 +108,10 @@ namespace RuntimeErrorSage.Core.Models.Remediation
             _cohesionScores.Clear();
         }
     }
-
-    /// <summary>
-    /// Defines the cohesion level.
-    /// </summary>
-    public enum CohesionLevel
-    {
-        /// <summary>
-        /// Low cohesion.
-        /// </summary>
-        Low,
-
-        /// <summary>
-        /// Medium cohesion.
-        /// </summary>
-        Medium,
-
-        /// <summary>
-        /// High cohesion.
-        /// </summary>
-        High
-    }
 }
  
+
+
+
 
 

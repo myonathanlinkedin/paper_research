@@ -146,42 +146,9 @@ namespace RuntimeErrorSage.Core.Models.Remediation
             _couplingTypes.Clear();
         }
     }
-
-    /// <summary>
-    /// Defines the type of coupling between actions.
-    /// </summary>
-    public enum CouplingType
-    {
-        /// <summary>
-        /// Loose coupling.
-        /// </summary>
-        Loose,
-
-        /// <summary>
-        /// Tight coupling.
-        /// </summary>
-        Tight,
-
-        /// <summary>
-        /// Data coupling.
-        /// </summary>
-        Data,
-
-        /// <summary>
-        /// Control coupling.
-        /// </summary>
-        Control,
-
-        /// <summary>
-        /// Common coupling.
-        /// </summary>
-        Common,
-
-        /// <summary>
-        /// Content coupling.
-        /// </summary>
-        Content
-    }
 } 
+
+
+
 
 
