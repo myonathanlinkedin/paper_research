@@ -13,6 +13,8 @@ using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Classifier.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Core.Services.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation
 {

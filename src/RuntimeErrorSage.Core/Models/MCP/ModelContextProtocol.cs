@@ -4,6 +4,7 @@ using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Context;
 using RuntimeErrorSage.Core.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Core.Models.MCP;
 

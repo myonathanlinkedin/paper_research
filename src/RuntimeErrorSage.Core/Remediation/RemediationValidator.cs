@@ -19,6 +19,7 @@ using RuntimeErrorSage.Core.Models.Metrics;
 using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Validation.Interfaces;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation;
 

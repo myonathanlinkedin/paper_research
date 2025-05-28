@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.LLM.Interfaces;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation;
 

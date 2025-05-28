@@ -9,6 +9,7 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation
 {

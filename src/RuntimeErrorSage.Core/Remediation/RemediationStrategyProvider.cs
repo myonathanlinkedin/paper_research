@@ -10,6 +10,7 @@ using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
