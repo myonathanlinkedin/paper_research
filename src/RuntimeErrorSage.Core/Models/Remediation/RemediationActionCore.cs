@@ -1,6 +1,8 @@
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Models.Error;
 using System;
 using System.Collections.Generic;
 
@@ -29,7 +31,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets the context in which the action should be executed.
         /// </summary>
-        public string Context { get; set; } = string.Empty;
+        public ErrorContext Context { get; set; }
 
         /// <summary>
         /// Gets or sets the priority of the action.
@@ -199,7 +201,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets the rollback action if available.
         /// </summary>
-        public RemediationAction RollbackAction { get; set; }
+        public IRemediationAction RollbackAction { get; set; }
     }
 } 
 

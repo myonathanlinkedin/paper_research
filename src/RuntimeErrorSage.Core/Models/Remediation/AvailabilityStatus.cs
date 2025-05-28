@@ -3,28 +3,13 @@ using System;
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
     /// <summary>
-    /// Defines the availability status of a remediation action.
+    /// Represents the status of availability.
     /// </summary>
-    public enum AvailabilityStatus
+    public class AvailabilityStatus
     {
         /// <summary>
-        /// The action is enabled and available.
+        /// Gets or sets the status value.
         /// </summary>
-        Enabled,
-
-        /// <summary>
-        /// The action is disabled and unavailable.
-        /// </summary>
-        Disabled,
-
-        /// <summary>
-        /// The action is in maintenance mode.
-        /// </summary>
-        Maintenance,
-
-        /// <summary>
-        /// The action's availability status is unknown.
-        /// </summary>
-        Unknown
+        public string Status { get; set; }
     }
 } 

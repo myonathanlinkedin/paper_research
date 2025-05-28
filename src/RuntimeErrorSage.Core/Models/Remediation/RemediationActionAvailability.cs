@@ -1,187 +1,172 @@
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Models.Remediation;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
     /// <summary>
-    /// Manages the availability of remediation actions.
+    /// Represents the availability of a remediation action.
     /// </summary>
     public class RemediationActionAvailability
     {
-        private readonly Dictionary<string, AvailabilityStatus> _actionStatus = new();
-        private readonly Dictionary<string, List<AvailabilityWindow>> _availabilityWindows = new();
-        private readonly Dictionary<string, List<string>> _dependencies = new();
+        /// <summary>
+        /// Gets or sets the list of availability windows.
+        /// </summary>
+        public List<AvailabilityWindow> Windows { get; set; } = new();
 
         /// <summary>
-        /// Gets the current availability status of an action.
+        /// Gets or sets the current availability status.
         /// </summary>
-        /// <param name="actionId">The action ID.</param>
-        /// <returns>The availability status.</returns>
-        public AvailabilityStatus GetStatus(string actionId)
-        {
-            ArgumentNullException.ThrowIfNull(actionId);
-            return _actionStatus.TryGetValue(actionId, out var status) ? status : AvailabilityStatus.Unknown;
-        }
-
-        /// <summary>
-        /// Sets the availability status of an action.
-        /// </summary>
-        /// <param name="actionId">The action ID.</param>
-        /// <param name="status">The availability status.</param>
-        public void SetStatus(string actionId, AvailabilityStatus status)
-        {
-            ArgumentNullException.ThrowIfNull(actionId);
-            _actionStatus[actionId] = status;
-        }
-
-        /// <summary>
-        /// Adds an availability window for an action.
-        /// </summary>
-        /// <param name="actionId">The action ID.</param>
-        /// <param name="window">The availability window.</param>
-        public void AddAvailabilityWindow(string actionId, AvailabilityWindow window)
-        {
-            ArgumentNullException.ThrowIfNull(actionId);
-            ArgumentNullException.ThrowIfNull(window);
-
-            if (!_availabilityWindows.ContainsKey(actionId))
-            {
-                _availabilityWindows[actionId] = new List<AvailabilityWindow>();
-            }
-            _availabilityWindows[actionId].Add(window);
-        }
-
-        /// <summary>
-        /// Gets the availability windows for an action.
-        /// </summary>
-        /// <param name="actionId">The action ID.</param>
-        /// <returns>The list of availability windows.</returns>
-        public IReadOnlyList<AvailabilityWindow> GetAvailabilityWindows(string actionId)
-        {
-            ArgumentNullException.ThrowIfNull(actionId);
-            return _availabilityWindows.TryGetValue(actionId, out var windows) ? windows : new List<AvailabilityWindow>();
-        }
-
-        /// <summary>
-        /// Adds a dependency for an action.
-        /// </summary>
-        /// <param name="actionId">The action ID.</param>
-        /// <param name="dependencyId">The dependency ID.</param>
-        public void AddDependency(string actionId, string dependencyId)
-        {
-            ArgumentNullException.ThrowIfNull(actionId);
-            ArgumentNullException.ThrowIfNull(dependencyId);
-
-            if (!_dependencies.ContainsKey(actionId))
-            {
-                _dependencies[actionId] = new List<string>();
-            }
-            if (!_dependencies[actionId].Contains(dependencyId))
-            {
-                _dependencies[actionId].Add(dependencyId);
-            }
-        }
-
-        /// <summary>
-        /// Gets the dependencies for an action.
-        /// </summary>
-        /// <param name="actionId">The action ID.</param>
-        /// <returns>The list of dependency IDs.</returns>
-        public IReadOnlyList<string> GetDependencies(string actionId)
-        {
-            ArgumentNullException.ThrowIfNull(actionId);
-            return _dependencies.TryGetValue(actionId, out var deps) ? deps : new List<string>();
-        }
-
-        /// <summary>
-        /// Checks if an action is available at the current time.
-        /// </summary>
-        /// <param name="actionId">The action ID.</param>
-        /// <returns>True if the action is available, false otherwise.</returns>
-        public bool IsAvailable(string actionId)
-        {
-            ArgumentNullException.ThrowIfNull(actionId);
-
-            // Check if the action is enabled
-            if (GetStatus(actionId) != AvailabilityStatus.Enabled)
-            {
-                return false;
-            }
-
-            // Check if any dependencies are unavailable
-            foreach (var depId in GetDependencies(actionId))
-            {
-                if (!IsAvailable(depId))
-                {
-                    return false;
-                }
-            }
-
-            // Check if we're in an availability window
-            var now = DateTime.UtcNow;
-            var windows = GetAvailabilityWindows(actionId);
-            foreach (var window in windows)
-            {
-                if (window.IsInWindow(now))
-                {
-                    return true;
-                }
-            }
-
-            // If no windows are defined, the action is available
-            return windows.Count == 0;
-        }
-
-        /// <summary>
-        /// Clears all availability data for an action.
-        /// </summary>
-        /// <param name="actionId">The action ID.</param>
-        public void ClearActionData(string actionId)
-        {
-            ArgumentNullException.ThrowIfNull(actionId);
-            _actionStatus.Remove(actionId);
-            _availabilityWindows.Remove(actionId);
-            _dependencies.Remove(actionId);
-        }
-
-        /// <summary>
-        /// Clears all availability data.
-        /// </summary>
-        public void ClearAllData()
-        {
-            _actionStatus.Clear();
-            _availabilityWindows.Clear();
-            _dependencies.Clear();
-        }
-
-        public AvailabilityWindow Window { get; set; }
         public AvailabilityStatus Status { get; set; }
-    }
-}
 
-// AvailabilityWindow.cs
-namespace RuntimeErrorSage.Core.Models.Remediation
-{
-    public class AvailabilityWindow
-    {
-        public string StartTime { get; set; }
-        public string EndTime { get; set; }
-    }
-}
+        /// <summary>
+        /// Gets or sets the last status update time.
+        /// </summary>
+        public DateTime LastStatusUpdate { get; set; }
 
-// AvailabilityStatus.cs
-namespace RuntimeErrorSage.Core.Models.Remediation
-{
-    public class AvailabilityStatus
-    {
-        public string Status { get; set; }
+        /// <summary>
+        /// Gets or sets the reason for the current status.
+        /// </summary>
+        public string StatusReason { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the action is currently available.
+        /// </summary>
+        public bool IsAvailable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the next available time if currently unavailable.
+        /// </summary>
+        public DateTime? NextAvailableTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maintenance window if applicable.
+        /// </summary>
+        public AvailabilityWindow MaintenanceWindow { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of scheduled maintenance windows.
+        /// </summary>
+        public List<AvailabilityWindow> ScheduledMaintenance { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of blackout periods.
+        /// </summary>
+        public List<AvailabilityWindow> BlackoutPeriods { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed time zones.
+        /// </summary>
+        public List<string> AllowedTimeZones { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed regions.
+        /// </summary>
+        public List<string> AllowedRegions { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed environments.
+        /// </summary>
+        public List<string> AllowedEnvironments { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed applications.
+        /// </summary>
+        public List<string> AllowedApplications { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error types.
+        /// </summary>
+        public List<string> AllowedErrorTypes { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error severities.
+        /// </summary>
+        public List<string> AllowedErrorSeverities { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error sources.
+        /// </summary>
+        public List<string> AllowedErrorSources { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error categories.
+        /// </summary>
+        public List<string> AllowedErrorCategories { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error subcategories.
+        /// </summary>
+        public List<string> AllowedErrorSubcategories { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error tags.
+        /// </summary>
+        public List<string> AllowedErrorTags { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error attributes.
+        /// </summary>
+        public List<string> AllowedErrorAttributes { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error metadata.
+        /// </summary>
+        public List<string> AllowedErrorMetadata { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error context.
+        /// </summary>
+        public List<string> AllowedErrorContext { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error stack traces.
+        /// </summary>
+        public List<string> AllowedErrorStackTraces { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error messages.
+        /// </summary>
+        public List<string> AllowedErrorMessages { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error codes.
+        /// </summary>
+        public List<string> AllowedErrorCodes { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error exceptions.
+        /// </summary>
+        public List<string> AllowedErrorExceptions { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error inner exceptions.
+        /// </summary>
+        public List<string> AllowedErrorInnerExceptions { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error source.
+        /// </summary>
+        public List<string> AllowedErrorSource { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error target site.
+        /// </summary>
+        public List<string> AllowedErrorTargetSite { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error help link.
+        /// </summary>
+        public List<string> AllowedErrorHelpLink { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error data.
+        /// </summary>
+        public List<string> AllowedErrorData { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of allowed error hresult.
+        /// </summary>
+        public List<string> AllowedErrorHResult { get; set; } = new();
     }
 } 
-
-
-
-
-

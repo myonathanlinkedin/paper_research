@@ -1,3 +1,4 @@
+using System;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Remediation;
 using System.Collections.Generic;
@@ -12,6 +13,11 @@ namespace RuntimeErrorSage.Core.Models.Remediation.Interfaces
     /// </summary>
     public interface IRemediationAction
     {
+        /// <summary>
+        /// Gets or sets the unique identifier for this action.
+        /// </summary>
+        string ActionId { get; set; }
+
         /// <summary>
         /// Gets or sets the action type.
         /// </summary>
@@ -28,9 +34,19 @@ namespace RuntimeErrorSage.Core.Models.Remediation.Interfaces
         string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the priority of the action.
+        /// </summary>
+        int Priority { get; set; }
+
+        /// <summary>
         /// Gets or sets the action parameters.
         /// </summary>
         Dictionary<string, object> Parameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error context this action is associated with.
+        /// </summary>
+        ErrorContext Context { get; set; }
 
         /// <summary>
         /// Validates the action.
@@ -45,6 +61,18 @@ namespace RuntimeErrorSage.Core.Models.Remediation.Interfaces
         /// <param name="context">The error context.</param>
         /// <returns>The remediation result.</returns>
         Task<RemediationResult> ExecuteAsync(ErrorContext context);
+
+        /// <summary>
+        /// Rolls back the remediation action.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation with a result indicating success or failure.</returns>
+        Task<RemediationResult> RollbackAsync();
+
+        /// <summary>
+        /// Gets the estimated impact of this action.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation with the impact result.</returns>
+        Task<RemediationImpact> GetEstimatedImpactAsync();
     }
 } 
 

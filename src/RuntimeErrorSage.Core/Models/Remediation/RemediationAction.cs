@@ -40,6 +40,15 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         }
 
         /// <summary>
+        /// Gets or sets the action type.
+        /// </summary>
+        public string ActionType
+        {
+            get => _core.ActionType;
+            set => _core.ActionType = value;
+        }
+
+        /// <summary>
         /// Gets or sets the name of the action.
         /// </summary>
         public string Name
@@ -60,7 +69,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets the context in which the action should be executed.
         /// </summary>
-        public string Context
+        public ErrorContext Context
         {
             get => _core.Context;
             set => _core.Context = value;
@@ -202,7 +211,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets the retry count for the action.
+        /// Gets or sets the number of retries.
         /// </summary>
         public int RetryCount
         {
@@ -310,7 +319,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets the error message if the action failed.
+        /// Gets or sets the error message.
         /// </summary>
         public string ErrorMessage
         {
@@ -319,7 +328,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets the stack trace if the action failed.
+        /// Gets or sets the stack trace.
         /// </summary>
         public string StackTrace
         {
@@ -328,7 +337,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets the output of the action.
+        /// Gets or sets the output.
         /// </summary>
         public string Output
         {
@@ -337,7 +346,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets the validation results for the action.
+        /// Gets or sets the validation results.
         /// </summary>
         public List<ValidationResult> ValidationResults
         {
@@ -364,7 +373,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets the rollback action if available.
+        /// Gets or sets the rollback action.
         /// </summary>
         public RemediationAction RollbackAction
         {
@@ -379,31 +388,35 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <returns>The validation result.</returns>
         public async Task<ValidationResult> ValidateAsync(ErrorContext context)
         {
-            return await _validation.ValidateActionAsync(this, context);
+            return await _validation.ValidateAsync(context);
         }
 
         /// <summary>
         /// Executes the action.
         /// </summary>
         /// <param name="context">The error context.</param>
-        /// <returns>The execution result.</returns>
-        public async Task<ExecutionResult> ExecuteAsync(ErrorContext context)
+        /// <returns>The remediation result.</returns>
+        public async Task<RemediationResult> ExecuteAsync(ErrorContext context)
         {
-            var result = await _execution.ExecuteActionAsync(this, context);
-            _result.RecordResult(this, new ActionResult
-            {
-                ActionId = ActionId,
-                Timestamp = DateTime.UtcNow,
-                Success = result.Success,
-                Error = result.Error,
-                ExecutionTimeMs = result.EndTime.HasValue ? (long)(result.EndTime.Value - result.StartTime).TotalMilliseconds : 0,
-                ExecutionResult = result,
-                Status = Status,
-                Output = Output,
-                Warnings = new List<string>(),
-                Metrics = new Dictionary<string, object>()
-            });
-            return result;
+            return await _execution.ExecuteAsync(context);
+        }
+
+        /// <summary>
+        /// Rolls back the remediation action.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation with a result indicating success or failure.</returns>
+        public async Task<RemediationResult> RollbackAsync()
+        {
+            return await _execution.RollbackAsync();
+        }
+
+        /// <summary>
+        /// Gets the estimated impact of this action.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation with the impact result.</returns>
+        public async Task<RemediationImpact> GetEstimatedImpactAsync()
+        {
+            return await _execution.GetEstimatedImpactAsync();
         }
 
         /// <summary>
@@ -412,49 +425,49 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <returns>The action result.</returns>
         public ActionResult GetResult()
         {
-            return _result.GetResult(ActionId);
+            return _result.GetResult();
         }
 
         /// <summary>
-        /// Registers a handler for action results.
+        /// Registers a result handler.
         /// </summary>
-        /// <param name="handler">The handler to register.</param>
+        /// <param name="handler">The result handler.</param>
         public void RegisterResultHandler(Action<ActionResult> handler)
         {
-            _result.RegisterResultHandler(handler);
+            _result.RegisterHandler(handler);
         }
 
         /// <summary>
-        /// Unregisters a handler for action results.
+        /// Unregisters a result handler.
         /// </summary>
-        /// <param name="handler">The handler to unregister.</param>
+        /// <param name="handler">The result handler.</param>
         public void UnregisterResultHandler(Action<ActionResult> handler)
         {
-            _result.UnregisterResultHandler(handler);
+            _result.UnregisterHandler(handler);
         }
 
         /// <summary>
-        /// Registers a handler for execution results.
+        /// Registers an execution handler.
         /// </summary>
-        /// <param name="handler">The handler to register.</param>
+        /// <param name="handler">The execution handler.</param>
         public void RegisterExecutionHandler(Action<ExecutionResult> handler)
         {
-            _execution.RegisterExecutionHandler(handler);
+            _execution.RegisterHandler(handler);
         }
 
         /// <summary>
-        /// Unregisters a handler for execution results.
+        /// Unregisters an execution handler.
         /// </summary>
-        /// <param name="handler">The handler to unregister.</param>
+        /// <param name="handler">The execution handler.</param>
         public void UnregisterExecutionHandler(Action<ExecutionResult> handler)
         {
-            _execution.UnregisterExecutionHandler(handler);
+            _execution.UnregisterHandler(handler);
         }
 
         /// <summary>
         /// Adds a validation rule.
         /// </summary>
-        /// <param name="rule">The validation rule to add.</param>
+        /// <param name="rule">The validation rule.</param>
         public void AddValidationRule(ValidationRule rule)
         {
             _validation.AddRule(rule);
@@ -463,28 +476,27 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Removes a validation rule.
         /// </summary>
-        /// <param name="rule">The validation rule to remove.</param>
+        /// <param name="rule">The validation rule.</param>
         public void RemoveValidationRule(ValidationRule rule)
         {
             _validation.RemoveRule(rule);
         }
 
         /// <summary>
-        /// Gets all validation rules.
+        /// Gets the validation rules.
         /// </summary>
-        /// <returns>The list of validation rules.</returns>
+        /// <returns>The validation rules.</returns>
         public IReadOnlyList<ValidationRule> GetValidationRules()
         {
             return _validation.GetRules();
         }
 
         /// <summary>
-        /// Clears all results.
+        /// Clears the results.
         /// </summary>
         public void ClearResults()
         {
-            _result.ClearResults();
-            _execution.ClearResults();
+            _result.Clear();
         }
     }
 } 

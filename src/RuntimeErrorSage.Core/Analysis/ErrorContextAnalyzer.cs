@@ -10,6 +10,7 @@ using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Graph.Factories;
 using RuntimeErrorSage.Core.Models.Error.Factories;
 using RuntimeErrorSage.Core.Models.Common.Factories;
+using RuntimeErrorSage.Core.Models.Common.Interfaces;
 
 namespace RuntimeErrorSage.Core.Analysis
 {

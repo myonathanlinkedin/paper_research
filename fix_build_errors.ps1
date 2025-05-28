@@ -1,86 +1,37 @@
-# PowerShell script to fix build errors in the RuntimeErrorSage project
+# ========================================
+# FULL BUILD ERROR FIXING WORKFLOW (SILENT)
+# ========================================
 
-# Function to ensure all remediation action classes use the correct namespace
-function Fix-Namespaces {
-    param (
-        [string]$rootDir
-    )
-    
-    # Get all .cs files that contain remediation action classes
-    $files = Get-ChildItem -Path $rootDir -Recurse -Filter "*.cs" | 
-             Where-Object { $_.FullName -like "*RemediationAction*.cs" }
-    
-    foreach ($file in $files) {
-        $content = Get-Content $file.FullName -Raw
-        
-        # Ensure correct namespace is used
-        if ($content -notmatch "using RuntimeErrorSage.Core.Models.Remediation;") {
-            $content = "using RuntimeErrorSage.Core.Models.Remediation;`n" + $content
-        }
-        
-        # Ensure correct namespace is used for interfaces
-        if ($content -notmatch "using RuntimeErrorSage.Core.Models.Remediation.Interfaces;") {
-            $content = "using RuntimeErrorSage.Core.Models.Remediation.Interfaces;`n" + $content
-        }
-        
-        Set-Content -Path $file.FullName -Value $content
-    }
+# STEP 0: Initial Compile — Identify Errors
+dotnet build --nologo | Tee-Object -FilePath initial_build_output.txt
+
+if (!(Select-String -Path initial_build_output.txt -Pattern 'error')) {
+    exit 0
 }
 
-# Function to ensure all remediation status references use Success instead of Completed
-function Fix-RemediationStatus {
-    param (
-        [string]$rootDir
-    )
-    
-    # Get all .cs files
-    $files = Get-ChildItem -Path $rootDir -Recurse -Filter "*.cs"
-    
-    foreach ($file in $files) {
-        $content = Get-Content $file.FullName -Raw
-        
-        # Replace Completed with Success
-        $content = $content -replace "RemediationStatusEnum\.Completed", "RemediationStatusEnum.Success"
-        
-        Set-Content -Path $file.FullName -Value $content
-    }
+# STEP 1: Snapshot Project Structure
+.\generate-cs-tree.ps1 > projectstructure.txt
+
+# STEP 2: Static Code Report (Excludes Tests)
+.\analyze_code.ps1 > solid_report.txt
+
+# STEP 2.1: Optional — Aggregate .tex files from /paper
+Get-ChildItem -Path .\paper -Recurse -Filter *.tex | Get-Content | Set-Content -Encoding UTF8 paper_read.txt
+
+# STEP 3: Generate Fix Plan — Prioritize Critical Errors First
+.\generate_fix_plan.ps1 -InputPath initial_build_output.txt -OutputPath fix_plan.txt
+
+# STEP 4: Apply Fix Plan Automatically
+.\apply_fix_plan.ps1 -PlanPath fix_plan.txt
+
+# STEP 5: Rebuild to Validate Fixes
+dotnet build --nologo | Tee-Object -FilePath build_output_after_fix.txt
+
+if (Select-String -Path build_output_after_fix.txt -Pattern 'error') {
+    exit 1
 }
 
-# Function to ensure all remediation action classes inherit from the base class
-function Fix-Inheritance {
-    param (
-        [string]$rootDir
-    )
-    
-    # Get all remediation action class files except the base class
-    $files = Get-ChildItem -Path $rootDir -Recurse -Filter "*.cs" | 
-             Where-Object { $_.FullName -like "*RemediationAction*.cs" -and 
-                          $_.FullName -notlike "*RemediationAction.cs" }
-    
-    foreach ($file in $files) {
-        $content = Get-Content $file.FullName -Raw
-        
-        # If the class doesn't inherit from RemediationAction, make it inherit
-        if ($content -match "class\s+(\w+RemediationAction\w+)" -and 
-            $content -notmatch ":\s*RemediationAction") {
-            $className = $matches[1]
-            $content = $content -replace "class\s+$className", "class $className : RemediationAction"
-        }
-        
-        Set-Content -Path $file.FullName -Value $content
-    }
-}
-
-# Main script execution
-$rootDir = "src"
-
-Write-Host "Fixing namespaces..."
-Fix-Namespaces -rootDir $rootDir
-
-Write-Host "Fixing remediation status references..."
-Fix-RemediationStatus -rootDir $rootDir
-
-Write-Host "Fixing inheritance..."
-Fix-Inheritance -rootDir $rootDir
-
-Write-Host "Build error fixes completed." 
+# STEP 6: Sanity Checks and Final Pass
+.\generate-cs-tree.ps1 > projectstructure.txt
+.\analyze_code.ps1 > solid_report.txt
+dotnet build --nologo | Tee-Object -FilePath final_build_output.txt 

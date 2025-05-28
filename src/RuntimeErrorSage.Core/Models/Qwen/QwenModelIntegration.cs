@@ -5,6 +5,7 @@ using System.Linq;
 using RuntimeErrorSage.Core.Models.LLM;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Classification;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Core.LLM.Options;
 using RuntimeErrorSage.Core.Interfaces;

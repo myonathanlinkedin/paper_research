@@ -62,4 +62,8 @@
     <Folder Include="Validation\Errors\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="Models/Classification/ClassificationResult.cs" />
+  </ItemGroup>
+
 </Project>
