@@ -12,9 +12,59 @@ namespace RuntimeErrorSage.Core.Models.Remediation
     public class RemediationResult
     {
         /// <summary>
-        /// Gets or sets the unique identifier for the result.
+        /// Gets or sets the unique identifier for this result.
         /// </summary>
         public string ResultId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets whether the remediation was successful.
+        /// </summary>
+        public bool IsSuccessful { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error ID that was remediated.
+        /// </summary>
+        public string ErrorId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets a message describing the result.
+        /// </summary>
+        public string Message { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets an error message if the remediation failed.
+        /// </summary>
+        public string ErrorMessage { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the timestamp when the remediation was executed.
+        /// </summary>
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the duration of the remediation.
+        /// </summary>
+        public TimeSpan Duration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status of the remediation.
+        /// </summary>
+        public RemediationStatusEnum Status { get; set; } = RemediationStatusEnum.Completed;
+
+        /// <summary>
+        /// Gets or sets the rollback status.
+        /// </summary>
+        public RollbackStatus RollbackStatus { get; set; } = RollbackStatus.NotRequired;
+
+        /// <summary>
+        /// Gets or sets additional metadata for the result.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Gets or sets any validation messages associated with this result.
+        /// </summary>
+        public List<string> ValidationMessages { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the remediation identifier.
@@ -27,39 +77,14 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the error ID.
-        /// </summary>
-        public string ErrorId { get; set; } = string.Empty;
-
-        /// <summary>
         /// Gets or sets the error type.
         /// </summary>
         public string ErrorType { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets whether the remediation was successful.
-        /// </summary>
-        public bool IsSuccessful { get; set; }
-
-        /// <summary>
         /// Gets or sets the success status.
         /// </summary>
         public bool Success { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error message.
-        /// </summary>
-        public string ErrorMessage { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the message.
-        /// </summary>
-        public string Message { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the timestamp when the result was created.
-        /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the start time of the remediation operation.
@@ -72,11 +97,6 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public DateTime? EndTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the duration of the remediation operation.
-        /// </summary>
-        public TimeSpan Duration { get; set; }
-
-        /// <summary>
         /// Gets or sets the list of errors that occurred during remediation.
         /// </summary>
         public List<string> Errors { get; set; } = new();
@@ -85,11 +105,6 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// Gets or sets the list of warnings that occurred during remediation.
         /// </summary>
         public List<string> Warnings { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the metadata associated with the result.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the metrics associated with the remediation.
@@ -110,11 +125,6 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// Gets or sets the list of remediation action results.
         /// </summary>
         public List<RemediationActionResult> Actions { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the status of the remediation.
-        /// </summary>
-        public RemediationStatusEnum Status { get; set; }
 
         /// <summary>
         /// Gets or sets the error that occurred during remediation.
@@ -155,11 +165,6 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// Gets or sets the failed steps.
         /// </summary>
         public List<RemediationStep> FailedSteps { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the rollback status.
-        /// </summary>
-        public RollbackStatus? RollbackStatus { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this is a rollback operation.

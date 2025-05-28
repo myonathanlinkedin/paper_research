@@ -12,7 +12,7 @@ public class RemediationValidationRule
     /// <summary>
     /// Gets or sets the unique identifier of the rule.
     /// </summary>
-    public string Id { get; set; }
+    public string RuleId { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the rule.
@@ -72,15 +72,41 @@ public class RemediationValidationRule
     /// <summary>
     /// Gets or sets when the rule was created.
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets when the rule was last updated.
     /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset ModifiedAt { get; set; }
 
     /// <summary>
     /// Gets or sets whether the rule is active.
     /// </summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// Gets or sets the severity level of the rule.
+    /// </summary>
+    public ErrorSeverity Severity { get; set; }
+
+    /// <summary>
+    /// Gets or sets the validation function that determines if the rule is satisfied.
+    /// </summary>
+    public Func<RemediationAction, bool> ValidationFunction { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error message to display if the rule is not satisfied.
+    /// </summary>
+    public string ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the RemediationValidationRule class.
+    /// </summary>
+    public RemediationValidationRule()
+    {
+        RuleId = Guid.NewGuid().ToString();
+        CreatedAt = DateTimeOffset.UtcNow;
+        ModifiedAt = DateTimeOffset.UtcNow;
+        IsEnabled = true;
+    }
 } 

@@ -1,6 +1,9 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Validation;
 
 namespace RuntimeErrorSage.Core.Models.Remediation.Interfaces
 {
@@ -10,24 +13,34 @@ namespace RuntimeErrorSage.Core.Models.Remediation.Interfaces
     public interface IRemediationStrategy
     {
         /// <summary>
-        /// Gets the name of the strategy.
+        /// Gets or sets the unique identifier of the strategy.
         /// </summary>
-        string Name { get; }
+        string Id { get; set; }
 
         /// <summary>
-        /// Gets the description of the strategy.
+        /// Gets or sets the name of the strategy.
         /// </summary>
-        string Description { get; }
+        string Name { get; set; }
 
         /// <summary>
-        /// Gets the priority of the strategy.
+        /// Gets or sets the priority of the strategy.
         /// </summary>
-        RemediationPriority Priority { get; }
+        RemediationPriority Priority { get; set; }
 
         /// <summary>
-        /// Gets whether the strategy is enabled.
+        /// Gets or sets the description of the strategy.
         /// </summary>
-        bool IsEnabled { get; }
+        string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parameters for the strategy.
+        /// </summary>
+        Dictionary<string, object> Parameters { get; set; }
+
+        /// <summary>
+        /// Gets the collection of error types that this strategy can remediate.
+        /// </summary>
+        ISet<string> SupportedErrorTypes { get; }
 
         /// <summary>
         /// Executes the remediation strategy for the given error context.
@@ -62,5 +75,12 @@ namespace RuntimeErrorSage.Core.Models.Remediation.Interfaces
         /// </summary>
         /// <returns>True if the configuration is valid, false otherwise.</returns>
         Task<bool> ValidateConfigurationAsync();
+
+        /// <summary>
+        /// Validates if the strategy can be applied to the given error context.
+        /// </summary>
+        /// <param name="context">The error context to validate.</param>
+        /// <returns>A task representing the asynchronous operation that returns a validation result.</returns>
+        Task<ValidationResult> ValidateAsync(ErrorContext context);
     }
 } 

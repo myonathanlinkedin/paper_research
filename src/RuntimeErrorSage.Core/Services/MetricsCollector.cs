@@ -6,6 +6,8 @@ using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Services.Interfaces;
+using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Metrics.Interfaces;
 
 namespace RuntimeErrorSage.Core.Services
 {
@@ -82,40 +84,12 @@ namespace RuntimeErrorSage.Core.Services
         /// <inheritdoc />
         public async Task<Dictionary<string, MetricValue>> CollectMetricsAsync()
         {
-            try
-            {
-                _logger.LogInformation("Collecting metrics");
-
-                var metrics = new Dictionary<string, MetricValue>();
-
-                // Collect system metrics
-                metrics["cpu_usage"] = new MetricValue
-                {
-                    Value = GetCpuUsage(),
-                    Unit = "percent",
-                    Metadata = new Dictionary<string, object>
-                    {
-                        { "timestamp", DateTime.UtcNow }
-                    }
-                };
-
-                metrics["memory_usage"] = new MetricValue
-                {
-                    Value = GetMemoryUsage(),
-                    Unit = "megabytes",
-                    Metadata = new Dictionary<string, object>
-                    {
-                        { "timestamp", DateTime.UtcNow }
-                    }
-                };
-
-                return metrics;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error collecting metrics");
-                return new Dictionary<string, MetricValue>();
-            }
+            var metrics = new Dictionary<string, MetricValue>();
+            
+            // Implementation will be added
+            await Task.CompletedTask;
+            
+            return metrics;
         }
 
         private double GetCpuUsage()

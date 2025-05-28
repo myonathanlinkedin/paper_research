@@ -5,7 +5,7 @@ namespace RuntimeErrorSage.Core.Services
 {
     public class RemediationActionService
     {
-        private RiskLevel CalculateRiskLevel(RemediationAction action)
+        private RemediationRiskLevel CalculateRiskLevel(RemediationAction action)
         {
             var riskFactors = new List<int>();
 
@@ -30,13 +30,13 @@ namespace RuntimeErrorSage.Core.Services
             // Calculate average risk factor
             var averageRisk = riskFactors.Any() ? riskFactors.Average() : 1;
 
-            // Map to RiskLevel
+            // Map to RemediationRiskLevel
             return averageRisk switch
             {
-                var r when r >= 2.5 => RiskLevel.Critical,
-                var r when r >= 1.75 => RiskLevel.High,
-                var r when r >= 1.25 => RiskLevel.Medium,
-                _ => RiskLevel.Low
+                var r when r >= 2.5 => RemediationRiskLevel.Critical,
+                var r when r >= 1.75 => RemediationRiskLevel.High,
+                var r when r >= 1.25 => RemediationRiskLevel.Medium,
+                _ => RemediationRiskLevel.Low
             };
         }
 
@@ -72,13 +72,13 @@ namespace RuntimeErrorSage.Core.Services
             // Add risk-based issues
             switch (action.RiskLevel)
             {
-                case RiskLevel.Critical:
+                case RemediationRiskLevel.Critical:
                     issues.Add("Critical risk level may impact system stability");
                     break;
-                case RiskLevel.High:
+                case RemediationRiskLevel.High:
                     issues.Add("High risk level may affect multiple components");
                     break;
-                case RiskLevel.Medium:
+                case RemediationRiskLevel.Medium:
                     issues.Add("Medium risk level may impact specific functionality");
                     break;
             }
@@ -97,20 +97,20 @@ namespace RuntimeErrorSage.Core.Services
             // Add risk-specific mitigation steps
             switch (action.RiskLevel)
             {
-                case RiskLevel.Critical:
+                case RemediationRiskLevel.Critical:
                     steps.Add("Implement rollback mechanism");
                     steps.Add("Add comprehensive logging");
                     steps.Add("Schedule immediate monitoring after execution");
                     break;
-                case RiskLevel.High:
+                case RemediationRiskLevel.High:
                     steps.Add("Add detailed logging");
                     steps.Add("Implement partial rollback if needed");
                     break;
-                case RiskLevel.Medium:
+                case RemediationRiskLevel.Medium:
                     steps.Add("Add basic logging");
                     steps.Add("Monitor execution results");
                     break;
-                case RiskLevel.Low:
+                case RemediationRiskLevel.Low:
                     steps.Add("Verify execution results");
                     break;
             }

@@ -1,37 +1,33 @@
-namespace RuntimeErrorSage.Core.Models.Enums;
-
-/// <summary>
-/// Represents the severity level of an impact.
-/// </summary>
-public enum ImpactSeverity
+namespace RuntimeErrorSage.Core.Models.Enums
 {
     /// <summary>
-    /// No impact.
+    /// Defines the severity levels for impact assessment.
     /// </summary>
-    None = 0,
+    public enum ImpactSeverity
+    {
+        /// <summary>
+        /// Critical impact - system is unusable or data is at risk.
+        /// </summary>
+        Critical = 0,
 
-    /// <summary>
-    /// Low severity impact.
-    /// </summary>
-    Low = 1,
+        /// <summary>
+        /// High impact - major functionality is affected.
+        /// </summary>
+        High = 1,
 
-    /// <summary>
-    /// Medium severity impact.
-    /// </summary>
-    Medium = 2,
+        /// <summary>
+        /// Medium impact - functionality is impaired but not blocked.
+        /// </summary>
+        Medium = 2,
 
-    /// <summary>
-    /// High severity impact.
-    /// </summary>
-    High = 3,
+        /// <summary>
+        /// Low impact - minor issues with minimal effect.
+        /// </summary>
+        Low = 3,
 
-    /// <summary>
-    /// Critical severity impact.
-    /// </summary>
-    Critical = 4,
-
-    /// <summary>
-    /// Catastrophic severity impact.
-    /// </summary>
-    Catastrophic = 5
+        /// <summary>
+        /// Minimal impact - negligible effect on functionality.
+        /// </summary>
+        Minimal = 4
+    }
 } 

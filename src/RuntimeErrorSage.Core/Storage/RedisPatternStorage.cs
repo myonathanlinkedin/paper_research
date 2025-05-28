@@ -21,6 +21,7 @@ public class RedisPatternStorage : IPatternStorage
     private readonly IConnectionMultiplexer _redis;
     private readonly string _keyPrefix;
     private bool _disposed;
+    private readonly RedisPatternStorageOptions _options;
 
     public RedisPatternStorage(
         ILogger<RedisPatternStorage> logger,
@@ -30,6 +31,7 @@ public class RedisPatternStorage : IPatternStorage
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _redis = redis ?? throw new ArgumentNullException(nameof(redis));
         _keyPrefix = options?.Value?.KeyPrefix ?? "pattern:";
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
     public async Task<List<ErrorPattern>> GetAllPatternsAsync()
@@ -129,6 +131,54 @@ public class RedisPatternStorage : IPatternStorage
             _logger.LogError(ex, "Failed to get all patterns");
             throw new PatternStorageException("Failed to get all patterns", ex);
         }
+    }
+
+    public async Task StorePatternAsync(string key, string pattern, TimeSpan? expiration = null)
+    {
+        // Implementation will be added
+        await Task.CompletedTask;
+    }
+
+    public async Task<string> GetPatternAsync(string key)
+    {
+        // Implementation will be added
+        return await Task.FromResult(string.Empty);
+    }
+
+    public async Task RemovePatternAsync(string key)
+    {
+        // Implementation will be added
+        await Task.CompletedTask;
+    }
+
+    public async Task<bool> PatternExistsAsync(string key)
+    {
+        // Implementation will be added
+        return await Task.FromResult(false);
+    }
+
+    public async Task<IEnumerable<string>> GetPatternsAsync(string pattern)
+    {
+        // Implementation will be added
+        return await Task.FromResult(new List<string>());
+    }
+
+    public async Task UpdateExpirationAsync(string key, TimeSpan expiration)
+    {
+        // Implementation will be added
+        await Task.CompletedTask;
+    }
+
+    public async Task ClearAllAsync()
+    {
+        // Implementation will be added
+        await Task.CompletedTask;
+    }
+
+    public async Task<int> GetPatternCountAsync()
+    {
+        // Implementation will be added
+        return await Task.FromResult(0);
     }
 
     public void Dispose()

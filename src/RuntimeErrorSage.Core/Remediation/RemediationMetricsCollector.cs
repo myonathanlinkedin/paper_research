@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Options;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
@@ -18,7 +18,6 @@ using ValidationSeverity = RuntimeErrorSage.Core.Models.Enums.ValidationSeverity
 using System;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Graph;
-using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.LLM.Interfaces;
 

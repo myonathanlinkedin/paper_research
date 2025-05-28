@@ -13,6 +13,7 @@ using RuntimeErrorSage.Core.Services.Interfaces;
 using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Classifier.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Core.Models.Qwen;
 
@@ -187,15 +188,11 @@ public class QwenModelIntegration : ILLMClient
             _logger.LogInformation("Analyzing error message: {ErrorMessage}", errorMessage);
 
             // Create a minimal error context from the message and context
-            var errorContext = new ErrorContext
-            {
-                ErrorId = Guid.NewGuid().ToString(),
-                CorrelationId = Guid.NewGuid().ToString(),
-                Error = new RuntimeError { Message = errorMessage },
-                ErrorType = "UnknownError",
-                Context = context,
-                Timestamp = DateTime.UtcNow
-            };
+            var errorContext = new ErrorContext(
+                new RuntimeError { Message = errorMessage },
+                context,
+                DateTime.UtcNow
+            );
 
             return await AnalyzeContextAsync(errorContext);
         }
@@ -323,7 +320,7 @@ public class QwenModelIntegration : ILLMClient
             Description = "Sample description",
             Priority = RemediationPriority.Medium,
             Impact = "Medium impact on system performance",
-            Risk = "Low risk of data loss",
+            Risk = RemediationRiskLevel.Low,
             Validation = "Monitor system logs for errors",
             Confidence = 0.8
         };

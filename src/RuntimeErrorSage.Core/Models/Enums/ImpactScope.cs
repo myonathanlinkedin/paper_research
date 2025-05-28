@@ -1,37 +1,38 @@
-namespace RuntimeErrorSage.Core.Models.Enums;
-
-/// <summary>
-/// Defines the scope of impact for a graph node.
-/// </summary>
-public enum ImpactScope
+namespace RuntimeErrorSage.Core.Models.Enums
 {
     /// <summary>
-    /// No impact.
+    /// Defines the scope of an impact assessment.
     /// </summary>
-    None = 0,
+    public enum ImpactScope
+    {
+        /// <summary>
+        /// Global impact affecting the entire system.
+        /// </summary>
+        Global = 0,
 
-    /// <summary>
-    /// Local impact affecting only the immediate component.
-    /// </summary>
-    Local = 1,
+        /// <summary>
+        /// System impact affecting a large portion of the system.
+        /// </summary>
+        System = 1,
 
-    /// <summary>
-    /// Module impact affecting the containing module.
-    /// </summary>
-    Module = 2,
+        /// <summary>
+        /// Service impact affecting a specific service.
+        /// </summary>
+        Service = 2,
 
-    /// <summary>
-    /// Service impact affecting the entire service.
-    /// </summary>
-    Service = 3,
+        /// <summary>
+        /// Component impact affecting a specific component.
+        /// </summary>
+        Component = 3,
 
-    /// <summary>
-    /// System impact affecting multiple services.
-    /// </summary>
-    System = 4,
+        /// <summary>
+        /// Local impact affecting a specific area.
+        /// </summary>
+        Local = 4,
 
-    /// <summary>
-    /// Global impact affecting the entire application.
-    /// </summary>
-    Global = 5
+        /// <summary>
+        /// User impact affecting specific users.
+        /// </summary>
+        User = 5
+    }
 } 

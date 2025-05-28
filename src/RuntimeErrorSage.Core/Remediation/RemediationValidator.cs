@@ -239,7 +239,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             var potentialIssues = GeneratePotentialIssues(action);
             var mitigationSteps = GenerateMitigationSteps(action);
 
-            if (riskLevel == RiskLevel.High || riskLevel == RiskLevel.Critical)
+            if (riskLevel == RemediationRiskLevel.High || riskLevel == RemediationRiskLevel.Critical)
             {
                 result.AddWarning($"Action has {riskLevel} risk level", ValidationSeverity.Warning);
                 foreach (var issue in potentialIssues)
@@ -504,10 +504,39 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         };
     }
 
-    private RiskLevel CalculateRiskLevel(RemediationAction action)
+    private RemediationRiskLevel CalculateRiskLevel(RemediationAction action)
     {
-        // Implement risk level calculation logic
-        return RiskLevel.Medium;
+        var riskFactors = new List<int>();
+
+        // Analyze error type severity
+        if (action.ErrorType?.Contains("Critical", StringComparison.OrdinalIgnoreCase) == true)
+            riskFactors.Add(3);
+        else if (action.ErrorType?.Contains("Error", StringComparison.OrdinalIgnoreCase) == true)
+            riskFactors.Add(2);
+        else if (action.ErrorType?.Contains("Warning", StringComparison.OrdinalIgnoreCase) == true)
+            riskFactors.Add(1);
+
+        // Analyze stack trace depth
+        var stackTraceDepth = action.StackTrace?.Split('\n').Length ?? 0;
+        if (stackTraceDepth > 10) riskFactors.Add(2);
+        else if (stackTraceDepth > 5) riskFactors.Add(1);
+
+        // Analyze context complexity
+        var contextComplexity = action.Context?.Count ?? 0;
+        if (contextComplexity > 10) riskFactors.Add(2);
+        else if (contextComplexity > 5) riskFactors.Add(1);
+
+        // Calculate average risk factor
+        var averageRisk = riskFactors.Any() ? riskFactors.Average() : 1;
+
+        // Map to RemediationRiskLevel
+        return averageRisk switch
+        {
+            var r when r >= 2.5 => RemediationRiskLevel.Critical,
+            var r when r >= 1.75 => RemediationRiskLevel.High,
+            var r when r >= 1.25 => RemediationRiskLevel.Medium,
+            _ => RemediationRiskLevel.Low
+        };
     }
 
     private List<string> GeneratePotentialIssues(RemediationAction action)

@@ -93,7 +93,7 @@ namespace RuntimeErrorSage.Core.Options
         /// Gets or sets the minimum severity level required for automatic remediation.
         /// Additional feature for remediation control.
         /// </summary>
-        public SeverityLevel AutoRemediationThreshold { get; set; } = SeverityLevel.Medium;
+        public ErrorSeverity AutoRemediationThreshold { get; set; } = ErrorSeverity.Medium;
 
         /// <summary>
         /// Gets or sets the MCP endpoint URL for pattern sharing and collaboration.
@@ -170,7 +170,7 @@ namespace RuntimeErrorSage.Core.Options
         /// <summary>
         /// Gets or sets the severity level threshold for remediation.
         /// </summary>
-        public SeverityLevel RemediationSeverityThreshold { get; set; } = SeverityLevel.Medium;
+        public ErrorSeverity RemediationSeverityThreshold { get; set; } = ErrorSeverity.Medium;
 
         public bool EnableLLMAnalysis { get; set; } = true;
         public bool EnableGraphAnalysis { get; set; } = true;

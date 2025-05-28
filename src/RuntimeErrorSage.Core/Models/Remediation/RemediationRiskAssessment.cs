@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Utilities;
 
 namespace RuntimeErrorSage.Core.Models.Remediation;
 
@@ -15,22 +16,18 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
     /// </summary>
     /// <param name="action">The remediation action to assess.</param>
     /// <returns>The calculated risk level.</returns>
-    public RiskLevel CalculateRiskLevel(RemediationAction action)
+    public RemediationRiskLevel CalculateRiskLevel(RemediationAction action)
     {
         if (action == null)
         {
-            return RiskLevel.Medium;
+            return RemediationRiskLevel.Medium;
         }
 
-        // Convert from RemediationRiskLevel to RiskLevel
-        return action.RiskLevel switch
-        {
-            RemediationRiskLevel.Low => RiskLevel.Low,
-            RemediationRiskLevel.Medium => RiskLevel.Medium,
-            RemediationRiskLevel.High => RiskLevel.High,
-            RemediationRiskLevel.Critical => RiskLevel.Critical,
-            _ => RiskLevel.Medium,
-        };
+        // Use the helper to calculate risk level
+        var remediationRiskLevel = RiskAssessmentHelper.CalculateRiskLevel(action.Impact, action.ImpactScope);
+
+        // Return the calculated risk level
+        return remediationRiskLevel;
     }
 
     /// <summary>
@@ -47,30 +44,43 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
 
         var issues = new List<string>();
 
-        // Check for risks based on action properties
-        if (action.RequiresManualApproval)
+        // Add issues based on error type
+        if (!string.IsNullOrEmpty(action.ErrorType))
         {
-            issues.Add("Requires manual approval which may delay remediation");
+            issues.Add($"Potential {action.ErrorType} recurrence");
         }
 
-        if (action.RiskLevel == RemediationRiskLevel.High || action.RiskLevel == RemediationRiskLevel.Critical)
+        // Add issues based on stack trace
+        if (!string.IsNullOrEmpty(action.StackTrace))
         {
-            issues.Add($"High risk action with potential system impact: {action.Description}");
+            var stackLines = action.StackTrace.Split('\n');
+            if (stackLines.Length > 5)
+            {
+                issues.Add("Deep call stack may indicate complex error propagation");
+            }
         }
 
-        if (action.ImpactScope == RemediationActionImpactScope.Global)
+        // Add issues based on context
+        if (action.Context?.Count > 0)
         {
-            issues.Add("Action has global impact scope which may affect multiple components");
+            if (action.Context.Count > 5)
+            {
+                issues.Add("Complex context may lead to unexpected side effects");
+            }
         }
 
-        if (action.Dependencies.Count > 0)
+        // Add risk-based issues
+        switch (action.RiskLevel)
         {
-            issues.Add($"Action has {action.Dependencies.Count} dependencies which increases complexity");
-        }
-
-        if (issues.Count == 0)
-        {
-            issues.Add("No significant issues identified");
+            case RemediationRiskLevel.Critical:
+                issues.Add("Critical risk level may impact system stability");
+                break;
+            case RemediationRiskLevel.High:
+                issues.Add("High risk level may affect multiple components");
+                break;
+            case RemediationRiskLevel.Medium:
+                issues.Add("Medium risk level may impact specific functionality");
+                break;
         }
 
         return issues;
@@ -85,40 +95,44 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
     {
         if (action == null)
         {
-            return new List<string> { "Create backup before proceeding with any remediation" };
+            return new List<string> { "Unable to generate mitigation steps - no action provided" };
         }
 
         var steps = new List<string>();
 
-        // Generate mitigation steps based on action properties
-        if (action.CanRollback)
+        // Add basic validation steps
+        steps.Add("Validate all input parameters");
+        steps.Add("Ensure proper error handling is in place");
+        steps.Add("Verify system state before execution");
+
+        // Add risk-specific steps
+        switch (action.RiskLevel)
         {
-            steps.Add("Rollback plan is available if remediation fails");
-        }
-        else
-        {
-            steps.Add("Create a manual backup before proceeding");
+            case RemediationRiskLevel.Critical:
+                steps.Add("Implement comprehensive rollback strategy");
+                steps.Add("Schedule during maintenance window");
+                steps.Add("Prepare backup of affected components");
+                break;
+            case RemediationRiskLevel.High:
+                steps.Add("Implement basic rollback strategy");
+                steps.Add("Monitor system metrics during execution");
+                break;
+            case RemediationRiskLevel.Medium:
+                steps.Add("Implement basic validation checks");
+                steps.Add("Monitor execution progress");
+                break;
+            case RemediationRiskLevel.Low:
+                steps.Add("Implement basic logging");
+                break;
         }
 
-        if (action.RequiresManualApproval)
+        // Add context-specific steps
+        if (action.Context?.Count > 0)
         {
-            steps.Add("Verify changes before approval");
-        }
-
-        if (action.RiskLevel == RemediationRiskLevel.High || action.RiskLevel == RemediationRiskLevel.Critical)
-        {
-            steps.Add("Execute during maintenance window to minimize impact");
-            steps.Add("Prepare contingency plan for critical services");
-        }
-
-        if (action.ImpactScope != RemediationActionImpactScope.None)
-        {
-            steps.Add("Notify affected system owners before proceeding");
-        }
-
-        if (steps.Count == 0)
-        {
-            steps.Add("Standard monitoring during execution");
+            foreach (var kvp in action.Context)
+            {
+                steps.Add($"Validate {kvp.Key} before use");
+            }
         }
 
         return steps;

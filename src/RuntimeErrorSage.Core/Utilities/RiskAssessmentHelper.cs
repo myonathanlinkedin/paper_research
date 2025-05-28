@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Enums;
-using RemediationSeverity = RuntimeErrorSage.Models.Enums.RemediationSeverity;
+using RuntimeErrorSage.Core.Models.Remediation;
 
 namespace RuntimeErrorSage.Core.Utilities
 {
@@ -16,30 +17,30 @@ namespace RuntimeErrorSage.Core.Utilities
         /// <param name="severity">The severity level.</param>
         /// <param name="impactScope">The impact scope.</param>
         /// <returns>The calculated risk level.</returns>
-        public static RemediationRiskLevel CalculateRiskLevel(Models.Enums.RemediationSeverity severity, RemediationActionImpactScope impactScope)
+        public static RemediationRiskLevel CalculateRiskLevel(RemediationActionSeverity severity, RemediationActionImpactScope impactScope)
         {
             // Calculate risk level based on severity and impact scope
             // Higher severity and wider impact scope result in higher risk level
             
-            if (severity == Models.Enums.RemediationSeverity.Critical)
+            if (severity == RemediationActionSeverity.Critical)
             {
                 return impactScope >= RemediationActionImpactScope.Module ? 
                     RemediationRiskLevel.Critical : RemediationRiskLevel.High;
             }
             
-            if (severity == Models.Enums.RemediationSeverity.High)
+            if (severity == RemediationActionSeverity.High)
             {
                 return impactScope >= RemediationActionImpactScope.Service ? 
                     RemediationRiskLevel.Critical : RemediationRiskLevel.High;
             }
             
-            if (severity == Models.Enums.RemediationSeverity.Medium)
+            if (severity == RemediationActionSeverity.Medium)
             {
                 return impactScope >= RemediationActionImpactScope.System ? 
                     RemediationRiskLevel.High : RemediationRiskLevel.Medium;
             }
             
-            if (severity == Models.Enums.RemediationSeverity.Low)
+            if (severity == RemediationActionSeverity.Low)
             {
                 return impactScope >= RemediationActionImpactScope.Global ? 
                     RemediationRiskLevel.Medium : RemediationRiskLevel.Low;
@@ -109,50 +110,96 @@ namespace RuntimeErrorSage.Core.Utilities
             
             // Common steps for all risk levels
             steps.Add("Verify system state before execution");
+            steps.Add("Validate system state after execution");
             
             switch (riskLevel)
             {
                 case RemediationRiskLevel.Critical:
-                    steps.Add("Create full system backup before proceeding");
-                    steps.Add("Schedule maintenance window");
-                    steps.Add("Notify all stakeholders");
+                    steps.Add("Schedule during maintenance window");
                     steps.Add("Prepare rollback plan");
-                    steps.Add("Have emergency response team on standby");
-                    steps.Add("Test in isolated environment first");
+                    steps.Add("Coordinate with dependent service teams");
+                    steps.Add("Set up additional monitoring");
+                    steps.Add("Prepare incident response plan");
                     break;
                     
                 case RemediationRiskLevel.High:
-                    steps.Add("Create targeted backup of affected components");
-                    steps.Add("Notify key stakeholders");
-                    steps.Add("Prepare rollback procedure");
-                    steps.Add("Monitor system during execution");
-                    steps.Add("Test in staging environment first");
+                    steps.Add("Schedule during low-traffic period");
+                    steps.Add("Prepare rollback plan");
+                    steps.Add("Notify dependent service teams");
+                    steps.Add("Set up monitoring");
                     break;
                     
                 case RemediationRiskLevel.Medium:
-                    steps.Add("Backup affected configuration");
-                    steps.Add("Notify service owners");
-                    steps.Add("Document current state");
-                    steps.Add("Monitor affected components");
+                    steps.Add("Schedule during off-peak hours");
+                    steps.Add("Prepare basic rollback plan");
+                    steps.Add("Set up basic monitoring");
                     break;
                     
                 case RemediationRiskLevel.Low:
-                    steps.Add("Document changes");
-                    steps.Add("Verify functionality after execution");
+                    steps.Add("Schedule during normal business hours");
+                    steps.Add("Prepare simple rollback plan");
                     break;
                     
                 case RemediationRiskLevel.None:
-                    steps.Add("Standard execution without special precautions");
+                    steps.Add("Execute during normal operations");
                     break;
                     
                 default:
-                    steps.Add("Proceed with caution");
+                    steps.Add("Execute with caution");
                     break;
             }
             
-            steps.Add("Validate system state after execution");
-            
             return steps;
+        }
+
+        /// <summary>
+        /// Calculates the confidence level for a risk assessment.
+        /// </summary>
+        /// <param name="action">The remediation action.</param>
+        /// <returns>A confidence value between 0 and 100.</returns>
+        public static double CalculateConfidence(RemediationAction action)
+        {
+            if (action == null)
+            {
+                return 0.0;
+            }
+
+            // Simple confidence calculation based on available data
+            double confidence = 50.0; // Base confidence
+            
+            // Adjust based on available data
+            if (!string.IsNullOrEmpty(action.Description))
+            {
+                confidence += 10.0;
+            }
+            
+            if (action.ValidationResults?.Count > 0)
+            {
+                confidence += 15.0;
+            }
+            
+            if (action.Context != null)
+            {
+                confidence += 15.0;
+
+                // Additional confidence for context details
+                if (!string.IsNullOrEmpty(action.Context.ErrorType))
+                {
+                    confidence += 5.0;
+                }
+                
+                if (!string.IsNullOrEmpty(action.Context.ErrorSource))
+                {
+                    confidence += 5.0;
+                }
+                
+                if (action.Context.AffectedComponents?.Count > 0)
+                {
+                    confidence += 5.0;
+                }
+            }
+            
+            return Math.Min(100.0, confidence);
         }
     }
 } 

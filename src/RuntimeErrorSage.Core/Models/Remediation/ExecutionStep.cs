@@ -1,4 +1,5 @@
 using System;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Remediation;
 

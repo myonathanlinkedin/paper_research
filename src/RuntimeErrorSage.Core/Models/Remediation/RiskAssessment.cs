@@ -5,10 +5,55 @@ using RuntimeErrorSage.Core.Models.Enums;
 namespace RuntimeErrorSage.Core.Models.Remediation;
 
 /// <summary>
-/// Represents a risk assessment for a remediation action.
+/// Represents a risk assessment for a remediation operation.
 /// </summary>
 public class RiskAssessment
 {
+    /// <summary>
+    /// Gets or sets the risk level.
+    /// </summary>
+    public RemediationRiskLevel RiskLevel { get; set; }
+
+    /// <summary>
+    /// Gets or sets a description of the risk.
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the potential issues that may arise.
+    /// </summary>
+    public List<string> PotentialIssues { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Gets or sets the mitigation strategies.
+    /// </summary>
+    public List<string> MitigationStrategies { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Gets or sets the confidence level of the assessment (0-1).
+    /// </summary>
+    public double ConfidenceLevel { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the operation can be rolled back.
+    /// </summary>
+    public bool IsRollbackable { get; set; }
+
+    /// <summary>
+    /// Gets or sets the estimated time to rollback if needed.
+    /// </summary>
+    public TimeSpan? EstimatedRollbackTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional risk factors.
+    /// </summary>
+    public Dictionary<string, object> Factors { get; set; } = new Dictionary<string, object>();
+
+    /// <summary>
+    /// Gets or sets the assessment timestamp.
+    /// </summary>
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
     /// <summary>
     /// Gets or sets the unique identifier.
     /// </summary>
@@ -18,11 +63,6 @@ public class RiskAssessment
     /// Gets or sets the correlation ID for tracing.
     /// </summary>
     public string CorrelationId { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the risk level.
-    /// </summary>
-    public RiskLevel RiskLevel { get; set; }
 
     /// <summary>
     /// Gets or sets the probability of the risk occurring (0-1).
@@ -35,29 +75,14 @@ public class RiskAssessment
     public double Impact { get; set; }
 
     /// <summary>
-    /// Gets or sets the potential issues that may arise.
-    /// </summary>
-    public List<string> PotentialIssues { get; set; } = new();
-
-    /// <summary>
     /// Gets or sets the list of mitigation steps.
     /// </summary>
     public List<string> MitigationSteps { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the confidence level of the assessment (0-100).
-    /// </summary>
-    public double Confidence { get; set; }
-
-    /// <summary>
     /// Gets or sets any additional metadata.
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the timestamp of the assessment.
-    /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the assessment notes.
@@ -110,7 +135,7 @@ public class RiskAssessment
         MitigationSteps = new List<string>();
         Metadata = new Dictionary<string, object>();
         Warnings = new List<string>();
-        RiskLevel = RiskLevel.Medium;
+        RiskLevel = RemediationRiskLevel.Medium;
         RiskFactors = new List<RiskFactor>();
     }
 } 

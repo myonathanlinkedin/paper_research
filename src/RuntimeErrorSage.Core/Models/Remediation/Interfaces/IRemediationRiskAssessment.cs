@@ -13,7 +13,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation.Interfaces
         /// </summary>
         /// <param name="action">The remediation action to assess.</param>
         /// <returns>The calculated risk level.</returns>
-        RiskLevel CalculateRiskLevel(RemediationAction action);
+        RemediationRiskLevel CalculateRiskLevel(RemediationAction action);
 
         /// <summary>
         /// Generates a list of potential issues based on the remediation action.
@@ -23,9 +23,9 @@ namespace RuntimeErrorSage.Core.Models.Remediation.Interfaces
         List<string> GeneratePotentialIssues(RemediationAction action);
 
         /// <summary>
-        /// Generates mitigation steps for a remediation action.
+        /// Generates a list of mitigation steps based on the remediation action.
         /// </summary>
-        /// <param name="action">The remediation action to generate mitigation steps for.</param>
+        /// <param name="action">The remediation action to analyze.</param>
         /// <returns>A list of mitigation steps.</returns>
         List<string> GenerateMitigationSteps(RemediationAction action);
     }

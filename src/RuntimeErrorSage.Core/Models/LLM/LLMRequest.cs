@@ -22,5 +22,11 @@ namespace RuntimeErrorSage.Core.Models.LLM
         /// Gets or sets additional parameters for the LLM request.
         /// </summary>
         public Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();
+
+        public string RequestId { get; set; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
+        public string Prompt { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public string Model { get; set; } = string.Empty;
     }
 } 

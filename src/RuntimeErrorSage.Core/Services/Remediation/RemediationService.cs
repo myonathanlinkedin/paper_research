@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Services.Remediation
 {
@@ -90,6 +91,15 @@ namespace RuntimeErrorSage.Core.Services.Remediation
         public async Task<RemediationResult> GetActionStatusAsync(string actionId)
         {
             return await _actionExecutor.GetActionStatusAsync(actionId);
+        }
+
+        public async Task<RemediationMetrics> GetMetricsAsync(string remediationId)
+        {
+            if (string.IsNullOrEmpty(remediationId))
+                throw new ArgumentException("Remediation ID cannot be null or empty.", nameof(remediationId));
+
+            // Implementation will be added
+            return await Task.FromResult(new RemediationMetrics(remediationId));
         }
     }
 } 

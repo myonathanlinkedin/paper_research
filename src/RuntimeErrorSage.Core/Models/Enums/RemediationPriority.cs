@@ -1,37 +1,28 @@
-namespace RuntimeErrorSage.Core.Models.Enums;
-
-/// <summary>
-/// Represents the priority level of a remediation action.
-/// </summary>
-public enum RemediationPriority
+namespace RuntimeErrorSage.Core.Models.Enums
 {
     /// <summary>
-    /// No priority assigned.
+    /// Defines the priority levels for remediation actions.
     /// </summary>
-    None = 0,
+    public enum RemediationPriority
+    {
+        /// <summary>
+        /// Critical priority - requires immediate attention.
+        /// </summary>
+        Critical = 0,
 
-    /// <summary>
-    /// Low priority - can be addressed when convenient.
-    /// </summary>
-    Low = 1,
+        /// <summary>
+        /// High priority - requires prompt attention.
+        /// </summary>
+        High = 1,
 
-    /// <summary>
-    /// Medium priority - should be addressed soon.
-    /// </summary>
-    Medium = 2,
+        /// <summary>
+        /// Medium priority - requires attention but not urgent.
+        /// </summary>
+        Medium = 2,
 
-    /// <summary>
-    /// High priority - should be addressed as soon as possible.
-    /// </summary>
-    High = 3,
-
-    /// <summary>
-    /// Critical priority - must be addressed immediately.
-    /// </summary>
-    Critical = 4,
-
-    /// <summary>
-    /// Emergency priority - requires immediate attention and may impact system stability.
-    /// </summary>
-    Emergency = 5
+        /// <summary>
+        /// Low priority - can be addressed when convenient.
+        /// </summary>
+        Low = 3
+    }
 } 

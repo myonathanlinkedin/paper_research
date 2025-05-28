@@ -12,6 +12,7 @@ using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using CoreValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
 using DataAnnotationsValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
+using RuntimeErrorSage.Core.Models.Remediation;
 
 namespace RuntimeErrorSage.Core.Remediation.Validation;
 
@@ -22,7 +23,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
 {
     private readonly ILogger<RemediationValidationRegistry> _logger;
     private readonly IMemoryCache _cache;
-    private readonly ConcurrentDictionary<string, RemediationValidationRule> _rules;
+    private readonly Dictionary<string, RemediationValidationRule> _rules;
     private readonly MemoryCacheEntryOptions _defaultCacheOptions;
 
     public RemediationValidationRegistry(
@@ -31,30 +32,44 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
     {
         _logger = logger;
         _cache = cache;
-        _rules = new ConcurrentDictionary<string, RemediationValidationRule>();
+        _rules = new Dictionary<string, RemediationValidationRule>();
         _defaultCacheOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromMinutes(5))
             .SetAbsoluteExpiration(TimeSpan.FromHours(1));
     }
 
+    /// <summary>
+    /// Registers a validation rule.
+    /// </summary>
+    /// <param name="rule">The rule to register.</param>
     public void RegisterRule(RemediationValidationRule rule)
     {
         if (rule == null)
             throw new ArgumentNullException(nameof(rule));
 
-        if (_rules.TryAdd(rule.RuleId, rule))
-        {
-            _logger.LogInformation(
-                "Registered validation rule {Rule} with priority {Priority}",
-                rule.Name,
-                rule.Priority);
-        }
-        else
-        {
-            _logger.LogWarning(
-                "Validation rule {Rule} already registered",
-                rule.Name);
-        }
+        _rules[rule.Name] = rule;
+    }
+
+    /// <summary>
+    /// Gets all registered rules.
+    /// </summary>
+    /// <returns>An enumerable of all registered rules.</returns>
+    public IEnumerable<RemediationValidationRule> GetRules()
+    {
+        return _rules.Values;
+    }
+
+    /// <summary>
+    /// Gets a rule by its name.
+    /// </summary>
+    /// <param name="name">The name of the rule to get.</param>
+    /// <returns>The rule with the specified name, or null if not found.</returns>
+    public RemediationValidationRule GetRule(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException("Rule name cannot be null or empty.", nameof(name));
+
+        return _rules.TryGetValue(name, out var rule) ? rule : null;
     }
 
     public void UnregisterRule(string ruleId)
@@ -139,18 +154,6 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
         var result = await rule.ValidateAsync(plan, context);
         _cache.Set(cacheKey, result, cacheOptions);
         return result;
-    }
-
-    /// <inheritdoc />
-    public IEnumerable<RemediationValidationRule> GetRules()
-    {
-        return _rules.Values.OrderByDescending(r => r.Priority);
-    }
-
-    /// <inheritdoc />
-    public RemediationValidationRule GetRule(string ruleId)
-    {
-        return _rules.TryGetValue(ruleId, out var rule) ? rule : null;
     }
 
     public void ClearCache()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Core.Extensions;
 using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Execution;
 
 namespace RuntimeErrorSage.Core.Examples
 {

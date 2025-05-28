@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Error;
 
 namespace RuntimeErrorSage.Core.Models.Context
 {

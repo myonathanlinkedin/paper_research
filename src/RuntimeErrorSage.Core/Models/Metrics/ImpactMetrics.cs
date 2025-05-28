@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Metrics
 {

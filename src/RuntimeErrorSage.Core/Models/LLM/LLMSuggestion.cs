@@ -59,5 +59,9 @@ namespace RuntimeErrorSage.Core.Models.LLM
         /// Gets or sets additional metadata about the suggestion.
         /// </summary>
         public Dictionary<string, object> Metadata { get; set; } = new();
+
+        public string ErrorId { get; set; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
     }
 } 

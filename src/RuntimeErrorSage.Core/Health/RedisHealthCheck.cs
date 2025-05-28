@@ -5,6 +5,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using RuntimeErrorSage.Core.Storage;
+using RuntimeErrorSage.Core.Models.Health;
 
 namespace RuntimeErrorSage.Core.Health;
 

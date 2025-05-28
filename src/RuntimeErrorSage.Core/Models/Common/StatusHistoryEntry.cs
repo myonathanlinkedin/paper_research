@@ -4,7 +4,7 @@ using RuntimeErrorSage.Core.Models.Enums;
 namespace RuntimeErrorSage.Core.Models.Common;
 
 /// <summary>
-/// Represents a status history entry.
+/// Represents a single entry in a status history.
 /// </summary>
 public class StatusHistoryEntry
 {
@@ -19,7 +19,7 @@ public class StatusHistoryEntry
     public string Message { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets when the status was recorded.
+    /// Gets or sets the timestamp when this status was recorded.
     /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 } 

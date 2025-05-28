@@ -401,7 +401,7 @@ namespace RuntimeErrorSage.Core.Remediation
             return components.ToList();
         }
 
-        private RiskLevel CalculateRiskLevel(RemediationSuggestion suggestion)
+        private RemediationRiskLevel CalculateRiskLevel(RemediationSuggestion suggestion)
         {
             // Calculate risk level based on complexity and impact
             var complexityScore = CalculateComplexityScore(suggestion);
@@ -410,10 +410,10 @@ namespace RuntimeErrorSage.Core.Remediation
             var riskScore = (complexityScore + impactScore) / 2.0;
             return riskScore switch
             {
-                < 0.3 => RiskLevel.Low,
-                < 0.6 => RiskLevel.Medium,
-                < 0.8 => RiskLevel.High,
-                _ => RiskLevel.Critical
+                < 0.3 => RemediationRiskLevel.Low,
+                < 0.6 => RemediationRiskLevel.Medium,
+                < 0.8 => RemediationRiskLevel.High,
+                _ => RemediationRiskLevel.Critical
             };
         }
 

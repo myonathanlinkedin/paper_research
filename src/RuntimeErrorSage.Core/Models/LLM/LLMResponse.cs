@@ -27,5 +27,13 @@ namespace RuntimeErrorSage.Core.Models.LLM
         /// Gets or sets additional metadata about the response.
         /// </summary>
         public Dictionary<string, object> Metadata { get; set; } = new();
+
+        public string RequestId { get; set; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public string Model { get; set; } = string.Empty;
+        public string Response { get; set; } = string.Empty;
+        public bool IsSuccessful { get; set; }
+        public string ErrorMessage { get; set; } = string.Empty;
     }
 } 

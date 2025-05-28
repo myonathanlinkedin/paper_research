@@ -12,129 +12,39 @@ namespace RuntimeErrorSage.Core.Models.Validation
     public class ValidationResult
     {
         /// <summary>
-        /// Gets or sets whether the validation passed.
+        /// Gets or sets whether the validation was successful.
         /// </summary>
         public bool IsValid { get; set; }
 
         /// <summary>
-        /// Gets or sets the validation message.
+        /// Gets or sets the validation messages.
         /// </summary>
-        public string ValidationMessage { get; set; } = string.Empty;
+        public List<string> Messages { get; set; } = new List<string>();
 
         /// <summary>
-        /// Gets or sets the start time of validation.
+        /// Gets or sets the validation errors.
         /// </summary>
-        public DateTime StartTime { get; set; } = DateTime.UtcNow;
+        public List<string> Errors { get; set; } = new List<string>();
 
         /// <summary>
-        /// Gets or sets the end time of validation.
+        /// Gets or sets the validation warnings.
         /// </summary>
-        public DateTime EndTime { get; set; }
+        public List<string> Warnings { get; set; } = new List<string>();
 
         /// <summary>
-        /// Gets or sets the correlation ID.
-        /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the timestamp.
+        /// Gets or sets the timestamp of the validation.
         /// </summary>
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the validation status.
+        /// Gets or sets additional metadata.
         /// </summary>
-        public AnalysisValidationStatus Status { get; set; }
+        public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Gets or sets the validation details.
+        /// Gets or sets the severity of the validation result.
         /// </summary>
-        public Dictionary<string, object> Details { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the list of validation errors.
-        /// </summary>
-        public List<string> Errors { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the list of validation warnings.
-        /// </summary>
-        public List<string> Warnings { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the validation metadata.
-        /// </summary>
-        public ValidationMetadata ValidationMetadata { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the validation code.
-        /// </summary>
-        public string Code { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the validation type.
-        /// </summary>
-        public ValidationType Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the validation scope.
-        /// </summary>
-        public ValidationScope Scope { get; set; }
-
-        /// <summary>
-        /// Gets or sets the validation level.
-        /// </summary>
-        public ValidationLevel Level { get; set; }
-
-        /// <summary>
-        /// Gets or sets the validation category.
-        /// </summary>
-        public ValidationCategory Category { get; set; }
-
-        /// <summary>
-        /// Gets or sets the validation stage.
-        /// </summary>
-        public ValidationStage Stage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the validation duration.
-        /// </summary>
-        public double Duration { get; set; }
-
-        /// <summary>
-        /// Gets or sets the validator identifier.
-        /// </summary>
-        public string ValidatorId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets whether the validation requires manual review.
-        /// </summary>
-        public bool RequiresManualReview { get; set; }
-
-        /// <summary>
-        /// Gets or sets the validation recommendations.
-        /// </summary>
-        public List<string> Recommendations { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the error ID this validation is associated with.
-        /// </summary>
-        public string ErrorId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the remediation ID this validation is associated with.
-        /// </summary>
-        public string RemediationId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the validation context.
-        /// </summary>
-        public string Context { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the validation severity.
-        /// </summary>
-        public string Severity { get; set; } = string.Empty;
+        public ValidationSeverity Severity { get; set; } = ValidationSeverity.Info;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidationResult"/> class.
@@ -146,7 +56,7 @@ namespace RuntimeErrorSage.Core.Models.Validation
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidationResult"/> class.
         /// </summary>
-        /// <param name="isValid">Whether the validation passed.</param>
+        /// <param name="isValid">Whether the validation was successful.</param>
         public ValidationResult(bool isValid)
         {
             IsValid = isValid;
@@ -155,14 +65,14 @@ namespace RuntimeErrorSage.Core.Models.Validation
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidationResult"/> class.
         /// </summary>
-        /// <param name="isValid">Whether the validation passed.</param>
-        /// <param name="errors">The validation errors.</param>
-        public ValidationResult(bool isValid, List<ValidationError> errors)
+        /// <param name="isValid">Whether the validation was successful.</param>
+        /// <param name="message">The validation message.</param>
+        public ValidationResult(bool isValid, string message)
         {
             IsValid = isValid;
-            foreach (var error in errors)
+            if (!string.IsNullOrEmpty(message))
             {
-                Errors.Add(error.Message);
+                Messages.Add(message);
             }
         }
 
@@ -207,7 +117,7 @@ namespace RuntimeErrorSage.Core.Models.Validation
                 throw new ArgumentException("Metadata key cannot be null or whitespace", nameof(key));
             }
 
-            Details[key] = value;
+            Metadata[key] = value;
         }
 
         /// <summary>
@@ -230,9 +140,9 @@ namespace RuntimeErrorSage.Core.Models.Validation
             {
                 Warnings.Add(warning);
             }
-            foreach (var metadata in other.Details)
+            foreach (var metadata in other.Metadata)
             {
-                Details[metadata.Key] = metadata.Value;
+                Metadata[metadata.Key] = metadata.Value;
             }
         }
 
@@ -252,7 +162,7 @@ namespace RuntimeErrorSage.Core.Models.Validation
         /// <returns>A successful validation result.</returns>
         public static ValidationResult Success(string message)
         {
-            return new ValidationResult { IsValid = true, ValidationMessage = message };
+            return new ValidationResult { IsValid = true, Messages = new List<string> { message } };
         }
 
         /// <summary>
@@ -297,9 +207,9 @@ namespace RuntimeErrorSage.Core.Models.Validation
                     combinedResult.Warnings.Add(warning);
                 }
 
-                foreach (var metadata in result.Details)
+                foreach (var metadata in result.Metadata)
                 {
-                    combinedResult.Details[metadata.Key] = metadata.Value;
+                    combinedResult.Metadata[metadata.Key] = metadata.Value;
                 }
             }
             return combinedResult;

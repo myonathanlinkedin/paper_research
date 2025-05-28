@@ -3,8 +3,8 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Execution;
 using RuntimeErrorSage.Core.Models.Common;
-using RuntimeErrorSage.Core.Models.Metrics;
 using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Remediation.Interfaces
 {

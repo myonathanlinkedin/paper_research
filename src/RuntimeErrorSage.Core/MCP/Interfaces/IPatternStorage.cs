@@ -1,5 +1,6 @@
 using System;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Error;
 
 namespace RuntimeErrorSage.Core.MCP.Interfaces
 {

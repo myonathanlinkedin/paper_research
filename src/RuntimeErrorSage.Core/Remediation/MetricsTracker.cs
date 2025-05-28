@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Concurrent;
-using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Remediation;
 
 namespace RuntimeErrorSage.Core.Remediation
 {

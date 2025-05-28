@@ -3,50 +3,52 @@ using System.Linq;
 using Xunit;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Utilities;
-using RemediationSeverity = RuntimeErrorSage.Models.Enums.RemediationSeverity;
 
 namespace RuntimeErrorSage.Tests.TestSuite.Utilities
 {
     public class RiskAssessmentHelperTests
     {
         [Theory]
-        [InlineData(RemediationSeverity.Critical, RemediationActionImpactScope.Global, RemediationRiskLevel.Critical)]
-        [InlineData(RemediationSeverity.Critical, RemediationActionImpactScope.System, RemediationRiskLevel.Critical)]
-        [InlineData(RemediationSeverity.Critical, RemediationActionImpactScope.Service, RemediationRiskLevel.Critical)]
-        [InlineData(RemediationSeverity.Critical, RemediationActionImpactScope.Module, RemediationRiskLevel.Critical)]
-        [InlineData(RemediationSeverity.Critical, RemediationActionImpactScope.Local, RemediationRiskLevel.High)]
-        [InlineData(RemediationSeverity.Critical, RemediationActionImpactScope.None, RemediationRiskLevel.High)]
-        [InlineData(RemediationSeverity.High, RemediationActionImpactScope.Global, RemediationRiskLevel.Critical)]
-        [InlineData(RemediationSeverity.High, RemediationActionImpactScope.System, RemediationRiskLevel.Critical)]
-        [InlineData(RemediationSeverity.High, RemediationActionImpactScope.Service, RemediationRiskLevel.Critical)]
-        [InlineData(RemediationSeverity.High, RemediationActionImpactScope.Module, RemediationRiskLevel.High)]
-        [InlineData(RemediationSeverity.High, RemediationActionImpactScope.Local, RemediationRiskLevel.High)]
-        [InlineData(RemediationSeverity.High, RemediationActionImpactScope.None, RemediationRiskLevel.High)]
-        [InlineData(RemediationSeverity.Medium, RemediationActionImpactScope.Global, RemediationRiskLevel.High)]
-        [InlineData(RemediationSeverity.Medium, RemediationActionImpactScope.System, RemediationRiskLevel.High)]
-        [InlineData(RemediationSeverity.Medium, RemediationActionImpactScope.Service, RemediationRiskLevel.Medium)]
-        [InlineData(RemediationSeverity.Medium, RemediationActionImpactScope.Module, RemediationRiskLevel.Medium)]
-        [InlineData(RemediationSeverity.Medium, RemediationActionImpactScope.Local, RemediationRiskLevel.Medium)]
-        [InlineData(RemediationSeverity.Medium, RemediationActionImpactScope.None, RemediationRiskLevel.Medium)]
-        [InlineData(RemediationSeverity.Low, RemediationActionImpactScope.Global, RemediationRiskLevel.Medium)]
-        [InlineData(RemediationSeverity.Low, RemediationActionImpactScope.System, RemediationRiskLevel.Low)]
-        [InlineData(RemediationSeverity.Low, RemediationActionImpactScope.Service, RemediationRiskLevel.Low)]
-        [InlineData(RemediationSeverity.Low, RemediationActionImpactScope.Module, RemediationRiskLevel.Low)]
-        [InlineData(RemediationSeverity.Low, RemediationActionImpactScope.Local, RemediationRiskLevel.Low)]
-        [InlineData(RemediationSeverity.Low, RemediationActionImpactScope.None, RemediationRiskLevel.Low)]
-        [InlineData(RemediationSeverity.None, RemediationActionImpactScope.Global, RemediationRiskLevel.None)]
-        [InlineData(RemediationSeverity.None, RemediationActionImpactScope.System, RemediationRiskLevel.None)]
-        [InlineData(RemediationSeverity.None, RemediationActionImpactScope.Service, RemediationRiskLevel.None)]
-        [InlineData(RemediationSeverity.None, RemediationActionImpactScope.Module, RemediationRiskLevel.None)]
-        [InlineData(RemediationSeverity.None, RemediationActionImpactScope.Local, RemediationRiskLevel.None)]
-        [InlineData(RemediationSeverity.None, RemediationActionImpactScope.None, RemediationRiskLevel.None)]
-        public void CalculateRiskLevel_WithSeverityAndScope_ReturnsExpectedRiskLevel(
-            RemediationSeverity severity, 
-            RemediationActionImpactScope impactScope, 
+        [InlineData(RemediationActionSeverity.Critical, RemediationActionImpactScope.Global, RemediationRiskLevel.Critical)]
+        [InlineData(RemediationActionSeverity.Critical, RemediationActionImpactScope.System, RemediationRiskLevel.Critical)]
+        [InlineData(RemediationActionSeverity.Critical, RemediationActionImpactScope.Service, RemediationRiskLevel.Critical)]
+        [InlineData(RemediationActionSeverity.Critical, RemediationActionImpactScope.Module, RemediationRiskLevel.Critical)]
+        [InlineData(RemediationActionSeverity.Critical, RemediationActionImpactScope.Local, RemediationRiskLevel.High)]
+        [InlineData(RemediationActionSeverity.Critical, RemediationActionImpactScope.None, RemediationRiskLevel.High)]
+        [InlineData(RemediationActionSeverity.High, RemediationActionImpactScope.Global, RemediationRiskLevel.Critical)]
+        [InlineData(RemediationActionSeverity.High, RemediationActionImpactScope.System, RemediationRiskLevel.Critical)]
+        [InlineData(RemediationActionSeverity.High, RemediationActionImpactScope.Service, RemediationRiskLevel.Critical)]
+        [InlineData(RemediationActionSeverity.High, RemediationActionImpactScope.Module, RemediationRiskLevel.High)]
+        [InlineData(RemediationActionSeverity.High, RemediationActionImpactScope.Local, RemediationRiskLevel.High)]
+        [InlineData(RemediationActionSeverity.High, RemediationActionImpactScope.None, RemediationRiskLevel.High)]
+        [InlineData(RemediationActionSeverity.Medium, RemediationActionImpactScope.Global, RemediationRiskLevel.High)]
+        [InlineData(RemediationActionSeverity.Medium, RemediationActionImpactScope.System, RemediationRiskLevel.High)]
+        [InlineData(RemediationActionSeverity.Medium, RemediationActionImpactScope.Service, RemediationRiskLevel.Medium)]
+        [InlineData(RemediationActionSeverity.Medium, RemediationActionImpactScope.Module, RemediationRiskLevel.Medium)]
+        [InlineData(RemediationActionSeverity.Medium, RemediationActionImpactScope.Local, RemediationRiskLevel.Medium)]
+        [InlineData(RemediationActionSeverity.Medium, RemediationActionImpactScope.None, RemediationRiskLevel.Medium)]
+        [InlineData(RemediationActionSeverity.Low, RemediationActionImpactScope.Global, RemediationRiskLevel.Medium)]
+        [InlineData(RemediationActionSeverity.Low, RemediationActionImpactScope.System, RemediationRiskLevel.Medium)]
+        [InlineData(RemediationActionSeverity.Low, RemediationActionImpactScope.Service, RemediationRiskLevel.Low)]
+        [InlineData(RemediationActionSeverity.Low, RemediationActionImpactScope.Module, RemediationRiskLevel.Low)]
+        [InlineData(RemediationActionSeverity.Low, RemediationActionImpactScope.Local, RemediationRiskLevel.Low)]
+        [InlineData(RemediationActionSeverity.Low, RemediationActionImpactScope.None, RemediationRiskLevel.Low)]
+        [InlineData(RemediationActionSeverity.None, RemediationActionImpactScope.Global, RemediationRiskLevel.None)]
+        [InlineData(RemediationActionSeverity.None, RemediationActionImpactScope.System, RemediationRiskLevel.None)]
+        [InlineData(RemediationActionSeverity.None, RemediationActionImpactScope.Service, RemediationRiskLevel.None)]
+        [InlineData(RemediationActionSeverity.None, RemediationActionImpactScope.Module, RemediationRiskLevel.None)]
+        [InlineData(RemediationActionSeverity.None, RemediationActionImpactScope.Local, RemediationRiskLevel.None)]
+        [InlineData(RemediationActionSeverity.None, RemediationActionImpactScope.None, RemediationRiskLevel.None)]
+        public void CalculateRiskLevel_ReturnsExpectedRiskLevel(
+            RemediationActionSeverity severity,
+            RemediationActionImpactScope impactScope,
             RemediationRiskLevel expectedRiskLevel)
         {
+            // Arrange
+            var helper = new RiskAssessmentHelper();
+
             // Act
-            var result = RiskAssessmentHelper.CalculateRiskLevel(severity, impactScope);
+            var result = helper.CalculateRiskLevel(severity, impactScope);
 
             // Assert
             Assert.Equal(expectedRiskLevel, result);

@@ -15,12 +15,17 @@ using RuntimeErrorSage.Core.Models.Enums;
 namespace RuntimeErrorSage.Core.Remediation.Strategies
 {
     /// <summary>
-    /// Strategy for monitoring system components.
+    /// Strategy for monitoring system health.
     /// </summary>
-    public class MonitorStrategy : RemediationStrategy
+    public class MonitorStrategy : IRemediationStrategy
     {
         private readonly IRemediationMetricsCollector _metricsCollector;
         private readonly ILLMClient _llmClient;
+        private string _name = "Monitor Strategy";
+        private string _description = "Monitors system health and performance";
+        public Dictionary<string, object> Parameters { get; }
+        public HashSet<string> SupportedErrorTypes { get; }
+        public RemediationPriority Priority { get; }
 
         public MonitorStrategy(
             ILogger<RemediationStrategy> logger,
@@ -37,22 +42,27 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             Parameters["disk_threshold"] = 90.0;
             
             // Set supported error types
-            SupportedErrorTypes = new List<string> 
+            SupportedErrorTypes = new HashSet<string> 
             { 
                 "ResourceExhaustion", 
                 "PerformanceDegradation",
                 "SystemOverload" 
             };
+
+            Priority = RemediationPriority.Medium;
         }
 
-        /// <inheritdoc/>
-        public override string Name => "Monitor";
+        /// <summary>
+        /// Gets or sets the name of the strategy.
+        /// </summary>
+        public string Name => _name;
 
-        /// <inheritdoc/>
-        public override string Description => "Monitors system components for health and performance";
+        /// <summary>
+        /// Gets or sets the description of the strategy.
+        /// </summary>
+        public string Description => _description;
 
-        /// <inheritdoc/>
-        public override async Task<RemediationResult> ApplyAsync(ErrorContext context)
+        public async Task<RemediationResult> ApplyAsync(ErrorContext context)
         {
             if (context == null)
             {
@@ -185,6 +195,36 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             result.Metadata["StrategyName"] = Name;
             
             return result;
+        }
+
+        public async Task<bool> CanHandleErrorAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return true; // This strategy can handle any error type
+        }
+
+        public async Task<bool> ValidateAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return true; // Basic validation passes
+        }
+
+        public async Task<RemediationPriority> GetPriorityAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return Priority;
         }
     }
 } 

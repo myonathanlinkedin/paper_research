@@ -1,15 +1,31 @@
-$root = "."
-function Show-Tree($path, $prefix = "") {
-    $dirs = Get-ChildItem -Path $path -Directory | Sort-Object Name
-    $files = Get-ChildItem -Path $path -File -Filter *.cs | Sort-Object Name
+# Function to create tree structure
+function Get-FileTree {
+    param (
+        [string]$Path,
+        [string]$Indent = "",
+        [string]$Last = $true
+    )
+    
+    $files = Get-ChildItem -Path $Path -File -Filter "*.cs"
+    $dirs = Get-ChildItem -Path $Path -Directory
+    
+    # Process files
     foreach ($file in $files) {
-        Write-Output "$prefix|-- $($file.Name)"
+        $prefix = if ($Last) { "+-- " } else { "+-- " }
+        "$Indent$prefix$($file.Name)" | Out-File -FilePath "projectstructure.txt" -Append
     }
-    for ($i = 0; $i -lt $dirs.Count; $i++) {
-        $dir = $dirs[$i]
-        Write-Output "$prefix|-- $($dir.Name)\\"
-        Show-Tree -path $dir.FullName -prefix:("$prefix|   ")
+    
+    # Process directories
+    foreach ($dir in $dirs) {
+        $prefix = if ($Last) { "+-- " } else { "+-- " }
+        "$Indent$prefix$($dir.Name)/" | Out-File -FilePath "projectstructure.txt" -Append
+        $newIndent = if ($Last) { "$Indent    " } else { "$Indent|   " }
+        Get-FileTree -Path $dir.FullName -Indent $newIndent -Last ($dir -eq $dirs[-1])
     }
 }
-"Project Structure:" | Out-File projectstructure.txt
-Show-Tree $root | Out-File projectstructure.txt -Append 
+
+# Clear existing file
+"" | Out-File -FilePath "projectstructure.txt"
+
+# Start tree generation from current directory
+Get-FileTree -Path "." 

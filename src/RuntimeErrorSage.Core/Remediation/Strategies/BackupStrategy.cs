@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Remediation.Base;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.LLM.Interfaces;
@@ -13,14 +13,17 @@ using RuntimeErrorSage.Core.Interfaces;
 namespace RuntimeErrorSage.Core.Remediation.Strategies
 {
     /// <summary>
-    /// Strategy for backing up system components.
+    /// Strategy for backing up system state.
     /// </summary>
-    public class BackupStrategy : RemediationStrategy
+    public class BackupStrategy : IRemediationStrategy
     {
         private readonly ILLMClient _llmClient;
         private readonly IRemediationMetricsCollector _metricsCollector;
-        private string _name = "Backup";
-        private string _description = "Creates backups of system components";
+        public string Name { get; }
+        public string Description { get; }
+        public Dictionary<string, object> Parameters { get; }
+        public HashSet<string> SupportedErrorTypes { get; }
+        public RemediationPriority Priority { get; }
 
         public BackupStrategy(
             ILogger<RemediationStrategy> logger,
@@ -31,35 +34,28 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
             _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
             
+            Name = "Backup";
+            Description = "Creates and manages system backups";
+            Parameters = new Dictionary<string, object>();
+            SupportedErrorTypes = new HashSet<string>();
+            Priority = RemediationPriority.High;
+            
             // Add required parameters with default values
             Parameters["target"] = "system";
             Parameters["schedule"] = "immediate";
             
             // Set supported error types
-            SupportedErrorTypes = new HashSet<string> 
-            { 
-                "DataCorruption", 
-                "SystemFailure",
-                "UpdateRequired" 
-            };
+            SupportedErrorTypes.Add("DataCorruption");
+            SupportedErrorTypes.Add("SystemFailure");
+            SupportedErrorTypes.Add("UpdateRequired");
         }
 
-        /// <inheritdoc/>
-        public override string Name 
-        { 
-            get => _name;
-            set => _name = value ?? throw new ArgumentNullException(nameof(value));
-        }
-
-        /// <inheritdoc/>
-        public override string Description 
-        { 
-            get => _description;
-            set => _description = value ?? throw new ArgumentNullException(nameof(value));
-        }
-
-        /// <inheritdoc/>
-        public override async Task<RemediationResult> ApplyAsync(ErrorContext context)
+        /// <summary>
+        /// Applies the backup strategy to the given error context.
+        /// </summary>
+        /// <param name="context">The error context to apply the strategy to.</param>
+        /// <returns>A task containing the remediation result.</returns>
+        public async Task<RemediationResult> ApplyAsync(ErrorContext context)
         {
             if (context == null)
             {
@@ -76,7 +72,18 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
 
                 await CreateBackupAsync(target, schedule);
                 
-                return CreateSuccessResult($"Backup created for {target} on schedule {schedule}");
+                var result = new RemediationResult
+                {
+                    IsSuccessful = true,
+                    Message = $"Backup created for {target} on schedule {schedule}",
+                    ErrorId = context.ErrorId
+                };
+                
+                // Add strategy information to metadata
+                result.Metadata["StrategyId"] = StrategyId;
+                result.Metadata["StrategyName"] = Name;
+                
+                return result;
             }
             catch (Exception ex)
             {
@@ -130,22 +137,6 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             }
         }
 
-        private RemediationResult CreateSuccessResult(string message)
-        {
-            var result = new RemediationResult
-            {
-                IsSuccessful = true,
-                Message = message,
-                Timestamp = DateTime.UtcNow
-            };
-            
-            // Add strategy information to metadata
-            result.Metadata["StrategyId"] = StrategyId;
-            result.Metadata["StrategyName"] = Name;
-            
-            return result;
-        }
-
         private RemediationResult CreateFailureResult(string message)
         {
             var result = new RemediationResult
@@ -160,6 +151,36 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             result.Metadata["StrategyName"] = Name;
             
             return result;
+        }
+
+        public async Task<bool> CanHandleErrorAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return true; // This strategy can handle any error type
+        }
+
+        public async Task<bool> ValidateAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return true; // Basic validation passes
+        }
+
+        public async Task<RemediationPriority> GetPriorityAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return Priority;
         }
     }
 } 

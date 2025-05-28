@@ -36,7 +36,7 @@ public class RemediationAction : IRemediationAction
     /// <summary>
     /// Gets or sets the context of the action.
     /// </summary>
-    public ErrorContext Context { get; set; }
+    public Dictionary<string, object> Context { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the priority of the action.

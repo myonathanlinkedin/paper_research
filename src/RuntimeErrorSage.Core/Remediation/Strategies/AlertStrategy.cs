@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Remediation.Base;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Interfaces;
@@ -13,43 +13,41 @@ using RuntimeErrorSage.Core.Interfaces;
 namespace RuntimeErrorSage.Core.Remediation.Strategies
 {
     /// <summary>
-    /// Strategy for alerting on system issues.
+    /// Strategy for alerting about errors.
     /// </summary>
-    public class AlertStrategy : RemediationStrategy
+    public class AlertStrategy : Models.Remediation.Interfaces.IRemediationStrategy
     {
+        private readonly ILogger<AlertStrategy> _logger;
         private readonly ILLMClient _llmClient;
         private readonly IRemediationMetricsCollector _metricsCollector;
+        
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Name { get; set; } = "Alert";
+        public RemediationPriority Priority { get; set; } = RemediationPriority.High;
+        public string Description { get; set; } = "Sends alerts for error conditions";
+        public Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();
+        public ISet<string> SupportedErrorTypes { get; } = new HashSet<string> 
+        { 
+            "CriticalFailure", 
+            "ServiceUnavailable", 
+            "SecurityViolation" 
+        };
 
         public AlertStrategy(
-            ILogger<RemediationStrategy> logger,
+            ILogger<AlertStrategy> logger,
             IRemediationMetricsCollector metricsCollector,
             ILLMClient llmClient)
-            : base(logger)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
             _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
             
             // Add required parameters with default values
             Parameters["channel"] = "default";
             Parameters["severity"] = "medium";
-            
-            // Set supported error types
-            SupportedErrorTypes = new List<string> 
-            { 
-                "CriticalFailure", 
-                "ServiceUnavailable",
-                "SecurityViolation" 
-            };
         }
 
-        /// <inheritdoc/>
-        public override string Name => "Alert";
-
-        /// <inheritdoc/>
-        public override string Description => "Sends alerts for system issues";
-
-        /// <inheritdoc/>
-        public override async Task<RemediationResult> ApplyAsync(ErrorContext context)
+        public async Task<RemediationResult> ExecuteAsync(ErrorContext context)
         {
             if (context == null)
             {
@@ -58,7 +56,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
 
             try
             {
-                await ValidateRequiredParametersAsync();
+                await ValidateConfigurationAsync();
 
                 // Execute alert logic
                 var channel = Parameters["channel"]?.ToString() ?? "default";
@@ -66,11 +64,22 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
 
                 await SendAlertAsync(channel, severity, context);
                 
-                return CreateSuccessResult($"Alert sent to {channel} with severity {severity}");
+                var result = new RemediationResult
+                {
+                    IsSuccessful = true,
+                    Message = $"Alert sent to {channel} with severity {severity}",
+                    ErrorId = context.ErrorId
+                };
+                
+                // Add strategy information to metadata
+                result.Metadata["StrategyId"] = Id;
+                result.Metadata["StrategyName"] = Name;
+                
+                return result;
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"Error executing alert strategy: {ex.Message}");
+                _logger.LogError(ex, $"Error executing alert strategy: {ex.Message}");
                 return CreateFailureResult($"Failed to execute alert strategy: {ex.Message}");
             }
         }
@@ -90,14 +99,14 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             await Task.CompletedTask;
         }
 
-        private async Task SendAlertAsync(string channel, string severity, ErrorContext context)
+        private async Task SendAlertAsync(string channel, string severity, ErrorContext errorContext)
         {
             try
             {
                 var request = new LLM.LLMRequest
                 {
                     Query = "Generate alert for error",
-                    Context = $"Error: {context.ErrorType}, Component: {context.ComponentId}, Severity: {severity}"
+                    Context = $"Error: {errorContext.ErrorType}, Component: {errorContext.ComponentId}, Severity: {severity}"
                 };
                 
                 var response = await _llmClient.GenerateResponseAsync(request);
@@ -110,31 +119,15 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                     {
                         Channel = channel,
                         Severity = severity,
-                        ErrorType = context.ErrorType,
+                        ErrorType = errorContext.ErrorType,
                         Timestamp = DateTime.UtcNow
                     });
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"Error sending alert: {ex.Message}");
+                _logger.LogError(ex, $"Error sending alert: {ex.Message}");
                 throw;
             }
-        }
-
-        private RemediationResult CreateSuccessResult(string message)
-        {
-            var result = new RemediationResult
-            {
-                IsSuccessful = true,
-                Message = message,
-                Timestamp = DateTime.UtcNow
-            };
-            
-            // Add strategy information to metadata
-            result.Metadata["StrategyId"] = StrategyId;
-            result.Metadata["StrategyName"] = Name;
-            
-            return result;
         }
 
         private RemediationResult CreateFailureResult(string message)
@@ -147,10 +140,102 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             };
             
             // Add strategy information to metadata
-            result.Metadata["StrategyId"] = StrategyId;
+            result.Metadata["StrategyId"] = Id;
             result.Metadata["StrategyName"] = Name;
             
             return result;
+        }
+
+        public async Task<bool> CanApplyAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return SupportedErrorTypes.Contains(context.ErrorType) || SupportedErrorTypes.Count == 0;
+        }
+
+        public async Task<RemediationImpact> GetImpactAsync(ErrorContext context)
+        {
+            return new RemediationImpact
+            {
+                Severity = ImpactSeverity.Low,
+                Scope = ImpactScope.Service,
+                Description = "Alert notification only - no system changes",
+                AffectedUsers = 0,
+                RequiresApproval = false,
+                ConfidenceLevel = 0.95
+            };
+        }
+
+        public async Task<RiskAssessment> GetRiskAsync(ErrorContext context)
+        {
+            return new RiskAssessment
+            {
+                RiskLevel = RemediationRiskLevel.Low,
+                Description = "Low risk - alert notification only",
+                PotentialIssues = new List<string> { "Alert might not reach intended recipients" },
+                MitigationStrategies = new List<string> { "Verify alert channel configuration" },
+                ConfidenceLevel = 0.95,
+                IsRollbackable = false
+            };
+        }
+
+        public async Task<bool> ValidateConfigurationAsync()
+        {
+            try
+            {
+                await ValidateRequiredParametersAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Configuration validation failed: {Message}", ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<ValidationResult> ValidateAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var result = new ValidationResult
+            {
+                IsValid = true,
+                Timestamp = DateTime.UtcNow
+            };
+
+            try
+            {
+                if (!await ValidateConfigurationAsync())
+                {
+                    result.IsValid = false;
+                    result.Errors.Add("Strategy configuration is invalid");
+                    result.Severity = ValidationSeverity.Error;
+                    return result;
+                }
+
+                if (!await CanApplyAsync(context))
+                {
+                    result.IsValid = false;
+                    result.Errors.Add($"Error type '{context.ErrorType}' is not supported by this strategy");
+                    result.Severity = ValidationSeverity.Error;
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.IsValid = false;
+                result.Errors.Add($"Validation failed: {ex.Message}");
+                result.Severity = ValidationSeverity.Error;
+                _logger.LogError(ex, "Error validating alert strategy for context {ErrorId}", context.ErrorId);
+                return result;
+            }
         }
     }
 } 

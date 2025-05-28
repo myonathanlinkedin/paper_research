@@ -1,42 +1,33 @@
-namespace RuntimeErrorSage.Core.Models.Enums;
-
-/// <summary>
-/// Defines the severity level of an error.
-/// </summary>
-public enum ErrorSeverity
+namespace RuntimeErrorSage.Core.Models.Enums
 {
     /// <summary>
-    /// The severity is unknown.
+    /// Defines the severity levels for errors.
     /// </summary>
-    Unknown = 0,
+    public enum ErrorSeverity
+    {
+        /// <summary>
+        /// Critical severity - system is unusable or data is at risk.
+        /// </summary>
+        Critical = 0,
 
-    /// <summary>
-    /// The error is verbose.
-    /// </summary>
-    Verbose = 1,
+        /// <summary>
+        /// High severity - major functionality is affected.
+        /// </summary>
+        High = 1,
 
-    /// <summary>
-    /// The error is informational.
-    /// </summary>
-    Information = 2,
+        /// <summary>
+        /// Medium severity - functionality is impaired but not blocked.
+        /// </summary>
+        Medium = 2,
 
-    /// <summary>
-    /// The error is a warning.
-    /// </summary>
-    Warning = 3,
+        /// <summary>
+        /// Low severity - minor issues or warnings.
+        /// </summary>
+        Low = 3,
 
-    /// <summary>
-    /// The error is an error.
-    /// </summary>
-    Error = 4,
-
-    /// <summary>
-    /// The error is critical.
-    /// </summary>
-    Critical = 5,
-
-    /// <summary>
-    /// The error is fatal.
-    /// </summary>
-    Fatal = 6
+        /// <summary>
+        /// Informational severity - no impact on functionality.
+        /// </summary>
+        Info = 4
+    }
 } 

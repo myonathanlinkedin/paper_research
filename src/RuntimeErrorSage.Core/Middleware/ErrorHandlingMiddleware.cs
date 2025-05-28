@@ -10,6 +10,7 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.MCP.Interfaces;
 using RuntimeErrorSage.Core.Runtime.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Middleware;
 

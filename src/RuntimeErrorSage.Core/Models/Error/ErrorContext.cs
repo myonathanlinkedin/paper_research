@@ -240,6 +240,11 @@ namespace RuntimeErrorSage.Core.Models.Error
         public string ServiceName { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the error context information.
+        /// </summary>
+        public string Context { get; set; } = string.Empty;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ErrorContext"/> class.
         /// </summary>
         /// <param name="error">The error.</param>

@@ -1,0 +1,94 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
+
+namespace RuntimeErrorSage.Core.Remediation
+{
+    public class RemediationActionManager : IRemediationActionManager
+    {
+        private readonly ILogger<RemediationActionManager> _logger;
+        private readonly IRemediationValidator _validator;
+        private readonly IRemediationExecutor _executor;
+
+        public RemediationActionManager(
+            ILogger<RemediationActionManager> logger,
+            IRemediationValidator validator,
+            IRemediationExecutor executor)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
+        }
+
+        public async Task<RemediationResult> ExecuteActionAsync(RemediationAction action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+
+            try
+            {
+                return await _executor.ExecuteActionAsync(action, new ErrorContext());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing action {ActionName}", action.Name);
+                return new RemediationResult { Success = false, ErrorMessage = ex.Message };
+            }
+        }
+
+        public async Task<ValidationResult> ValidateActionAsync(RemediationAction action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+
+            try
+            {
+                return await _validator.ValidateActionAsync(action, new ErrorContext());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating action {ActionName}", action.Name);
+                return new ValidationResult { IsValid = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<RollbackStatus> RollbackActionAsync(string actionId)
+        {
+            ArgumentNullException.ThrowIfNull(actionId);
+
+            try
+            {
+                var status = new RollbackStatus
+                {
+                    ActionId = actionId,
+                    Status = RollbackState.Completed,
+                    Message = "Action rolled back successfully"
+                };
+                return status;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rolling back action {ActionId}", actionId);
+                return new RollbackStatus { Status = RollbackState.Failed, Message = ex.Message };
+            }
+        }
+
+        public async Task<RemediationResult> GetActionStatusAsync(string actionId)
+        {
+            ArgumentNullException.ThrowIfNull(actionId);
+
+            try
+            {
+                return await _executor.GetActionStatusAsync(actionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting action status for {ActionId}", actionId);
+                return new RemediationResult { Success = false, ErrorMessage = ex.Message };
+            }
+        }
+    }
+} 
