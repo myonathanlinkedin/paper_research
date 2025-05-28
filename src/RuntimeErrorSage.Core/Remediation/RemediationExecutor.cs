@@ -88,122 +88,54 @@ public class RemediationExecutor : IRemediationExecutor
     }
 
     /// <inheritdoc/>
-    public async Task<RemediationResult> ExecuteStrategyAsync(Interfaces.IRemediationStrategy strategy, ErrorContext context)
+    public async Task<RemediationResult> ExecuteStrategyAsync(IRemediationStrategy strategy, ErrorContext context)
     {
-        if (strategy == null)
-            throw new ArgumentNullException(nameof(strategy));
-        if (context == null)
-            throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(strategy);
+        ArgumentNullException.ThrowIfNull(context);
 
         try
         {
-            _logger.LogInformation("Executing strategy {StrategyName} for error {ErrorId}", 
-                strategy.Name, context.ErrorId);
+            _logger.LogInformation(
+                "Executing remediation strategy '{StrategyName}' for error {ErrorId}",
+                strategy.Name,
+                context.Id);
 
-            var result = new RemediationResult
-            {
-                StartTime = DateTime.UtcNow,
-                ExecutionId = Guid.NewGuid().ToString(),
-                CorrelationId = context.CorrelationId,
-                ErrorId = context.ErrorId,
-                ErrorType = context.ErrorType,
-                Context = context
-            };
-
-            // Create execution metrics
-            var metrics = new RemediationMetrics
-            {
-                ExecutionId = result.ExecutionId,
-                StartResourceUsage = new ResourceUsage()
-            };
-
-            // Validate strategy
-            var validationResult = await _validator.ValidateStrategyAsync(strategy, context);
+            var validationResult = await strategy.ValidateAsync(context);
             if (!validationResult.IsValid)
             {
-                result.Success = false;
-                result.ErrorMessage = validationResult.ValidationMessage;
-                result.Status = RemediationStatusEnum.Failed;
-                result.EndTime = DateTime.UtcNow;
-                
-                await _metricsCollector.RecordExecutionAsync(result.ExecutionId, result);
-                return result;
+                _logger.LogWarning(
+                    "Remediation strategy validation failed: {Message}",
+                    string.Join(", ", validationResult.Messages));
+                return new RemediationResult
+                {
+                    Context = context,
+                    Status = RemediationStatusEnum.Failed,
+                    Message = "Strategy validation failed",
+                    Validation = validationResult
+                };
             }
 
-            // Execute the strategy directly
-            var strategyResult = await strategy.ExecuteAsync(context);
-            result.Success = strategyResult.Success;
-            result.ErrorMessage = strategyResult.ErrorMessage;
-            result.Status = strategyResult.Success ? RemediationStatusEnum.Completed : RemediationStatusEnum.Failed;
+            var result = await strategy.ExecuteAsync(context);
             
-            // Update metrics
-            metrics.EndResourceUsage = new ResourceUsage();
-            metrics.DurationMs = (DateTime.UtcNow - result.StartTime).TotalMilliseconds;
-            await _metricsCollector.RecordRemediationMetricsAsync(metrics);
-
-            result.EndTime = DateTime.UtcNow;
-            await _metricsCollector.RecordExecutionAsync(result.ExecutionId, result);
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error executing strategy {StrategyName}", strategy.Name);
-            
-            var result = new RemediationResult
+            // Track execution
+            await _executionHistoryTracker.TrackExecutionAsync(new RemediationExecution
             {
-                StartTime = DateTime.UtcNow,
-                EndTime = DateTime.UtcNow,
-                ExecutionId = Guid.NewGuid().ToString(),
-                CorrelationId = context.CorrelationId,
-                ErrorId = context.ErrorId,
-                ErrorType = context.ErrorType,
-                Success = false,
-                ErrorMessage = $"Unhandled exception: {ex.Message}",
-                Status = RemediationStatusEnum.Failed,
-                Context = context
-            };
-            
-            await _metricsCollector.RecordExecutionAsync(result.ExecutionId, result);
+                Strategy = strategy.Name,
+                ErrorContext = context,
+                Result = result,
+                ExecutionTime = DateTime.UtcNow
+            });
+
             return result;
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<RemediationResult> ExecuteStrategyAsync(Models.Remediation.Interfaces.IRemediationStrategy strategy, ErrorContext context)
-    {
-        if (strategy == null)
-            throw new ArgumentNullException(nameof(strategy));
-        if (context == null)
-            throw new ArgumentNullException(nameof(context));
-
-        try
-        {
-            _logger.LogInformation("Executing strategy {StrategyName} for error {ErrorId}", 
-                strategy.GetType().Name, context.ErrorId);
-
-            // Convert the strategy from models namespace to remediation namespace if needed
-            var remediationStrategy = new RemediationStrategyAdapter(strategy);
-            
-            // Now use our existing implementation
-            return await ExecuteStrategyAsync(remediationStrategy, context);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error executing strategy for error {ErrorId}", context.ErrorId);
-            
+            _logger.LogError(ex, "Error executing remediation strategy {StrategyName}", strategy.Name);
             return new RemediationResult
             {
-                StartTime = DateTime.UtcNow,
-                EndTime = DateTime.UtcNow,
-                ExecutionId = Guid.NewGuid().ToString(),
-                CorrelationId = context.CorrelationId,
-                ErrorId = context.ErrorId,
-                ErrorType = context.ErrorType,
-                Success = false,
-                ErrorMessage = $"Unhandled exception: {ex.Message}",
+                Context = context,
                 Status = RemediationStatusEnum.Failed,
-                Context = context
+                Message = $"Execution error: {ex.Message}"
             };
         }
     }

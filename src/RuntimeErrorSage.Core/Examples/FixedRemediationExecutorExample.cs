@@ -12,16 +12,17 @@ using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Examples
 {
     /// <summary>
     /// Examples showing the fixed patterns for common errors in RemediationExecutor
     /// </summary>
-    public class FixedRemediationExecutorExample
+    public class FixedRemediationExecutorExample : IRemediationExecutor
     {
         private readonly ILogger<FixedRemediationExecutorExample> _logger;
-        private readonly IRemediationStrategy _strategy;
+        private readonly Models.Remediation.Interfaces.IRemediationStrategy _strategy;
         private readonly IRemediationValidator _validator;
         private readonly IRemediationMetricsCollector _metricsCollector;
         
@@ -30,7 +31,7 @@ namespace RuntimeErrorSage.Core.Examples
         /// </summary>
         public FixedRemediationExecutorExample(
             ILogger<FixedRemediationExecutorExample> logger,
-            IRemediationStrategy strategy,
+            Models.Remediation.Interfaces.IRemediationStrategy strategy,
             IRemediationValidator validator,
             IRemediationMetricsCollector metricsCollector)
         {
@@ -185,7 +186,7 @@ namespace RuntimeErrorSage.Core.Examples
             var validationResult = new RuntimeErrorSage.Core.Models.Validation.ValidationResult();
             
             // Create a strategy with explicit namespace to avoid ambiguity
-            RuntimeErrorSage.Core.Interfaces.IRemediationStrategy strategy = _strategy;
+            Models.Remediation.Interfaces.IRemediationStrategy strategy = _strategy;
             
             // Execute the strategy with explicit namespace references
             return await strategy.ExecuteAsync(context);

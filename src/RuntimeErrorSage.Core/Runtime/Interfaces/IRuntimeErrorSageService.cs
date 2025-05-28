@@ -13,6 +13,7 @@ using RuntimeErrorSage.Core.Graph;
 using System.ComponentModel.DataAnnotations;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Runtime.Interfaces
 {

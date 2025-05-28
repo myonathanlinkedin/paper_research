@@ -25,6 +25,7 @@ using RuntimeErrorSage.Core.Runtime.Exceptions;
 using System.ComponentModel.DataAnnotations;
 using RuntimeErrorSage.Core.Models.LLM;
 using RuntimeErrorSage.Core.Services.Interfaces;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Services;
 
@@ -200,7 +201,7 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
     }
 
     /// <inheritdoc />
-    public void RegisterRemediationStrategy(IRemediationStrategy strategy)
+    public void RegisterRemediationStrategy(Models.Remediation.Interfaces.IRemediationStrategy strategy)
     {
         try
         {

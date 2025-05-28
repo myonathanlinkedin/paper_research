@@ -3,17 +3,18 @@ using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace RuntimeErrorSage.Core.Remediation.Base;
 
 /// <summary>
 /// Base class for remediation strategies.
 /// </summary>
-public abstract class RemediationStrategy : IRemediationStrategy
+public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemediationStrategy
 {
     protected readonly ILogger<RemediationStrategy> Logger;
 
@@ -24,19 +25,26 @@ public abstract class RemediationStrategy : IRemediationStrategy
     protected RemediationStrategy(ILogger<RemediationStrategy> logger)
     {
         Logger = logger;
-        StrategyId = Guid.NewGuid().ToString();
+        Id = Guid.NewGuid().ToString();
         Parameters = new Dictionary<string, object>();
         SupportedErrorTypes = new HashSet<string>();
         Actions = new List<RemediationAction>();
         CreatedAt = DateTime.UtcNow;
         Status = RemediationStatusEnum.NotStarted;
+        Priority = RemediationPriority.Medium;
     }
+
+    /// <inheritdoc/>
+    public string Id { get; set; }
 
     /// <inheritdoc/>
     public string StrategyId { get; }
 
     /// <inheritdoc/>
     public abstract string Name { get; set; }
+
+    /// <inheritdoc/>
+    public RemediationPriority Priority { get; set; }
 
     /// <inheritdoc/>
     public abstract string Description { get; set; }
@@ -126,6 +134,12 @@ public abstract class RemediationStrategy : IRemediationStrategy
     }
 
     /// <inheritdoc/>
+    public virtual Task<bool> CanApplyAsync(ErrorContext context)
+    {
+        return Task.FromResult(CanHandleErrorAsync(context).Result);
+    }
+
+    /// <inheritdoc/>
     public virtual async Task<bool> CanHandleErrorAsync(ErrorContext context)
     {
         if (context == null)
@@ -178,6 +192,19 @@ public abstract class RemediationStrategy : IRemediationStrategy
     }
 
     /// <inheritdoc/>
+    public virtual Task<RiskAssessment> GetRiskAsync(ErrorContext context)
+    {
+        // Default implementation returns a medium risk
+        return Task.FromResult(new RiskAssessment
+        {
+            Level = RiskLevel.Medium,
+            Description = "Default risk assessment",
+            Factors = new Dictionary<string, double>(),
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <inheritdoc/>
     public virtual Task<RiskLevel> GetRiskLevelAsync(ErrorContext context)
     {
         // Default implementation returns a medium risk level
@@ -214,6 +241,13 @@ public abstract class RemediationStrategy : IRemediationStrategy
             StrategyId = StrategyId,
             StrategyName = Name
         });
+    }
+
+    /// <inheritdoc/>
+    public virtual Task<bool> ValidateConfigurationAsync()
+    {
+        // Default implementation returns true
+        return Task.FromResult(true);
     }
 
     /// <inheritdoc/>

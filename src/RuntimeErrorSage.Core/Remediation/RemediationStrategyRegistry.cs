@@ -5,8 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Remediation.Metadata;
 using RuntimeErrorSage.Core.Interfaces;
 

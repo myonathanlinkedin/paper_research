@@ -251,39 +251,31 @@ public class RemediationService : IRemediationService
             {
                 return new RemediationSuggestion
                 {
-                    SuggestionId = Guid.NewGuid().ToString(),
-                    Title = "No suitable remediation found",
-                    Description = "No suitable remediation strategy could be found for this error.",
-                    ConfidenceLevel = 0,
-                    CorrelationId = errorContext.CorrelationId
+                    ErrorContext = errorContext,
+                    Status = SuggestionStatus.Failed,
+                    Strategies = new List<string>(),
+                    Message = "No applicable strategies found"
                 };
             }
 
-            // Get priority using the async method
-            var priorityTask = strategy.GetPriorityAsync(errorContext);
-            var priority = await priorityTask;
-
             return new RemediationSuggestion
             {
-                SuggestionId = Guid.NewGuid().ToString(),
-                Title = strategy.Name,
-                Description = strategy.Description,
-                StrategyName = strategy.Name,
-                Priority = priority, // Use the result from GetPriorityAsync
-                ConfidenceLevel = 0.8,
-                Parameters = strategy.Parameters,
-                CorrelationId = errorContext.CorrelationId
+                ErrorContext = errorContext,
+                Status = SuggestionStatus.Available,
+                Strategies = new List<string> { strategy.Name },
+                ConfidenceScore = 0.8, // TODO: Get actual confidence score
+                Message = $"Suggested strategy: {strategy.Name}"
             };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting remediation suggestions for error context {ErrorId}", errorContext.Id);
+            
             return new RemediationSuggestion
             {
-                SuggestionId = Guid.NewGuid().ToString(),
-                Title = "Error",
-                Description = $"Error getting remediation suggestions: {ex.Message}",
-                CorrelationId = errorContext.CorrelationId
+                ErrorContext = errorContext,
+                Status = SuggestionStatus.Failed,
+                Message = $"Error: {ex.Message}"
             };
         }
     }
@@ -338,54 +330,54 @@ public class RemediationService : IRemediationService
     }
 
     /// <inheritdoc />
-    public async Task<RemediationResult> ExecuteSuggestionAsync(RemediationSuggestion suggestion, ErrorContext errorContext)
+    public async Task<RemediationResult> ExecuteSuggestionAsync(RemediationSuggestion suggestion)
     {
         ArgumentNullException.ThrowIfNull(suggestion);
-        ArgumentNullException.ThrowIfNull(errorContext);
 
         try
         {
-            if (string.IsNullOrEmpty(suggestion.StrategyName))
+            if (suggestion.Strategies == null || !suggestion.Strategies.Any())
             {
+                _logger.LogWarning("No strategies in suggestion for error context {ErrorId}", 
+                    suggestion.ErrorContext?.Id);
+                
                 return new RemediationResult
                 {
-                    Context = errorContext,
+                    Context = suggestion.ErrorContext,
                     Status = RemediationStatusEnum.Failed,
-                    Message = "No strategy found in suggestion"
+                    Message = "No strategies in suggestion"
                 };
             }
 
-            _logger.LogInformation("Executing remediation suggestion for error context {ErrorId}", errorContext.Id);
+            // Get the first strategy from the suggestion
+            var strategyName = suggestion.Strategies.First();
+            var strategy = await _strategySelector.SelectStrategyAsync(suggestion.ErrorContext);
             
-            // Create a mock context with the strategy name to use with SelectStrategyAsync
-            var mockContext = new ErrorContext 
-            { 
-                ErrorType = suggestion.StrategyName,
-                CorrelationId = errorContext.CorrelationId
-            };
-            
-            var strategy = await _strategySelector.SelectStrategyAsync(mockContext);
             if (strategy == null)
             {
+                _logger.LogWarning("Strategy {StrategyName} not found", strategyName);
+                
                 return new RemediationResult
                 {
-                    Context = errorContext,
+                    Context = suggestion.ErrorContext,
                     Status = RemediationStatusEnum.Failed,
-                    Message = "Strategy not found"
+                    Message = $"Strategy {strategyName} not found"
                 };
             }
 
-            var strategyAdapter = new RemediationStrategyAdapter(strategy);
-            return await _executor.ExecuteStrategyAsync(strategyAdapter, errorContext);
+            // Execute the strategy
+            return await _executor.ExecuteStrategyAsync(strategy, suggestion.ErrorContext);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error executing suggestion for error context {ErrorId}", errorContext.Id);
+            _logger.LogError(ex, "Error executing suggestion for error context {ErrorId}", 
+                suggestion.ErrorContext?.Id);
+            
             return new RemediationResult
             {
-                Context = errorContext,
+                Context = suggestion.ErrorContext,
                 Status = RemediationStatusEnum.Failed,
-                Message = $"Error executing suggestion: {ex.Message}"
+                Message = $"Error: {ex.Message}"
             };
         }
     }

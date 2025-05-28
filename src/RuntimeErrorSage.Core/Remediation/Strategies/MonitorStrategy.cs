@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.LLM.Interfaces;
@@ -16,67 +17,49 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
     /// <summary>
     /// Strategy for monitoring system health.
     /// </summary>
-    public class MonitorStrategy : IRemediationStrategy
+    public class MonitorStrategy : Models.Remediation.Interfaces.IRemediationStrategy
     {
         private readonly ILogger<MonitorStrategy> _logger;
-        private readonly IRemediationMetricsCollector _metricsCollector;
-        private readonly ILLMClient _llmClient;
-        
-        /// <summary>
-        /// Gets or sets the strategy name.
-        /// </summary>
-        public string Name { get; set; }
+        private readonly IMonitoringService _monitoringService;
 
         /// <summary>
-        /// Gets or sets the strategy description.
+        /// Initializes a new instance of the <see cref="MonitorStrategy"/> class.
         /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Gets or sets the strategy parameters.
-        /// </summary>
-        public Dictionary<string, object> Parameters { get; set; }
-
-        /// <summary>
-        /// Gets the error types this strategy can handle.
-        /// </summary>
-        public ISet<string> SupportedErrorTypes { get; }
-
-        /// <summary>
-        /// Gets the strategy id.
-        /// </summary>
-        public string StrategyId { get; } = Guid.NewGuid().ToString();
-
+        /// <param name="logger">The logger.</param>
+        /// <param name="monitoringService">The monitoring service.</param>
         public MonitorStrategy(
             ILogger<MonitorStrategy> logger,
-            IRemediationMetricsCollector metricsCollector,
-            ILLMClient llmClient)
+            IMonitoringService monitoringService)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-            _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
-            
-            Name = "Monitor";
-            Description = "Monitors system health and performance";
+            _logger = logger;
+            _monitoringService = monitoringService;
+            Id = Guid.NewGuid().ToString();
+            Name = "System Monitoring";
+            Description = "Monitors system health metrics";
             Parameters = new Dictionary<string, object>();
-            SupportedErrorTypes = new HashSet<string>();
-            
-            // Add required parameters with default values
-            Parameters["cpu_threshold"] = 80.0;
-            Parameters["memory_threshold"] = 85.0;
-            Parameters["disk_threshold"] = 90.0;
-            
-            // Set supported error types
-            SupportedErrorTypes.Add("ResourceExhaustion");
-            SupportedErrorTypes.Add("PerformanceDegradation");
-            SupportedErrorTypes.Add("SystemOverload");
+            SupportedErrorTypes = new HashSet<string> { "System.OutOfMemoryException", "System.TimeoutException" };
+            Priority = RemediationPriority.Low;
         }
 
-        /// <summary>
-        /// Executes the remediation strategy.
-        /// </summary>
-        /// <param name="context">The error context.</param>
-        /// <returns>The remediation result.</returns>
+        /// <inheritdoc/>
+        public string Id { get; set; }
+
+        /// <inheritdoc/>
+        public string Name { get; set; }
+
+        /// <inheritdoc/>
+        public RemediationPriority Priority { get; set; }
+
+        /// <inheritdoc/>
+        public string Description { get; set; }
+
+        /// <inheritdoc/>
+        public Dictionary<string, object> Parameters { get; set; }
+
+        /// <inheritdoc/>
+        public ISet<string> SupportedErrorTypes { get; }
+
+        /// <inheritdoc/>
         public async Task<RemediationResult> ExecuteAsync(ErrorContext context)
         {
             if (context == null)
@@ -84,187 +67,109 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 throw new ArgumentNullException(nameof(context));
             }
 
-            try
-            {
-                await ValidateRequiredParametersAsync();
-
-                var metrics = await CollectMetricsAsync(context);
-                var healthChecks = new List<bool>();
-
-                foreach (var metric in metrics)
-                {
-                    if (Parameters.TryGetValue(metric.Key, out var thresholdObj) && 
-                        thresholdObj is double threshold)
-                    {
-                        var isHealthy = await CheckMetricHealthAsync(metric.Key, threshold);
-                        healthChecks.Add(isHealthy);
-                    }
-                }
-
-                if (healthChecks.Any() && healthChecks.All(h => h))
-                {
-                    return CreateSuccessResult("All metrics are within healthy thresholds");
-                }
-
-                return CreateFailureResult("One or more metrics are outside healthy thresholds");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error executing monitor strategy: {ex.Message}");
-                return CreateFailureResult($"Error executing monitor strategy: {ex.Message}");
-            }
-        }
-
-        private async Task<Dictionary<string, double>> CollectMetricsAsync(ErrorContext context)
-        {
-            var metrics = new Dictionary<string, double>();
+            _logger.LogInformation("Executing monitoring strategy for error context {ErrorId}", context.Id);
             
             try
             {
-                var collectedMetrics = await _metricsCollector.CollectMetricsAsync(context);
+                var monitoringResult = await _monitoringService.MonitorSystemAsync(context.ApplicationId);
                 
-                foreach (var kvp in collectedMetrics)
+                return new RemediationResult
                 {
-                    if (kvp.Value is double doubleValue)
+                    Success = monitoringResult.Success,
+                    ErrorMessage = monitoringResult.Success ? null : monitoringResult.ErrorMessage,
+                    Actions = new List<RemediationActionResult>
                     {
-                        metrics[kvp.Key] = doubleValue;
-                    }
-                    else if (double.TryParse(kvp.Value?.ToString(), out var parsedValue))
-                    {
-                        metrics[kvp.Key] = parsedValue;
-                    }
-                }
+                        new RemediationActionResult
+                        {
+                            ActionId = Guid.NewGuid().ToString(),
+                            Name = "Monitor System",
+                            Success = monitoringResult.Success,
+                            ErrorMessage = monitoringResult.Success ? null : monitoringResult.ErrorMessage,
+                            Timestamp = DateTime.UtcNow
+                        }
+                    },
+                    StrategyId = Id,
+                    StrategyName = Name,
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow
+                };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error collecting metrics: {ex.Message}");
-            }
-            
-            return metrics;
-        }
-
-        private async Task ValidateRequiredParametersAsync()
-        {
-            var requiredParameters = new[] { "cpu_threshold", "memory_threshold", "disk_threshold" };
-            
-            foreach (var param in requiredParameters)
-            {
-                if (!Parameters.ContainsKey(param))
+                _logger.LogError(ex, "Error executing monitoring strategy");
+                return new RemediationResult
                 {
-                    throw new InvalidOperationException($"Required parameter '{param}' is missing");
-                }
+                    Success = false,
+                    ErrorMessage = ex.Message,
+                    Actions = new List<RemediationActionResult>(),
+                    StrategyId = Id,
+                    StrategyName = Name,
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow
+                };
             }
-            
-            await Task.CompletedTask;
         }
 
-        private async Task<bool> CheckMetricHealthAsync(string metric, double threshold)
-        {
-            if (metric == null)
-            {
-                return true;
-            }
-            
-            try
-            {
-                if (double.TryParse(metric, out var metricValue))
-                {
-                    return metricValue <= threshold;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error checking metric health: {ex.Message}");
-            }
-            
-            return true;
-        }
-
-        private RemediationResult CreateSuccessResult(string message)
-        {
-            var result = new RemediationResult
-            {
-                IsSuccessful = true,
-                Message = message,
-                Timestamp = DateTime.UtcNow
-            };
-            
-            // Add strategy information to metadata
-            result.Metadata["StrategyId"] = StrategyId;
-            result.Metadata["StrategyName"] = Name;
-            
-            return result;
-        }
-
-        private RemediationResult CreateFailureResult(string message)
-        {
-            var result = new RemediationResult
-            {
-                IsSuccessful = false,
-                ErrorMessage = message,
-                Timestamp = DateTime.UtcNow
-            };
-            
-            // Add strategy information to metadata
-            result.Metadata["StrategyId"] = StrategyId;
-            result.Metadata["StrategyName"] = Name;
-            
-            return result;
-        }
-
-        /// <summary>
-        /// Validates if this strategy can handle the given error.
-        /// </summary>
-        /// <param name="context">The error context.</param>
-        /// <returns>True if the strategy can handle the error; otherwise, false.</returns>
-        public async Task<bool> CanHandleErrorAsync(ErrorContext context)
+        /// <inheritdoc/>
+        public Task<bool> CanApplyAsync(ErrorContext context)
         {
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                return Task.FromResult(false);
             }
 
-            return SupportedErrorTypes.Contains(context.ErrorType);
+            return Task.FromResult(SupportedErrorTypes.Contains(context.ErrorType));
         }
 
-        /// <summary>
-        /// Validates the strategy for a given error context.
-        /// </summary>
-        /// <param name="errorContext">The error context to validate against.</param>
-        /// <returns>The validation result.</returns>
-        public async Task<ValidationResult> ValidateAsync(ErrorContext errorContext)
+        /// <inheritdoc/>
+        public Task<RemediationImpact> GetImpactAsync(ErrorContext context)
         {
-            if (errorContext == null)
+            return Task.FromResult(new RemediationImpact
             {
-                throw new ArgumentNullException(nameof(errorContext));
-            }
-
-            try
-            {
-                await ValidateRequiredParametersAsync();
-                return ValidationResult.Success("Monitor strategy validation successful");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Monitor strategy validation failed: {Message}", ex.Message);
-                return ValidationResult.Failure($"Monitor strategy validation failed: {ex.Message}");
-            }
+                Severity = RemediationActionSeverity.Low,
+                Description = "Monitoring has minimal impact on system performance"
+            });
         }
 
-        /// <summary>
-        /// Gets the priority of this strategy.
-        /// </summary>
-        /// <param name="errorContext">The error context.</param>
-        /// <returns>The remediation priority.</returns>
-        public async Task<RemediationPriority> GetPriorityAsync(ErrorContext errorContext)
+        /// <inheritdoc/>
+        public Task<RiskAssessment> GetRiskAsync(ErrorContext context)
         {
-            if (errorContext == null)
+            return Task.FromResult(new RiskAssessment
             {
-                throw new ArgumentNullException(nameof(errorContext));
+                Level = RiskLevel.Low,
+                Description = "Monitoring operations are low risk",
+                Factors = new Dictionary<string, double>
+                {
+                    { "SystemPerformance", 0.1 }
+                },
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <inheritdoc/>
+        public Task<bool> ValidateConfigurationAsync()
+        {
+            return Task.FromResult(_monitoringService != null);
+        }
+
+        /// <inheritdoc/>
+        public Task<ValidationResult> ValidateAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return Task.FromResult(new ValidationResult
+                {
+                    IsValid = false,
+                    Messages = { "Error context cannot be null" }
+                });
             }
 
-            await Task.CompletedTask;
-            return RemediationPriority.Medium;
+            return Task.FromResult(new ValidationResult
+            {
+                IsValid = true,
+                StrategyId = Id,
+                StrategyName = Name
+            });
         }
     }
 } 

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Interfaces;
 using RuntimeErrorSage.Core.LLM.Interfaces;
@@ -8,6 +11,7 @@ using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -181,7 +185,7 @@ namespace RuntimeErrorSage.Core.Remediation
         }
 
         private double CalculateStrategyConfidence(
-            IRemediationStrategy strategy,
+            Models.Remediation.Interfaces.IRemediationStrategy strategy,
             GraphAnalysis graphAnalysis,
             LLMAnalysis llmAnalysis)
         {
@@ -206,7 +210,7 @@ namespace RuntimeErrorSage.Core.Remediation
         }
 
         private string GenerateStrategyReasoning(
-            IRemediationStrategy strategy,
+            Models.Remediation.Interfaces.IRemediationStrategy strategy,
             GraphAnalysis graphAnalysis,
             LLMAnalysis llmAnalysis)
         {

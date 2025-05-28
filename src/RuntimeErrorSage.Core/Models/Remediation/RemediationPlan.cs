@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
@@ -115,7 +115,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets the remediation strategies.
         /// </summary>
-        public List<IRemediationStrategy> Strategies { get; set; } = new();
+        public List<Models.Remediation.Interfaces.IRemediationStrategy> Strategies { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the remediation status information.

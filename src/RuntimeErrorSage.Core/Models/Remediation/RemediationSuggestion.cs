@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
@@ -71,7 +72,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <param name="strategy">The strategy.</param>
         /// <param name="confidenceLevel">The confidence level.</param>
         /// <returns>The remediation suggestion.</returns>
-        public static RemediationSuggestion FromStrategy(IRemediationStrategy strategy, double confidenceLevel)
+        public static RemediationSuggestion FromStrategy(Models.Remediation.Interfaces.IRemediationStrategy strategy, double confidenceLevel)
         {
             if (strategy == null)
             {

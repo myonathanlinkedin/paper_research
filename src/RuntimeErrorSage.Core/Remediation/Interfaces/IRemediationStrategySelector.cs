@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation.Interfaces
 {

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Validation;
 
 namespace RuntimeErrorSage.Core.Remediation.Interfaces;

@@ -5,6 +5,7 @@ using RuntimeErrorSage.Core.Models.Execution;
 using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation.Interfaces
 {

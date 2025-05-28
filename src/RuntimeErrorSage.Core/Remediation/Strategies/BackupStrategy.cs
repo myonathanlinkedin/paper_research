@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Core.LLM.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Validation;
 
 namespace RuntimeErrorSage.Core.Remediation.Strategies
@@ -15,66 +15,53 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
     /// <summary>
     /// Strategy for backing up system state.
     /// </summary>
-    public class BackupStrategy : IRemediationStrategy
+    public class BackupStrategy : Models.Remediation.Interfaces.IRemediationStrategy
     {
         private readonly ILogger<BackupStrategy> _logger;
+        private readonly IBackupService _backupService;
         private readonly ILLMClient _llmClient;
-        private readonly IRemediationMetricsCollector _metricsCollector;
-        
-        /// <summary>
-        /// Gets or sets the strategy name.
-        /// </summary>
-        public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the strategy description.
+        /// Initializes a new instance of the <see cref="BackupStrategy"/> class.
         /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Gets or sets the strategy parameters.
-        /// </summary>
-        public Dictionary<string, object> Parameters { get; set; }
-
-        /// <summary>
-        /// Gets the error types this strategy can handle.
-        /// </summary>
-        public ISet<string> SupportedErrorTypes { get; }
-
-        /// <summary>
-        /// Gets the strategy id.
-        /// </summary>
-        public string StrategyId { get; } = Guid.NewGuid().ToString();
-
+        /// <param name="logger">The logger.</param>
+        /// <param name="backupService">The backup service.</param>
+        /// <param name="llmClient">The LLM client.</param>
         public BackupStrategy(
             ILogger<BackupStrategy> logger,
-            IRemediationMetricsCollector metricsCollector,
+            IBackupService backupService,
             ILLMClient llmClient)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-            _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
-            
-            Name = "Backup";
-            Description = "Creates and manages system backups";
+            _logger = logger;
+            _backupService = backupService;
+            _llmClient = llmClient;
+            Id = Guid.NewGuid().ToString();
+            Name = "Backup Strategy";
+            Description = "Creates a backup before attempting remediation";
             Parameters = new Dictionary<string, object>();
-            SupportedErrorTypes = new HashSet<string>();
-            
-            // Add required parameters with default values
-            Parameters["target"] = "system";
-            Parameters["schedule"] = "immediate";
-            
-            // Set supported error types
-            SupportedErrorTypes.Add("DataCorruption");
-            SupportedErrorTypes.Add("SystemFailure");
-            SupportedErrorTypes.Add("UpdateRequired");
+            SupportedErrorTypes = new HashSet<string> { "System.Exception", "System.IO.IOException" };
+            Priority = RemediationPriority.High;
         }
 
-        /// <summary>
-        /// Executes the remediation strategy.
-        /// </summary>
-        /// <param name="context">The error context.</param>
-        /// <returns>The remediation result.</returns>
+        /// <inheritdoc/>
+        public string Id { get; set; }
+
+        /// <inheritdoc/>
+        public string Name { get; set; }
+
+        /// <inheritdoc/>
+        public RemediationPriority Priority { get; set; }
+
+        /// <inheritdoc/>
+        public string Description { get; set; }
+
+        /// <inheritdoc/>
+        public Dictionary<string, object> Parameters { get; set; }
+
+        /// <inheritdoc/>
+        public ISet<string> SupportedErrorTypes { get; }
+
+        /// <inheritdoc/>
         public async Task<RemediationResult> ExecuteAsync(ErrorContext context)
         {
             if (context == null)
@@ -82,144 +69,110 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 throw new ArgumentNullException(nameof(context));
             }
 
+            _logger.LogInformation("Executing backup strategy for error context {ErrorId}", context.Id);
+            
             try
             {
-                await ValidateRequiredParametersAsync();
-
-                // Execute backup logic
-                var target = Parameters["target"]?.ToString() ?? "system";
-                var schedule = Parameters["schedule"]?.ToString() ?? "immediate";
-
-                await CreateBackupAsync(target, schedule);
+                var backupResult = await _backupService.CreateBackupAsync(context.ApplicationId);
                 
-                var result = new RemediationResult
+                return new RemediationResult
                 {
-                    IsSuccessful = true,
-                    Message = $"Backup created for {target} on schedule {schedule}",
-                    ErrorId = context.ErrorId
+                    Success = backupResult.Success,
+                    ErrorMessage = backupResult.Success ? null : backupResult.ErrorMessage,
+                    Actions = new List<RemediationActionResult>
+                    {
+                        new RemediationActionResult
+                        {
+                            ActionId = Guid.NewGuid().ToString(),
+                            Name = "Create Backup",
+                            Success = backupResult.Success,
+                            ErrorMessage = backupResult.Success ? null : backupResult.ErrorMessage,
+                            Timestamp = DateTime.UtcNow
+                        }
+                    },
+                    StrategyId = Id,
+                    StrategyName = Name,
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow
                 };
-                
-                // Add strategy information to metadata
-                result.Metadata["StrategyId"] = StrategyId;
-                result.Metadata["StrategyName"] = Name;
-                
-                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error executing backup strategy: {ex.Message}");
-                return CreateFailureResult($"Failed to execute backup strategy: {ex.Message}");
-            }
-        }
-
-        private async Task ValidateRequiredParametersAsync()
-        {
-            var requiredParameters = new[] { "target", "schedule" };
-            
-            foreach (var param in requiredParameters)
-            {
-                if (!Parameters.ContainsKey(param))
+                _logger.LogError(ex, "Error executing backup strategy");
+                return new RemediationResult
                 {
-                    throw new InvalidOperationException($"Required parameter '{param}' is missing");
-                }
-            }
-            
-            await Task.CompletedTask;
-        }
-
-        private async Task CreateBackupAsync(string target, string schedule)
-        {
-            try
-            {
-                var request = new LLM.LLMRequest
-                {
-                    Query = "Generate backup plan",
-                    Context = $"Target: {target}, Schedule: {schedule}"
+                    Success = false,
+                    ErrorMessage = ex.Message,
+                    Actions = new List<RemediationActionResult>(),
+                    StrategyId = Id,
+                    StrategyName = Name,
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow
                 };
-                
-                var response = await _llmClient.GenerateResponseAsync(request);
-                
-                // Record metrics about the backup
-                await _metricsCollector.RecordMetricAsync(
-                    "backup_created",
-                    1.0);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error creating backup: {ex.Message}");
-                throw;
             }
         }
 
-        private RemediationResult CreateFailureResult(string message)
-        {
-            var result = new RemediationResult
-            {
-                IsSuccessful = false,
-                ErrorMessage = message,
-                Timestamp = DateTime.UtcNow
-            };
-            
-            // Add strategy information to metadata
-            result.Metadata["StrategyId"] = StrategyId;
-            result.Metadata["StrategyName"] = Name;
-            
-            return result;
-        }
-
-        /// <summary>
-        /// Validates if this strategy can handle the given error.
-        /// </summary>
-        /// <param name="context">The error context.</param>
-        /// <returns>True if the strategy can handle the error; otherwise, false.</returns>
-        public async Task<bool> CanHandleErrorAsync(ErrorContext context)
+        /// <inheritdoc/>
+        public Task<bool> CanApplyAsync(ErrorContext context)
         {
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                return Task.FromResult(false);
             }
 
-            return SupportedErrorTypes.Contains(context.ErrorType);
+            return Task.FromResult(SupportedErrorTypes.Contains(context.ErrorType));
         }
 
-        /// <summary>
-        /// Validates the strategy for a given error context.
-        /// </summary>
-        /// <param name="errorContext">The error context to validate against.</param>
-        /// <returns>The validation result.</returns>
-        public async Task<ValidationResult> ValidateAsync(ErrorContext errorContext)
+        /// <inheritdoc/>
+        public Task<RemediationImpact> GetImpactAsync(ErrorContext context)
         {
-            if (errorContext == null)
+            return Task.FromResult(new RemediationImpact
             {
-                throw new ArgumentNullException(nameof(errorContext));
-            }
-
-            try
-            {
-                await ValidateRequiredParametersAsync();
-                return ValidationResult.Success("Backup strategy validation successful");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Backup strategy validation failed: {Message}", ex.Message);
-                return ValidationResult.Failure($"Backup strategy validation failed: {ex.Message}");
-            }
+                Severity = RemediationActionSeverity.Low,
+                Description = "Creating a backup has minimal impact on system performance"
+            });
         }
 
-        /// <summary>
-        /// Gets the priority of this strategy.
-        /// </summary>
-        /// <param name="errorContext">The error context.</param>
-        /// <returns>The remediation priority.</returns>
-        public async Task<RemediationPriority> GetPriorityAsync(ErrorContext errorContext)
+        /// <inheritdoc/>
+        public Task<RiskAssessment> GetRiskAsync(ErrorContext context)
         {
-            if (errorContext == null)
+            return Task.FromResult(new RiskAssessment
             {
-                throw new ArgumentNullException(nameof(errorContext));
+                Level = RiskLevel.Low,
+                Description = "Backup operations are low risk",
+                Factors = new Dictionary<string, double>
+                {
+                    { "DataLoss", 0.1 },
+                    { "SystemPerformance", 0.2 }
+                },
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <inheritdoc/>
+        public Task<bool> ValidateConfigurationAsync()
+        {
+            return Task.FromResult(_backupService != null);
+        }
+
+        /// <inheritdoc/>
+        public Task<ValidationResult> ValidateAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return Task.FromResult(new ValidationResult
+                {
+                    IsValid = false,
+                    Messages = { "Error context cannot be null" }
+                });
             }
 
-            await Task.CompletedTask;
-            return RemediationPriority.High;
+            return Task.FromResult(new ValidationResult
+            {
+                IsValid = true,
+                StrategyId = Id,
+                StrategyName = Name
+            });
         }
     }
 } 
