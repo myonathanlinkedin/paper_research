@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Core.Models.Analysis;
 
 namespace RuntimeErrorSage.Core.Services.Interfaces;
 
@@ -15,7 +17,7 @@ public interface IImpactAnalyzer
     /// <param name="context">The error context</param>
     /// <param name="graph">The dependency graph</param>
     /// <returns>A list of impact analysis results</returns>
-    Task<List<ImpactAnalysisResult>> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph);
+    Task<List<RuntimeErrorSage.Core.Models.Graph.ImpactAnalysisResult>> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph);
 
     /// <summary>
     /// Validates the impact analyzer configuration.

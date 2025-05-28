@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Services.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Services;
 
@@ -22,7 +23,7 @@ public class ImpactAnalyzer : IImpactAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<List<ImpactAnalysisResult>> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph)
+    public async Task<List<RuntimeErrorSage.Core.Models.Graph.ImpactAnalysisResult>> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(graph);
@@ -31,7 +32,7 @@ public class ImpactAnalyzer : IImpactAnalyzer
         {
             _logger.LogInformation("Analyzing impact for error {ErrorId}", context.ErrorId);
 
-            var results = new List<ImpactAnalysisResult>();
+            var results = new List<RuntimeErrorSage.Core.Models.Graph.ImpactAnalysisResult>();
 
             // Start from the error source node
             var startNodeId = context.ErrorSource;
@@ -79,11 +80,11 @@ public class ImpactAnalyzer : IImpactAnalyzer
         }
     }
 
-    private async Task<ImpactAnalysisResult> AnalyzeNodeImpactAsync(GraphNode node, DependencyGraph graph, string startNodeId)
+    private async Task<RuntimeErrorSage.Core.Models.Graph.ImpactAnalysisResult> AnalyzeNodeImpactAsync(GraphNode node, DependencyGraph graph, string startNodeId)
     {
         try
         {
-            var result = new ImpactAnalysisResult
+            var result = new RuntimeErrorSage.Core.Models.Graph.ImpactAnalysisResult
             {
                 ErrorId = graph.Metadata.TryGetValue("ErrorId", out var errorId) ? errorId?.ToString() : string.Empty,
                 ComponentId = node.Id,
