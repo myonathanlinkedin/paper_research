@@ -175,7 +175,7 @@ public class RedisPatternStorage : IPatternStorage
         await Task.CompletedTask;
     }
 
-    public async Task<int> GetPatternCountAsync()
+    public async Task<long> GetPatternCountAsync()
     {
         // Implementation will be added
         return await Task.FromResult(0);

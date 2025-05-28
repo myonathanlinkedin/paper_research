@@ -371,5 +371,30 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
         }
     }
 
+    /// <inheritdoc/>
+    public async Task<IEnumerable<IRemediationStrategy>> GetAllStrategiesAsync()
+    {
+        try
+        {
+            // Get the latest version of each strategy
+            var latestStrategies = _strategyVersions.Keys
+                .Select(strategyName => {
+                    var latestVersion = GetLatestVersion(strategyName);
+                    var key = GetStrategyKey(strategyName, latestVersion);
+                    return _strategies.TryGetValue(key, out var strategy) ? strategy : null;
+                })
+                .Where(s => s != null)
+                .ToList();
+
+            _logger.LogDebug("Retrieved {Count} strategies", latestStrategies.Count);
+            return latestStrategies;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving all strategies");
+            throw;
+        }
+    }
+
     private static string GetStrategyKey(string strategyName, string version) => $"{strategyName}:{version}";
 } 

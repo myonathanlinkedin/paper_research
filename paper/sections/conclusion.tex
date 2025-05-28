@@ -1,10 +1,21 @@
 \section{Conclusion}\label{sec:conclusion}
-This paper has presented RuntimeErrorSage, an approach to runtime error handling in .NET applications that leverages local LLM inference for intelligent error analysis and remediation. The system's architecture combines runtime monitoring, context management, and local LLM processing to provide immediate, privacy-preserving error resolution capabilities without relying on external services.
+This paper has presented RuntimeErrorSage, an approach to runtime error handling in .NET applications that leverages local LLM inference for intelligent error analysis and remediation. The system's architecture combines runtime monitoring, context management, and local LLM processing to provide privacy-preserving error resolution capabilities without relying on external services.
 
-Our comprehensive evaluation demonstrates the practical effectiveness of the approach, achieving 92\% accuracy in error classification and 85\% success rate in automated remediation with an average resolution time of 2.3 seconds. The system maintains low runtime overhead of less than 5\%, making it suitable for production deployment. The mathematical model provides a rigorous foundation for error classification, context management, and remediation decision-making processes.
+While our implementation is still in the prototype stage, theoretical analysis suggests potential for meaningful improvements in error handling efficiency. We anticipate that with continued development and empirical validation, the system could achieve approximately 60\% accuracy in error classification and 50-55\% success rate in automated remediation suggestions, with resolution times of 10-15 seconds on commodity hardware. The mathematical model provides a foundation for error classification, context management, and remediation decision-making processes that will require thorough validation through real-world testing.
 
-The local LLM approach addresses key limitations of existing solutions by eliminating network dependencies, ensuring data privacy, and providing near-instantaneous response times. The modular architecture enables extensibility and integration with existing .NET applications through standard middleware patterns.
+The local LLM approach addresses key limitations of existing solutions by eliminating network dependencies, ensuring data privacy, and potentially providing faster response times than cloud-based alternatives. The modular architecture enables extensibility and integration with existing .NET applications through standard middleware patterns.
 
-Key future research directions include integration with additional LLM models to improve analysis capabilities, enhanced context management for distributed systems to handle complex microservice architectures, improved remediation strategies through machine learning from historical success patterns, and support for additional programming languages beyond .NET to broaden applicability.
+We acknowledge several limitations in the current implementation. The Qwen 2.5 7B model, while promising, has inherent constraints in reasoning capabilities, particularly for complex system-specific architectural patterns. Our remediation execution system requires significant safety enhancements before production deployment, including comprehensive rollback mechanisms and formal validation procedures. Additionally, our performance and accuracy claims require rigorous benchmarking against established baselines.
 
-The system's design principles and evaluation methodology provide a foundation for future work in intelligent runtime error handling systems. The demonstrated feasibility of local LLM integration for production error handling opens new possibilities for autonomous application reliability management.
+Key future research directions include:
+\begin{itemize}
+    \item Comprehensive empirical validation through controlled testing
+    \item Implementation of robust safety mechanisms for remediation execution
+    \item Development of a formal security threat model
+    \item Integration with multiple LLM models to improve reliability and coverage
+    \item Enhanced context management for distributed systems
+    \item Improved remediation strategies through user feedback loops
+    \item Support for additional programming languages beyond .NET
+\end{itemize}
+
+The system's design principles provide a foundation for future work in intelligent runtime error handling systems. The potential of local LLM integration for production error handling opens promising avenues for research in autonomous application reliability management, though significant challenges remain to be addressed before widespread production adoption.

@@ -1,32 +1,32 @@
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Defines the risk level of a remediation action.
+/// Represents the severity of an impact.
 /// </summary>
-public enum RemediationRiskLevel
+public enum ImpactSeverity
 {
     /// <summary>
-    /// Unknown risk level.
+    /// Unknown severity.
     /// </summary>
     Unknown = 0,
 
     /// <summary>
-    /// Low risk level.
+    /// Low severity impact.
     /// </summary>
     Low = 1,
 
     /// <summary>
-    /// Medium risk level.
+    /// Medium severity impact.
     /// </summary>
     Medium = 2,
 
     /// <summary>
-    /// High risk level.
+    /// High severity impact.
     /// </summary>
     High = 3,
 
     /// <summary>
-    /// Critical risk level.
+    /// Critical severity impact.
     /// </summary>
     Critical = 4
 } 

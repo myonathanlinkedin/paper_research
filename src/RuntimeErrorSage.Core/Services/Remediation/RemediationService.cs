@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Metrics;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Interfaces;
 
 namespace RuntimeErrorSage.Core.Services.Remediation
 {
@@ -25,14 +27,139 @@ namespace RuntimeErrorSage.Core.Services.Remediation
             IRemediationValidator validator,
             IRemediationRollbackManager rollbackManager)
         {
-            _actionExecutor = actionExecutor;
-            _validator = validator;
-            _rollbackManager = rollbackManager;
+            _actionExecutor = actionExecutor ?? throw new ArgumentNullException(nameof(actionExecutor));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _rollbackManager = rollbackManager ?? throw new ArgumentNullException(nameof(rollbackManager));
         }
 
-        /// <summary>
-        /// Executes a remediation action.
-        /// </summary>
+        /// <inheritdoc/>
+        public bool IsEnabled => true;
+
+        /// <inheritdoc/>
+        public string Name => "RuntimeErrorSage Remediation Service";
+
+        /// <inheritdoc/>
+        public string Version => "1.0.0";
+
+        /// <inheritdoc/>
+        public async Task<RemediationResult> ApplyRemediationAsync(ErrorContext context)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            // Implementation will be added
+            return await Task.FromResult(new RemediationResult
+            {
+                ActionId = Guid.NewGuid().ToString(),
+                Status = RemediationStatusEnum.Completed,
+                Timestamp = DateTime.UtcNow,
+                Success = true
+            });
+        }
+
+        /// <inheritdoc/>
+        public async Task<RemediationPlan> CreatePlanAsync(ErrorContext context)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            // Implementation will be added
+            return await Task.FromResult(new RemediationPlan
+            {
+                PlanId = Guid.NewGuid().ToString(),
+                Name = $"Plan for {context.ErrorId}",
+                Status = RemediationStatusEnum.NotStarted,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> ValidatePlanAsync(RemediationPlan plan)
+        {
+            if (plan == null)
+                throw new ArgumentNullException(nameof(plan));
+
+            // Implementation will be added
+            return await Task.FromResult(true);
+        }
+
+        /// <inheritdoc/>
+        public async Task<RemediationStatusEnum> GetStatusAsync(string remediationId)
+        {
+            if (string.IsNullOrEmpty(remediationId))
+                throw new ArgumentException("Remediation ID cannot be null or empty.", nameof(remediationId));
+
+            // Implementation will be added
+            return await Task.FromResult(RemediationStatusEnum.Completed);
+        }
+
+        /// <inheritdoc/>
+        public async Task<RemediationMetrics> GetMetricsAsync(string remediationId)
+        {
+            if (string.IsNullOrEmpty(remediationId))
+                throw new ArgumentException("Remediation ID cannot be null or empty.", nameof(remediationId));
+
+            // Implementation will be added
+            return await Task.FromResult(new RemediationMetrics(remediationId));
+        }
+
+        /// <inheritdoc/>
+        public async Task<RemediationSuggestion> GetRemediationSuggestionsAsync(ErrorContext errorContext)
+        {
+            if (errorContext == null)
+                throw new ArgumentNullException(nameof(errorContext));
+
+            // Implementation will be added
+            return await Task.FromResult(new RemediationSuggestion
+            {
+                SuggestionId = Guid.NewGuid().ToString(),
+                ErrorContext = errorContext
+            });
+        }
+
+        /// <inheritdoc/>
+        public async Task<ValidationResult> ValidateSuggestionAsync(RemediationSuggestion suggestion, ErrorContext errorContext)
+        {
+            if (suggestion == null)
+                throw new ArgumentNullException(nameof(suggestion));
+            if (errorContext == null)
+                throw new ArgumentNullException(nameof(errorContext));
+
+            // Implementation will be added
+            return await Task.FromResult(new ValidationResult { IsValid = true });
+        }
+
+        /// <inheritdoc/>
+        public async Task<RemediationResult> ExecuteSuggestionAsync(RemediationSuggestion suggestion, ErrorContext errorContext)
+        {
+            if (suggestion == null)
+                throw new ArgumentNullException(nameof(suggestion));
+            if (errorContext == null)
+                throw new ArgumentNullException(nameof(errorContext));
+
+            // Implementation will be added
+            return await Task.FromResult(new RemediationResult
+            {
+                ActionId = Guid.NewGuid().ToString(),
+                Status = RemediationStatusEnum.Completed,
+                Timestamp = DateTime.UtcNow,
+                Success = true
+            });
+        }
+
+        /// <inheritdoc/>
+        public async Task<RemediationImpact> GetSuggestionImpactAsync(RemediationSuggestion suggestion, ErrorContext errorContext)
+        {
+            if (suggestion == null)
+                throw new ArgumentNullException(nameof(suggestion));
+            if (errorContext == null)
+                throw new ArgumentNullException(nameof(errorContext));
+
+            // Implementation will be added
+            return await Task.FromResult(new RemediationImpact());
+        }
+
+        /// <inheritdoc/>
         public async Task<RemediationResult> ExecuteActionAsync(RemediationAction action)
         {
             var result = new RemediationResult
@@ -69,37 +196,22 @@ namespace RuntimeErrorSage.Core.Services.Remediation
             return result;
         }
 
-        /// <summary>
-        /// Validates a remediation action.
-        /// </summary>
+        /// <inheritdoc/>
         public async Task<ValidationResult> ValidateActionAsync(RemediationAction action)
         {
             return await _validator.ValidateActionAsync(action);
         }
 
-        /// <summary>
-        /// Rolls back a remediation action.
-        /// </summary>
+        /// <inheritdoc/>
         public async Task<RollbackStatus> RollbackActionAsync(string actionId)
         {
             return await _rollbackManager.RollbackActionAsync(actionId);
         }
 
-        /// <summary>
-        /// Gets the status of a remediation action.
-        /// </summary>
+        /// <inheritdoc/>
         public async Task<RemediationResult> GetActionStatusAsync(string actionId)
         {
             return await _actionExecutor.GetActionStatusAsync(actionId);
-        }
-
-        public async Task<RemediationMetrics> GetMetricsAsync(string remediationId)
-        {
-            if (string.IsNullOrEmpty(remediationId))
-                throw new ArgumentException("Remediation ID cannot be null or empty.", nameof(remediationId));
-
-            // Implementation will be added
-            return await Task.FromResult(new RemediationMetrics(remediationId));
         }
     }
 } 

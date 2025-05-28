@@ -15,6 +15,8 @@ using IRemediationValidator = RuntimeErrorSage.Core.Remediation.Interfaces.IReme
 using RiskAssessment = RuntimeErrorSage.Core.Models.Remediation.RiskAssessment;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
@@ -45,8 +47,8 @@ public class RemediationExecutor : IRemediationExecutor
         IRemediationMetricsCollector metricsCollector,
         ILLMClient llmClient,
         IRemediationStrategyRegistry strategyRegistry,
-        Dictionary<string, EventId>? eventIds = null,
-        IRemediationRiskAssessment riskAssessment)
+        IRemediationRiskAssessment riskAssessment,
+        Dictionary<string, EventId>? eventIds = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
@@ -55,6 +57,7 @@ public class RemediationExecutor : IRemediationExecutor
         _tracker = tracker ?? throw new ArgumentNullException(nameof(tracker));
         _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
         _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+        _riskAssessment = riskAssessment ?? throw new ArgumentNullException(nameof(riskAssessment));
         _eventIds = eventIds ?? new Dictionary<string, EventId>
         {
             { nameof(ExecuteStrategyAsync), new EventId(1, nameof(ExecuteStrategyAsync)) },
@@ -66,7 +69,6 @@ public class RemediationExecutor : IRemediationExecutor
             { nameof(GetExecutionHistoryAsync), new EventId(7, nameof(GetExecutionHistoryAsync)) },
             { nameof(GetExecutionMetricsAsync), new EventId(8, nameof(GetExecutionMetricsAsync)) }
         };
-        _riskAssessment = riskAssessment ?? throw new ArgumentNullException(nameof(riskAssessment));
     }
 
     /// <inheritdoc/>
@@ -84,15 +86,114 @@ public class RemediationExecutor : IRemediationExecutor
     }
 
     /// <inheritdoc/>
-    public async Task ExecuteStrategyAsync(IRemediationStrategy strategy, ErrorContext context)
+    public async Task<RemediationResult> ExecuteStrategyAsync(IRemediationStrategy strategy, ErrorContext context)
     {
         if (strategy == null)
             throw new ArgumentNullException(nameof(strategy));
         if (context == null)
             throw new ArgumentNullException(nameof(context));
 
-        // Implementation will be added
-        await Task.CompletedTask;
+        try
+        {
+            _logger.LogInformation(_eventIds[nameof(ExecuteStrategyAsync)], 
+                "Executing strategy {StrategyName} for error {ErrorId}", strategy.Name, context.ErrorId);
+
+            var result = new RemediationResult
+            {
+                StartTime = DateTime.UtcNow,
+                ExecutionId = Guid.NewGuid().ToString(),
+                CorrelationId = context.CorrelationId,
+                ErrorId = context.ErrorId,
+                ErrorType = context.ErrorType,
+                Context = context
+            };
+
+            // Create execution metrics
+            var metrics = new RemediationMetrics
+            {
+                ExecutionId = result.ExecutionId,
+                StartResourceUsage = new ResourceUsage()
+            };
+
+            // Validate strategy
+            var validationResult = await _validator.ValidateStrategyAsync(strategy, context);
+            if (!validationResult.IsValid)
+            {
+                result.Success = false;
+                result.ErrorMessage = validationResult.ValidationMessage;
+                result.Status = RemediationStatusEnum.ValidationFailed;
+                result.EndTime = DateTime.UtcNow;
+                
+                await _metricsCollector.RecordExecutionAsync(result.ExecutionId, result);
+                return result;
+            }
+
+            // Execute strategy actions
+            foreach (var action in strategy.Actions)
+            {
+                try
+                {
+                    var actionResult = await action.ExecuteAsync();
+                    result.Actions.Add(action);
+
+                    if (!actionResult.IsSuccessful)
+                    {
+                        result.Success = false;
+                        result.ErrorMessage = $"Action {action.Name} failed: {actionResult.ErrorMessage}";
+                        result.Status = RemediationStatusEnum.Failed;
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(_eventIds[nameof(ExecuteStrategyAsync)], ex, 
+                        "Error executing action {ActionName}", action.Name);
+                    result.Success = false;
+                    result.ErrorMessage = $"Action {action.Name} failed: {ex.Message}";
+                    result.Status = RemediationStatusEnum.Failed;
+                    break;
+                }
+            }
+
+            // Update metrics
+            metrics.EndResourceUsage = new ResourceUsage();
+            metrics.DurationMs = (DateTime.UtcNow - result.StartTime).TotalMilliseconds;
+            await _metricsCollector.RecordRemediationMetricsAsync(metrics);
+
+            // Set final status if not already set
+            if (result.Status == RemediationStatusEnum.NotStarted)
+            {
+                result.Status = RemediationStatusEnum.Completed;
+                result.Success = true;
+            }
+
+            result.EndTime = DateTime.UtcNow;
+            await _metricsCollector.RecordExecutionAsync(result.ExecutionId, result);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(_eventIds[nameof(ExecuteStrategyAsync)], ex, 
+                "Error executing strategy {StrategyName}", strategy.Name);
+            
+            var result = new RemediationResult
+            {
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow,
+                ExecutionId = Guid.NewGuid().ToString(),
+                CorrelationId = context.CorrelationId,
+                ErrorId = context.ErrorId,
+                ErrorType = context.ErrorType,
+                Success = false,
+                ErrorMessage = $"Unhandled exception: {ex.Message}",
+                Status = RemediationStatusEnum.Failed,
+                Context = context
+            };
+            
+            await _metricsCollector.RecordExecutionAsync(result.ExecutionId, result);
+            return result;
+        }
     }
 
     /// <inheritdoc/>

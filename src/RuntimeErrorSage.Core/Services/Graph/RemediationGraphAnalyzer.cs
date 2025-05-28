@@ -1,3 +1,4 @@
+using RuntimeErrorSage.Core.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

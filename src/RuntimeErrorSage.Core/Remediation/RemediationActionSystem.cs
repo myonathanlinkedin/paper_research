@@ -15,6 +15,8 @@ using RuntimeErrorSage.Core.Classifier.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Analysis.Interfaces;
 using RuntimeErrorSage.Core.Services.Interfaces;
+using AnalysisErrorRelationshipAnalyzer = RuntimeErrorSage.Core.Analysis.Interfaces.IErrorRelationshipAnalyzer;
+using ServicesErrorRelationshipAnalyzer = RuntimeErrorSage.Core.Services.Interfaces.IErrorRelationshipAnalyzer;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
@@ -28,7 +30,7 @@ namespace RuntimeErrorSage.Core.Remediation
         private readonly ILLMClient _llmClient;
         private readonly IErrorContextAnalyzer _contextAnalyzer;
         private readonly IErrorClassifier _errorClassifier;
-        private readonly IErrorRelationshipAnalyzer _relationshipAnalyzer;
+        private readonly AnalysisErrorRelationshipAnalyzer _relationshipAnalyzer;
         private RemediationActionSeverity _severity;
 
         public bool IsEnabled => true;
@@ -42,7 +44,7 @@ namespace RuntimeErrorSage.Core.Remediation
             ILLMClient llmClient,
             IErrorContextAnalyzer contextAnalyzer,
             IErrorClassifier errorClassifier,
-            IErrorRelationshipAnalyzer relationshipAnalyzer)
+            AnalysisErrorRelationshipAnalyzer relationshipAnalyzer)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));

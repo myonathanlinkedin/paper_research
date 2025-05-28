@@ -49,6 +49,44 @@ Our evaluation reveals several promising areas for advancement:
         \end{itemize}
 \end{itemize}
 
+\subsubsection{LLM Limitations and Mitigations}
+While Qwen 2.5 7B Instruct demonstrates promising capabilities for runtime error analysis, we acknowledge several inherent limitations:
+\begin{itemize}
+    \item \textbf{Reasoning Limitations:}
+        \begin{itemize}
+            \item Potential for hallucinations in complex causal chains
+            \item Limited understanding of system-specific architectural patterns
+            \item Inconsistent performance across different error domains
+            \item Tendency to overestimate remediation effectiveness
+        \end{itemize}
+    \item \textbf{Proposed Mitigations:}
+        \begin{itemize}
+            \item Implementation of multi-LLM routing for specialized error types
+            \item Development of fallback procedures for low-confidence responses
+            \item Creation of robust validation protocols for suggested remediations
+            \item Establishment of a feedback system to improve future responses
+        \end{itemize}
+\end{itemize}
+
+\subsubsection{Remediation Safety Enhancements}
+To ensure safe and reliable remediation execution, we recognize the need for:
+\begin{itemize}
+    \item \textbf{Execution Safeguards:}
+        \begin{itemize}
+            \item Implementation of comprehensive rollback mechanisms
+            \item Development of dry-run validation procedures
+            \item Establishment of precondition verification systems
+            \item Creation of post-remediation validation protocols
+        \end{itemize}
+    \item \textbf{Safety Verification:}
+        \begin{itemize}
+            \item Design of formal safety classification for remediation actions
+            \item Implementation of permission-based execution tiers
+            \item Development of simulation-based impact assessment
+            \item Creation of detailed audit trails for all remediation attempts
+        \end{itemize}
+\end{itemize}
+
 \subsubsection{Technical Advancements}
 \begin{itemize}
     \item \textbf{Model Integration:}
@@ -96,6 +134,33 @@ Our evaluation reveals several promising areas for advancement:
             \item Establish comprehensive authorization
             \item Develop detailed audit logging
             \item Conduct thorough security testing
+        \end{itemize}
+    \item \textbf{Threat Modeling:}
+        \begin{itemize}
+            \item Development of formal threat model for LLM-based remediation
+            \item Assessment of potential attack vectors including prompt injection
+            \item Evaluation of data exposure risks during context collection
+            \item Creation of mitigation strategies for identified threats
+        \end{itemize}
+\end{itemize}
+
+\subsubsection{Benchmarking Framework}
+To validate performance and accuracy claims, we propose developing:
+\begin{itemize}
+    \item \textbf{Standardized Test Suite:}
+        \begin{itemize}
+            \item 100+ structured error scenarios across various domains
+            \item Controlled error injection for reproducible testing
+            \item Comparative analysis against static analysis tools
+            \item Systematic comparison with manual debugging approaches
+            \item Benchmarking against cloud-based LLM services
+        \end{itemize}
+    \item \textbf{Performance Metrics:}
+        \begin{itemize}
+            \item End-to-end latency measurements
+            \item Memory and CPU utilization profiling
+            \item Scalability assessment under high error rates
+            \item Resource efficiency comparison across deployment models
         \end{itemize}
 \end{itemize}
 

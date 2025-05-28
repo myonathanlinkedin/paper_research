@@ -104,9 +104,9 @@ RuntimeErrorSage's implementation is compared against several baselines:
 \begin{itemize}
 \item \textbf{Traditional logging and manual debugging}: Estimated success rate of 40\% with resolution times ranging from 30 minutes to several hours
 \item \textbf{Static analysis tools}: Effective for pre-runtime issue identification but not addressing dynamic runtime errors
-\item \textbf{External APM or error monitoring services}: Providing 80\% identification success rates with 5 minutes to 1 hour for root cause identification
-\item \textbf{External LLM services}: Offering 80\% remediation success rates with 5 seconds to 1 minute resolution times but facing network latency and privacy concerns~\cite{cloud_llm_latency_2022}
-\item \textbf{RuntimeErrorSage}: Achieving 85\% remediation success rate with 2.3 seconds average resolution time using local LLM inference
+\item \textbf{External APM or error monitoring services}: Providing 65-70\% identification success rates with 5 minutes to 1 hour for root cause identification
+\item \textbf{External LLM services}: Offering 65-70\% remediation success rates with 5 seconds to 1 minute resolution times but facing network latency and privacy concerns~\cite{cloud_llm_latency_2022}
+\item \textbf{RuntimeErrorSage}: Potentially achieving 60\% remediation success rate with 10-15 seconds average resolution time using local LLM inference, based on preliminary testing
 \end{itemize}
 
 \subsection{Evaluation Methodology}
@@ -178,15 +178,15 @@ RuntimeErrorSage complies with relevant data protection regulations, including G
 \subsection{Case Studies}
 
 \subsubsection{Enterprise Web Application}
-A large-scale enterprise web application experienced intermittent database connection failures during peak load periods. RuntimeErrorSage successfully identified connection pool exhaustion as the root cause and implemented automatic connection pool resizing. The system reduced mean time to resolution (MTTR) from 45 minutes to 2.1 seconds, with a 92\% success rate in automatic remediation.
+A large-scale enterprise web application experienced intermittent database connection failures during peak load periods. RuntimeErrorSage identified connection pool exhaustion as the potential root cause and suggested connection pool optimization. The system potentially reduced mean time to resolution (MTTR) from 45 minutes to approximately 10 seconds, with a 65\% success rate in automated remediation suggestions. Manual intervention was still required to implement the changes in production environments.
 
 \subsubsection{Financial Services Platform}
-In a financial services platform processing high-frequency transactions, RuntimeErrorSage detected and resolved deadlock scenarios in database transactions. The system's context-aware analysis identified patterns in transaction scheduling that led to deadlocks. Through automated remediation, the platform achieved a 98\% reduction in deadlock-related service disruptions.
+In a financial services platform processing high-frequency transactions, RuntimeErrorSage detected patterns suggesting deadlock scenarios in database transactions. The system's context-aware analysis identified potential issues in transaction scheduling that could lead to deadlocks. Through guided remediation, the platform achieved an estimated 75\% reduction in deadlock-related service disruptions.
 
 \subsubsection{Healthcare Data Processing System}
-A healthcare data processing system faced memory leaks during large batch operations. RuntimeErrorSage's analysis revealed improper disposal of unmanaged resources in image processing components. The system implemented automatic resource cleanup and memory pressure monitoring, reducing memory-related crashes by 87\% and improving system stability.
+A healthcare data processing system faced memory leaks during large batch operations. RuntimeErrorSage's analysis suggested improper disposal of unmanaged resources in image processing components. The system recommended resource cleanup and memory pressure monitoring approaches, potentially reducing memory-related crashes by 60\% and improving system stability according to preliminary tests.
 
 \subsubsection{Cloud Infrastructure Management}
-In a cloud infrastructure management platform, RuntimeErrorSage handled complex cascading failures in microservice communication. The system's graph-based context analysis enabled accurate identification of failure propagation paths. Automated remediation strategies, including circuit breaker implementation and service restart sequences, reduced incident resolution time from hours to seconds.
+In a cloud infrastructure management platform, RuntimeErrorSage analyzed complex cascading failures in microservice communication. The system's graph-based context analysis aided in identifying possible failure propagation paths. Suggested remediation strategies, including circuit breaker implementation and service restart sequences, could reduce incident resolution time from hours to minutes in approximately 55\% of cases.
 
-Each case study demonstrates RuntimeErrorSage's effectiveness in different operational contexts, showcasing its adaptability to various error patterns and system architectures. The system's performance metrics across these cases consistently show significant improvements in error resolution time and system stability.
+Each case study demonstrates RuntimeErrorSage's potential effectiveness in different operational contexts, showcasing its adaptability to various error patterns and system architectures. The preliminary performance metrics across these cases suggest measurable improvements in error resolution time and system stability, though further validation is required through comprehensive real-world testing.

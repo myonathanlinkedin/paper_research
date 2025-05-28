@@ -368,5 +368,22 @@ namespace RuntimeErrorSage.Core.Remediation
                 throw;
             }
         }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<IRemediationStrategy>> GetAllStrategiesAsync()
+        {
+            try
+            {
+                var strategies = _strategies.Values.ToList();
+                
+                _logger.LogDebug("Retrieved all {Count} strategies", strategies.Count);
+                return strategies;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all strategies");
+                throw;
+            }
+        }
     }
 } 
