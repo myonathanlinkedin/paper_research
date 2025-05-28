@@ -10,6 +10,7 @@ using System.Linq;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Remediation;
 
 namespace RuntimeErrorSage.Core.Services;
 
@@ -65,7 +66,7 @@ public class RemediationService : IRemediationService
                     Context = context,
                     Status = plan.Status,
                     Message = "Failed to create remediation plan",
-                    Validation = new ValidationResult { IsValid = false, Message = "Failed to create remediation plan" }
+                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { "Failed to create remediation plan" } }
                 };
             }
 
@@ -78,12 +79,27 @@ public class RemediationService : IRemediationService
                     Context = context,
                     Status = RemediationStatusEnum.Failed,
                     Message = "Plan validation failed",
-                    Validation = new ValidationResult { IsValid = false, Message = "Plan validation failed" }
+                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { "Plan validation failed" } }
                 };
             }
 
-            // Execute plan
-            var result = await _executor.ExecuteStrategyAsync(plan.Strategies[0], context);
+            // Convert model strategy to interface strategy using adapter
+            var modelStrategy = plan.Strategies.FirstOrDefault();
+            if (modelStrategy == null)
+            {
+                return new RemediationResult
+                {
+                    Context = context,
+                    Status = RemediationStatusEnum.Failed,
+                    Message = "No strategy found in plan",
+                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { "No strategy found in plan" } }
+                };
+            }
+
+            var strategyAdapter = new RemediationStrategyAdapter(modelStrategy);
+            
+            // Execute plan with adapter
+            var result = await _executor.ExecuteStrategyAsync(strategyAdapter, context);
             if (result.Status != RemediationStatusEnum.Completed)
             {
                 return new RemediationResult
@@ -94,7 +110,7 @@ public class RemediationService : IRemediationService
                     CompletedSteps = result.CompletedSteps,
                     FailedSteps = result.FailedSteps,
                     Metrics = result.Metrics,
-                    Validation = new ValidationResult { IsValid = false, Message = result.Message }
+                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { result.Message } }
                 };
             }
 
@@ -106,7 +122,7 @@ public class RemediationService : IRemediationService
                 CompletedSteps = result.CompletedSteps,
                 FailedSteps = result.FailedSteps,
                 Metrics = result.Metrics,
-                Validation = new ValidationResult { IsValid = true, Message = "Remediation completed successfully" }
+                Validation = new ValidationResult { IsValid = true, Messages = new List<string> { "Remediation completed successfully" } }
             };
         }
         catch (Exception ex)
@@ -117,7 +133,7 @@ public class RemediationService : IRemediationService
                 Context = context,
                 Status = RemediationStatusEnum.Failed,
                 Message = $"Remediation failed: {ex.Message}",
-                Validation = new ValidationResult { IsValid = false, Message = ex.Message }
+                Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
             };
         }
     }
@@ -196,11 +212,10 @@ public class RemediationService : IRemediationService
             _logger.LogError(ex, "Error getting metrics for remediation {RemediationId}", remediationId);
             return new RemediationMetrics
             {
-                RemediationId = remediationId,
+                ExecutionId = remediationId,
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow,
-                Status = RemediationStatusEnum.Failed,
-                Values = new Dictionary<string, double>()
+                Metadata = new Dictionary<string, string>()
             };
         }
     }
@@ -218,7 +233,7 @@ public class RemediationService : IRemediationService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting status for remediation {RemediationId}", remediationId);
-            return RemediationStatusEnum.NotStarted;
+            return RemediationStatusEnum.Unknown;
         }
     }
 
@@ -236,28 +251,39 @@ public class RemediationService : IRemediationService
             {
                 return new RemediationSuggestion
                 {
-                    ErrorContext = errorContext,
-                    Status = RemediationStatusEnum.Failed,
-                    Message = "No suitable remediation strategy found"
+                    SuggestionId = Guid.NewGuid().ToString(),
+                    Title = "No suitable remediation found",
+                    Description = "No suitable remediation strategy could be found for this error.",
+                    ConfidenceLevel = 0,
+                    CorrelationId = errorContext.CorrelationId
                 };
             }
 
+            // Get priority using the async method
+            var priorityTask = strategy.GetPriorityAsync(errorContext);
+            var priority = await priorityTask;
+
             return new RemediationSuggestion
             {
-                ErrorContext = errorContext,
-                Strategy = strategy,
-                Status = RemediationStatusEnum.Pending,
-                Message = "Remediation strategy found"
+                SuggestionId = Guid.NewGuid().ToString(),
+                Title = strategy.Name,
+                Description = strategy.Description,
+                StrategyName = strategy.Name,
+                Priority = priority, // Use the result from GetPriorityAsync
+                ConfidenceLevel = 0.8,
+                Parameters = strategy.Parameters,
+                CorrelationId = errorContext.CorrelationId
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting remediation suggestions for context {ErrorId}", errorContext.Id);
+            _logger.LogError(ex, "Error getting remediation suggestions for error context {ErrorId}", errorContext.Id);
             return new RemediationSuggestion
             {
-                ErrorContext = errorContext,
-                Status = RemediationStatusEnum.Failed,
-                Message = $"Error getting suggestions: {ex.Message}"
+                SuggestionId = Guid.NewGuid().ToString(),
+                Title = "Error",
+                Description = $"Error getting remediation suggestions: {ex.Message}",
+                CorrelationId = errorContext.CorrelationId
             };
         }
     }
@@ -270,20 +296,44 @@ public class RemediationService : IRemediationService
 
         try
         {
-            _logger.LogInformation("Validating remediation suggestion for error context {ErrorId}", errorContext.Id);
-            var strategy = suggestion.Strategy;
-            if (strategy == null)
+            if (string.IsNullOrEmpty(suggestion.StrategyName))
             {
-                return new ValidationResult { IsValid = false, Message = "No strategy specified in suggestion" };
+                return new ValidationResult
+                {
+                    IsValid = false,
+                    Messages = new List<string> { "No strategy found in suggestion" }
+                };
             }
 
-            var result = await _validator.ValidateStrategyAsync(strategy, errorContext);
+            // Create a mock context with the strategy name to use with SelectStrategyAsync
+            var mockContext = new ErrorContext 
+            { 
+                ErrorType = suggestion.StrategyName,
+                CorrelationId = errorContext.CorrelationId
+            };
+            
+            var strategy = await _strategySelector.SelectStrategyAsync(mockContext);
+            if (strategy == null)
+            {
+                return new ValidationResult
+                {
+                    IsValid = false,
+                    Messages = new List<string> { "Strategy not found" }
+                };
+            }
+
+            var strategyAdapter = new RemediationStrategyAdapter(strategy);
+            var result = await _validator.ValidateStrategyAsync(strategyAdapter, errorContext);
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating remediation suggestion for context {ErrorId}", errorContext.Id);
-            return new ValidationResult { IsValid = false, Message = ex.Message };
+            _logger.LogError(ex, "Error validating suggestion for error context {ErrorId}", errorContext.Id);
+            return new ValidationResult
+            {
+                IsValid = false,
+                Messages = new List<string> { $"Error validating suggestion: {ex.Message}" }
+            };
         }
     }
 
@@ -295,28 +345,47 @@ public class RemediationService : IRemediationService
 
         try
         {
+            if (string.IsNullOrEmpty(suggestion.StrategyName))
+            {
+                return new RemediationResult
+                {
+                    Context = errorContext,
+                    Status = RemediationStatusEnum.Failed,
+                    Message = "No strategy found in suggestion"
+                };
+            }
+
             _logger.LogInformation("Executing remediation suggestion for error context {ErrorId}", errorContext.Id);
-            var strategy = suggestion.Strategy;
+            
+            // Create a mock context with the strategy name to use with SelectStrategyAsync
+            var mockContext = new ErrorContext 
+            { 
+                ErrorType = suggestion.StrategyName,
+                CorrelationId = errorContext.CorrelationId
+            };
+            
+            var strategy = await _strategySelector.SelectStrategyAsync(mockContext);
             if (strategy == null)
             {
                 return new RemediationResult
                 {
-                    IsSuccessful = false,
-                    Message = "No strategy specified in suggestion",
-                    Status = RemediationStatusEnum.Failed
+                    Context = errorContext,
+                    Status = RemediationStatusEnum.Failed,
+                    Message = "Strategy not found"
                 };
             }
 
-            return await _executor.ExecuteStrategyAsync(strategy, errorContext);
+            var strategyAdapter = new RemediationStrategyAdapter(strategy);
+            return await _executor.ExecuteStrategyAsync(strategyAdapter, errorContext);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error executing remediation suggestion for context {ErrorId}", errorContext.Id);
+            _logger.LogError(ex, "Error executing suggestion for error context {ErrorId}", errorContext.Id);
             return new RemediationResult
             {
-                IsSuccessful = false,
-                Message = ex.Message,
-                Status = RemediationStatusEnum.Failed
+                Context = errorContext,
+                Status = RemediationStatusEnum.Failed,
+                Message = $"Error executing suggestion: {ex.Message}"
             };
         }
     }
@@ -329,32 +398,49 @@ public class RemediationService : IRemediationService
 
         try
         {
-            _logger.LogInformation("Getting impact assessment for suggestion on error context {ErrorId}", errorContext.Id);
-            var strategy = suggestion.Strategy;
+            if (string.IsNullOrEmpty(suggestion.StrategyName))
+            {
+                return new RemediationImpact
+                {
+                    Severity = ImpactSeverity.Unknown,
+                    Description = "No strategy found in suggestion"
+                };
+            }
+
+            _logger.LogInformation("Getting impact for remediation suggestion for error context {ErrorId}", errorContext.Id);
+            
+            // Create a mock context with the strategy name to use with SelectStrategyAsync
+            var mockContext = new ErrorContext 
+            { 
+                ErrorType = suggestion.StrategyName,
+                CorrelationId = errorContext.CorrelationId
+            };
+            
+            var strategy = await _strategySelector.SelectStrategyAsync(mockContext);
             if (strategy == null)
             {
                 return new RemediationImpact
                 {
                     Severity = ImpactSeverity.Unknown,
-                    Message = "No strategy specified in suggestion"
+                    Description = "Strategy not found"
                 };
             }
 
-            var action = new RemediationAction
+            var strategyAdapter = new RemediationStrategyAdapter(strategy);
+            var impact = await strategyAdapter.GetImpactAsync(errorContext);
+            return impact ?? new RemediationImpact
             {
-                Strategy = strategy,
-                Context = errorContext
+                Severity = ImpactSeverity.Unknown,
+                Description = "No impact information available"
             };
-
-            return await _executor.GetActionImpactAsync(action, errorContext);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting suggestion impact for context {ErrorId}", errorContext.Id);
+            _logger.LogError(ex, "Error getting impact for suggestion for error context {ErrorId}", errorContext.Id);
             return new RemediationImpact
             {
                 Severity = ImpactSeverity.Unknown,
-                Message = $"Error assessing impact: {ex.Message}"
+                Description = $"Error getting suggestion impact: {ex.Message}"
             };
         }
     }
@@ -367,35 +453,47 @@ public class RemediationService : IRemediationService
         try
         {
             _logger.LogInformation("Executing remediation action {ActionId}", action.ActionId);
-            var validationResult = await ValidateActionAsync(action);
-            if (!validationResult.IsValid)
+            
+            if (string.IsNullOrEmpty(action.StrategyName))
             {
                 return new RemediationResult
                 {
-                    IsSuccessful = false,
-                    Message = validationResult.Message,
-                    Status = RemediationStatusEnum.Failed
+                    Context = action.Context,
+                    Status = RemediationStatusEnum.Failed,
+                    Message = "No strategy name found in action"
                 };
             }
-
-            var result = await _executor.ExecuteActionAsync(action, action.Context);
+            
+            // Get the error context
+            var errorContext = action.Context;
+            if (errorContext == null)
+            {
+                return new RemediationResult
+                {
+                    Context = errorContext,
+                    Status = RemediationStatusEnum.Failed,
+                    Message = "No error context found in action"
+                };
+            }
+            
+            var result = await _executor.ExecuteActionAsync(action, errorContext);
+            
             return new RemediationResult
             {
-                IsSuccessful = result.IsSuccessful,
-                Message = result.Message,
-                Status = result.Status,
+                Context = errorContext,
+                Status = result.IsSuccessful ? RemediationStatusEnum.Completed : RemediationStatusEnum.Failed,
+                Message = result.ErrorMessage ?? "Action executed",
                 ActionId = result.ActionId
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error executing remediation action {ActionId}", action.ActionId);
+            _logger.LogError(ex, "Error executing action {ActionId}", action.ActionId);
             return new RemediationResult
             {
-                IsSuccessful = false,
-                Message = ex.Message,
+                Context = action.Context,
                 Status = RemediationStatusEnum.Failed,
-                ActionId = action.ActionId
+                Message = $"Error executing action: {ex.Message}"
             };
         }
     }
@@ -408,12 +506,26 @@ public class RemediationService : IRemediationService
         try
         {
             _logger.LogInformation("Validating remediation action {ActionId}", action.ActionId);
+            
+            if (action.Context == null)
+            {
+                return new ValidationResult
+                {
+                    IsValid = false,
+                    Messages = new List<string> { "No error context found in action" }
+                };
+            }
+            
             return await _validator.ValidateActionAsync(action, action.Context);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating remediation action {ActionId}", action.ActionId);
-            return new ValidationResult { IsValid = false, Message = ex.Message };
+            _logger.LogError(ex, "Error validating action {ActionId}", action.ActionId);
+            return new ValidationResult
+            {
+                IsValid = false,
+                Messages = new List<string> { $"Error validating action: {ex.Message}" }
+            };
         }
     }
 
@@ -425,12 +537,15 @@ public class RemediationService : IRemediationService
         try
         {
             _logger.LogInformation("Rolling back remediation action {ActionId}", actionId);
-            var result = await _executor.RollbackAsync(new RemediationResult { ActionId = actionId });
+            
+            var result = await _executor.RollbackRemediationAsync(actionId);
+            
+            // Return the enum value based on the result
             return result.IsSuccessful ? RollbackStatus.Completed : RollbackStatus.Failed;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error rolling back remediation action {ActionId}", actionId);
+            _logger.LogError(ex, "Error rolling back action {ActionId}", actionId);
             return RollbackStatus.Failed;
         }
     }
@@ -443,23 +558,35 @@ public class RemediationService : IRemediationService
         try
         {
             _logger.LogInformation("Getting status for remediation action {ActionId}", actionId);
-            var status = await _executor.GetRemediationStatusAsync(actionId);
+            
+            var execution = await _executor.GetExecutionHistoryAsync(actionId);
+            if (execution == null)
+            {
+                return new RemediationResult
+                {
+                    Status = RemediationStatusEnum.Unknown,
+                    Message = "No execution history found"
+                };
+            }
+            
+            // Create a new RemediationResult since RemediationExecution doesn't have a Result property
             return new RemediationResult
             {
-                ActionId = actionId,
-                Status = status,
-                IsSuccessful = status == RemediationStatusEnum.Completed
+                Status = execution.Status,
+                Message = execution.ErrorMessage ?? "Remediation execution details retrieved",
+                IsSuccessful = execution.IsSuccessful,
+                StartTime = execution.StartTime,
+                EndTime = execution.EndTime,
+                ActionId = actionId
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting status for remediation action {ActionId}", actionId);
+            _logger.LogError(ex, "Error getting status for action {ActionId}", actionId);
             return new RemediationResult
             {
-                ActionId = actionId,
                 Status = RemediationStatusEnum.Failed,
-                IsSuccessful = false,
-                Message = ex.Message
+                Message = $"Error getting action status: {ex.Message}"
             };
         }
     }

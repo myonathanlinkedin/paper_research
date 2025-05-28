@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Utilities;
 
 namespace RuntimeErrorSage.Core.Models.Remediation

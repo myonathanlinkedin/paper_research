@@ -1,27 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Graph
 {
     /// <summary>
-    /// Represents a dependency graph of components and their relationships.
+    /// Represents a dependency graph for error analysis.
     /// </summary>
     public class DependencyGraph
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the graph.
+        /// Gets or sets the unique identifier for this graph.
         /// </summary>
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the nodes in the graph, keyed by node ID.
+        /// Gets or sets the name of the graph.
         /// </summary>
-        public Dictionary<string, GraphNode> Nodes { get; set; } = new Dictionary<string, GraphNode>();
+        public string Name { get; set; } = "Dependency Graph";
 
         /// <summary>
-        /// Gets or sets the dependency nodes in the graph.
+        /// Gets or sets the nodes in the graph.
         /// </summary>
-        public List<DependencyNode> DependencyNodes { get; set; } = new List<DependencyNode>();
+        public List<GraphNode> Nodes { get; set; } = new List<GraphNode>();
 
         /// <summary>
         /// Gets or sets the edges in the graph.
@@ -29,25 +31,20 @@ namespace RuntimeErrorSage.Core.Models.Graph
         public List<GraphEdge> Edges { get; set; } = new List<GraphEdge>();
 
         /// <summary>
-        /// Gets or sets the dependency edges in the graph.
+        /// Gets or sets the creation time of the graph.
         /// </summary>
-        public List<DependencyEdge> DependencyEdges { get; set; } = new List<DependencyEdge>();
+        public DateTime CreationTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the correlation ID.
+        /// Gets or sets the root node of the graph.
         /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
+        public GraphNode RootNode { get; set; }
 
         /// <summary>
-        /// Gets or sets the timestamp of the graph creation.
+        /// Gets or sets metadata associated with the graph.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
 
-        /// <summary>
-        /// Gets or sets the metadata associated with the graph.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
-        
         /// <summary>
         /// Adds a node to the graph.
         /// </summary>
@@ -55,57 +52,141 @@ namespace RuntimeErrorSage.Core.Models.Graph
         public void AddNode(GraphNode node)
         {
             if (node == null)
-            {
                 throw new ArgumentNullException(nameof(node));
-            }
 
-            Nodes[node.Id] = node;
+            if (!Nodes.Any(n => n.Id == node.Id))
+            {
+                Nodes.Add(node);
+            }
         }
 
         /// <summary>
         /// Adds an edge to the graph.
         /// </summary>
-        /// <param name="edge">The edge to add.</param>
-        public void AddEdge(GraphEdge edge)
+        /// <param name="sourceNodeId">The ID of the source node.</param>
+        /// <param name="targetNodeId">The ID of the target node.</param>
+        /// <param name="label">The edge label.</param>
+        /// <returns>The created edge.</returns>
+        public GraphEdge AddEdge(string sourceNodeId, string targetNodeId, string label = "depends_on")
         {
-            if (edge == null)
+            var sourceNode = Nodes.FirstOrDefault(n => n.Id == sourceNodeId);
+            var targetNode = Nodes.FirstOrDefault(n => n.Id == targetNodeId);
+
+            if (sourceNode == null)
+                throw new ArgumentException($"Source node with ID {sourceNodeId} not found.");
+            if (targetNode == null)
+                throw new ArgumentException($"Target node with ID {targetNodeId} not found.");
+
+            var edge = new GraphEdge
             {
-                throw new ArgumentNullException(nameof(edge));
-            }
+                SourceNodeId = sourceNodeId,
+                TargetNodeId = targetNodeId,
+                Label = label
+            };
 
             Edges.Add(edge);
-            edge.Source.AddOutgoingEdge(edge);
-            edge.Target.AddIncomingEdge(edge);
+            return edge;
         }
 
         /// <summary>
-        /// Removes a node from the graph.
+        /// Gets the neighbors of a node.
         /// </summary>
-        /// <param name="nodeId">The ID of the node to remove.</param>
-        /// <returns>True if the node was removed; otherwise, false.</returns>
-        public bool RemoveNode(string nodeId)
+        /// <param name="nodeId">The ID of the node.</param>
+        /// <param name="direction">The direction of the relationships to consider.</param>
+        /// <returns>The neighboring nodes.</returns>
+        public List<GraphNode> GetNeighbors(string nodeId, EdgeDirection direction = EdgeDirection.Outgoing)
         {
-            if (string.IsNullOrEmpty(nodeId))
+            List<string> neighborIds;
+
+            if (direction == EdgeDirection.Incoming)
             {
-                throw new ArgumentException("Node ID cannot be null or empty.", nameof(nodeId));
+                neighborIds = Edges.Where(e => e.TargetNodeId == nodeId).Select(e => e.SourceNodeId).ToList();
+            }
+            else if (direction == EdgeDirection.Outgoing)
+            {
+                neighborIds = Edges.Where(e => e.SourceNodeId == nodeId).Select(e => e.TargetNodeId).ToList();
+            }
+            else // Both
+            {
+                neighborIds = Edges.Where(e => e.SourceNodeId == nodeId || e.TargetNodeId == nodeId)
+                    .Select(e => e.SourceNodeId == nodeId ? e.TargetNodeId : e.SourceNodeId)
+                    .ToList();
             }
 
-            if (!Nodes.TryGetValue(nodeId, out var node))
-            {
-                return false;
-            }
-
-            // Remove associated edges
-            var edgesToRemove = new List<GraphEdge>();
-            edgesToRemove.AddRange(node.IncomingEdges);
-            edgesToRemove.AddRange(node.OutgoingEdges);
-
-            foreach (var edge in edgesToRemove)
-            {
-                Edges.Remove(edge);
-            }
-
-            return Nodes.Remove(nodeId);
+            return Nodes.Where(n => neighborIds.Contains(n.Id)).ToList();
         }
+
+        /// <summary>
+        /// Gets the path between two nodes.
+        /// </summary>
+        /// <param name="sourceNodeId">The ID of the source node.</param>
+        /// <param name="targetNodeId">The ID of the target node.</param>
+        /// <returns>The path as a list of nodes.</returns>
+        public GraphPath FindPath(string sourceNodeId, string targetNodeId)
+        {
+            var visited = new HashSet<string>();
+            var path = new List<GraphNode>();
+            var pathFound = FindPathDFS(sourceNodeId, targetNodeId, visited, path);
+
+            return new GraphPath
+            {
+                Nodes = path,
+                SourceNodeId = sourceNodeId,
+                TargetNodeId = targetNodeId,
+                IsComplete = pathFound
+            };
+        }
+
+        private bool FindPathDFS(string currentNodeId, string targetNodeId, HashSet<string> visited, List<GraphNode> path)
+        {
+            visited.Add(currentNodeId);
+            var currentNode = Nodes.FirstOrDefault(n => n.Id == currentNodeId);
+            if (currentNode != null)
+            {
+                path.Add(currentNode);
+            }
+
+            if (currentNodeId == targetNodeId)
+            {
+                return true;
+            }
+
+            var neighbors = GetNeighbors(currentNodeId, EdgeDirection.Outgoing);
+            foreach (var neighbor in neighbors)
+            {
+                if (!visited.Contains(neighbor.Id))
+                {
+                    if (FindPathDFS(neighbor.Id, targetNodeId, visited, path))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            // If we get here, this node doesn't lead to the target
+            path.RemoveAt(path.Count - 1);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Defines the direction of edges to consider when getting neighbors.
+    /// </summary>
+    public enum EdgeDirection
+    {
+        /// <summary>
+        /// Incoming edges only.
+        /// </summary>
+        Incoming,
+
+        /// <summary>
+        /// Outgoing edges only.
+        /// </summary>
+        Outgoing,
+
+        /// <summary>
+        /// Both incoming and outgoing edges.
+        /// </summary>
+        Both
     }
 }

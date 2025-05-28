@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Utilities;
 
 namespace RuntimeErrorSage.Core.Models.Remediation

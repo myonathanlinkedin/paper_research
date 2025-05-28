@@ -4,62 +4,52 @@ using System.Collections.Generic;
 namespace RuntimeErrorSage.Core.Models.Graph;
 
 /// <summary>
-/// Represents a path in a dependency graph.
+/// Represents a path between nodes in a dependency graph.
 /// </summary>
 public class GraphPath
 {
     /// <summary>
-    /// Gets or sets the unique identifier of the path.
+    /// Gets or sets the unique identifier for this path.
     /// </summary>
-    public string PathId { get; set; } = Guid.NewGuid().ToString();
-
-    /// <summary>
-    /// Gets or sets the source node.
-    /// </summary>
-    public GraphNode Source { get; set; }
-
-    /// <summary>
-    /// Gets or sets the target node.
-    /// </summary>
-    public GraphNode Target { get; set; }
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the nodes in the path.
     /// </summary>
-    public List<GraphNode> Nodes { get; set; } = new();
+    public List<GraphNode> Nodes { get; set; } = new List<GraphNode>();
 
     /// <summary>
-    /// Gets or sets the edges in the path.
+    /// Gets or sets the ID of the source node.
     /// </summary>
-    public List<GraphEdge> Edges { get; set; } = new();
+    public string SourceNodeId { get; set; }
 
     /// <summary>
-    /// Gets or sets the length of the path.
+    /// Gets or sets the ID of the target node.
     /// </summary>
-    public int Length => Edges.Count;
+    public string TargetNodeId { get; set; }
 
     /// <summary>
-    /// Gets or sets the weight of the path.
+    /// Gets or sets whether the path is complete (connects source to target).
+    /// </summary>
+    public bool IsComplete { get; set; }
+
+    /// <summary>
+    /// Gets the length of the path (number of nodes - 1).
+    /// </summary>
+    public int Length => Nodes.Count > 0 ? Nodes.Count - 1 : 0;
+
+    /// <summary>
+    /// Gets or sets the creation time of the path.
+    /// </summary>
+    public DateTime CreationTime { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets or sets the path weight (sum of edge weights).
     /// </summary>
     public double Weight { get; set; }
 
     /// <summary>
-    /// Gets or sets the description of the path.
+    /// Gets or sets metadata associated with the path.
     /// </summary>
-    public string Description { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets whether this path is critical.
-    /// </summary>
-    public bool IsCritical { get; set; }
-
-    /// <summary>
-    /// Gets or sets the timestamp when the path was identified.
-    /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// Gets or sets the metadata of the path.
-    /// </summary>
-    public Dictionary<string, object> Metadata { get; set; } = new();
+    public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
 } 

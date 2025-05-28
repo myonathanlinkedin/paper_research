@@ -5,101 +5,104 @@ using RuntimeErrorSage.Core.Models.Metrics;
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
     /// <summary>
-    /// Represents metrics collected during a remediation operation.
+    /// Contains metrics information for a remediation execution.
     /// </summary>
     public class RemediationMetrics
     {
         /// <summary>
-        /// Gets or sets the unique identifier for this metrics collection.
+        /// Gets or sets the execution ID.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string ExecutionId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the execution ID associated with these metrics.
+        /// Gets or sets the correlation ID.
         /// </summary>
-        public string ExecutionId { get; set; }
+        public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the timestamp when these metrics were collected.
+        /// Gets or sets the execution start time.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the resource usage at the start of the remediation.
+        /// Gets or sets the execution end time.
         /// </summary>
-        public ResourceUsage StartResourceUsage { get; set; } = new ResourceUsage();
+        public DateTime? EndTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the resource usage at the end of the remediation.
-        /// </summary>
-        public ResourceUsage EndResourceUsage { get; set; } = new ResourceUsage();
-
-        /// <summary>
-        /// Gets or sets the number of retries performed during the remediation.
-        /// </summary>
-        public int RetryCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the total duration of the remediation in milliseconds.
+        /// Gets or sets the execution duration in milliseconds.
         /// </summary>
         public double DurationMs { get; set; }
 
         /// <summary>
-        /// Gets or sets additional values associated with these metrics.
+        /// Gets or sets the number of actions executed.
         /// </summary>
-        public Dictionary<string, object> Values { get; set; } = new Dictionary<string, object>();
+        public int ActionCount { get; set; }
 
         /// <summary>
-        /// Gets or sets labels associated with these metrics.
+        /// Gets or sets the number of successful actions.
         /// </summary>
-        public Dictionary<string, string> Labels { get; set; } = new Dictionary<string, string>();
+        public int SuccessfulActionCount { get; set; }
 
-        public string RemediationId { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
-        public TimeSpan Duration => EndTime.HasValue ? EndTime.Value - StartTime : DateTime.UtcNow - StartTime;
-        public int TotalSteps { get; set; }
-        public int CompletedSteps { get; set; }
-        public int FailedSteps { get; set; }
-        public int RolledBackSteps { get; set; }
-        public Dictionary<string, MetricValue> Metrics { get; set; }
-        public Dictionary<string, object> Metadata { get; set; }
+        /// <summary>
+        /// Gets or sets the number of failed actions.
+        /// </summary>
+        public int FailedActionCount { get; set; }
 
-        public RemediationMetrics()
+        /// <summary>
+        /// Gets or sets the resource usage at the start of the execution.
+        /// </summary>
+        public ResourceUsage StartResourceUsage { get; set; } = new ResourceUsage();
+
+        /// <summary>
+        /// Gets or sets the resource usage at the end of the execution.
+        /// </summary>
+        public ResourceUsage EndResourceUsage { get; set; } = new ResourceUsage();
+
+        /// <summary>
+        /// Gets or sets the step metrics for the execution.
+        /// </summary>
+        public List<StepMetrics> StepMetrics { get; set; } = new List<StepMetrics>();
+
+        /// <summary>
+        /// Gets or sets additional metadata.
+        /// </summary>
+        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Gets the success rate as a percentage.
+        /// </summary>
+        public double SuccessRate => ActionCount > 0 ? (double)SuccessfulActionCount / ActionCount * 100 : 0;
+
+        /// <summary>
+        /// Gets the memory usage difference.
+        /// </summary>
+        public long MemoryUsageDiff => EndResourceUsage.MemoryUsageBytes - StartResourceUsage.MemoryUsageBytes;
+
+        /// <summary>
+        /// Gets the CPU usage difference.
+        /// </summary>
+        public double CpuUsageDiff => EndResourceUsage.CpuUsagePercent - StartResourceUsage.CpuUsagePercent;
+
+        /// <summary>
+        /// Creates a new metrics instance for a specific action.
+        /// </summary>
+        /// <param name="actionName">The name of the action.</param>
+        /// <param name="parentExecutionId">The parent execution ID.</param>
+        /// <returns>A new metrics instance.</returns>
+        public static RemediationMetrics CreateForAction(string actionName, string parentExecutionId)
         {
-            StartTime = DateTime.UtcNow;
-            Metrics = new Dictionary<string, MetricValue>();
-            Metadata = new Dictionary<string, object>();
-        }
-
-        public RemediationMetrics(string remediationId) : this()
-        {
-            RemediationId = remediationId;
-        }
-
-        public void AddMetric(string name, double value, string unit = null)
-        {
-            Metrics[name] = new MetricValue(name, value, unit);
-        }
-
-        public void AddMetric(MetricValue metric)
-        {
-            Metrics[metric.Name] = metric;
-        }
-
-        public void Complete()
-        {
-            EndTime = DateTime.UtcNow;
-        }
-
-        public void AddMetadata(string key, object value)
-        {
-            Metadata[key] = value;
-        }
-
-        public override string ToString()
-        {
-            return $"Remediation {RemediationId}: {CompletedSteps}/{TotalSteps} steps completed in {Duration.TotalSeconds:F2}s";
+            return new RemediationMetrics
+            {
+                ExecutionId = Guid.NewGuid().ToString(),
+                CorrelationId = parentExecutionId,
+                StartTime = DateTime.UtcNow,
+                Metadata = new Dictionary<string, string>
+                {
+                    { "ActionName", actionName },
+                    { "ParentExecutionId", parentExecutionId }
+                }
+            };
         }
     }
 
@@ -111,12 +114,12 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets the CPU usage percentage.
         /// </summary>
-        public double CpuUsage { get; set; }
+        public double CpuUsagePercent { get; set; }
 
         /// <summary>
         /// Gets or sets the memory usage in bytes.
         /// </summary>
-        public double MemoryUsage { get; set; }
+        public double MemoryUsageBytes { get; set; }
 
         /// <summary>
         /// Gets or sets the disk usage in bytes.

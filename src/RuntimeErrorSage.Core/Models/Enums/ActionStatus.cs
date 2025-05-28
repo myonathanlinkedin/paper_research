@@ -1,52 +1,57 @@
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Represents the status of a remediation action.
+/// Defines the status of a remediation action.
 /// </summary>
 public enum ActionStatus
 {
     /// <summary>
-    /// The action has been created but not yet started.
+    /// The action status is unknown.
     /// </summary>
-    Created = 0,
-
+    Unknown = 0,
+    
     /// <summary>
     /// The action is pending execution.
     /// </summary>
     Pending = 1,
-
+    
     /// <summary>
-    /// The action is currently in progress.
+    /// The action is in progress.
     /// </summary>
     InProgress = 2,
-
+    
     /// <summary>
-    /// The action has completed successfully.
+    /// The action is completed successfully.
     /// </summary>
     Completed = 3,
-
+    
     /// <summary>
     /// The action has failed.
     /// </summary>
     Failed = 4,
-
+    
     /// <summary>
-    /// The action has been cancelled.
+    /// The action was skipped.
     /// </summary>
-    Cancelled = 5,
-
+    Skipped = 5,
+    
+    /// <summary>
+    /// The action was canceled.
+    /// </summary>
+    Canceled = 6,
+    
     /// <summary>
     /// The action is waiting for a dependency to complete.
     /// </summary>
-    Waiting = 6,
-
+    Waiting = 7,
+    
+    /// <summary>
+    /// The action was rolled back.
+    /// </summary>
+    RolledBack = 8,
+    
     /// <summary>
     /// The action is being rolled back.
     /// </summary>
-    RollingBack = 7,
-
-    /// <summary>
-    /// The action has been rolled back successfully.
-    /// </summary>
-    RolledBack = 8
+    RollingBack = 9
 } 

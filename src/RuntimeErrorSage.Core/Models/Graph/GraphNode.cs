@@ -5,14 +5,14 @@ using RuntimeErrorSage.Core.Models.Enums;
 namespace RuntimeErrorSage.Core.Models.Graph
 {
     /// <summary>
-    /// Represents a node in the dependency graph.
+    /// Represents a node in a dependency graph.
     /// </summary>
     public class GraphNode
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the node.
+        /// Gets or sets the unique identifier for this node.
         /// </summary>
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the name of the node.
@@ -22,22 +22,47 @@ namespace RuntimeErrorSage.Core.Models.Graph
         /// <summary>
         /// Gets or sets the type of the node.
         /// </summary>
-        public GraphNodeType Type { get; set; }
+        public GraphNodeType Type { get; set; } = GraphNodeType.Unknown;
 
         /// <summary>
-        /// Gets or sets the severity of impact on this node.
+        /// Gets or sets the status of the node.
         /// </summary>
-        public ImpactSeverity ImpactSeverity { get; set; }
+        public string Status { get; set; } = "Active";
 
         /// <summary>
-        /// Gets or sets the scope of impact on this node.
+        /// Gets or sets the description of the node.
         /// </summary>
-        public ImpactScope ImpactScope { get; set; }
+        public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the metadata associated with this node.
+        /// Gets or sets the properties of the node.
         /// </summary>
-        public Dictionary<string, object> Metadata { get; set; }
+        public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Gets or sets the importance level of the node.
+        /// </summary>
+        public double ImportanceLevel { get; set; } = 1.0;
+
+        /// <summary>
+        /// Gets or sets whether the node is critical.
+        /// </summary>
+        public bool IsCritical { get; set; }
+
+        /// <summary>
+        /// Gets or sets the health status of the node.
+        /// </summary>
+        public string HealthStatus { get; set; } = "Healthy";
+
+        /// <summary>
+        /// Gets or sets the creation time of the node.
+        /// </summary>
+        public DateTime CreationTime { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets metadata associated with the node.
+        /// </summary>
+        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Gets or sets the incoming dependencies.
@@ -69,10 +94,8 @@ namespace RuntimeErrorSage.Core.Models.Graph
         /// </summary>
         public GraphNode()
         {
-            Id = Guid.NewGuid().ToString();
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
-            Metadata = new Dictionary<string, object>();
             IncomingEdges = new List<GraphEdge>();
             OutgoingEdges = new List<GraphEdge>();
         }

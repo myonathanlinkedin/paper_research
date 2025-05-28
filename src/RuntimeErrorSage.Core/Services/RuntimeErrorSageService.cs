@@ -46,7 +46,7 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
     private readonly ModelContextProtocol _mcp;
     private readonly IQwenLLMClient _llmClient;
     private readonly IErrorAnalyzer _errorAnalyzer;
-    private readonly IDependencyGraphAnalyzer _graphAnalyzer;
+    private readonly RuntimeErrorSage.Core.Analysis.Interfaces.IDependencyGraphAnalyzer _graphAnalyzer;
     private readonly Dictionary<string, ErrorAnalysisResult> _analysisCache;
     private readonly Dictionary<string, RemediationResult> _remediationCache;
 
@@ -63,7 +63,7 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
         ModelContextProtocol mcp,
         IQwenLLMClient llmClient,
         IErrorAnalyzer errorAnalyzer,
-        IDependencyGraphAnalyzer graphAnalyzer)
+        RuntimeErrorSage.Core.Analysis.Interfaces.IDependencyGraphAnalyzer graphAnalyzer)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _errorAnalysisService = errorAnalysisService ?? throw new ArgumentNullException(nameof(errorAnalysisService));

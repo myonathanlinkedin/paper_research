@@ -7,6 +7,7 @@ using RuntimeErrorSage.Core.Storage.Interfaces;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -135,50 +136,155 @@ public class RedisPatternStorage : IPatternStorage
 
     public async Task StorePatternAsync(string key, string pattern, TimeSpan? expiration = null)
     {
-        // Implementation will be added
-        await Task.CompletedTask;
+        try
+        {
+            var db = _redis.GetDatabase();
+            await db.StringSetAsync($"{_keyPrefix}{key}", pattern, expiration);
+            await db.SetAddAsync($"{_keyPrefix}all", key);
+            _logger.LogDebug("Pattern stored with key {Key}", key);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error storing pattern with key {Key}", key);
+            throw new PatternStorageException($"Failed to store pattern with key {key}", ex);
+        }
     }
 
     public async Task<string> GetPatternAsync(string key)
     {
-        // Implementation will be added
-        return await Task.FromResult(string.Empty);
+        try
+        {
+            var db = _redis.GetDatabase();
+            var value = await db.StringGetAsync($"{_keyPrefix}{key}");
+            
+            if (value.IsNull)
+            {
+                return string.Empty;
+            }
+
+            return value.ToString();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting pattern with key {Key}", key);
+            throw new PatternStorageException($"Failed to get pattern with key {key}", ex);
+        }
     }
 
     public async Task RemovePatternAsync(string key)
     {
-        // Implementation will be added
-        await Task.CompletedTask;
+        try
+        {
+            var db = _redis.GetDatabase();
+            await db.KeyDeleteAsync($"{_keyPrefix}{key}");
+            await db.SetRemoveAsync($"{_keyPrefix}all", key);
+            _logger.LogDebug("Pattern removed with key {Key}", key);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing pattern with key {Key}", key);
+            throw new PatternStorageException($"Failed to remove pattern with key {key}", ex);
+        }
     }
 
     public async Task<bool> PatternExistsAsync(string key)
     {
-        // Implementation will be added
-        return await Task.FromResult(false);
+        try
+        {
+            var db = _redis.GetDatabase();
+            return await db.KeyExistsAsync($"{_keyPrefix}{key}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking pattern existence for key {Key}", key);
+            throw new PatternStorageException($"Failed to check pattern existence for key {key}", ex);
+        }
     }
 
-    public async Task<IEnumerable<string>> GetPatternsAsync(string pattern)
+    public async Task<Dictionary<string, string>> GetPatternsAsync(string category)
     {
-        // Implementation will be added
-        return await Task.FromResult(new List<string>());
+        try
+        {
+            var db = _redis.GetDatabase();
+            var keys = await db.SetMembersAsync($"{_keyPrefix}category:{category}");
+            var result = new Dictionary<string, string>();
+
+            foreach (var key in keys)
+            {
+                var pattern = await GetPatternAsync(key.ToString());
+                if (!string.IsNullOrEmpty(pattern))
+                {
+                    result.Add(key.ToString(), pattern);
+                }
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting patterns for category {Category}", category);
+            throw new PatternStorageException($"Failed to get patterns for category {category}", ex);
+        }
     }
 
     public async Task UpdateExpirationAsync(string key, TimeSpan expiration)
     {
-        // Implementation will be added
-        await Task.CompletedTask;
+        try
+        {
+            var db = _redis.GetDatabase();
+            var exists = await db.KeyExistsAsync($"{_keyPrefix}{key}");
+            
+            if (exists)
+            {
+                await db.KeyExpireAsync($"{_keyPrefix}{key}", expiration);
+                _logger.LogDebug("Updated expiration for pattern with key {Key}", key);
+            }
+            else
+            {
+                _logger.LogWarning("Pattern with key {Key} not found for expiration update", key);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating expiration for pattern with key {Key}", key);
+            throw new PatternStorageException($"Failed to update expiration for pattern with key {key}", ex);
+        }
     }
 
     public async Task ClearAllAsync()
     {
-        // Implementation will be added
-        await Task.CompletedTask;
+        try
+        {
+            var db = _redis.GetDatabase();
+            var keys = await db.SetMembersAsync($"{_keyPrefix}all");
+            
+            foreach (var key in keys)
+            {
+                await db.KeyDeleteAsync($"{_keyPrefix}{key}");
+            }
+            
+            await db.KeyDeleteAsync($"{_keyPrefix}all");
+            _logger.LogInformation("All patterns cleared");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error clearing all patterns");
+            throw new PatternStorageException("Failed to clear all patterns", ex);
+        }
     }
 
     public async Task<long> GetPatternCountAsync()
     {
-        // Implementation will be added
-        return await Task.FromResult(0);
+        try
+        {
+            var db = _redis.GetDatabase();
+            return await db.SetLengthAsync($"{_keyPrefix}all");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting pattern count");
+            throw new PatternStorageException("Failed to get pattern count", ex);
+        }
     }
 
     public void Dispose()

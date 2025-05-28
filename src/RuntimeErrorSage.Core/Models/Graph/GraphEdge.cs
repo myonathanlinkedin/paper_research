@@ -10,24 +10,24 @@ namespace RuntimeErrorSage.Core.Models.Graph
     public class GraphEdge
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the edge.
+        /// Gets or sets the unique identifier for this edge.
         /// </summary>
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the source node of the edge.
+        /// Gets or sets the ID of the source node.
         /// </summary>
-        public GraphNode Source { get; set; }
+        public string SourceNodeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the target node of the edge.
+        /// Gets or sets the ID of the target node.
         /// </summary>
-        public GraphNode Target { get; set; }
+        public string TargetNodeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the edge.
+        /// Gets or sets the label of the edge.
         /// </summary>
-        public GraphEdgeType Type { get; set; }
+        public string Label { get; set; }
 
         /// <summary>
         /// Gets or sets the weight of the edge.
@@ -35,29 +35,19 @@ namespace RuntimeErrorSage.Core.Models.Graph
         public double Weight { get; set; } = 1.0;
 
         /// <summary>
-        /// Gets or sets the label of the edge.
-        /// </summary>
-        public string Label { get; set; } = string.Empty;
-
-        /// <summary>
         /// Gets or sets whether the edge is directed.
         /// </summary>
         public bool IsDirected { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the timestamp when the edge was created.
+        /// Gets or sets metadata associated with the edge.
         /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
-        /// Gets or sets the timestamp when the edge was last updated.
+        /// Gets or sets the creation time of the edge.
         /// </summary>
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets the metadata of the edge.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public DateTime CreationTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GraphEdge"/> class.
@@ -67,8 +57,8 @@ namespace RuntimeErrorSage.Core.Models.Graph
         /// <param name="type">The edge type.</param>
         public GraphEdge(GraphNode source, GraphNode target, GraphEdgeType type)
         {
-            Source = source ?? throw new ArgumentNullException(nameof(source));
-            Target = target ?? throw new ArgumentNullException(nameof(target));
+            SourceNodeId = source?.Id;
+            TargetNodeId = target?.Id;
             Type = type;
         }
 

@@ -1,37 +1,37 @@
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Represents the status of a rollback operation.
+/// Defines the status of a rollback operation.
 /// </summary>
 public enum RollbackStatus
 {
     /// <summary>
-    /// The rollback has not been started.
+    /// No rollback has been attempted.
     /// </summary>
-    NotStarted = 0,
-
+    NotAttempted = 0,
+    
     /// <summary>
-    /// The rollback is in progress.
+    /// Rollback is in progress.
     /// </summary>
     InProgress = 1,
-
+    
     /// <summary>
-    /// The rollback has completed successfully.
+    /// Rollback completed successfully.
     /// </summary>
     Completed = 2,
-
+    
     /// <summary>
-    /// The rollback has failed.
+    /// Rollback failed.
     /// </summary>
     Failed = 3,
-
+    
     /// <summary>
-    /// The rollback is not required or applicable.
+    /// Rollback was partially completed.
     /// </summary>
-    NotRequired = 4,
-
+    PartiallyCompleted = 4,
+    
     /// <summary>
-    /// The rollback has been cancelled.
+    /// Rollback is not supported for this operation.
     /// </summary>
-    Cancelled = 5
+    NotSupported = 5
 } 

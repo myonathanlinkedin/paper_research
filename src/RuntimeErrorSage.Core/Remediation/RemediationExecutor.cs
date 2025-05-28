@@ -17,6 +17,8 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Core.Models.Common;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
@@ -86,7 +88,7 @@ public class RemediationExecutor : IRemediationExecutor
     }
 
     /// <inheritdoc/>
-    public async Task<RemediationResult> ExecuteStrategyAsync(IRemediationStrategy strategy, ErrorContext context)
+    public async Task<RemediationResult> ExecuteStrategyAsync(Interfaces.IRemediationStrategy strategy, ErrorContext context)
     {
         if (strategy == null)
             throw new ArgumentNullException(nameof(strategy));
@@ -95,8 +97,8 @@ public class RemediationExecutor : IRemediationExecutor
 
         try
         {
-            _logger.LogInformation(_eventIds[nameof(ExecuteStrategyAsync)], 
-                "Executing strategy {StrategyName} for error {ErrorId}", strategy.Name, context.ErrorId);
+            _logger.LogInformation("Executing strategy {StrategyName} for error {ErrorId}", 
+                strategy.Name, context.ErrorId);
 
             var result = new RemediationResult
             {
@@ -121,51 +123,23 @@ public class RemediationExecutor : IRemediationExecutor
             {
                 result.Success = false;
                 result.ErrorMessage = validationResult.ValidationMessage;
-                result.Status = RemediationStatusEnum.ValidationFailed;
+                result.Status = RemediationStatusEnum.Failed;
                 result.EndTime = DateTime.UtcNow;
                 
                 await _metricsCollector.RecordExecutionAsync(result.ExecutionId, result);
                 return result;
             }
 
-            // Execute strategy actions
-            foreach (var action in strategy.Actions)
-            {
-                try
-                {
-                    var actionResult = await action.ExecuteAsync();
-                    result.Actions.Add(action);
-
-                    if (!actionResult.IsSuccessful)
-                    {
-                        result.Success = false;
-                        result.ErrorMessage = $"Action {action.Name} failed: {actionResult.ErrorMessage}";
-                        result.Status = RemediationStatusEnum.Failed;
-                        break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(_eventIds[nameof(ExecuteStrategyAsync)], ex, 
-                        "Error executing action {ActionName}", action.Name);
-                    result.Success = false;
-                    result.ErrorMessage = $"Action {action.Name} failed: {ex.Message}";
-                    result.Status = RemediationStatusEnum.Failed;
-                    break;
-                }
-            }
-
+            // Execute the strategy directly
+            var strategyResult = await strategy.ExecuteAsync(context);
+            result.Success = strategyResult.Success;
+            result.ErrorMessage = strategyResult.ErrorMessage;
+            result.Status = strategyResult.Success ? RemediationStatusEnum.Completed : RemediationStatusEnum.Failed;
+            
             // Update metrics
             metrics.EndResourceUsage = new ResourceUsage();
             metrics.DurationMs = (DateTime.UtcNow - result.StartTime).TotalMilliseconds;
             await _metricsCollector.RecordRemediationMetricsAsync(metrics);
-
-            // Set final status if not already set
-            if (result.Status == RemediationStatusEnum.NotStarted)
-            {
-                result.Status = RemediationStatusEnum.Completed;
-                result.Success = true;
-            }
 
             result.EndTime = DateTime.UtcNow;
             await _metricsCollector.RecordExecutionAsync(result.ExecutionId, result);
@@ -174,8 +148,7 @@ public class RemediationExecutor : IRemediationExecutor
         }
         catch (Exception ex)
         {
-            _logger.LogError(_eventIds[nameof(ExecuteStrategyAsync)], ex, 
-                "Error executing strategy {StrategyName}", strategy.Name);
+            _logger.LogError(ex, "Error executing strategy {StrategyName}", strategy.Name);
             
             var result = new RemediationResult
             {
@@ -193,6 +166,45 @@ public class RemediationExecutor : IRemediationExecutor
             
             await _metricsCollector.RecordExecutionAsync(result.ExecutionId, result);
             return result;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<RemediationResult> ExecuteStrategyAsync(Models.Remediation.Interfaces.IRemediationStrategy strategy, ErrorContext context)
+    {
+        if (strategy == null)
+            throw new ArgumentNullException(nameof(strategy));
+        if (context == null)
+            throw new ArgumentNullException(nameof(context));
+
+        try
+        {
+            _logger.LogInformation("Executing strategy {StrategyName} for error {ErrorId}", 
+                strategy.GetType().Name, context.ErrorId);
+
+            // Convert the strategy from models namespace to remediation namespace if needed
+            var remediationStrategy = new RemediationStrategyAdapter(strategy);
+            
+            // Now use our existing implementation
+            return await ExecuteStrategyAsync(remediationStrategy, context);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error executing strategy for error {ErrorId}", context.ErrorId);
+            
+            return new RemediationResult
+            {
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow,
+                ExecutionId = Guid.NewGuid().ToString(),
+                CorrelationId = context.CorrelationId,
+                ErrorId = context.ErrorId,
+                ErrorType = context.ErrorType,
+                Success = false,
+                ErrorMessage = $"Unhandled exception: {ex.Message}",
+                Status = RemediationStatusEnum.Failed,
+                Context = context
+            };
         }
     }
 

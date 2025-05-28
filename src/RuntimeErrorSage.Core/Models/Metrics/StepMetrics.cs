@@ -1,18 +1,23 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Metrics
 {
     /// <summary>
-    /// Represents metrics for a remediation step.
+    /// Contains metrics information for a remediation execution step.
     /// </summary>
     public class StepMetrics
     {
         /// <summary>
-        /// Gets or sets the step identifier.
+        /// Gets or sets the step ID.
         /// </summary>
         public string StepId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the execution ID.
+        /// </summary>
+        public string ExecutionId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the step name.
@@ -20,84 +25,98 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         public string StepName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the action identifier.
+        /// Gets or sets the step type.
         /// </summary>
-        public string ActionId { get; set; } = string.Empty;
+        public string StepType { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the duration in milliseconds.
+        /// Gets or sets the step status.
         /// </summary>
-        public double DurationMs { get; set; }
+        public ActionStatus Status { get; set; } = ActionStatus.Unknown;
 
         /// <summary>
-        /// Gets or sets the status.
-        /// </summary>
-        public string Status { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the error type if any.
-        /// </summary>
-        public string ErrorType { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the error message if any.
-        /// </summary>
-        public string ErrorMessage { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the start time.
+        /// Gets or sets the step start time.
         /// </summary>
         public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the end time.
+        /// Gets or sets the step end time.
         /// </summary>
-        public DateTime EndTime { get; set; } = DateTime.UtcNow;
+        public DateTime? EndTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the resource usage metrics.
+        /// Gets or sets the step duration in milliseconds.
         /// </summary>
-        public ResourceUsage ResourceUsage { get; set; } = new();
+        public double DurationMs { get; set; }
 
         /// <summary>
-        /// Gets or sets additional metrics.
+        /// Gets or sets the error message if the step failed.
         /// </summary>
-        public Dictionary<string, object> AdditionalMetrics { get; set; } = new();
+        public string ErrorMessage { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the number of retries attempted.
+        /// Gets or sets the resource usage at the start of the step.
         /// </summary>
-        public int RetryCount { get; set; }
+        public ResourceUsage StartResourceUsage { get; set; } = new ResourceUsage();
 
         /// <summary>
-        /// Gets or sets whether the step was rolled back.
+        /// Gets or sets the resource usage at the end of the step.
         /// </summary>
-        public bool WasRolledBack { get; set; }
+        public ResourceUsage EndResourceUsage { get; set; } = new ResourceUsage();
 
         /// <summary>
-        /// Gets or sets additional metrics data.
+        /// Gets or sets additional metadata.
         /// </summary>
-        public Dictionary<string, object> Data { get; set; } = new();
+        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
-        /// Gets or sets the timestamp when these metrics were recorded.
+        /// Gets or sets step-specific metrics.
         /// </summary>
-        public DateTime RecordedAt { get; set; } = DateTime.UtcNow;
-
-        // Properties needed for ExecutionMetrics compatibility
-        /// <summary>
-        /// Gets or sets the CPU usage.
-        /// </summary>
-        public double CpuUsage { get; set; }
+        public Dictionary<string, double> Metrics { get; set; } = new Dictionary<string, double>();
 
         /// <summary>
-        /// Gets or sets the memory usage.
+        /// Gets whether the step was successful.
         /// </summary>
-        public double MemoryUsage { get; set; }
+        public bool IsSuccessful => Status == ActionStatus.Completed;
 
         /// <summary>
-        /// Gets or sets the latency.
+        /// Gets the memory usage difference.
         /// </summary>
-        public double Latency { get; set; }
+        public long MemoryUsageDiff => EndResourceUsage.MemoryUsageBytes - StartResourceUsage.MemoryUsageBytes;
+
+        /// <summary>
+        /// Gets the CPU usage difference.
+        /// </summary>
+        public double CpuUsageDiff => EndResourceUsage.CpuUsagePercent - StartResourceUsage.CpuUsagePercent;
+
+        /// <summary>
+        /// Creates a new step metrics instance.
+        /// </summary>
+        /// <param name="stepName">The name of the step.</param>
+        /// <param name="executionId">The execution ID.</param>
+        /// <returns>A new step metrics instance.</returns>
+        public static StepMetrics Create(string stepName, string executionId)
+        {
+            return new StepMetrics
+            {
+                StepName = stepName,
+                ExecutionId = executionId,
+                StartTime = DateTime.UtcNow,
+                Status = ActionStatus.InProgress
+            };
+        }
+
+        /// <summary>
+        /// Completes the step metrics.
+        /// </summary>
+        /// <param name="status">The step status.</param>
+        /// <param name="errorMessage">The error message if the step failed.</param>
+        public void Complete(ActionStatus status, string errorMessage = "")
+        {
+            Status = status;
+            ErrorMessage = errorMessage;
+            EndTime = DateTime.UtcNow;
+            DurationMs = (EndTime.Value - StartTime).TotalMilliseconds;
+        }
     }
 } 

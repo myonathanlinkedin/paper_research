@@ -14,9 +14,19 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         public double CpuUsagePercent { get; set; }
 
         /// <summary>
-        /// Gets or sets the memory usage in megabytes.
+        /// Gets or sets the memory usage in bytes.
         /// </summary>
-        public double MemoryUsageMB { get; set; }
+        public double MemoryUsageBytes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the disk usage in bytes.
+        /// </summary>
+        public double DiskUsage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the network usage in bytes.
+        /// </summary>
+        public double NetworkUsage { get; set; }
 
         /// <summary>
         /// Gets or sets the disk I/O operations per second.
@@ -61,7 +71,9 @@ namespace RuntimeErrorSage.Core.Models.Metrics
             return new ResourceUsage
             {
                 CpuUsagePercent = GetCpuUsagePercent(),
-                MemoryUsageMB = GetMemoryUsageMB(),
+                MemoryUsageBytes = GetMemoryUsageBytes(),
+                DiskUsage = GetDiskUsage(),
+                NetworkUsage = GetNetworkUsage(),
                 DiskIOPS = GetDiskIOPS(),
                 NetworkBandwidthMBps = GetNetworkBandwidthMBps(),
                 ActiveThreads = GetActiveThreads(),
@@ -77,9 +89,21 @@ namespace RuntimeErrorSage.Core.Models.Metrics
             return 0;
         }
 
-        private static double GetMemoryUsageMB()
+        private static double GetMemoryUsageBytes()
         {
             // TODO: Implement actual memory usage measurement
+            return 0;
+        }
+
+        private static double GetDiskUsage()
+        {
+            // TODO: Implement actual disk usage measurement
+            return 0;
+        }
+
+        private static double GetNetworkUsage()
+        {
+            // TODO: Implement actual network usage measurement
             return 0;
         }
 

@@ -1,7 +1,7 @@
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Represents the type of node in a dependency graph.
+/// Defines the type of node in a dependency graph.
 /// </summary>
 public enum GraphNodeType
 {
@@ -9,34 +9,34 @@ public enum GraphNodeType
     /// Unknown node type.
     /// </summary>
     Unknown = 0,
-
+    
     /// <summary>
-    /// A component node representing a service or module.
+    /// Service node type.
     /// </summary>
-    Component = 1,
-
+    Service = 1,
+    
     /// <summary>
-    /// An error node representing an error or exception.
+    /// Component node type.
     /// </summary>
-    Error = 2,
-
+    Component = 2,
+    
     /// <summary>
-    /// A resource node representing a system resource.
+    /// Resource node type.
     /// </summary>
     Resource = 3,
-
+    
     /// <summary>
-    /// A data node representing data or a database.
+    /// Database node type.
     /// </summary>
-    Data = 4,
-
+    Database = 4,
+    
     /// <summary>
-    /// A user node representing a user or client.
+    /// API node type.
     /// </summary>
-    User = 5,
-
+    API = 5,
+    
     /// <summary>
-    /// An API node representing an API endpoint.
+    /// Infrastructure node type.
     /// </summary>
-    Api = 6
+    Infrastructure = 6
 } 

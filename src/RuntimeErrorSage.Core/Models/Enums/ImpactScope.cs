@@ -1,7 +1,7 @@
 namespace RuntimeErrorSage.Core.Models.Enums;
 
 /// <summary>
-/// Represents the scope of an impact.
+/// Defines the scope of impact for an error or action.
 /// </summary>
 public enum ImpactScope
 {
@@ -9,29 +9,34 @@ public enum ImpactScope
     /// Unknown scope.
     /// </summary>
     Unknown = 0,
-
+    
     /// <summary>
-    /// Local scope affecting only a single component.
+    /// Impact limited to a single component.
     /// </summary>
-    Local = 1,
-
+    SingleComponent = 1,
+    
     /// <summary>
-    /// Component scope affecting a specific component and its direct dependencies.
+    /// Impact limited to multiple components in a service.
     /// </summary>
-    Component = 2,
-
+    MultipleComponents = 2,
+    
     /// <summary>
-    /// Service scope affecting an entire service.
+    /// Impact limited to a single service.
     /// </summary>
-    Service = 3,
-
+    SingleService = 3,
+    
     /// <summary>
-    /// System scope affecting the entire system.
+    /// Impact affects multiple services.
     /// </summary>
-    System = 4,
-
+    MultipleServices = 4,
+    
     /// <summary>
-    /// Global scope affecting multiple systems or the entire platform.
+    /// Impact affects an entire system.
     /// </summary>
-    Global = 5
+    EntireSystem = 5,
+    
+    /// <summary>
+    /// Impact extends beyond the system to external dependencies.
+    /// </summary>
+    ExternalDependencies = 6
 } 
