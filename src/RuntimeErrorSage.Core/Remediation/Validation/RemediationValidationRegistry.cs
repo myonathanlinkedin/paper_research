@@ -9,7 +9,6 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Validation;
 using RemediationPlan = RuntimeErrorSage.Core.Models.Remediation.RemediationPlan;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Models.Enums;
 using CoreValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
 using DataAnnotationsValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 using RuntimeErrorSage.Core.Models.Remediation;
@@ -23,7 +22,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
 {
     private readonly ILogger<RemediationValidationRegistry> _logger;
     private readonly IMemoryCache _cache;
-    private readonly Dictionary<string, RemediationValidationRule> _rules;
+    private readonly Dictionary<string, Models.Remediation.RemediationValidationRule> _rules;
     private readonly MemoryCacheEntryOptions _defaultCacheOptions;
 
     public RemediationValidationRegistry(
@@ -32,7 +31,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
     {
         _logger = logger;
         _cache = cache;
-        _rules = new Dictionary<string, RemediationValidationRule>();
+        _rules = new Dictionary<string, Models.Remediation.RemediationValidationRule>();
         _defaultCacheOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromMinutes(5))
             .SetAbsoluteExpiration(TimeSpan.FromHours(1));
@@ -42,7 +41,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
     /// Registers a validation rule.
     /// </summary>
     /// <param name="rule">The rule to register.</param>
-    public void RegisterRule(RemediationValidationRule rule)
+    public void RegisterRule(Models.Remediation.RemediationValidationRule rule)
     {
         if (rule == null)
             throw new ArgumentNullException(nameof(rule));
@@ -54,7 +53,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
     /// Gets all registered rules.
     /// </summary>
     /// <returns>An enumerable of all registered rules.</returns>
-    public IEnumerable<RemediationValidationRule> GetRules()
+    public IEnumerable<Models.Remediation.RemediationValidationRule> GetRules()
     {
         return _rules.Values;
     }
@@ -64,7 +63,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
     /// </summary>
     /// <param name="name">The name of the rule to get.</param>
     /// <returns>The rule with the specified name, or null if not found.</returns>
-    public RemediationValidationRule GetRule(string name)
+    public Models.Remediation.RemediationValidationRule GetRule(string name)
     {
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("Rule name cannot be null or empty.", nameof(name));
@@ -74,8 +73,9 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
 
     public void UnregisterRule(string ruleId)
     {
-        if (_rules.TryRemove(ruleId, out var rule))
+        if (_rules.TryGetValue(ruleId, out var rule))
         {
+            _rules.Remove(ruleId);
             _logger.LogInformation(
                 "Unregistered validation rule {Rule}",
                 rule.Name);
@@ -131,7 +131,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
     }
 
     private async Task<CoreValidationResult> ValidateWithRuleAsync(
-        RemediationValidationRule rule,
+        Models.Remediation.RemediationValidationRule rule,
         RemediationPlan plan,
         ErrorContext context)
     {

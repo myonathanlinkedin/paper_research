@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Remediation.Base;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.Interfaces;
@@ -19,22 +18,48 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
     /// </summary>
     public class MonitorStrategy : IRemediationStrategy
     {
+        private readonly ILogger<MonitorStrategy> _logger;
         private readonly IRemediationMetricsCollector _metricsCollector;
         private readonly ILLMClient _llmClient;
-        private string _name = "Monitor Strategy";
-        private string _description = "Monitors system health and performance";
-        public Dictionary<string, object> Parameters { get; }
-        public HashSet<string> SupportedErrorTypes { get; }
-        public RemediationPriority Priority { get; }
+        
+        /// <summary>
+        /// Gets or sets the strategy name.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the strategy description.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the strategy parameters.
+        /// </summary>
+        public Dictionary<string, object> Parameters { get; set; }
+
+        /// <summary>
+        /// Gets the error types this strategy can handle.
+        /// </summary>
+        public ISet<string> SupportedErrorTypes { get; }
+
+        /// <summary>
+        /// Gets the strategy id.
+        /// </summary>
+        public string StrategyId { get; } = Guid.NewGuid().ToString();
 
         public MonitorStrategy(
-            ILogger<RemediationStrategy> logger,
+            ILogger<MonitorStrategy> logger,
             IRemediationMetricsCollector metricsCollector,
             ILLMClient llmClient)
-            : base(logger)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
             _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+            
+            Name = "Monitor";
+            Description = "Monitors system health and performance";
+            Parameters = new Dictionary<string, object>();
+            SupportedErrorTypes = new HashSet<string>();
             
             // Add required parameters with default values
             Parameters["cpu_threshold"] = 80.0;
@@ -42,27 +67,17 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             Parameters["disk_threshold"] = 90.0;
             
             // Set supported error types
-            SupportedErrorTypes = new HashSet<string> 
-            { 
-                "ResourceExhaustion", 
-                "PerformanceDegradation",
-                "SystemOverload" 
-            };
-
-            Priority = RemediationPriority.Medium;
+            SupportedErrorTypes.Add("ResourceExhaustion");
+            SupportedErrorTypes.Add("PerformanceDegradation");
+            SupportedErrorTypes.Add("SystemOverload");
         }
 
         /// <summary>
-        /// Gets or sets the name of the strategy.
+        /// Executes the remediation strategy.
         /// </summary>
-        public string Name => _name;
-
-        /// <summary>
-        /// Gets or sets the description of the strategy.
-        /// </summary>
-        public string Description => _description;
-
-        public async Task<RemediationResult> ApplyAsync(ErrorContext context)
+        /// <param name="context">The error context.</param>
+        /// <returns>The remediation result.</returns>
+        public async Task<RemediationResult> ExecuteAsync(ErrorContext context)
         {
             if (context == null)
             {
@@ -95,7 +110,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"Error executing monitor strategy: {ex.Message}");
+                _logger.LogError(ex, $"Error executing monitor strategy: {ex.Message}");
                 return CreateFailureResult($"Error executing monitor strategy: {ex.Message}");
             }
         }
@@ -122,7 +137,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"Error collecting metrics: {ex.Message}");
+                _logger.LogError(ex, $"Error collecting metrics: {ex.Message}");
             }
             
             return metrics;
@@ -159,7 +174,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"Error checking metric health: {ex.Message}");
+                _logger.LogError(ex, $"Error checking metric health: {ex.Message}");
             }
             
             return true;
@@ -197,6 +212,11 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             return result;
         }
 
+        /// <summary>
+        /// Validates if this strategy can handle the given error.
+        /// </summary>
+        /// <param name="context">The error context.</param>
+        /// <returns>True if the strategy can handle the error; otherwise, false.</returns>
         public async Task<bool> CanHandleErrorAsync(ErrorContext context)
         {
             if (context == null)
@@ -204,27 +224,47 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return true; // This strategy can handle any error type
+            return SupportedErrorTypes.Contains(context.ErrorType);
         }
 
-        public async Task<bool> ValidateAsync(ErrorContext context)
+        /// <summary>
+        /// Validates the strategy for a given error context.
+        /// </summary>
+        /// <param name="errorContext">The error context to validate against.</param>
+        /// <returns>The validation result.</returns>
+        public async Task<ValidationResult> ValidateAsync(ErrorContext errorContext)
         {
-            if (context == null)
+            if (errorContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(errorContext));
             }
 
-            return true; // Basic validation passes
+            try
+            {
+                await ValidateRequiredParametersAsync();
+                return ValidationResult.Success("Monitor strategy validation successful");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Monitor strategy validation failed: {Message}", ex.Message);
+                return ValidationResult.Failure($"Monitor strategy validation failed: {ex.Message}");
+            }
         }
 
-        public async Task<RemediationPriority> GetPriorityAsync(ErrorContext context)
+        /// <summary>
+        /// Gets the priority of this strategy.
+        /// </summary>
+        /// <param name="errorContext">The error context.</param>
+        /// <returns>The remediation priority.</returns>
+        public async Task<RemediationPriority> GetPriorityAsync(ErrorContext errorContext)
         {
-            if (context == null)
+            if (errorContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(errorContext));
             }
 
-            return Priority;
+            await Task.CompletedTask;
+            return RemediationPriority.Medium;
         }
     }
 } 

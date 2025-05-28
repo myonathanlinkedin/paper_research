@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Validation;
 
 namespace RuntimeErrorSage.Core.Models.Remediation;
 
@@ -100,6 +104,21 @@ public class RemediationValidationRule
     public string ErrorMessage { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the validation result can be cached.
+    /// </summary>
+    public bool IsCacheable { get; set; }
+
+    /// <summary>
+    /// Gets or sets the duration for which the validation result can be cached.
+    /// </summary>
+    public TimeSpan CacheDuration { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Gets or sets the validation function for async validation.
+    /// </summary>
+    public Func<RemediationPlan, ErrorContext, Task<ValidationResult>> AsyncValidationFunction { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the RemediationValidationRule class.
     /// </summary>
     public RemediationValidationRule()
@@ -108,5 +127,56 @@ public class RemediationValidationRule
         CreatedAt = DateTimeOffset.UtcNow;
         ModifiedAt = DateTimeOffset.UtcNow;
         IsEnabled = true;
+        IsCacheable = false;
+    }
+
+    /// <summary>
+    /// Validates the specified remediation plan and error context.
+    /// </summary>
+    /// <param name="plan">The remediation plan to validate.</param>
+    /// <param name="context">The error context to validate against.</param>
+    /// <returns>The validation result.</returns>
+    public async Task<ValidationResult> ValidateAsync(RemediationPlan plan, ErrorContext context)
+    {
+        if (!IsEnabled)
+        {
+            return ValidationResult.Success($"Rule {Name} is disabled");
+        }
+
+        if (AsyncValidationFunction != null)
+        {
+            return await AsyncValidationFunction(plan, context);
+        }
+
+        // Fall back to a synchronous validation using reflection if needed
+        var result = new ValidationResult { IsValid = true };
+        if (ValidationFunction != null)
+        {
+            // Try to find a remediation action in the plan to validate
+            var actionToValidate = plan?.Actions?.FirstOrDefault();
+            if (actionToValidate != null)
+            {
+                bool isValid = ValidationFunction(actionToValidate);
+                result.IsValid = isValid;
+                
+                if (!isValid)
+                {
+                    result.Errors.Add(ErrorMessage ?? $"Validation rule '{Name}' failed");
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Gets a cache key for the specified remediation plan and error context.
+    /// </summary>
+    /// <param name="plan">The remediation plan.</param>
+    /// <param name="context">The error context.</param>
+    /// <returns>A cache key string.</returns>
+    public string GetCacheKey(RemediationPlan plan, ErrorContext context)
+    {
+        return $"ValidationRule:{RuleId}:{plan?.PlanId ?? "null"}:{context?.ContextId ?? "null"}";
     }
 } 
