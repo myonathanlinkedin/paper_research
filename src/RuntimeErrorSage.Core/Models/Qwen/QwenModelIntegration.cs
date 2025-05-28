@@ -27,7 +27,7 @@ public class QwenModelIntegration : ILLMClient
     private readonly IErrorContextAnalyzer _contextAnalyzer;
     private readonly IRemediationActionSystem _remediationSystem;
     private readonly IErrorClassifier _errorClassifier;
-    private readonly IErrorRelationshipAnalyzer _relationshipAnalyzer;
+    private readonly RuntimeErrorSage.Core.Analysis.Interfaces.IErrorRelationshipAnalyzer _errorRelationshipAnalyzer;
 
     private const string MODEL_NAME = "Qwen/Qwen2.5-7B-Instruct-1M";
     private const int MAX_TOKENS = 2048;
@@ -44,13 +44,13 @@ public class QwenModelIntegration : ILLMClient
         IErrorContextAnalyzer contextAnalyzer,
         IRemediationActionSystem remediationSystem,
         IErrorClassifier errorClassifier,
-        IErrorRelationshipAnalyzer relationshipAnalyzer)
+        RuntimeErrorSage.Core.Analysis.Interfaces.IErrorRelationshipAnalyzer errorRelationshipAnalyzer)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _contextAnalyzer = contextAnalyzer ?? throw new ArgumentNullException(nameof(contextAnalyzer));
         _remediationSystem = remediationSystem ?? throw new ArgumentNullException(nameof(remediationSystem));
         _errorClassifier = errorClassifier ?? throw new ArgumentNullException(nameof(errorClassifier));
-        _relationshipAnalyzer = relationshipAnalyzer ?? throw new ArgumentNullException(nameof(relationshipAnalyzer));
+        _errorRelationshipAnalyzer = errorRelationshipAnalyzer ?? throw new ArgumentNullException(nameof(errorRelationshipAnalyzer));
         IsEnabled = true;
         IsConnected = true;
     }

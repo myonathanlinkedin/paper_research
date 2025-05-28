@@ -29,7 +29,7 @@ public class MCPClient : IMCPClient, IDisposable
     private readonly Dictionary<string, List<ContextHistory>> _contextHistory;
     private readonly Dictionary<string, Func<ErrorContext, Task>> _contextSubscribers;
     private readonly MCPClientOptions _options;
-    private readonly IPatternStorage _storage;
+    private readonly RuntimeErrorSage.Core.Storage.Interfaces.IPatternStorage _storage;
     private readonly IErrorAnalyzer _errorAnalyzer;
     private bool _disposed;
 
@@ -39,7 +39,7 @@ public class MCPClient : IMCPClient, IDisposable
     public MCPClient(
         ILogger<MCPClient> logger,
         IOptions<MCPClientOptions> options,
-        IPatternStorage storage,
+        RuntimeErrorSage.Core.Storage.Interfaces.IPatternStorage storage,
         IErrorAnalyzer errorAnalyzer)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

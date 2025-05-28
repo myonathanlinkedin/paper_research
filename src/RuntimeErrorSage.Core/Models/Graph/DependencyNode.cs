@@ -5,29 +5,54 @@ using RuntimeErrorSage.Core.Models.Enums;
 namespace RuntimeErrorSage.Core.Models.Graph
 {
     /// <summary>
-    /// Represents a node in a dependency analysis.
+    /// Represents a node in a dependency graph.
     /// </summary>
     public class DependencyNode
     {
         /// <summary>
-        /// Gets or sets the component identifier.
+        /// Gets or sets the unique identifier of the node.
         /// </summary>
-        public string ComponentId { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the node label.
+        /// </summary>
+        public string Label { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the component ID.
+        /// </summary>
+        public string ComponentId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the component name.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public string ComponentName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the component type.
+        /// Gets or sets the node type.
         /// </summary>
-        public string Type { get; set; } = string.Empty;
+        public string NodeType { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the component version.
+        /// Gets or sets the health score of the node (0-1).
         /// </summary>
-        public string Version { get; set; } = string.Empty;
+        public double HealthScore { get; set; } = 1.0;
+
+        /// <summary>
+        /// Gets or sets the node metadata.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Gets or sets whether the node is critical.
+        /// </summary>
+        public bool IsCritical { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the node is an error source.
+        /// </summary>
+        public bool IsErrorSource { get; set; }
 
         /// <summary>
         /// Gets or sets the dependencies.
@@ -38,10 +63,5 @@ namespace RuntimeErrorSage.Core.Models.Graph
         /// Gets or sets the dependents.
         /// </summary>
         public List<DependencyNode> Dependents { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the metadata.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
     }
 } 

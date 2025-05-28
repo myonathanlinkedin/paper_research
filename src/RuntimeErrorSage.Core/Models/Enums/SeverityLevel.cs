@@ -6,28 +6,23 @@ namespace RuntimeErrorSage.Core.Models.Enums
     public enum SeverityLevel
     {
         /// <summary>
-        /// No severity level assigned.
+        /// Low severity level. Informational events that don't impact functionality.
         /// </summary>
-        None,
+        Low = 0,
 
         /// <summary>
-        /// Low severity level.
+        /// Medium severity level. Events that might affect functionality but don't cause system failure.
         /// </summary>
-        Low,
+        Medium = 1,
 
         /// <summary>
-        /// Medium severity level.
+        /// High severity level. Serious issues that impact core functionality.
         /// </summary>
-        Medium,
+        High = 2,
 
         /// <summary>
-        /// High severity level.
+        /// Critical severity level. System-breaking issues that require immediate attention.
         /// </summary>
-        High,
-
-        /// <summary>
-        /// Critical severity level.
-        /// </summary>
-        Critical
+        Critical = 3
     }
 } 

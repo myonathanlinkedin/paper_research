@@ -6,27 +6,27 @@ namespace RuntimeErrorSage.Core.Models.Enums;
 public enum AnalysisStatus
 {
     /// <summary>
-    /// Analysis has not started.
+    /// The analysis has not yet started.
     /// </summary>
     NotStarted = 0,
 
     /// <summary>
-    /// Analysis is in progress.
+    /// The analysis is in progress.
     /// </summary>
     InProgress = 1,
 
     /// <summary>
-    /// Analysis has completed successfully.
+    /// The analysis has completed successfully.
     /// </summary>
     Completed = 2,
 
     /// <summary>
-    /// Analysis has failed.
+    /// The analysis has failed.
     /// </summary>
     Failed = 3,
 
     /// <summary>
-    /// Analysis has been cancelled.
+    /// The analysis has been cancelled.
     /// </summary>
     Cancelled = 4
 } 

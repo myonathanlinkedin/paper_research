@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Models.Error
 {
     /// <summary>
-    /// Represents a runtime error in the system.
+    /// Represents a runtime error that occurs in the system.
     /// </summary>
     public class RuntimeError
     {
@@ -18,56 +20,91 @@ namespace RuntimeErrorSage.Core.Models.Error
         public string Message { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the error type.
+        /// </summary>
+        public string ErrorType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the error code.
+        /// </summary>
+        public string ErrorCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the stack trace.
+        /// </summary>
+        public string StackTrace { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the inner exception message.
+        /// </summary>
+        public string InnerExceptionMessage { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the source of the error.
+        /// </summary>
+        public string Source { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the component ID.
+        /// </summary>
+        public string ComponentId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the component name.
+        /// </summary>
+        public string ComponentName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the severity of the error.
+        /// </summary>
+        public SeverityLevel Severity { get; set; } = SeverityLevel.Medium;
+
+        /// <summary>
         /// Gets or sets the timestamp when the error occurred.
         /// </summary>
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the type of error.
+        /// Gets or sets the correlation ID.
         /// </summary>
-        public string ErrorType { get; set; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the component where the error occurred.
+        /// Gets or sets the additional context.
         /// </summary>
-        public string Component { get; set; } = string.Empty;
+        public Dictionary<string, object> AdditionalContext { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Gets or sets the service where the error occurred.
+        /// Gets or sets whether the error has been resolved.
         /// </summary>
-        public string Service { get; set; } = string.Empty;
+        public bool IsResolved { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets the unique Id of the error (alias for ErrorId).
+        /// Gets or sets the resolution description.
         /// </summary>
-        public string Id
+        public string ResolutionDescription { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Creates a new RuntimeError from an exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <returns>The runtime error.</returns>
+        public static RuntimeError FromException(Exception exception)
         {
-            get => ErrorId;
-            set => ErrorId = value;
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
+            return new RuntimeError
+            {
+                Message = exception.Message,
+                ErrorType = exception.GetType().Name,
+                StackTrace = exception.StackTrace ?? string.Empty,
+                InnerExceptionMessage = exception.InnerException?.Message ?? string.Empty,
+                Source = exception.Source ?? string.Empty,
+                Timestamp = DateTime.UtcNow
+            };
         }
-
-        /// <summary>
-        /// Gets or sets the component ID where the error occurred.
-        /// </summary>
-        public string ComponentId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the type of the error (alias for ErrorType).
-        /// </summary>
-        public string Type
-        {
-            get => ErrorType;
-            set => ErrorType = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the location where the error occurred.
-        /// </summary>
-        public string Location { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the conditions associated with the error.
-        /// </summary>
-        public string[] Conditions { get; set; } = Array.Empty<string>();
     }
 } 

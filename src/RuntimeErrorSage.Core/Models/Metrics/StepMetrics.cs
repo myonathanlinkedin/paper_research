@@ -83,5 +83,21 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// Gets or sets the timestamp when these metrics were recorded.
         /// </summary>
         public DateTime RecordedAt { get; set; } = DateTime.UtcNow;
+
+        // Properties needed for ExecutionMetrics compatibility
+        /// <summary>
+        /// Gets or sets the CPU usage.
+        /// </summary>
+        public double CpuUsage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the memory usage.
+        /// </summary>
+        public double MemoryUsage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the latency.
+        /// </summary>
+        public double Latency { get; set; }
     }
 } 

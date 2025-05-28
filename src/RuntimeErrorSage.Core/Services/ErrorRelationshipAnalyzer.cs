@@ -7,6 +7,7 @@ using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Services.Interfaces;
+using RelatedErrorModel = RuntimeErrorSage.Core.Models.Error.RelatedError;
 
 namespace RuntimeErrorSage.Core.Services;
 
@@ -27,7 +28,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelatedError>> FindRelatedErrorsAsync(ErrorContext context, DependencyGraph graph)
+    public async Task<IEnumerable<RelatedErrorModel>> FindRelatedErrorsAsync(ErrorContext context, DependencyGraph graph)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(graph);
@@ -36,7 +37,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         {
             _logger.LogInformation("Finding related errors for error {ErrorId}", context.ErrorId);
 
-            var relatedErrors = new List<RelatedError>();
+            var relatedErrors = new List<RelatedErrorModel>();
 
             // Find errors in the same component
             var componentErrors = await FindErrorsInComponentAsync(context, graph);
@@ -130,7 +131,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelatedError>> AnalyzeRelationshipsAsync(ErrorContext context)
+    public async Task<IEnumerable<RelatedErrorModel>> AnalyzeRelationshipsAsync(ErrorContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -138,7 +139,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         {
             _logger.LogInformation("Analyzing relationships for error {ErrorId}", context.ErrorId);
 
-            var relationships = new List<RelatedError>();
+            var relationships = new List<RelatedErrorModel>();
 
             // Get previous errors from context
             if (context.PreviousErrors != null)
@@ -146,7 +147,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
                 foreach (var previousError in context.PreviousErrors)
                 {
                     var relationship = await AnalyzeRelationshipAsync(context, previousError);
-                    relationships.Add(new RelatedError
+                    relationships.Add(new RelatedErrorModel
                     {
                         ErrorId = previousError.ErrorId,
                         RelationshipType = relationship.Type,
@@ -166,7 +167,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
     }
 
     /// <inheritdoc />
-    public ErrorRelationshipType GetRelationshipType(RuntimeError source, RuntimeError target)
+    public ErrorRelationship GetRelationshipType(RuntimeError source, RuntimeError target)
     {
         try
         {
@@ -175,40 +176,110 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
             // Check if errors are in the same component
             if (source.ComponentId == target.ComponentId)
             {
-                return ErrorRelationshipType.Sibling;
+                return new ErrorRelationship
+                {
+                    SourceErrorId = source.ErrorId,
+                    TargetErrorId = target.ErrorId,
+                    RelationshipType = ErrorRelationshipType.Sibling,
+                    Strength = 0.8,
+                    Confidence = 0.8,
+                    Description = "These errors appear to be related based on error type",
+                    Timestamp = DateTime.UtcNow,
+                    IsBidirectional = false
+                };
             }
 
             // Check if errors are in dependent components
             if (_analysis.AreComponentsDependent(source.ComponentId, target.ComponentId))
             {
-                return ErrorRelationshipType.Dependency;
+                return new ErrorRelationship
+                {
+                    SourceErrorId = source.ErrorId,
+                    TargetErrorId = target.ErrorId,
+                    RelationshipType = ErrorRelationshipType.Dependency,
+                    Strength = 0.6,
+                    Confidence = 0.6,
+                    Description = "These errors appear to be related based on error type",
+                    Timestamp = DateTime.UtcNow,
+                    IsBidirectional = false
+                };
             }
 
             // Check if errors have similar patterns
             if (_analysis.HaveSimilarPatterns(source, target))
             {
-                return ErrorRelationshipType.Correlation;
+                return new ErrorRelationship
+                {
+                    SourceErrorId = source.ErrorId,
+                    TargetErrorId = target.ErrorId,
+                    RelationshipType = ErrorRelationshipType.Correlation,
+                    Strength = 0.4,
+                    Confidence = 0.4,
+                    Description = "These errors appear to be related based on error type",
+                    Timestamp = DateTime.UtcNow,
+                    IsBidirectional = false
+                };
             }
 
             // Check if errors have a temporal relationship
             if (_analysis.HasTemporalRelationship(source, target))
             {
-                return ErrorRelationshipType.Temporal;
+                return new ErrorRelationship
+                {
+                    SourceErrorId = source.ErrorId,
+                    TargetErrorId = target.ErrorId,
+                    RelationshipType = ErrorRelationshipType.Temporal,
+                    Strength = 0.5,
+                    Confidence = 0.5,
+                    Description = "These errors appear to be related based on timing",
+                    Timestamp = DateTime.UtcNow,
+                    IsBidirectional = false
+                };
             }
 
             // Check if errors have a spatial relationship
             if (_analysis.HasSpatialRelationship(source, target))
             {
-                return ErrorRelationshipType.Spatial;
+                return new ErrorRelationship
+                {
+                    SourceErrorId = source.ErrorId,
+                    TargetErrorId = target.ErrorId,
+                    RelationshipType = ErrorRelationshipType.Spatial,
+                    Strength = 0.3,
+                    Confidence = 0.3,
+                    Description = "These errors appear to be related based on location",
+                    Timestamp = DateTime.UtcNow,
+                    IsBidirectional = false
+                };
             }
 
             // Check if errors have a logical relationship
             if (_analysis.HasLogicalRelationship(source, target))
             {
-                return ErrorRelationshipType.Logical;
+                return new ErrorRelationship
+                {
+                    SourceErrorId = source.ErrorId,
+                    TargetErrorId = target.ErrorId,
+                    RelationshipType = ErrorRelationshipType.Logical,
+                    Strength = 0.2,
+                    Confidence = 0.2,
+                    Description = "These errors appear to be related based on logic",
+                    Timestamp = DateTime.UtcNow,
+                    IsBidirectional = false
+                };
             }
 
-            return ErrorRelationshipType.None;
+            return new ErrorRelationship
+            {
+                SourceErrorId = source.ErrorId,
+                TargetErrorId = target.ErrorId,
+                RelationshipType = ErrorRelationshipType.None,
+                Strength = 0.1,
+                Confidence = 0.1,
+                Description = "These errors do not appear to be related",
+                Timestamp = DateTime.UtcNow,
+                IsBidirectional = false
+            };
         }
         catch (Exception ex)
         {
@@ -217,9 +288,9 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         }
     }
 
-    private async Task<IEnumerable<RelatedError>> FindErrorsInComponentAsync(ErrorContext context, DependencyGraph graph)
+    private async Task<IEnumerable<RelatedErrorModel>> FindErrorsInComponentAsync(ErrorContext context, DependencyGraph graph)
     {
-        var errors = new List<RelatedError>();
+        var errors = new List<RelatedErrorModel>();
 
         if (string.IsNullOrEmpty(context.ComponentId))
             return errors;
@@ -227,7 +298,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         // Find all error nodes in the same component
         var componentErrors = graph.Nodes.Values
             .Where(n => n.Type == GraphNodeType.Error && n.Metadata.TryGetValue("ComponentId", out var compId) && compId?.ToString() == context.ComponentId)
-            .Select(n => new RelatedError
+            .Select(n => new RelatedErrorModel
             {
                 ErrorId = n.Id,
                 RelationshipType = ErrorRelationshipType.SameComponent,
@@ -240,9 +311,9 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         return errors;
     }
 
-    private async Task<IEnumerable<RelatedError>> FindErrorsInDependentComponentsAsync(ErrorContext context, DependencyGraph graph)
+    private async Task<IEnumerable<RelatedErrorModel>> FindErrorsInDependentComponentsAsync(ErrorContext context, DependencyGraph graph)
     {
-        var errors = new List<RelatedError>();
+        var errors = new List<RelatedErrorModel>();
 
         if (string.IsNullOrEmpty(context.ComponentId))
             return errors;
@@ -258,7 +329,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         {
             var componentErrors = graph.Nodes.Values
                 .Where(n => n.Type == GraphNodeType.Error && n.Metadata.TryGetValue("ComponentId", out var compId) && compId?.ToString() == componentId)
-                .Select(n => new RelatedError
+                .Select(n => new RelatedErrorModel
                 {
                     ErrorId = n.Id,
                     RelationshipType = ErrorRelationshipType.Dependent,
@@ -273,9 +344,9 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         return errors;
     }
 
-    private async Task<IEnumerable<RelatedError>> FindErrorsWithSimilarPatternsAsync(ErrorContext context, DependencyGraph graph)
+    private async Task<IEnumerable<RelatedErrorModel>> FindErrorsWithSimilarPatternsAsync(ErrorContext context, DependencyGraph graph)
     {
-        var errors = new List<RelatedError>();
+        var errors = new List<RelatedErrorModel>();
 
         // Find all error nodes
         var errorNodes = graph.Nodes.Values
@@ -296,7 +367,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
 
                 if (_analysis.HaveSimilarPatterns(context, nodeError))
                 {
-                    errors.Add(new RelatedError
+                    errors.Add(new RelatedErrorModel
                     {
                         ErrorId = node.Id,
                         RelationshipType = ErrorRelationshipType.SimilarPattern,

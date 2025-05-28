@@ -5,6 +5,7 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Validation;
 using RuntimeErrorSage.Core.Models.Common;
+using RuntimeErrorSage.Core.Models.Metrics;
 
 namespace RuntimeErrorSage.Core.Interfaces
 {
@@ -43,12 +44,12 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// <param name="value">The metric value</param>
         Task RecordMetricAsync(string remediationId, string metricName, object value);
 
-        /// <summary>
-        /// Gets the metrics history for a specific remediation.
-        /// </summary>
-        /// <param name="remediationId">The remediation ID</param>
-        /// <returns>A dictionary of metric histories</returns>
-        Task<Dictionary<string, List<MetricValue>>> GetMetricsHistoryAsync(string remediationId);
+            /// <summary>
+    /// Gets the metrics history for a specific remediation.
+    /// </summary>
+    /// <param name="remediationId">The remediation ID</param>
+    /// <returns>A dictionary of metric histories</returns>
+    Task<Dictionary<string, List<Models.Remediation.MetricValue>>> GetMetricsHistoryAsync(string remediationId);
 
         /// <summary>
         /// Records the execution of a remediation operation.

@@ -1,21 +1,17 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Core.Models.Remediation
 {
     /// <summary>
-    /// Represents a remediation suggestion for an error.
+    /// Represents a suggested remediation action for an error.
     /// </summary>
     public class RemediationSuggestion
     {
         /// <summary>
         /// Gets or sets the unique identifier of the suggestion.
-        /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// Gets or sets the suggestion identifier.
         /// </summary>
         public string SuggestionId { get; set; } = Guid.NewGuid().ToString();
 
@@ -25,39 +21,39 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public string Title { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the action to be taken.
+        /// Gets or sets the description of the suggestion.
         /// </summary>
-        public string Action { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the strategy name.
+        /// </summary>
+        public string StrategyName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the priority of the suggestion.
         /// </summary>
-        public RemediationPriority Priority { get; set; }
+        public RemediationPriority Priority { get; set; } = RemediationPriority.Medium;
 
         /// <summary>
-        /// Gets or sets the impact of the remediation.
+        /// Gets or sets the confidence level of the suggestion (0-1).
         /// </summary>
-        public RemediationImpact Impact { get; set; } = new();
+        public double ConfidenceLevel { get; set; }
 
         /// <summary>
-        /// Gets or sets the risk level of the remediation.
+        /// Gets or sets the required parameters for the remediation.
         /// </summary>
-        public RemediationRiskLevel Risk { get; set; }
+        public Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Gets or sets the validation requirements.
+        /// Gets or sets the expected outcome of the remediation.
         /// </summary>
-        public RemediationValidation Validation { get; set; } = new();
+        public string ExpectedOutcome { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the correlation ID.
+        /// Gets or sets the potential risks of the remediation.
         /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the error ID.
-        /// </summary>
-        public string ErrorId { get; set; } = string.Empty;
+        public List<string> PotentialRisks { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the timestamp of the suggestion.
@@ -65,13 +61,31 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the confidence score.
+        /// Gets or sets the correlation ID.
         /// </summary>
-        public double ConfidenceScore { get; set; }
+        public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the list of actions.
+        /// Creates a suggestion from a strategy.
         /// </summary>
-        public List<RemediationAction> Actions { get; set; } = new();
+        /// <param name="strategy">The strategy.</param>
+        /// <param name="confidenceLevel">The confidence level.</param>
+        /// <returns>The remediation suggestion.</returns>
+        public static RemediationSuggestion FromStrategy(IRemediationStrategy strategy, double confidenceLevel)
+        {
+            if (strategy == null)
+            {
+                throw new ArgumentNullException(nameof(strategy));
+            }
+
+            return new RemediationSuggestion
+            {
+                StrategyName = strategy.Name,
+                Priority = strategy.Priority,
+                Description = strategy.Description,
+                Parameters = new Dictionary<string, object>(strategy.Parameters),
+                ConfidenceLevel = confidenceLevel
+            };
+        }
     }
 } 

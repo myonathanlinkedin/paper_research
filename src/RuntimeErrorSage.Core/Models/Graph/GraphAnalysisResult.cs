@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.LLM;
 
@@ -28,7 +29,7 @@ public class GraphAnalysisResult
     /// <summary>
     /// Gets or sets the related errors found during analysis.
     /// </summary>
-    public List<RelatedError> RelatedErrors { get; set; } = new();
+    public List<RuntimeErrorSage.Core.Models.Error.RelatedError> RelatedErrors { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the analysis start time.
@@ -74,4 +75,39 @@ public class GraphAnalysisResult
     /// Gets or sets the analysis metrics.
     /// </summary>
     public Dictionary<string, double> Metrics { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the list of nodes in the graph.
+    /// </summary>
+    public List<DependencyNode> Nodes { get; set; } = new List<DependencyNode>();
+
+    /// <summary>
+    /// Gets or sets the list of edges in the graph.
+    /// </summary>
+    public List<DependencyEdge> Edges { get; set; } = new List<DependencyEdge>();
+
+    /// <summary>
+    /// Gets or sets the root node.
+    /// </summary>
+    public DependencyNode RootNode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error context.
+    /// </summary>
+    public ErrorContext Context { get; set; }
+
+    /// <summary>
+    /// Gets or sets the component ID.
+    /// </summary>
+    public string ComponentId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the component name.
+    /// </summary>
+    public string ComponentName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets additional context.
+    /// </summary>
+    public Dictionary<string, object> AdditionalContext { get; set; } = new Dictionary<string, object>();
 }

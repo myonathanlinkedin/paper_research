@@ -9,7 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using MetricsStepMetrics = RuntimeErrorSage.Core.Models.Metrics.StepMetrics;
+using RuntimeErrorSage.Core.Models.Metrics;
 using SeverityLevel = RuntimeErrorSage.Core.Models.Enums.SeverityLevel;
 using ValidationError = RuntimeErrorSage.Core.Models.Validation.ValidationError;
 using ValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
@@ -33,7 +33,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
     private readonly Process _currentProcess;
     private readonly Timer _collectionTimer;
     private readonly ConcurrentDictionary<string, List<RemediationMetrics>> _metricsHistory;
-    private readonly ConcurrentDictionary<string, List<MetricsStepMetrics>> _stepMetricsHistory;
+    private readonly ConcurrentDictionary<string, List<StepMetrics>> _stepMetricsHistory;
     private readonly ConcurrentDictionary<string, RemediationResult> _remediationResults;
     private readonly ConcurrentDictionary<string, RemediationActionResult> _actionResults;
     private readonly object _lock = new();
@@ -44,8 +44,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
     private readonly ILLMClient _llmClient;
     private readonly Dictionary<string, EventId> _eventIds;
     private readonly Func<List<RemediationMetrics>> _remediationMetricsListFactory;
-    private readonly Func<List<MetricsStepMetrics>> _stepMetricsListFactory;
-    private readonly Func<List<MetricValue>> _metricValueListFactory;
+    private readonly Func<List<StepMetrics>> _stepMetricsListFactory;
+    private readonly Func<List<Models.Remediation.MetricValue>> _metricValueListFactory;
     private readonly Func<List<ValidationWarning>> _validationWarningListFactory;
 
     public RemediationMetricsCollector(
@@ -55,13 +55,13 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         IRemediationRegistry registry,
         ILLMClient llmClient,
         ConcurrentDictionary<string, List<RemediationMetrics>>? metricsHistory = null,
-        ConcurrentDictionary<string, List<MetricsStepMetrics>>? stepMetricsHistory = null,
+        ConcurrentDictionary<string, List<StepMetrics>>? stepMetricsHistory = null,
         ConcurrentDictionary<string, RemediationResult>? remediationResults = null,
         ConcurrentDictionary<string, RemediationActionResult>? actionResults = null,
         Dictionary<string, EventId>? eventIds = null,
         Func<List<RemediationMetrics>>? remediationMetricsListFactory = null,
-        Func<List<MetricsStepMetrics>>? stepMetricsListFactory = null,
-        Func<List<MetricValue>>? metricValueListFactory = null,
+        Func<List<StepMetrics>>? stepMetricsListFactory = null,
+        Func<List<Models.Remediation.MetricValue>>? metricValueListFactory = null,
         Func<List<ValidationWarning>>? validationWarningListFactory = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -71,7 +71,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
         _metricsHistory = metricsHistory ?? new ConcurrentDictionary<string, List<RemediationMetrics>>();
-        _stepMetricsHistory = stepMetricsHistory ?? new ConcurrentDictionary<string, List<MetricsStepMetrics>>();
+        _stepMetricsHistory = stepMetricsHistory ?? new ConcurrentDictionary<string, List<StepMetrics>>();
         _remediationResults = remediationResults ?? new ConcurrentDictionary<string, RemediationResult>();
         _actionResults = actionResults ?? new ConcurrentDictionary<string, RemediationActionResult>();
         _eventIds = eventIds ?? new Dictionary<string, EventId>
@@ -92,8 +92,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         };
 
         _remediationMetricsListFactory = remediationMetricsListFactory ?? (() => new List<RemediationMetrics>());
-        _stepMetricsListFactory = stepMetricsListFactory ?? (() => new List<MetricsStepMetrics>());
-        _metricValueListFactory = metricValueListFactory ?? (() => new List<MetricValue>());
+        _stepMetricsListFactory = stepMetricsListFactory ?? (() => new List<StepMetrics>());
+        _metricValueListFactory = metricValueListFactory ?? (() => new List<Models.Remediation.MetricValue>());
         _validationWarningListFactory = validationWarningListFactory ?? (() => new List<ValidationWarning>());
 
         // Setup collection timer with dueTime and period in milliseconds
@@ -206,7 +206,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
     }
 
     /// <inheritdoc/>
-    public async Task<Dictionary<string, List<MetricValue>>> GetMetricsHistoryAsync(string remediationId)
+    public async Task<Dictionary<string, List<Models.Remediation.MetricValue>>> GetMetricsHistoryAsync(string remediationId)
     {
         ArgumentNullException.ThrowIfNull(remediationId);
         ThrowIfDisposed();
@@ -216,7 +216,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             _logger.LogInformation(_eventIds[nameof(GetMetricsHistoryAsync)], 
                 "Getting metrics history for remediation {RemediationId}", remediationId);
 
-            var history = new Dictionary<string, List<MetricValue>>();
+            var history = new Dictionary<string, List<Models.Remediation.MetricValue>>();
             if (_metricsHistory.TryGetValue(remediationId, out var metrics))
             {
                 foreach (var metric in metrics)
@@ -227,7 +227,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                         {
                             history[key] = _metricValueListFactory();
                         }
-                        history[key].Add(new MetricValue
+                        history[key].Add(new Models.Remediation.MetricValue
                         {
                             Name = key,
                             Value = value,
@@ -393,7 +393,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             _logger.LogInformation(_eventIds[nameof(RecordStepMetricsAsync)], 
                 "Recording step metrics for {StepId}", metrics.StepId);
 
-            var metricsStepMetrics = new MetricsStepMetrics
+            var metricsStepMetrics = new StepMetrics
             {
                 StepId = metrics.StepId,
                 ActionId = metrics.StepName,

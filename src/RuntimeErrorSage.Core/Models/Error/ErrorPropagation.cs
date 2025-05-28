@@ -5,7 +5,7 @@ using RuntimeErrorSage.Core.Models.Enums;
 namespace RuntimeErrorSage.Core.Models.Error;
 
 /// <summary>
-/// Represents error propagation information in the system.
+/// Represents the propagation of an error through components in a system.
 /// </summary>
 public class ErrorPropagation
 {
@@ -68,4 +68,24 @@ public class ErrorPropagation
     /// Gets or sets the propagation impact.
     /// </summary>
     public Dictionary<string, ImpactSeverity> Impact { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the propagation paths through the system.
+    /// </summary>
+    public List<List<string>> PropagationPaths { get; set; } = new List<List<string>>();
+
+    /// <summary>
+    /// Gets or sets the severity of the error in each component (component id -> severity).
+    /// </summary>
+    public Dictionary<string, double> ComponentSeverity { get; set; } = new Dictionary<string, double>();
+
+    /// <summary>
+    /// Gets or sets the impact score of the error propagation (0-1).
+    /// </summary>
+    public double ImpactScore { get; set; }
+
+    /// <summary>
+    /// Gets or sets the source component where the error originated.
+    /// </summary>
+    public string SourceComponent { get; set; } = string.Empty;
 } 

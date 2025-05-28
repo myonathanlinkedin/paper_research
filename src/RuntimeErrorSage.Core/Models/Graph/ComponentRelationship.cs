@@ -4,12 +4,12 @@ using RuntimeErrorSage.Core.Models.Enums;
 namespace RuntimeErrorSage.Core.Models.Graph;
 
 /// <summary>
-/// Represents a relationship between components in the system.
+/// Represents a relationship between two components in a system.
 /// </summary>
 public class ComponentRelationship
 {
     /// <summary>
-    /// Gets or sets the unique identifier for the relationship.
+    /// Gets or sets the unique identifier of the relationship.
     /// </summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
@@ -24,29 +24,19 @@ public class ComponentRelationship
     public string TargetComponent { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the type of relationship.
+    /// Gets or sets the relationship type.
     /// </summary>
     public RelationshipType RelationshipType { get; set; }
 
     /// <summary>
-    /// Gets or sets the strength of the relationship (0-1).
+    /// Gets or sets the relationship strength (0-1).
     /// </summary>
     public double Strength { get; set; }
 
     /// <summary>
-    /// Gets or sets the metadata associated with the relationship.
-    /// </summary>
-    public Dictionary<string, object> Metadata { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the timestamp when the relationship was created.
+    /// Gets or sets the timestamp of the relationship.
     /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// Gets or sets whether the relationship is bidirectional.
-    /// </summary>
-    public bool IsBidirectional { get; set; }
 
     /// <summary>
     /// Gets or sets the description of the relationship.
@@ -54,12 +44,7 @@ public class ComponentRelationship
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the weight of the relationship.
+    /// Gets or sets whether the relationship is bi-directional.
     /// </summary>
-    public double Weight { get; set; }
-
-    /// <summary>
-    /// Gets or sets the confidence level of the relationship (0-1).
-    /// </summary>
-    public double Confidence { get; set; }
+    public bool IsBidirectional { get; set; }
 } 

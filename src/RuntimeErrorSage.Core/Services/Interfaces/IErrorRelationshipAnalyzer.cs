@@ -1,6 +1,8 @@
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using RelatedErrorModel = RuntimeErrorSage.Core.Models.Error.RelatedError;
 
 namespace RuntimeErrorSage.Core.Services.Interfaces;
@@ -40,10 +42,10 @@ public interface IErrorRelationshipAnalyzer
     Task<IEnumerable<RelatedErrorModel>> AnalyzeRelationshipsAsync(ErrorContext context);
 
     /// <summary>
-    /// Gets the error relationship type between two errors.
+    /// Gets the error relationship between two errors.
     /// </summary>
     /// <param name="source">The source error.</param>
     /// <param name="target">The target error.</param>
-    /// <returns>The relationship type between the errors.</returns>
+    /// <returns>The relationship between the errors.</returns>
     ErrorRelationship GetRelationshipType(RuntimeError source, RuntimeError target);
 } 

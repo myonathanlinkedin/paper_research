@@ -1,33 +1,48 @@
 namespace RuntimeErrorSage.Core.Models.Enums
 {
     /// <summary>
-    /// Defines the types of relationships between errors.
+    /// Represents the type of relationship between errors.
     /// </summary>
     public enum ErrorRelationshipType
     {
         /// <summary>
-        /// Parent-child relationship where one error is caused by another.
+        /// The relationship type is unknown.
         /// </summary>
-        ParentChild = 0,
+        Unknown = 0,
 
         /// <summary>
-        /// Sibling relationship where errors are related but not directly dependent.
+        /// One error causes another.
         /// </summary>
-        Sibling = 1,
+        Causes = 1,
 
         /// <summary>
-        /// Correlation relationship where errors tend to occur together.
+        /// One error is caused by another.
         /// </summary>
-        Correlated = 2,
+        CausedBy = 2,
 
         /// <summary>
-        /// Dependency relationship where one error depends on another.
+        /// One error is related to another.
         /// </summary>
-        Dependent = 3,
+        RelatedTo = 3,
 
         /// <summary>
-        /// No direct relationship between errors.
+        /// One error is similar to another.
         /// </summary>
-        None = 4
+        SimilarTo = 4,
+
+        /// <summary>
+        /// One error depends on another.
+        /// </summary>
+        DependsOn = 5,
+
+        /// <summary>
+        /// One error is a parent of another.
+        /// </summary>
+        ParentOf = 6,
+
+        /// <summary>
+        /// One error is a child of another.
+        /// </summary>
+        ChildOf = 7
     }
 } 

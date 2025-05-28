@@ -117,7 +117,7 @@ namespace RuntimeErrorSage.Core.Remediation
             return relationships;
         }
 
-        private async Task<ErrorPropagation> AnalyzeErrorPropagationAsync(ErrorContext context)
+        private async Task<Models.Error.ErrorPropagation> AnalyzeErrorPropagationAsync(ErrorContext context)
         {
             var affectedComponents = new HashSet<string>();
             var propagationPaths = new List<List<string>>();
@@ -168,7 +168,7 @@ namespace RuntimeErrorSage.Core.Remediation
             }
 
             await Task.CompletedTask;
-            return new ErrorPropagation
+            return new Models.Error.ErrorPropagation
             {
                 AffectedComponents = affectedComponents.ToList(),
                 PropagationPaths = propagationPaths,
