@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Options;
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RemediationResult = RuntimeErrorSage.Core.Models.Remediation.RemediationResult;
 using RuntimeErrorSage.Core.Analysis;
 using RuntimeErrorSage.Core.Remediation;
@@ -47,7 +46,7 @@ namespace RuntimeErrorSage.Core.Runtime.Interfaces
         /// Registers a custom remediation strategy.
         /// </summary>
         /// <param name="strategy">The remediation strategy to register</param>
-        void RegisterRemediationStrategy(IRemediationStrategy strategy);
+        void RegisterRemediationStrategy(RuntimeErrorSage.Core.Models.Remediation.Interfaces.IRemediationStrategy strategy);
 
         /// <summary>
         /// Configures the service with specific settings.
