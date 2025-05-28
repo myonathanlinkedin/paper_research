@@ -1,25 +1,45 @@
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Enums;
 
-namespace RuntimeErrorSage.Core.Models.Graph;
-
-/// <summary>
-/// Represents the health status of a component.
-/// </summary>
-public class ComponentHealth
+namespace RuntimeErrorSage.Core.Models.Graph
 {
     /// <summary>
-    /// Gets or sets the name of the component.
+    /// Represents the health status of a component in the dependency graph.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public class ComponentHealth
+    {
+        /// <summary>
+        /// Gets or sets the component id.
+        /// </summary>
+        public string ComponentId { get; set; }
 
-    /// <summary>
-    /// Gets or sets the health status.
-    /// </summary>
-    public HealthStatus Status { get; set; }
-
-    /// <summary>
-    /// Gets or sets the metrics associated with the component.
-    /// </summary>
-    public Dictionary<string, double> Metrics { get; set; } = new();
+        /// <summary>
+        /// Gets or sets the component name.
+        /// </summary>
+        public string ComponentName { get; set; }
+        
+        /// <summary>
+        /// Gets or sets whether the component is healthy.
+        /// </summary>
+        public bool IsHealthy { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the health score (0-100).
+        /// </summary>
+        public int HealthScore { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the status message.
+        /// </summary>
+        public string StatusMessage { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the health issues.
+        /// </summary>
+        public List<string> Issues { get; set; } = new();
+        
+        /// <summary>
+        /// Gets or sets additional metrics.
+        /// </summary>
+        public Dictionary<string, object> Metrics { get; set; } = new();
+    }
 } 

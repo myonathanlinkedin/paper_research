@@ -6,6 +6,8 @@ using RuntimeErrorSage.Core.Models.Metrics;
 using RuntimeErrorSage.Core.Models.Common;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Options;
 
 namespace RuntimeErrorSage.Core.Interfaces
 {
@@ -122,5 +124,25 @@ namespace RuntimeErrorSage.Core.Interfaces
         /// <param name="actionId">The action identifier.</param>
         /// <returns>The action status.</returns>
         Task<RemediationResult> GetActionStatusAsync(string actionId);
+
+        /// <summary>
+        /// Registers a remediation strategy.
+        /// </summary>
+        /// <param name="strategy">The strategy to register.</param>
+        void RegisterStrategy(IRemediationStrategy strategy);
+
+        /// <summary>
+        /// Configures the service with specific options.
+        /// </summary>
+        /// <param name="options">The configuration options.</param>
+        void Configure(RuntimeErrorSageOptions options);
+
+        /// <summary>
+        /// Remediates an error based on the analysis result.
+        /// </summary>
+        /// <param name="analysis">The error analysis result.</param>
+        /// <param name="context">The error context.</param>
+        /// <returns>The remediation result.</returns>
+        Task<RemediationResult> RemediateAsync(ErrorAnalysisResult analysis, ErrorContext context);
     }
 } 

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Models.Enums;
+using System.Linq;
 
 namespace RuntimeErrorSage.Core.Services.Graph
 {
@@ -36,7 +37,7 @@ namespace RuntimeErrorSage.Core.Services.Graph
             {
                 ErrorId = errorId,
                 Timestamp = DateTime.UtcNow,
-                ComponentHealth = new Dictionary<string, ComponentHealth>(),
+                ComponentHealth = new Dictionary<string, Models.Graph.ComponentHealth>(),
                 ComponentRelationships = new List<ComponentRelationship>(),
                 Metadata = new Dictionary<string, object>()
             };
@@ -55,13 +56,13 @@ namespace RuntimeErrorSage.Core.Services.Graph
                 // Analyze component health
                 foreach (var component in graph.Components)
                 {
-                    var health = new ComponentHealth
+                    var health = new Models.Graph.ComponentHealth
                     {
                         ComponentId = component.Id,
-                        Status = HealthStatusEnum.Unknown,
-                        HealthScore = 0,
-                        Metrics = new Dictionary<string, double>(),
-                        LastChecked = DateTime.UtcNow
+                        ComponentName = component.Name,
+                        IsHealthy = true,
+                        HealthScore = 100,
+                        Metrics = new Dictionary<string, object>()
                     };
 
                     // Calculate health score based on metrics
@@ -143,13 +144,15 @@ namespace RuntimeErrorSage.Core.Services.Graph
             return factors > 0 ? score / factors : 0;
         }
 
-        public async Task<ComponentHealth> AnalyzeComponentHealthAsync(string componentId)
+        public async Task<Models.Graph.ComponentHealth> AnalyzeComponentHealthAsync(string componentId)
         {
-            return new ComponentHealth
+            return new Models.Graph.ComponentHealth
             {
-                Name = componentId,
-                Status = HealthStatusEnum.Unknown,
-                Metrics = new Dictionary<string, double>()
+                ComponentId = componentId,
+                ComponentName = componentId,
+                IsHealthy = true,
+                HealthScore = 100,
+                Metrics = new Dictionary<string, object>()
             };
         }
     }

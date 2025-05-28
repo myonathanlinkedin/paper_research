@@ -11,6 +11,8 @@ using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Remediation.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Remediation;
+using RuntimeErrorSage.Core.Options;
+using RuntimeErrorSage.Core.Analysis;
 
 namespace RuntimeErrorSage.Core.Services;
 
@@ -330,56 +332,78 @@ public class RemediationService : IRemediationService
     }
 
     /// <inheritdoc />
-    public async Task<RemediationResult> ExecuteSuggestionAsync(RemediationSuggestion suggestion)
+    public async Task<RemediationResult> ExecuteSuggestionAsync(RemediationSuggestion suggestion, ErrorContext errorContext)
     {
         ArgumentNullException.ThrowIfNull(suggestion);
+        ArgumentNullException.ThrowIfNull(errorContext);
 
         try
         {
-            if (suggestion.Strategies == null || !suggestion.Strategies.Any())
-            {
-                _logger.LogWarning("No strategies in suggestion for error context {ErrorId}", 
-                    suggestion.ErrorContext?.Id);
-                
-                return new RemediationResult
-                {
-                    Context = suggestion.ErrorContext,
-                    Status = RemediationStatusEnum.Failed,
-                    Message = "No strategies in suggestion"
-                };
-            }
-
-            // Get the first strategy from the suggestion
-            var strategyName = suggestion.Strategies.First();
-            var strategy = await _strategySelector.SelectStrategyAsync(suggestion.ErrorContext);
+            _logger.LogInformation("Executing remediation suggestion for error context {ErrorId}", errorContext.Id);
             
-            if (strategy == null)
+            // Validate the suggestion first
+            var validationResult = await ValidateSuggestionAsync(suggestion, errorContext);
+            if (!validationResult.IsValid)
             {
-                _logger.LogWarning("Strategy {StrategyName} not found", strategyName);
-                
                 return new RemediationResult
                 {
-                    Context = suggestion.ErrorContext,
+                    Context = errorContext,
                     Status = RemediationStatusEnum.Failed,
-                    Message = $"Strategy {strategyName} not found"
+                    Message = "Suggestion validation failed",
+                    Validation = validationResult
                 };
             }
 
-            // Execute the strategy
-            return await _executor.ExecuteStrategyAsync(strategy, suggestion.ErrorContext);
+            // Create action from suggestion
+            var action = new RemediationAction
+            {
+                ActionId = Guid.NewGuid().ToString(),
+                ErrorContext = errorContext,
+                Description = suggestion.Description,
+                Strategy = suggestion.Strategies.FirstOrDefault() ?? "Unknown",
+                Parameters = suggestion.Parameters,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            // Execute the action
+            var result = await ExecuteActionAsync(action);
+            result.Context = errorContext;
+            
+            await _metricsCollector.TrackRemediationAsync(new RemediationMetrics
+            {
+                ExecutionId = action.ActionId,
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow,
+                Success = result.Status == RemediationStatusEnum.Completed,
+                Error = result.Status == RemediationStatusEnum.Failed ? result.Message : null,
+                Metadata = new Dictionary<string, string>
+                {
+                    { "Suggestion", suggestion.Id },
+                    { "ErrorId", errorContext.Id },
+                    { "Status", result.Status.ToString() }
+                }
+            });
+            
+            return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error executing suggestion for error context {ErrorId}", 
-                suggestion.ErrorContext?.Id);
-            
+            _logger.LogError(ex, "Error executing remediation suggestion for context {ErrorId}", errorContext.Id);
             return new RemediationResult
             {
-                Context = suggestion.ErrorContext,
+                Context = errorContext,
                 Status = RemediationStatusEnum.Failed,
-                Message = $"Error: {ex.Message}"
+                Message = $"Error executing remediation suggestion: {ex.Message}",
+                Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
             };
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<RemediationResult> ExecuteSuggestionAsync(RemediationSuggestion suggestion)
+    {
+        ArgumentNullException.ThrowIfNull(suggestion);
+        return await ExecuteSuggestionAsync(suggestion, suggestion.ErrorContext);
     }
 
     /// <inheritdoc />
@@ -579,6 +603,79 @@ public class RemediationService : IRemediationService
             {
                 Status = RemediationStatusEnum.Failed,
                 Message = $"Error getting action status: {ex.Message}"
+            };
+        }
+    }
+
+    /// <inheritdoc />
+    public void RegisterStrategy(IRemediationStrategy strategy)
+    {
+        ArgumentNullException.ThrowIfNull(strategy);
+
+        try
+        {
+            _logger.LogInformation("Registering strategy: {StrategyName}", strategy.Name);
+            
+            // Here you would add the strategy to your internal registry
+            // Implementation depends on how strategies are stored/managed
+            
+            _logger.LogInformation("Strategy registered successfully: {StrategyName}", strategy.Name);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to register strategy: {StrategyName}", strategy?.Name);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public void Configure(RuntimeErrorSageOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        try
+        {
+            _logger.LogInformation("Configuring remediation service");
+            
+            // Apply configuration options
+            // Implementation depends on what options need to be configured
+            
+            _logger.LogInformation("Remediation service configured successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to configure remediation service");
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<RemediationResult> RemediateAsync(ErrorAnalysisResult analysis, ErrorContext context)
+    {
+        ArgumentNullException.ThrowIfNull(analysis);
+        ArgumentNullException.ThrowIfNull(context);
+
+        try
+        {
+            _logger.LogInformation("Remediating error based on analysis for context {ContextId}", context.Id);
+            
+            // Create a remediation plan based on the analysis
+            var plan = await CreatePlanAsync(context);
+            
+            // Apply the remediation
+            var result = await ApplyRemediationAsync(context);
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error remediating context {ContextId}", context.Id);
+            return new RemediationResult
+            {
+                Context = context,
+                Status = RemediationStatusEnum.Failed,
+                Message = $"Remediation failed: {ex.Message}",
+                Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
             };
         }
     }

@@ -201,7 +201,7 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
     }
 
     /// <inheritdoc />
-    public void RegisterRemediationStrategy(Models.Remediation.Interfaces.IRemediationStrategy strategy)
+    public void RegisterRemediationStrategy(Remediation.Interfaces.IRemediationStrategy strategy)
     {
         try
         {
