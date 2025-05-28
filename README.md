@@ -147,7 +147,15 @@ This is a research project. Contributions should focus on:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+📜 License - Apache License 2.0 (TL;DR)
+This project follows the Apache License 2.0, which means:
+
+✅ You can use, modify, and distribute the code freely.
+✅ You must include the original license when distributing.
+✅ You must include the NOTICE file if one is provided.
+✅ You can use this in personal & commercial projects.
+✅ No warranties – use at your own risk! 
+For full details, check the Apache License 2.0.
 
 ## Acknowledgments
 
