@@ -145,17 +145,17 @@ This is a research project. Contributions should focus on:
 - Adding new test cases
 - Documenting findings
 
-## License
+## 📜 License - Apache License 2.0 (TL;DR)
 
-📜 License - Apache License 2.0 (TL;DR)
 This project follows the Apache License 2.0, which means:
 
-✅ You can use, modify, and distribute the code freely.
-✅ You must include the original license when distributing.
-✅ You must include the NOTICE file if one is provided.
-✅ You can use this in personal & commercial projects.
-✅ No warranties – use at your own risk! 
-For full details, check the Apache License 2.0.
+- ✅ You can use, modify, and distribute the code freely.
+- ✅ You must include the original license when distributing.
+- ✅ You must include the NOTICE file if one is provided.
+- ✅ You can use this in personal & commercial projects.
+- ✅ No warranties – use at your own risk!
+
+For full details, see the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 ## Acknowledgments
 
