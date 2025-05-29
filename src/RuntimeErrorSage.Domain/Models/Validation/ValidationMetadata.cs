@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Models.Validation
@@ -7,61 +8,167 @@ namespace RuntimeErrorSage.Application.Models.Validation
     /// <summary>
     /// Represents metadata for a validation operation.
     /// </summary>
-    public class ValidationMetadata
+    public sealed class ValidationMetadata
     {
-        /// <summary>
-        /// Gets or sets the unique identifier of the validation.
-        /// </summary>
-        public string ValidationId { get; set; } = Guid.NewGuid().ToString();
+        private readonly Dictionary<string, object> _metadata = new();
+        private double _durationMs;
 
         /// <summary>
-        /// Gets or sets the name of the validator.
+        /// Gets the unique identifier of the validation.
         /// </summary>
-        public string ValidatorName { get; set; } = string.Empty;
+        public string ValidationId { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the version of the validator.
+        /// Gets the name of the validator.
         /// </summary>
-        public string ValidatorVersion { get; set; } = string.Empty;
+        public string ValidatorName { get; }
 
         /// <summary>
-        /// Gets or sets the type of validation.
+        /// Gets the version of the validator.
         /// </summary>
-        public ValidationType Type { get; set; }
+        public string ValidatorVersion { get; }
 
         /// <summary>
-        /// Gets or sets the scope of validation.
+        /// Gets the type of validation.
         /// </summary>
-        public ValidationScope Scope { get; set; }
+        public ValidationType Type { get; }
 
         /// <summary>
-        /// Gets or sets the level of validation.
+        /// Gets the scope of validation.
         /// </summary>
-        public ValidationLevel Level { get; set; }
+        public ValidationScope Scope { get; }
 
         /// <summary>
-        /// Gets or sets the category of validation.
+        /// Gets the level of validation.
         /// </summary>
-        public ValidationCategory Category { get; set; }
+        public ValidationLevel Level { get; }
 
         /// <summary>
-        /// Gets or sets the stage of validation.
+        /// Gets the category of validation.
         /// </summary>
-        public ValidationStage Stage { get; set; }
+        public ValidationCategory Category { get; }
 
         /// <summary>
-        /// Gets or sets the timestamp when the validation was performed.
+        /// Gets the stage of validation.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public ValidationStage Stage { get; }
 
         /// <summary>
-        /// Gets or sets the duration of the validation in milliseconds.
+        /// Gets the timestamp when the validation was performed.
         /// </summary>
-        public double DurationMs { get; set; }
+        public DateTime Timestamp { get; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets any additional metadata.
+        /// Gets the duration of the validation in milliseconds.
         /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public double DurationMs => _durationMs;
+
+        /// <summary>
+        /// Gets any additional metadata.
+        /// </summary>
+        public IReadOnlyDictionary<string, object> Metadata => new ReadOnlyDictionary<string, object>(_metadata);
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValidationMetadata"/> class.
+        /// </summary>
+        public ValidationMetadata()
+            : this(string.Empty, string.Empty, ValidationType.General, ValidationScope.Local, ValidationLevel.Normal, ValidationCategory.General, ValidationStage.Initial)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValidationMetadata"/> class.
+        /// </summary>
+        /// <param name="validatorName">The name of the validator.</param>
+        /// <param name="validatorVersion">The version of the validator.</param>
+        /// <param name="type">The type of validation.</param>
+        /// <param name="scope">The scope of validation.</param>
+        /// <param name="level">The level of validation.</param>
+        /// <param name="category">The category of validation.</param>
+        /// <param name="stage">The stage of validation.</param>
+        /// <exception cref="ArgumentNullException">Thrown when validatorName or validatorVersion is null.</exception>
+        public ValidationMetadata(
+            string validatorName,
+            string validatorVersion,
+            ValidationType type,
+            ValidationScope scope,
+            ValidationLevel level,
+            ValidationCategory category,
+            ValidationStage stage)
+        {
+            ValidatorName = validatorName ?? throw new ArgumentNullException(nameof(validatorName));
+            ValidatorVersion = validatorVersion ?? throw new ArgumentNullException(nameof(validatorVersion));
+            Type = type;
+            Scope = scope;
+            Level = level;
+            Category = category;
+            Stage = stage;
+        }
+
+        /// <summary>
+        /// Sets the duration of the validation in milliseconds.
+        /// </summary>
+        /// <param name="durationMs">The duration in milliseconds.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when durationMs is negative.</exception>
+        public void SetDuration(double durationMs)
+        {
+            if (durationMs < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(durationMs), "Duration cannot be negative.");
+            }
+
+            _durationMs = durationMs;
+        }
+
+        /// <summary>
+        /// Adds metadata to the validation.
+        /// </summary>
+        /// <param name="key">The metadata key.</param>
+        /// <param name="value">The metadata value.</param>
+        /// <exception cref="ArgumentException">Thrown when key is null or whitespace.</exception>
+        public void AddMetadata(string key, object value)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new ArgumentException("Metadata key cannot be null or whitespace", nameof(key));
+            }
+
+            _metadata[key] = value;
+        }
+
+        /// <summary>
+        /// Gets a metadata value from the validation.
+        /// </summary>
+        /// <param name="key">The metadata key.</param>
+        /// <returns>The metadata value, or null if not found.</returns>
+        /// <exception cref="ArgumentException">Thrown when key is null or whitespace.</exception>
+        public object GetMetadata(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new ArgumentException("Metadata key cannot be null or whitespace", nameof(key));
+            }
+
+            return _metadata.TryGetValue(key, out var value) ? value : null;
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="ValidationMetadata"/> with the specified validator information.
+        /// </summary>
+        /// <param name="validatorName">The name of the validator.</param>
+        /// <param name="validatorVersion">The version of the validator.</param>
+        /// <returns>A new instance of <see cref="ValidationMetadata"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when validatorName or validatorVersion is null.</exception>
+        public static ValidationMetadata Create(string validatorName, string validatorVersion)
+        {
+            return new ValidationMetadata(
+                validatorName,
+                validatorVersion,
+                ValidationType.General,
+                ValidationScope.Local,
+                ValidationLevel.Normal,
+                ValidationCategory.General,
+                ValidationStage.Initial);
+        }
     }
 }

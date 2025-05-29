@@ -9,241 +9,195 @@ namespace RuntimeErrorSage.Application.Models.Validation
     /// <summary>
     /// Represents the result of a validation.
     /// </summary>
-    public class ValidationResult
+    public sealed class ValidationResult
     {
-        /// <summary>
-        /// Gets or sets the ID of the action that was validated.
-        /// </summary>
-        public string ActionId { get; set; }
+        private readonly List<string> _errors = new();
+        private readonly List<string> _warnings = new();
+        private readonly List<string> _validationRules = new();
+        private readonly List<string> _messages = new();
+        private readonly Dictionary<string, object> _metadata = new();
+        private readonly List<ValidationSuggestion> _suggestions = new();
+        private readonly string _actionId;
+        private readonly DateTime _timestamp = DateTime.UtcNow;
+        private readonly bool _isValid;
+        private readonly long _durationMs;
+        private readonly ValidationSeverity _severity;
+        private readonly ValidationStatus _status;
+        private readonly ValidationContext _context;
+        private readonly MetricsValidation _metrics;
+        private readonly string _correlationId;
 
         /// <summary>
-        /// Gets or sets the timestamp of the validation.
+        /// Gets the ID of the action that was validated.
         /// </summary>
-        public DateTime Timestamp { get; set; }
+        public string ActionId => _actionId;
 
         /// <summary>
-        /// Gets or sets whether the validation was successful.
+        /// Gets the timestamp of the validation.
         /// </summary>
-        public bool IsValid { get; set; }
+        public DateTime Timestamp => _timestamp;
 
         /// <summary>
-        /// Gets or sets the list of validation errors.
+        /// Gets whether the validation was successful.
         /// </summary>
-        public List<string> Errors { get; set; } = new List<string>();
+        public bool IsValid => _isValid;
 
         /// <summary>
-        /// Gets or sets the list of validation warnings.
+        /// Gets the list of validation errors.
         /// </summary>
-        public List<string> Warnings { get; set; } = new List<string>();
+        public IReadOnlyList<string> Errors => new ReadOnlyCollection<string>(_errors);
 
         /// <summary>
-        /// Gets or sets the list of validation rules that were applied.
+        /// Gets the list of validation warnings.
         /// </summary>
-        public List<string> ValidationRules { get; set; } = new List<string>();
+        public IReadOnlyList<string> Warnings => new ReadOnlyCollection<string>(_warnings);
 
         /// <summary>
-        /// Gets or sets the validation duration in milliseconds.
+        /// Gets the list of validation rules that were applied.
         /// </summary>
-        public long DurationMs { get; set; }
+        public IReadOnlyList<string> ValidationRules => new ReadOnlyCollection<string>(_validationRules);
 
         /// <summary>
-        /// Gets or sets the validation messages.
+        /// Gets the validation duration in milliseconds.
         /// </summary>
-        public List<string> Messages { get; set; } = new List<string>();
+        public long DurationMs => _durationMs;
 
         /// <summary>
-        /// Gets or sets additional metadata.
+        /// Gets the validation messages.
         /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+        public IReadOnlyList<string> Messages => new ReadOnlyCollection<string>(_messages);
 
         /// <summary>
-        /// Gets or sets the severity of the validation result.
+        /// Gets the additional metadata.
         /// </summary>
-        public ValidationSeverity Severity { get; set; } = ValidationSeverity.Info;
+        public IReadOnlyDictionary<string, object> Metadata => new ReadOnlyDictionary<string, object>(_metadata);
 
         /// <summary>
-        /// Gets or sets the validation status.
+        /// Gets the severity of the validation result.
         /// </summary>
-        public ValidationStatus Status { get; set; } = ValidationStatus.Pending;
+        public ValidationSeverity Severity => _severity;
 
         /// <summary>
-        /// Gets or sets the validation context.
+        /// Gets the validation status.
         /// </summary>
-        public ValidationContext Context { get; set; }
+        public ValidationStatus Status => _status;
 
         /// <summary>
-        /// Gets or sets the validation suggestions.
+        /// Gets the validation context.
         /// </summary>
-        public List<ValidationSuggestion> Suggestions { get; set; } = new List<ValidationSuggestion>();
+        public ValidationContext Context => _context;
 
         /// <summary>
-        /// Gets or sets the validation metrics.
+        /// Gets the validation suggestions.
         /// </summary>
-        public MetricsValidation Metrics { get; set; }
+        public IReadOnlyList<ValidationSuggestion> Suggestions => new ReadOnlyCollection<ValidationSuggestion>(_suggestions);
 
         /// <summary>
-        /// Gets or sets the correlation ID for tracking related validations.
+        /// Gets the validation metrics.
         /// </summary>
-        public string CorrelationId { get; set; }
+        public MetricsValidation Metrics => _metrics;
+
+        /// <summary>
+        /// Gets the correlation ID for tracking related validations.
+        /// </summary>
+        public string CorrelationId => _correlationId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidationResult"/> class.
         /// </summary>
-        public ValidationResult()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ValidationResult"/> class.
-        /// </summary>
+        /// <param name="context">The validation context.</param>
         /// <param name="isValid">Whether the validation was successful.</param>
-        public ValidationResult(bool isValid)
+        /// <param name="severity">The validation severity.</param>
+        /// <param name="status">The validation status.</param>
+        /// <param name="metrics">The validation metrics.</param>
+        /// <param name="correlationId">The correlation ID.</param>
+        /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
+        public ValidationResult(
+            ValidationContext context,
+            bool isValid = true,
+            ValidationSeverity severity = ValidationSeverity.Info,
+            ValidationStatus status = ValidationStatus.Pending,
+            MetricsValidation metrics = null,
+            string correlationId = null)
         {
-            IsValid = isValid;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ValidationResult"/> class.
-        /// </summary>
-        /// <param name="isValid">Whether the validation was successful.</param>
-        /// <param name="message">The validation message.</param>
-        public ValidationResult(bool isValid, string message)
-        {
-            IsValid = isValid;
-            if (!string.IsNullOrEmpty(message))
-            {
-                Messages.Add(message);
-            }
-        }
-
-        /// <summary>
-        /// Adds an error to the validation result.
-        /// </summary>
-        /// <param name="error">The error to add.</param>
-        public void AddError(ValidationError error)
-        {
-            ArgumentNullException.ThrowIfNull(error);
-            Errors.Add(error.Message);
-            IsValid = false;
-        }
-
-        /// <summary>
-        /// Adds a warning to the validation result.
-        /// </summary>
-        /// <param name="warning">The warning to add.</param>
-        public void AddWarning(ValidationWarning warning)
-        {
-            ArgumentNullException.ThrowIfNull(warning);
-            Warnings.Add(warning.Message);
-        }
-
-        /// <summary>
-        /// Adds metadata to the validation result.
-        /// </summary>
-        /// <param name="key">The metadata key.</param>
-        /// <param name="value">The metadata value.</param>
-        public void AddMetadata(string key, object value)
-        {
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException("Metadata key cannot be null or whitespace", nameof(key));
-            }
-
-            Metadata[key] = value;
-        }
-
-        /// <summary>
-        /// Merges another validation result into this one.
-        /// </summary>
-        /// <param name="other">The other validation result.</param>
-        public void Merge(ValidationResult other)
-        {
-            if (other == null)
-            {
-                return;
-            }
-
-            IsValid = IsValid && other.IsValid;
-            foreach (var error in other.Errors)
-            {
-                Errors.Add(error);
-            }
-            foreach (var warning in other.Warnings)
-            {
-                Warnings.Add(warning);
-            }
-            foreach (var metadata in other.Metadata)
-            {
-                Metadata[metadata.Key] = metadata.Value;
-            }
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _isValid = isValid;
+            _severity = severity;
+            _status = status;
+            _metrics = metrics ?? new MetricsValidation();
+            _correlationId = correlationId ?? Guid.NewGuid().ToString();
         }
 
         /// <summary>
         /// Creates a successful validation result.
         /// </summary>
+        /// <param name="context">The validation context.</param>
+        /// <param name="message">Optional success message.</param>
         /// <returns>A successful validation result.</returns>
-        public static ValidationResult Success()
+        public static ValidationResult Success(ValidationContext context, string message = null)
         {
-            return new ValidationResult(true);
-        }
-
-        /// <summary>
-        /// Creates a successful validation result with a message.
-        /// </summary>
-        /// <param name="message">The success message.</param>
-        /// <returns>A successful validation result.</returns>
-        public static ValidationResult Success(string message)
-        {
-            return new ValidationResult { IsValid = true, Messages = new List<string> { message } };
-        }
-
-        /// <summary>
-        /// Creates a failed validation result with the specified error.
-        /// </summary>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns>A failed validation result.</returns>
-        public static ValidationResult Failure(string errorMessage)
-        {
-            var result = new ValidationResult(false);
-            result.AddError(new ValidationError(errorMessage));
+            var result = new ValidationResult(context, true, ValidationSeverity.Info, ValidationStatus.Success);
+            if (!string.IsNullOrEmpty(message))
+            {
+                result._messages.Add(message);
+            }
             return result;
         }
 
         /// <summary>
-        /// Combines multiple validation results into a single result.
+        /// Creates a failed validation result.
+        /// </summary>
+        /// <param name="context">The validation context.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="severity">The validation severity.</param>
+        /// <returns>A failed validation result.</returns>
+        public static ValidationResult Failure(
+            ValidationContext context,
+            string errorMessage,
+            ValidationSeverity severity = ValidationSeverity.Error)
+        {
+            var result = new ValidationResult(context, false, severity, ValidationStatus.Failed);
+            if (!string.IsNullOrEmpty(errorMessage))
+            {
+                result._errors.Add(errorMessage);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Combines multiple validation results.
         /// </summary>
         /// <param name="results">The validation results to combine.</param>
         /// <returns>A combined validation result.</returns>
         public static ValidationResult Combine(IEnumerable<ValidationResult> results)
         {
-            var combinedResult = new ValidationResult();
+            if (results == null || !results.Any())
+            {
+                throw new ArgumentException("At least one validation result is required", nameof(results));
+            }
+
+            var firstResult = results.First();
+            var combinedResult = new ValidationResult(
+                firstResult._context,
+                results.All(r => r._isValid),
+                results.Max(r => r._severity),
+                results.Any(r => r._status == ValidationStatus.Failed) ? ValidationStatus.Failed : ValidationStatus.Success
+            );
+
             foreach (var result in results)
             {
-                if (result == null)
-                {
-                    continue;
-                }
+                combinedResult._errors.AddRange(result._errors);
+                combinedResult._warnings.AddRange(result._warnings);
+                combinedResult._messages.AddRange(result._messages);
+                combinedResult._validationRules.AddRange(result._validationRules);
+                combinedResult._suggestions.AddRange(result._suggestions);
 
-                if (!result.IsValid)
+                foreach (var kvp in result._metadata)
                 {
-                    combinedResult.IsValid = false;
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    combinedResult.Errors.Add(error);
-                }
-
-                foreach (var warning in result.Warnings)
-                {
-                    combinedResult.Warnings.Add(warning);
-                }
-
-                foreach (var metadata in result.Metadata)
-                {
-                    combinedResult.Metadata[metadata.Key] = metadata.Value;
+                    combinedResult._metadata[kvp.Key] = kvp.Value;
                 }
             }
+
             return combinedResult;
         }
     }

@@ -1,53 +1,38 @@
 namespace RuntimeErrorSage.Domain.Enums
 {
     /// <summary>
-    /// Defines the scope of a validation operation.
+    /// Defines the scope of validation operations.
     /// </summary>
     public enum ValidationScope
     {
         /// <summary>
-        /// Unknown scope.
+        /// Unknown validation scope.
         /// </summary>
         Unknown = 0,
 
         /// <summary>
-        /// System level scope.
+        /// Local validation scope.
         /// </summary>
-        System = 1,
+        Local = 1,
 
         /// <summary>
-        /// Application level scope.
+        /// Global validation scope.
         /// </summary>
-        Application = 2,
+        Global = 2,
 
         /// <summary>
-        /// Service level scope.
+        /// Component validation scope.
         /// </summary>
-        Service = 3,
+        Component = 3,
 
         /// <summary>
-        /// Module level scope.
+        /// System validation scope.
         /// </summary>
-        Module = 4,
+        System = 4,
 
         /// <summary>
-        /// Component level scope.
+        /// Environment validation scope.
         /// </summary>
-        Component = 5,
-
-        /// <summary>
-        /// Method level scope.
-        /// </summary>
-        Method = 6,
-
-        /// <summary>
-        /// Property level scope.
-        /// </summary>
-        Property = 7,
-
-        /// <summary>
-        /// Parameter level scope.
-        /// </summary>
-        Parameter = 8
+        Environment = 5
     }
 } 

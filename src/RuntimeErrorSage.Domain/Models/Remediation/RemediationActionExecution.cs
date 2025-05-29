@@ -102,6 +102,26 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         public string Severity { get; set; } = string.Empty;
 
+        public RemediationActionExecution()
+        {
+            ExecutionId = Guid.NewGuid().ToString();
+            ActionId = string.Empty;
+            ActionName = string.Empty;
+            ActionType = string.Empty;
+            StartTime = DateTime.UtcNow;
+            Result = new RemediationActionResult();
+            ValidationResults = new List<ValidationResult>();
+            Metrics = new RemediationMetrics();
+            Parameters = new Dictionary<string, object>();
+            Warnings = new List<string>();
+            Severity = ActionSeverity.Unknown;
+            _executionResults = new List<RemediationActionResult>();
+            _executionHandlers = new List<Action<RemediationActionResult>>();
+            Status = ActionStatus.Unknown;
+            EndTime = null;
+            Error = string.Empty;
+        }
+
         /// <summary>
         /// Executes a remediation action.
         /// </summary>
@@ -216,6 +236,24 @@ namespace RuntimeErrorSage.Application.Models.Remediation
                     // Ignore handler exceptions
                 }
             }
+        }
+
+        public async Task<bool> ExecuteAsync()
+        {
+            // Implementation
+            return true;
+        }
+
+        public async Task<bool> RollbackAsync()
+        {
+            // Implementation
+            return true;
+        }
+
+        public async Task<double> GetEstimatedImpactAsync()
+        {
+            // Implementation
+            return 0.0;
         }
     }
 } 

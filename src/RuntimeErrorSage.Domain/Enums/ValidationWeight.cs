@@ -1,38 +1,38 @@
 namespace RuntimeErrorSage.Domain.Enums
 {
     /// <summary>
-    /// Defines the level of validation operations.
+    /// Defines the weights of validation operations.
     /// </summary>
-    public enum ValidationLevel
+    public enum ValidationWeight
     {
         /// <summary>
-        /// Unknown validation level.
+        /// Unknown validation weight.
         /// </summary>
         Unknown = 0,
 
         /// <summary>
-        /// Normal validation level.
+        /// Light validation weight.
         /// </summary>
-        Normal = 1,
+        Light = 1,
 
         /// <summary>
-        /// Strict validation level.
+        /// Medium validation weight.
         /// </summary>
-        Strict = 2,
+        Medium = 2,
 
         /// <summary>
-        /// Relaxed validation level.
+        /// Heavy validation weight.
         /// </summary>
-        Relaxed = 3,
+        Heavy = 3,
 
         /// <summary>
-        /// Critical validation level.
+        /// Critical validation weight.
         /// </summary>
         Critical = 4,
 
         /// <summary>
-        /// Warning validation level.
+        /// Fatal validation weight.
         /// </summary>
-        Warning = 5
+        Fatal = 5
     }
 } 

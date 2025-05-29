@@ -11,13 +11,7 @@ public static class DateTimeConversionExample
     public static void NullableDateTimeConversion()
     {
         DateTime? nullableDate = DateTime.UtcNow;
-        
-        // INCORRECT: Direct conversion from DateTime? to DateTime
-        /*
-        DateTime date = nullableDate; // Error: Cannot implicitly convert type 'DateTime?' to 'DateTime'
-        */
-        
-        // CORRECT: Use Value property with null check
+
         if (nullableDate.HasValue)
         {
             DateTime date = nullableDate.Value;

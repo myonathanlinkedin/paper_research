@@ -9,6 +9,7 @@ using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Application.Models.Graph;
 using RuntimeErrorSage.Application.Services.Interfaces;
+using RuntimeErrorSage.Application.Graph.Interfaces;
 
 namespace RuntimeErrorSage.Application.Services;
 

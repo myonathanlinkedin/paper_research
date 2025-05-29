@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Runtime.Interfaces;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Runtime.Interfaces;
 

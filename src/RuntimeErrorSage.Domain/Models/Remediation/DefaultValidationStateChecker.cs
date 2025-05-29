@@ -1,23 +1,21 @@
+using RuntimeErrorSage.Application.Models.Remediation;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     public class DefaultValidationStateChecker : IValidationStateChecker
     {
         public bool IsValidState(IRemediationAction action)
         {
-            if (action.Status == RemediationStatusEnum.Running)
-            {
-                return false;
-            }
+            ArgumentNullException.ThrowIfNull(action);
+            return action.Status == RemediationStatusEnum.InProgress;
+        }
 
-            if (action.RequiresManualApproval && action.Status != RemediationStatusEnum.WaitingForApproval)
-            {
-                return false;
-            }
-
-            return true;
+        public static bool RequiresApproval(IRemediationAction action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            return action.RequiresManualApproval && action.Status == RemediationStatusEnum.Waiting;
         }
     }
 } 

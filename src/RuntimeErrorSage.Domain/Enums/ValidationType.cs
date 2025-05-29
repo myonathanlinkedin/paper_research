@@ -11,53 +11,58 @@ namespace RuntimeErrorSage.Domain.Enums
         Unknown = 0,
 
         /// <summary>
-        /// Schema validation.
+        /// General validation type.
         /// </summary>
-        Schema = 1,
+        General = 1,
 
         /// <summary>
-        /// Business rule validation.
+        /// Schema validation type.
         /// </summary>
-        BusinessRule = 2,
+        Schema = 2,
 
         /// <summary>
-        /// Format validation.
+        /// Business rule validation type.
         /// </summary>
-        Format = 3,
+        BusinessRule = 3,
 
         /// <summary>
-        /// Consistency validation.
+        /// Format validation type.
         /// </summary>
-        Consistency = 4,
+        Format = 4,
 
         /// <summary>
-        /// Security validation.
+        /// Consistency validation type.
         /// </summary>
-        Security = 5,
+        Consistency = 5,
 
         /// <summary>
-        /// Performance validation.
+        /// Security validation type.
         /// </summary>
-        Performance = 6,
+        Security = 6,
 
         /// <summary>
-        /// Compatibility validation.
+        /// Performance validation type.
         /// </summary>
-        Compatibility = 7,
+        Performance = 7,
 
         /// <summary>
-        /// Dependency validation.
+        /// Compatibility validation type.
         /// </summary>
-        Dependency = 8,
+        Compatibility = 8,
 
         /// <summary>
-        /// Configuration validation.
+        /// Dependency validation type.
         /// </summary>
-        Configuration = 9,
+        Dependency = 9,
 
         /// <summary>
-        /// Health validation.
+        /// Configuration validation type.
         /// </summary>
-        Health = 10
+        Configuration = 10,
+
+        /// <summary>
+        /// Health validation type.
+        /// </summary>
+        Health = 11
     }
 } 

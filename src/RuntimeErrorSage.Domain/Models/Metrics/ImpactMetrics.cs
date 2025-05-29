@@ -10,6 +10,27 @@ namespace RuntimeErrorSage.Application.Models.Metrics
     /// </summary>
     public class ImpactMetrics
     {
+        public ImpactMetrics()
+        {
+            SeverityDistribution = new Dictionary<ErrorSeverity, int>();
+            ScopeDistribution = new Dictionary<ImpactScope, int>();
+            ImpactSeverityDistribution = new Dictionary<ImpactSeverity, int>();
+            BusinessImpactDistribution = new Dictionary<string, int>();
+            DurationDistribution = new Dictionary<TimeSpan, int>();
+            RecoveryDurationDistribution = new Dictionary<TimeSpan, int>();
+            ErrorTypeDistribution = new Dictionary<string, int>();
+            StrategyDistribution = new Dictionary<string, int>();
+            ValidationStatusDistribution = new Dictionary<AnalysisValidationStatus, int>();
+            AdditionalMetrics = new Dictionary<string, object>();
+            TotalRemediations = 0;
+            SuccessfulRemediations = 0;
+            FailedRemediations = 0;
+            AverageTimeToRemediationMs = 0.0;
+            AverageTimeToRecoveryMs = 0.0;
+            AverageAffectedUsers = 0.0;
+            AverageEstimatedRecoveryTimeMinutes = 0.0;
+        }
+
         /// <summary>
         /// Gets or sets the total number of remediations.
         /// </summary>
@@ -48,17 +69,17 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the distribution of error severities.
         /// </summary>
-        public Dictionary<ErrorSeverity, int> SeverityDistribution { get; set; } = new();
+        public Dictionary<ErrorSeverity, int> SeverityDistribution { get; set; }
 
         /// <summary>
         /// Gets or sets the distribution of impact scopes.
         /// </summary>
-        public Dictionary<ImpactScope, int> ScopeDistribution { get; set; } = new();
+        public Dictionary<ImpactScope, int> ScopeDistribution { get; set; }
 
         /// <summary>
         /// Gets or sets the distribution of impact severities.
         /// </summary>
-        public Dictionary<ImpactSeverity, int> ImpactSeverityDistribution { get; set; } = new();
+        public Dictionary<ImpactSeverity, int> ImpactSeverityDistribution { get; set; }
 
         /// <summary>
         /// Gets or sets the average number of affected users per remediation.
@@ -73,37 +94,37 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the distribution of business impacts.
         /// </summary>
-        public Dictionary<string, int> BusinessImpactDistribution { get; set; } = new();
+        public Dictionary<string, int> BusinessImpactDistribution { get; set; }
 
         /// <summary>
         /// Gets or sets the distribution of remediation durations.
         /// </summary>
-        public Dictionary<TimeSpan, int> DurationDistribution { get; set; } = new();
+        public Dictionary<TimeSpan, int> DurationDistribution { get; set; }
 
         /// <summary>
         /// Gets or sets the distribution of recovery durations.
         /// </summary>
-        public Dictionary<TimeSpan, int> RecoveryDurationDistribution { get; set; } = new();
+        public Dictionary<TimeSpan, int> RecoveryDurationDistribution { get; set; }
 
         /// <summary>
         /// Gets or sets the distribution of error types.
         /// </summary>
-        public Dictionary<string, int> ErrorTypeDistribution { get; set; } = new();
+        public Dictionary<string, int> ErrorTypeDistribution { get; set; }
 
         /// <summary>
         /// Gets or sets the distribution of remediation strategies.
         /// </summary>
-        public Dictionary<string, int> StrategyDistribution { get; set; } = new();
+        public Dictionary<string, int> StrategyDistribution { get; set; }
 
         /// <summary>
         /// Gets or sets the distribution of validation statuses.
         /// </summary>
-        public Dictionary<AnalysisValidationStatus, int> ValidationStatusDistribution { get; set; } = new();
+        public Dictionary<AnalysisValidationStatus, int> ValidationStatusDistribution { get; set; }
 
         /// <summary>
         /// Gets or sets any additional metrics.
         /// </summary>
-        public Dictionary<string, object> AdditionalMetrics { get; set; } = new();
+        public Dictionary<string, object> AdditionalMetrics { get; set; }
 
         /// <summary>
         /// Updates the metrics with a new remediation result.

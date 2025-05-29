@@ -79,6 +79,21 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// </summary>
         public bool IsSuccessful => Status == ActionStatus.Completed;
 
+        /// <summary>
+        /// Gets the CPU usage.
+        /// </summary>
+        public double CpuUsage { get; set; } = 0.0;
+
+        /// <summary>
+        /// Gets the memory usage.
+        /// </summary>
+        public double MemoryUsage { get; set; } = 0.0;
+
+        /// <summary>
+        /// Gets the latency.
+        /// </summary>
+        public TimeSpan Latency { get; set; } = TimeSpan.Zero;
+
         // TODO: Implement memory and CPU usage differences if needed   
         ///// <summary>
         ///// Gets the memory usage difference.
@@ -118,6 +133,26 @@ namespace RuntimeErrorSage.Application.Models.Metrics
             ErrorMessage = errorMessage;
             EndTime = DateTime.UtcNow;
             DurationMs = (EndTime.Value - StartTime).TotalMilliseconds;
+        }
+
+        public StepMetrics()
+        {
+            StepId = Guid.NewGuid().ToString();
+            ExecutionId = string.Empty;
+            StepName = string.Empty;
+            StepType = string.Empty;
+            StartTime = DateTime.UtcNow;
+            ErrorMessage = string.Empty;
+            StartResourceUsage = new MetricsResourceUsage();
+            EndResourceUsage = new MetricsResourceUsage();
+            Metadata = new Dictionary<string, string>();
+            Metrics = new Dictionary<string, double>();
+            CpuUsage = 0.0;
+            MemoryUsage = 0.0;
+            Latency = TimeSpan.Zero;
+            Status = ActionStatus.Unknown;
+            DurationMs = 0.0;
+            EndTime = null;
         }
     }
 } 

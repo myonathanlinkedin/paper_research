@@ -64,7 +64,7 @@ namespace RuntimeErrorSage.Application.Models.Error
             string message,
             string source,
             string stackTrace = null,
-            Dictionary<string, string> metadata = null)
+            Dictionary<string, object> metadata = null)
         {
             ArgumentNullException.ThrowIfNull(type);
             ArgumentNullException.ThrowIfNull(message);

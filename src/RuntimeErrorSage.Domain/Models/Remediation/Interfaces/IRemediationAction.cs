@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Models.Remediation.Interfaces
 {
@@ -47,6 +48,16 @@ namespace RuntimeErrorSage.Application.Models.Remediation.Interfaces
         /// Gets or sets the error context this action is associated with.
         /// </summary>
         ErrorContext Context { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status of the action.
+        /// </summary>
+        RemediationStatusEnum Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the action requires manual approval.
+        /// </summary>
+        bool RequiresManualApproval { get; set; }
 
         /// <summary>
         /// Validates the action.

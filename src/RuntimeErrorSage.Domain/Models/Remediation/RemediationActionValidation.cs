@@ -4,6 +4,7 @@ using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Linq;
 
@@ -18,7 +19,14 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         private readonly IValidationResultStorage _resultStorage;
         private readonly IValidationStateChecker _stateChecker;
         private readonly List<IValidationResultHandler> _resultHandlers;
+        private readonly List<string> _validationMessages;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemediationActionValidation"/> class.
+        /// </summary>
+        /// <param name="ruleProvider">The validation rule provider.</param>
+        /// <param name="resultStorage">The validation result storage.</param>
+        /// <param name="stateChecker">The validation state checker.</param>
         public RemediationActionValidation(
             IValidationRuleProvider ruleProvider,
             IValidationResultStorage resultStorage,
@@ -28,7 +36,13 @@ namespace RuntimeErrorSage.Application.Models.Remediation
             _resultStorage = resultStorage ?? throw new ArgumentNullException(nameof(resultStorage));
             _stateChecker = stateChecker ?? throw new ArgumentNullException(nameof(stateChecker));
             _resultHandlers = new List<IValidationResultHandler>();
+            _validationMessages = new List<string>();
         }
+
+        /// <summary>
+        /// Gets the collection of result handlers.
+        /// </summary>
+        public IReadOnlyList<IValidationResultHandler> ResultHandlers => new ReadOnlyCollection<IValidationResultHandler>(_resultHandlers);
 
         /// <summary>
         /// Validates a remediation action.
@@ -75,10 +89,18 @@ namespace RuntimeErrorSage.Application.Models.Remediation
                 NotifyResultHandlers(result);
                 return result;
             }
-            catch (Exception ex)
+            catch (ValidationException ex)
             {
                 result.IsValid = false;
                 result.Errors.Add($"Validation failed: {ex.Message}");
+                _resultStorage.StoreResult(action.ActionId, result);
+                NotifyResultHandlers(result);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.IsValid = false;
+                result.Errors.Add($"Unexpected error during validation: {ex.Message}");
                 _resultStorage.StoreResult(action.ActionId, result);
                 NotifyResultHandlers(result);
                 return result;
@@ -124,9 +146,9 @@ namespace RuntimeErrorSage.Application.Models.Remediation
             _resultHandlers.Remove(handler);
         }
 
-        private async Task ValidatePrerequisitesAsync(IRemediationAction action, ErrorContext context, ValidationResult result)
+        private static async Task ValidatePrerequisitesAsync(IRemediationAction action, ErrorContext context, ValidationResult result)
         {
-            if (action.Prerequisites?.Any() != true) return;
+            if (action.Prerequisites?.Count == 0) return;
 
             foreach (var prerequisite in action.Prerequisites)
             {
@@ -138,9 +160,9 @@ namespace RuntimeErrorSage.Application.Models.Remediation
             }
         }
 
-        private async Task ValidateDependenciesAsync(IRemediationAction action, ErrorContext context, ValidationResult result)
+        private static async Task ValidateDependenciesAsync(IRemediationAction action, ErrorContext context, ValidationResult result)
         {
-            if (action.Dependencies?.Any() != true) return;
+            if (action.Dependencies?.Count == 0) return;
 
             foreach (var dependency in action.Dependencies)
             {
@@ -152,9 +174,9 @@ namespace RuntimeErrorSage.Application.Models.Remediation
             }
         }
 
-        private void ValidateParameters(IRemediationAction action, ValidationResult result)
+        private static void ValidateParameters(IRemediationAction action, ValidationResult result)
         {
-            if (action.Parameters?.Any() != true) return;
+            if (action.Parameters?.Count == 0) return;
 
             foreach (var param in action.Parameters)
             {
@@ -179,15 +201,20 @@ namespace RuntimeErrorSage.Application.Models.Remediation
                         result.IsValid = false;
                         result.Errors.AddRange(ruleResult.Errors);
                     }
-                    if (ruleResult.Warnings?.Any() == true)
+                    if (ruleResult.Warnings?.Count > 0)
                     {
                         result.Warnings.AddRange(ruleResult.Warnings);
                     }
                 }
-                catch (Exception ex)
+                catch (ValidationException ex)
                 {
                     result.IsValid = false;
                     result.Errors.Add($"Error validating rule {rule.Name}: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    result.IsValid = false;
+                    result.Errors.Add($"Unexpected error validating rule {rule.Name}: {ex.Message}");
                 }
             }
         }
@@ -201,21 +228,21 @@ namespace RuntimeErrorSage.Application.Models.Remediation
             }
         }
 
-        private async Task<bool> ValidatePrerequisiteAsync(string prerequisite, ErrorContext context)
+        private static async Task<bool> ValidatePrerequisiteAsync(string prerequisite, ErrorContext context)
         {
-            // Implement prerequisite validation logic
-            return true;
+            // Implementation specific to your needs
+            return await Task.FromResult(true);
         }
 
-        private async Task<bool> ValidateDependencyAsync(string dependency, ErrorContext context)
+        private static async Task<bool> ValidateDependencyAsync(string dependency, ErrorContext context)
         {
-            // Implement dependency validation logic
-            return true;
+            // Implementation specific to your needs
+            return await Task.FromResult(true);
         }
 
-        private bool ValidateParameter(string key, object value)
+        private static bool ValidateParameter(string key, object value)
         {
-            // Implement parameter validation logic
+            // Implementation specific to your needs
             return true;
         }
 
@@ -227,11 +254,27 @@ namespace RuntimeErrorSage.Application.Models.Remediation
                 {
                     handler.HandleResult(result);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore handler exceptions
+                    // Log the exception but continue processing other handlers
+                    System.Diagnostics.Debug.WriteLine($"Error in validation result handler: {ex.Message}");
                 }
             }
+        }
+
+        public void Add(string message)
+        {
+            _validationMessages.Add(message);
+        }
+
+        public void AddRange(IEnumerable<string> messages)
+        {
+            _validationMessages.AddRange(messages);
+        }
+
+        public IReadOnlyList<string> GetValidationMessages()
+        {
+            return _validationMessages.AsReadOnly();
         }
     }
 } 

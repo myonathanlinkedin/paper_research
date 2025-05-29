@@ -11,28 +11,98 @@ namespace RuntimeErrorSage.Application.Models.Validation;
 public class ValidationRule
 {
     /// <summary>
-    /// Gets or sets the name of the rule.
+    /// Gets the name of the rule.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; }
 
     /// <summary>
-    /// Gets or sets the description of the rule.
+    /// Gets the description of the rule.
     /// </summary>
-    public string Description { get; set; }
+    public string Description { get; }
 
     /// <summary>
-    /// Gets or sets the validation function.
+    /// Gets the validation function.
     /// </summary>
-    public Func<IRemediationAction, Task<ValidationResult>> ValidateAsync { get; set; }
+    public Func<IRemediationAction, Task<ValidationResult>> ValidateAsync { get; }
 
     /// <summary>
-    /// Gets or sets the severity of the rule.
+    /// Gets the severity of the rule.
     /// </summary>
-    public ValidationSeverity Severity { get; set; } = ValidationSeverity.Error;
+    public ValidationSeverity Severity { get; }
 
     /// <summary>
-    /// Gets or sets whether the rule is enabled.
+    /// Gets whether the rule is enabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsEnabled { get; private set; } = true;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValidationRule"/> class.
+    /// </summary>
+    /// <param name="name">The name of the rule.</param>
+    /// <param name="description">The description of the rule.</param>
+    /// <param name="validateAsync">The validation function.</param>
+    /// <param name="severity">The severity of the rule.</param>
+    /// <exception cref="ArgumentNullException">Thrown when name, description, or validateAsync is null.</exception>
+    public ValidationRule(
+        string name,
+        string description,
+        Func<IRemediationAction, Task<ValidationResult>> validateAsync,
+        ValidationSeverity severity = ValidationSeverity.Error)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(description);
+        ArgumentNullException.ThrowIfNull(validateAsync);
+
+        Name = name;
+        Description = description;
+        ValidateAsync = validateAsync;
+        Severity = severity;
+    }
+
+    /// <summary>
+    /// Enables the rule.
+    /// </summary>
+    public void Enable()
+    {
+        IsEnabled = true;
+    }
+
+    /// <summary>
+    /// Disables the rule.
+    /// </summary>
+    public void Disable()
+    {
+        IsEnabled = false;
+    }
+
+    /// <summary>
+    /// Validates a remediation action using this rule.
+    /// </summary>
+    /// <param name="action">The action to validate.</param>
+    /// <returns>The validation result.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when action is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the rule is disabled.</exception>
+    public async Task<ValidationResult> ValidateActionAsync(IRemediationAction action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        if (!IsEnabled)
+        {
+            throw new InvalidOperationException($"Validation rule '{Name}' is disabled.");
+        }
+
+        try
+        {
+            return await ValidateAsync(action);
+        }
+        catch (Exception ex)
+        {
+            return new ValidationResult
+            {
+                IsValid = false,
+                Errors = { $"Error validating rule '{Name}': {ex.Message}" }
+            };
+        }
+    }
 } 
 

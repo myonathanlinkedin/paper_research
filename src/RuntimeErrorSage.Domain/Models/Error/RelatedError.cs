@@ -9,6 +9,8 @@ namespace RuntimeErrorSage.Application.Models.Error
     /// </summary>
     public class RelatedError
     {
+        public static readonly RelatedError Error = new RelatedError();
+
         /// <summary>
         /// Gets or sets the unique identifier.
         /// </summary>

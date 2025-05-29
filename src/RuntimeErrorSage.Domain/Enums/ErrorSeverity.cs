@@ -5,6 +5,7 @@ namespace RuntimeErrorSage.Domain.Enums
     /// </summary>
     public enum ErrorSeverity
     {
+        Unknown,
         /// <summary>
         /// Critical severity - system is unusable or data is at risk.
         /// </summary>

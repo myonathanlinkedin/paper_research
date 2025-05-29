@@ -9,6 +9,27 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     /// </summary>
     public class RemediationMetrics
     {
+        public RemediationMetrics()
+        {
+            ExecutionId = Guid.NewGuid().ToString();
+            Timestamp = DateTime.UtcNow;
+            Values = new Dictionary<string, double>();
+            Labels = new Dictionary<string, string>();
+            EndResourceUsage = new MetricsResourceUsage();
+            SuccessRate = 0.0;
+            ErrorRate = 0.0;
+            AverageExecutionTimeMs = 0.0;
+            TotalRemediations = 0;
+            SuccessfulRemediations = 0;
+            FailedRemediations = 0;
+            CancelledRemediations = 0;
+            TimedOutRemediations = 0;
+            ValidationFailedRemediations = 0;
+            RetryCount = 0;
+            Success = false;
+            Error = string.Empty;
+        }
+
         /// <summary>
         /// Gets or sets the unique identifier for the execution.
         /// </summary>
@@ -72,7 +93,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the metric values.
         /// </summary>
-        public Dictionary<string, object> Values { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, double> Values { get; set; } = new Dictionary<string, double>();
         
         /// <summary>
         /// Gets or sets the metric labels.
@@ -87,6 +108,22 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the error message.
         /// </summary>
-        public string? Error { get; set; }
+        public string Error { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the end resource usage metrics.
+        /// </summary>
+        public MetricsResourceUsage EndResourceUsage { get; set; } = new MetricsResourceUsage();
+
+        public void UpdateResourceUsage()
+        {
+            EndResourceUsage = new MetricsResourceUsage
+            {
+                CpuUsage = 0.0,
+                MemoryUsage = 0.0,
+                DiskUsage = 0.0,
+                NetworkUsage = 0.0
+            };
+        }
     }
 } 

@@ -53,5 +53,10 @@ public enum ImpactScope
     /// <summary>
     /// Impact affects a specific module.
     /// </summary>
-    Module = 9
+    Module = 9,
+
+    /// <summary>
+    /// Impact affects a specific local area.
+    /// </summary>
+    Local = 10
 } 

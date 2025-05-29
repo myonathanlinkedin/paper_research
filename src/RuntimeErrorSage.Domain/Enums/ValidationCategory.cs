@@ -6,58 +6,78 @@ namespace RuntimeErrorSage.Domain.Enums
     public enum ValidationCategory
     {
         /// <summary>
-        /// Unknown category.
+        /// Unknown validation category.
         /// </summary>
         Unknown = 0,
 
         /// <summary>
+        /// General validation category.
+        /// </summary>
+        General = 1,
+
+        /// <summary>
+        /// Data validation category.
+        /// </summary>
+        Data = 2,
+
+        /// <summary>
+        /// Business validation category.
+        /// </summary>
+        Business = 3,
+
+        /// <summary>
+        /// Security validation category.
+        /// </summary>
+        Security = 4,
+
+        /// <summary>
+        /// Performance validation category.
+        /// </summary>
+        Performance = 5,
+
+        /// <summary>
+        /// Compliance validation category.
+        /// </summary>
+        Compliance = 6,
+
+        /// <summary>
         /// Input validation.
         /// </summary>
-        Input = 1,
+        Input = 7,
 
         /// <summary>
         /// Output validation.
         /// </summary>
-        Output = 2,
+        Output = 8,
 
         /// <summary>
         /// State validation.
         /// </summary>
-        State = 3,
+        State = 9,
 
         /// <summary>
         /// Configuration validation.
         /// </summary>
-        Configuration = 4,
-
-        /// <summary>
-        /// Security validation.
-        /// </summary>
-        Security = 5,
+        Configuration = 10,
 
         /// <summary>
         /// Business rule validation.
         /// </summary>
-        BusinessRule = 6,
-
-        /// <summary>
-        /// Performance validation.
-        /// </summary>
-        Performance = 7,
+        BusinessRule = 11,
 
         /// <summary>
         /// Compatibility validation.
         /// </summary>
-        Compatibility = 8,
+        Compatibility = 12,
 
         /// <summary>
         /// Health validation.
         /// </summary>
-        Health = 9,
+        Health = 13,
 
         /// <summary>
         /// Dependency validation.
         /// </summary>
-        Dependency = 10
+        Dependency = 14
     }
 } 

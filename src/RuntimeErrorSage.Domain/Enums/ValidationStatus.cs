@@ -8,38 +8,43 @@ namespace RuntimeErrorSage.Domain.Enums;
 public enum ValidationStatus
 {
     /// <summary>
-    /// The validation is pending.
+    /// Unknown validation status.
     /// </summary>
-    Pending,
+    Unknown = 0,
 
     /// <summary>
-    /// The validation is in progress.
+    /// Pending validation status.
     /// </summary>
-    InProgress,
+    Pending = 1,
 
     /// <summary>
-    /// The validation has completed successfully.
+    /// In progress validation status.
     /// </summary>
-    Completed,
+    InProgress = 2,
 
     /// <summary>
-    /// The validation has failed.
+    /// Completed validation status.
     /// </summary>
-    Failed,
+    Completed = 3,
 
     /// <summary>
-    /// The validation has been cancelled.
+    /// Failed validation status.
     /// </summary>
-    Cancelled,
+    Failed = 4,
+
+    /// <summary>
+    /// Skipped validation status.
+    /// </summary>
+    Skipped = 5,
+
+    /// <summary>
+    /// Cancelled validation status.
+    /// </summary>
+    Cancelled = 6,
 
     /// <summary>
     /// The validation has timed out.
     /// </summary>
-    TimedOut,
-
-    /// <summary>
-    /// The validation has been skipped.
-    /// </summary>
-    Skipped
+    TimedOut
 } 
 

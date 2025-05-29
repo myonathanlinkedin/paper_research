@@ -202,6 +202,57 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Gets or sets the rollback action if available.
         /// </summary>
         public IRemediationAction RollbackAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the action.
+        /// </summary>
+        public string ActionType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemediationActionCore"/> class.
+        /// </summary>
+        public RemediationActionCore()
+        {
+            ActionId = Guid.NewGuid().ToString();
+            Name = string.Empty;
+            Description = string.Empty;
+            ActionType = string.Empty;
+            Prerequisites = new List<string>();
+            Dependencies = new List<string>();
+            Parameters = new Dictionary<string, object>();
+            Metadata = new Dictionary<string, string>();
+            Tags = new List<string>();
+            Version = string.Empty;
+            Author = string.Empty;
+            CreatedDate = DateTime.UtcNow;
+            LastModifiedDate = DateTime.UtcNow;
+            Category = string.Empty;
+            Subcategory = string.Empty;
+            Severity = ActionSeverity.Unknown;
+            Complexity = ActionComplexity.Unknown;
+            ErrorMessage = string.Empty;
+            StackTrace = string.Empty;
+            Output = string.Empty;
+            ValidationResults = new List<ValidationResult>();
+            RollbackStatus = RollbackStatus.NotAttempted;
+            CanRollback = false;
+            RollbackAction = null;
+            Priority = ActionPriority.Normal;
+            Impact = ActionImpact.Unknown;
+            RiskLevel = ActionRiskLevel.Unknown;
+            Status = ActionStatus.Unknown;
+            RequiresManualApproval = false;
+            ExecutionTimeoutMs = 0;
+            RetryCount = 0;
+            RetryDelayMs = 0;
+            IsEnabled = true;
+            IsVisible = true;
+            EstimatedDuration = TimeSpan.Zero;
+            ActualDuration = TimeSpan.Zero;
+            StartTime = DateTime.UtcNow;
+            EndTime = null;
+            Context = null;
+        }
     }
 } 
 

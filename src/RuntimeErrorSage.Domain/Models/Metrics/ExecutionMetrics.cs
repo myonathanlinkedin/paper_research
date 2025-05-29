@@ -127,6 +127,30 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// </summary>
         public List<StepMetrics> StepMetrics { get; set; } = new();
 
+        public ExecutionMetrics()
+        {
+            ExecutionHistory = new Dictionary<string, List<RemediationExecution>>();
+            StatusDistribution = new Dictionary<RemediationExecutionStatus, int>();
+            ErrorTypeDistribution = new Dictionary<string, int>();
+            DurationDistribution = new Dictionary<TimeSpan, int>();
+            AdditionalMetrics = new Dictionary<string, object>();
+            CustomMetrics = new Dictionary<string, double>();
+            StepMetrics = new List<StepMetrics>();
+            Timestamp = DateTime.UtcNow;
+            CpuUsage = 0.0;
+            MemoryUsage = 0.0;
+            Latency = 0.0;
+            TotalExecutions = 0;
+            SuccessfulExecutions = 0;
+            FailedExecutions = 0;
+            AverageExecutionTimeMs = 0.0;
+            TimeoutCount = 0;
+            ValidationFailureCount = 0;
+            RetryCount = 0;
+            AverageResourceUsage = new MetricsResourceUsage();
+            PeakResourceUsage = new MetricsResourceUsage();
+        }
+
         /// <summary>
         /// Updates the metrics with a new execution result.
         /// </summary>

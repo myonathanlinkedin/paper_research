@@ -87,12 +87,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
             if (targetNode == null)
                 throw new ArgumentException($"Target node with ID {targetNodeId} not found.");
 
-            var edge = new GraphEdge
-            {
-                SourceNodeId = sourceNodeId,
-                TargetNodeId = targetNodeId,
-                Label = label
-            };
+            var edge = new GraphEdge(sourceNode, targetNode, label);
 
             Edges.Add(edge);
             return edge;
@@ -110,16 +105,16 @@ namespace RuntimeErrorSage.Application.Models.Graph
 
             if (direction == EdgeDirection.Incoming)
             {
-                neighborIds = Edges.Where(e => e.TargetNodeId == nodeId).Select(e => e.SourceNodeId).ToList();
+                neighborIds = Edges.Where(e => e.TargetId == nodeId).Select(e => e.SourceId).ToList();
             }
             else if (direction == EdgeDirection.Outgoing)
             {
-                neighborIds = Edges.Where(e => e.SourceNodeId == nodeId).Select(e => e.TargetNodeId).ToList();
+                neighborIds = Edges.Where(e => e.SourceId == nodeId).Select(e => e.TargetId).ToList();
             }
             else // Both
             {
-                neighborIds = Edges.Where(e => e.SourceNodeId == nodeId || e.TargetNodeId == nodeId)
-                    .Select(e => e.SourceNodeId == nodeId ? e.TargetNodeId : e.SourceNodeId)
+                neighborIds = Edges.Where(e => e.SourceId == nodeId || e.TargetId == nodeId)
+                    .Select(e => e.SourceId == nodeId ? e.TargetId : e.SourceId)
                     .ToList();
             }
 

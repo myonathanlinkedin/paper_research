@@ -2,6 +2,7 @@ using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Error;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Models.Common;
@@ -15,8 +16,51 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     /// </summary>
     public class RemediationActionResult
     {
+        public static readonly DateTimeOffset Timestamp = DateTimeOffset.UtcNow;
+
         private readonly Dictionary<string, ActionResult> _results = new();
         private readonly List<Action<ActionResult>> _resultHandlers = new();
+
+        /// <summary>
+        /// Gets or sets the action ID.
+        /// </summary>
+        public string ActionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the action name.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the action was successful.
+        /// </summary>
+        public bool Success { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message if the action failed.
+        /// </summary>
+        public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Gets the collection of results.
+        /// </summary>
+        public IReadOnlyDictionary<string, ActionResult> Results => new ReadOnlyDictionary<string, ActionResult>(_results);
+
+        /// <summary>
+        /// Gets the collection of result handlers.
+        /// </summary>
+        public IReadOnlyList<Action<ActionResult>> ResultHandlers => new ReadOnlyCollection<Action<ActionResult>>(_resultHandlers);
+
+        public RemediationActionResult()
+        {
+            ActionId = string.Empty;
+            Name = string.Empty;
+            ErrorMessage = string.Empty;
+            _results = new Dictionary<string, ActionResult>();
+            _resultHandlers = new List<Action<ActionResult>>();
+            Success = false;
+            Timestamp = DateTimeOffset.UtcNow;
+        }
 
         /// <summary>
         /// Records a result for a remediation action.
@@ -79,11 +123,33 @@ namespace RuntimeErrorSage.Application.Models.Remediation
                 {
                     handler(result);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore handler exceptions
+                    // Log the exception but continue processing other handlers
+                    System.Diagnostics.Debug.WriteLine($"Error in result handler: {ex.Message}");
                 }
             }
+        }
+
+        public void RegisterHandler(Action<ActionResult> handler)
+        {
+            if (handler != null)
+            {
+                _resultHandlers.Add(handler);
+            }
+        }
+
+        public void UnregisterHandler(Action<ActionResult> handler)
+        {
+            if (handler != null)
+            {
+                _resultHandlers.Remove(handler);
+            }
+        }
+
+        public void Clear()
+        {
+            _resultHandlers.Clear();
         }
     }
 } 
