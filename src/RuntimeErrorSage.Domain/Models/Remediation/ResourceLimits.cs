@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     /// <summary>
     /// Represents limits for a resource.

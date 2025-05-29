@@ -1,7 +1,7 @@
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     public class RemediationActionSystem
     {

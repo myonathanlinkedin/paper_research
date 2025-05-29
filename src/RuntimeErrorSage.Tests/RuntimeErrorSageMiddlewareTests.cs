@@ -4,15 +4,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-using RuntimeErrorSage.Model;
+using RuntimeErrorSage.Application;
 using RuntimeErrorSage.Middleware;
 using FluentAssertions;
-using RuntimeErrorSage.Model.Analysis;
-using RuntimeErrorSage.Model.Remediation;
-using RuntimeErrorSage.Model.MCP;
-using RuntimeErrorSage.Model.LLM;
-using RuntimeErrorSage.Model.Validation;
-using RuntimeErrorSage.Model.Graph;
+using RuntimeErrorSage.Application.Analysis;
+using RuntimeErrorSage.Application.Remediation;
+using RuntimeErrorSage.Application.MCP;
+using RuntimeErrorSage.Application.LLM;
+using RuntimeErrorSage.Application.Validation;
+using RuntimeErrorSage.Application.Graph;
 
 namespace RuntimeErrorSage.Tests
 {

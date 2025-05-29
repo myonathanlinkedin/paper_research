@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Validation;
 
-namespace RuntimeErrorSage.Model.Models.Remediation;
+namespace RuntimeErrorSage.Application.Models.Remediation;
 
 /// <summary>
 /// Represents a validation rule for remediation operations.

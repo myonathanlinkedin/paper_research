@@ -1,15 +1,15 @@
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Models.Validation;
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace RuntimeErrorSage.Model.Remediation.Base;
+namespace RuntimeErrorSage.Application.Remediation.Base;
 
 /// <summary>
 /// Base class for remediation strategies.

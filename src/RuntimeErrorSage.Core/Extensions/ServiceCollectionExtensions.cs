@@ -2,24 +2,24 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Model.Analysis;
-using RuntimeErrorSage.Model.Analysis.Interfaces;
-using RuntimeErrorSage.Model.Health;
-using RuntimeErrorSage.Model.Interfaces;
-using RuntimeErrorSage.Model.LLM;
-using RuntimeErrorSage.Model.LLM.Interfaces;
-using RuntimeErrorSage.Model.LLM.Options;
-using RuntimeErrorSage.Model.MCP;
-using RuntimeErrorSage.Model.MCP.Interfaces;
-using RuntimeErrorSage.Model.Options;
-using RuntimeErrorSage.Model.Remediation;
-using RuntimeErrorSage.Model.Remediation.Interfaces;
-using RuntimeErrorSage.Model.Runtime.Interfaces;
-using RuntimeErrorSage.Model.Storage;
-using RuntimeErrorSage.Model.Storage.Interfaces;
+using RuntimeErrorSage.Application.Analysis;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Health;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Application.LLM;
+using RuntimeErrorSage.Application.LLM.Interfaces;
+using RuntimeErrorSage.Application.LLM.Options;
+using RuntimeErrorSage.Application.MCP;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Application.Options;
+using RuntimeErrorSage.Application.Remediation;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Runtime.Interfaces;
+using RuntimeErrorSage.Application.Storage;
+using RuntimeErrorSage.Application.Storage.Interfaces;
 using StackExchange.Redis;
 
-namespace RuntimeErrorSage.Model.Extensions
+namespace RuntimeErrorSage.Application.Extensions
 {
     public static class ServiceCollectionExtensions
     {

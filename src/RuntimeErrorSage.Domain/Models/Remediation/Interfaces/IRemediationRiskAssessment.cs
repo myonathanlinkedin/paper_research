@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Remediation.Interfaces
+namespace RuntimeErrorSage.Application.Models.Remediation.Interfaces
 {
     /// <summary>
     /// Interface for remediation risk assessment functionality.

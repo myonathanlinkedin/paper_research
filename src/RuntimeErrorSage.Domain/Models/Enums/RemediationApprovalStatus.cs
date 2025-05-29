@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Model.Models.Enums;
+namespace RuntimeErrorSage.Application.Models.Enums;
 
 /// <summary>
 /// Represents the approval status of a remediation action.

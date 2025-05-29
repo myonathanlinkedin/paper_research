@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 
-namespace RuntimeErrorSage.Model.Models.Interfaces
+namespace RuntimeErrorSage.Application.Models.Interfaces
 {
     /// <summary>
     /// Represents a model interface for error analysis and pattern recognition.

@@ -1,12 +1,12 @@
 using System;
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Remediation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Validation;
 
-namespace RuntimeErrorSage.Model.Models.Remediation.Interfaces
+namespace RuntimeErrorSage.Application.Models.Remediation.Interfaces
 {
     /// <summary>
     /// Interface for remediation actions.

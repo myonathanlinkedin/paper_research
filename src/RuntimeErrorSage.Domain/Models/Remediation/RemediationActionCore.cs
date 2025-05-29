@@ -1,12 +1,12 @@
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Validation;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Application.Models.Error;
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     /// <summary>
     /// Represents the core properties and state of a remediation action.

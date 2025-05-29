@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Graph
+namespace RuntimeErrorSage.Application.Models.Graph
 {
     /// <summary>
     /// Represents an edge in a dependency graph.

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 
-namespace RuntimeErrorSage.Model.Models.Remediation.Interfaces
+namespace RuntimeErrorSage.Application.Models.Remediation.Interfaces
 {
     public interface IRemediationContext
     {

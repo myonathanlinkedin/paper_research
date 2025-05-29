@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-using RuntimeErrorSage.Model.Analysis;
-using RuntimeErrorSage.Model.LLM;
+using RuntimeErrorSage.Application.Analysis;
+using RuntimeErrorSage.Application.LLM;
 using Moq;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 using RuntimeErrorSage.Tests.TestSuite.Enums;
-using RuntimeErrorSage.Model.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Tests.TestSuite
 {

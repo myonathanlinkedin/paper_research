@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Graph;
-using RuntimeErrorSage.Model.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
 using System.Linq;
 
-namespace RuntimeErrorSage.Model.Remediation
+namespace RuntimeErrorSage.Application.Remediation
 {
     /// <summary>
     /// Analyzes error context graphs to determine component health and relationships for remediation purposes.

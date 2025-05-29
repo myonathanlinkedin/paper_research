@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Services;
-using RuntimeErrorSage.Model.Utilities;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Services;
+using RuntimeErrorSage.Application.Utilities;
 
 namespace RuntimeErrorSage.Tests.TestSuite.Services
 {

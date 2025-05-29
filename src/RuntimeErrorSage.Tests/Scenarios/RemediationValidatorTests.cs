@@ -2,12 +2,12 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
-using RuntimeErrorSage.Model.Interfaces;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Graph;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Remediation;
-using RuntimeErrorSage.Model.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Remediation;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
 using Xunit;
 
 namespace RuntimeErrorSage.Tests.Scenarios;

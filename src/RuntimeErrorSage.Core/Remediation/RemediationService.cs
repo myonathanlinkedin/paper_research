@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Common;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Models.Validation;
-using RuntimeErrorSage.Model.Models.Execution;
-using RuntimeErrorSage.Model.Models.Metrics;
-using RuntimeErrorSage.Model.Interfaces;
-using RuntimeErrorSage.Model.Models.Graph;
-using RuntimeErrorSage.Model.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Common;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Application.Models.Execution;
+using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Analysis.Interfaces;
-using RuntimeErrorSage.Model.Options;
-using RuntimeErrorSage.Model.Analysis;
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Options;
+using RuntimeErrorSage.Application.Analysis;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Model.Remediation
+namespace RuntimeErrorSage.Application.Remediation
 {
     /// <summary>
     /// Service for managing remediation operations.

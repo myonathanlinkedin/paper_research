@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Storage;
+namespace RuntimeErrorSage.Application.Models.Storage;
 
 /// <summary>
 /// Represents storage-related metrics.

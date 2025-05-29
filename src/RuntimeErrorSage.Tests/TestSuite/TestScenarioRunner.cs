@@ -1,5 +1,5 @@
-using RuntimeErrorSage.Model.Analysis.Interfaces;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 
 namespace RuntimeErrorSage.Tests.TestSuite;

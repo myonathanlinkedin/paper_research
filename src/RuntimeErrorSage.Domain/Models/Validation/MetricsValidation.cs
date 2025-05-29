@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Validation
+namespace RuntimeErrorSage.Application.Models.Validation
 {
     /// <summary>
     /// Represents the validation results for metrics.

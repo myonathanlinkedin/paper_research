@@ -1,7 +1,7 @@
 using System;
-using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Remediation;
 
-namespace RuntimeErrorSage.Model.Examples
+namespace RuntimeErrorSage.Application.Examples
 {
     /// <summary>
     /// Examples showing the correct way to set success state on remediation results

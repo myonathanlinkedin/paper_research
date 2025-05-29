@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     /// <summary>
     /// Represents an audit entry for a remediation action.

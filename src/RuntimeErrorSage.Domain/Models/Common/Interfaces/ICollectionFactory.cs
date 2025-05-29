@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Common.Interfaces
+namespace RuntimeErrorSage.Application.Models.Common.Interfaces
 {
     /// <summary>
     /// Interface for creating collections of various types.

@@ -28,8 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RuntimeErrorSage.Core\RuntimeErrorSage.Core.csproj" />
+    <ProjectReference Include="..\RuntimeErrorSage.Application\RuntimeErrorSage.Application.csproj" />
+    <ProjectReference Include="..\RuntimeErrorSage.Core\RuntimeErrorSage.API.Core.csproj" />
     <ProjectReference Include="..\RuntimeErrorSage.Domain\RuntimeErrorSage.Domain.csproj" />
+    <ProjectReference Include="..\RuntimeErrorSage.Infrastructure\RuntimeErrorSage.Infrastructure.csproj" />
     <ProjectReference Include="..\RuntimeErrorSage.Middleware\RuntimeErrorSage.Middleware.csproj" />
   </ItemGroup>
 

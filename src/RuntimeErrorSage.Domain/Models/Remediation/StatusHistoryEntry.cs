@@ -1,7 +1,7 @@
 using System;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     /// <summary>
     /// Represents a status history entry.

@@ -1,6 +1,6 @@
-using RuntimeErrorSage.Model.Models.Execution;
+using RuntimeErrorSage.Application.Models.Execution;
 
-namespace RuntimeErrorSage.Model.Examples;
+namespace RuntimeErrorSage.Application.Examples;
 
 /// <summary>
 /// Demonstrates proper Method conversion patterns

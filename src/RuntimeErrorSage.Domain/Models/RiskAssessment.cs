@@ -1,6 +1,6 @@
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models
+namespace RuntimeErrorSage.Application.Models
 {
     public class RiskAssessment
     {

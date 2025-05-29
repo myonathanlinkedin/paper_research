@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Extensions;
+namespace RuntimeErrorSage.Application.Extensions;
 
 public static class DateTimeExtensions
 {

@@ -1,7 +1,7 @@
 using System;
-using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Remediation;
 
-namespace RuntimeErrorSage.Model.Examples
+namespace RuntimeErrorSage.Application.Examples
 {
     /// <summary>
     /// Guide for using Success/IsSuccessful properties correctly

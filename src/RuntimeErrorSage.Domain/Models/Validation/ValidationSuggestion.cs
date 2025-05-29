@@ -2,7 +2,7 @@ using RuntimeErrorSage.Domain.Enums;
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Validation;
+namespace RuntimeErrorSage.Application.Models.Validation;
 
 /// <summary>
 /// Represents a validation suggestion.

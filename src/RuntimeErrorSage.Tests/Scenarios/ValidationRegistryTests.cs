@@ -1,9 +1,9 @@
 using Xunit;
 using FluentAssertions;
-using RuntimeErrorSage.Model.Analysis;
-using RuntimeErrorSage.Model.Remediation;
-using RuntimeErrorSage.Model.MCP;
-using RuntimeErrorSage.Model.Validation;
+using RuntimeErrorSage.Application.Analysis;
+using RuntimeErrorSage.Application.Remediation;
+using RuntimeErrorSage.Application.MCP;
+using RuntimeErrorSage.Application.Validation;
 using Moq;
 using System.Threading.Tasks;
 using System.Collections.Generic;

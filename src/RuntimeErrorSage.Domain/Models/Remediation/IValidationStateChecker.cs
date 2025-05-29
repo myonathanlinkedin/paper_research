@@ -1,6 +1,6 @@
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     public interface IValidationStateChecker
     {

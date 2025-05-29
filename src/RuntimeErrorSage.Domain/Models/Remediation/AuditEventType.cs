@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     /// <summary>
     /// Defines the types of events that can be audited.

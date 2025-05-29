@@ -1,7 +1,7 @@
 using System;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Common;
+namespace RuntimeErrorSage.Application.Models.Common;
 
 /// <summary>
 /// Represents a single entry in the status history.

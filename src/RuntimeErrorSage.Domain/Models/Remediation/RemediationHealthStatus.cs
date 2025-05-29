@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Remediation;
+namespace RuntimeErrorSage.Application.Models.Remediation;
 
 /// <summary>
 /// Represents the health status of a system after remediation.

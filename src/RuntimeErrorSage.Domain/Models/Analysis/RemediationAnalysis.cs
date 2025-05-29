@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Remediation;
 
-namespace RuntimeErrorSage.Model.Models.Analysis
+namespace RuntimeErrorSage.Application.Models.Analysis
 {
     /// <summary>
     /// Represents the analysis of remediation options for an error.

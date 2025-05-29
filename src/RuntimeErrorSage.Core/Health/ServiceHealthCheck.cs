@@ -1,17 +1,17 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Model.Health.Exceptions;
-using RuntimeErrorSage.Model.Health.Interfaces;
-using RuntimeErrorSage.Model.Models.Health;
+using RuntimeErrorSage.Application.Health.Exceptions;
+using RuntimeErrorSage.Application.Health.Interfaces;
+using RuntimeErrorSage.Application.Models.Health;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Options;
+using RuntimeErrorSage.Application.Options;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
-using RuntimeErrorSage.Model.Health.Models;
+using RuntimeErrorSage.Application.Health.Models;
 
-namespace RuntimeErrorSage.Model.Health;
+namespace RuntimeErrorSage.Application.Health;
 
 public class ServiceHealthCheck : IHealthCheck, IDisposable
 {
@@ -177,7 +177,7 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
         }
     }
 
-    public async Task<RuntimeErrorSage.Model.Models.Health.HealthStatus> GetServiceHealthAsync(string serviceName)
+    public async Task<RuntimeErrorSage.Application.Models.Health.HealthStatus> GetServiceHealthAsync(string serviceName)
     {
         try
         {
@@ -189,7 +189,7 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
             var serviceStatus = _serviceStatus.GetValueOrDefault(serviceName);
             var isHealthy = serviceStatus?.IsHealthy ?? false;
 
-            return new RuntimeErrorSage.Model.Models.Health.HealthStatus
+            return new RuntimeErrorSage.Application.Models.Health.HealthStatus
             {
                 ServiceName = serviceName,
                 IsHealthy = isHealthy && healthScore >= _options.HealthScoreThreshold,

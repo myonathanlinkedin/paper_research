@@ -1,7 +1,7 @@
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     public class DefaultValidationStateChecker : IValidationStateChecker
     {

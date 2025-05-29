@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Model.Models.Metrics;
-using RuntimeErrorSage.Model.Models;
-using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Application.Models;
+using RuntimeErrorSage.Application.Models.Graph;
 using RuntimeErrorSage.Domain.Enums;
 using System.Linq;
 
-namespace RuntimeErrorSage.Model.Models.Error
+namespace RuntimeErrorSage.Application.Models.Error
 {
     /// <summary>
     /// Represents the context of an error, including exception details and additional metadata.

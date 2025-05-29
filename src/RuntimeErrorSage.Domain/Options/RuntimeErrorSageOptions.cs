@@ -1,9 +1,9 @@
 using System;
-using RuntimeErrorSage.Model.LLM.Options;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.LLM.Options;
+using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Options
+namespace RuntimeErrorSage.Application.Options
 {
     /// <summary>
     /// Configuration options for the RuntimeErrorSage runtime intelligence service.

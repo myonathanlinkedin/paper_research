@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Metrics
+namespace RuntimeErrorSage.Application.Models.Metrics
 {
     /// <summary>
     /// Represents a metric value with associated metadata.

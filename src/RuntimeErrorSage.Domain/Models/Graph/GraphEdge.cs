@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Graph
+namespace RuntimeErrorSage.Application.Models.Graph
 {
     /// <summary>
     /// Represents an edge in a dependency graph.

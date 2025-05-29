@@ -1,9 +1,9 @@
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using System;
 using System.Threading.Tasks;
 
-namespace RuntimeErrorSage.Model.Models.Validation;
+namespace RuntimeErrorSage.Application.Models.Validation;
 
 /// <summary>
 /// Represents a validation rule for remediation actions.

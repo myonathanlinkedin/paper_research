@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Graph;
+namespace RuntimeErrorSage.Application.Models.Graph;
 
 /// <summary>
 /// Represents a dependency analysis result.

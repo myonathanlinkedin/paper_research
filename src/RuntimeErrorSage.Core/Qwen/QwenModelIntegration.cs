@@ -1,14 +1,14 @@
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Model.Analysis.Interfaces;
-using RuntimeErrorSage.Model.Classifier.Interfaces;
-using RuntimeErrorSage.Model.Interfaces;
-using RuntimeErrorSage.Model.LLM.Interfaces;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Classifier.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Error.Factories;
-using RuntimeErrorSage.Model.Models.LLM;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Error.Factories;
+using RuntimeErrorSage.Application.Models.LLM;
 
-namespace RuntimeErrorSage.Model.Models.Qwen;
+namespace RuntimeErrorSage.Application.Models.Qwen;
 
 /// <summary>
 /// Implements the Qwen 2.5 7B Instruct 1M model integration for error analysis and remediation.
@@ -20,7 +20,7 @@ public class QwenModelIntegration : ILLMClient
     private readonly IErrorContextAnalyzer _contextAnalyzer;
     private readonly IRemediationActionSystem _remediationSystem;
     private readonly IErrorClassifier _errorClassifier;
-    private readonly RuntimeErrorSage.Model.Analysis.Interfaces.IErrorRelationshipAnalyzer _errorRelationshipAnalyzer;
+    private readonly RuntimeErrorSage.Application.Analysis.Interfaces.IErrorRelationshipAnalyzer _errorRelationshipAnalyzer;
     private readonly IRuntimeErrorFactory _runtimeErrorFactory;
 
     private const string MODEL_NAME = "Qwen/Qwen2.5-7B-Instruct-1M";
@@ -38,7 +38,7 @@ public class QwenModelIntegration : ILLMClient
         IErrorContextAnalyzer contextAnalyzer,
         IRemediationActionSystem remediationSystem,
         IErrorClassifier errorClassifier,
-        RuntimeErrorSage.Model.Analysis.Interfaces.IErrorRelationshipAnalyzer errorRelationshipAnalyzer,
+        RuntimeErrorSage.Application.Analysis.Interfaces.IErrorRelationshipAnalyzer errorRelationshipAnalyzer,
         IRuntimeErrorFactory runtimeErrorFactory)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

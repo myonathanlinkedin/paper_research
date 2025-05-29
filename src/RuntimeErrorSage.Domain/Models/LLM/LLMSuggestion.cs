@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Remediation;
 
-namespace RuntimeErrorSage.Model.Models.LLM
+namespace RuntimeErrorSage.Application.Models.LLM
 {
     /// <summary>
     /// Represents a suggestion from the LLM.

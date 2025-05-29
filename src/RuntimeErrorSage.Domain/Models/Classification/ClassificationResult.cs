@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Classification
+namespace RuntimeErrorSage.Application.Models.Classification
 {
     /// <summary>
     /// Represents the result of a classification operation.

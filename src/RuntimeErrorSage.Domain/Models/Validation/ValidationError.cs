@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Model.Models.Common;
+using RuntimeErrorSage.Application.Models.Common;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Validation;
+namespace RuntimeErrorSage.Application.Models.Validation;
 
 /// <summary>
 /// Represents a validation error.

@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Health.Models
+namespace RuntimeErrorSage.Application.Health.Models
 {
     public class HealthMetric
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Models.Graph
+namespace RuntimeErrorSage.Application.Models.Graph
 {
     /// <summary>
     /// Defines the direction of edges to consider when getting neighbors.

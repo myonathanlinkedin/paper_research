@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Context
+namespace RuntimeErrorSage.Application.Models.Context
 {
     /// <summary>
     /// Represents the runtime context of an application.

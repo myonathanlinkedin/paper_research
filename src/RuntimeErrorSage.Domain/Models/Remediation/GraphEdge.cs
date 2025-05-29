@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Model.Models.Remediation;
+namespace RuntimeErrorSage.Application.Models.Remediation;
 
 /// <summary>
 /// Represents an edge in a dependency graph.

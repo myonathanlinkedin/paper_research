@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Graph;
 
-namespace RuntimeErrorSage.Model.Models.Analysis
+namespace RuntimeErrorSage.Application.Models.Analysis
 {
     /// <summary>
     /// Represents a dependency graph of related errors.

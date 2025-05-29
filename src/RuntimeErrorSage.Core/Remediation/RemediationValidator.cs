@@ -1,28 +1,28 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Model.Models.Common;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Health;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Models.Validation;
-using RuntimeErrorSage.Model.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Common;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Health;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
 using System.Collections.Concurrent;
-using IRemediationValidator = RuntimeErrorSage.Model.Remediation.Interfaces.IRemediationValidator;
-using ValidationResult = RuntimeErrorSage.Model.Models.Validation.ValidationResult;
-using RuntimeErrorSage.Model.Interfaces;
-using RuntimeErrorSage.Model.Models.Graph;
+using IRemediationValidator = RuntimeErrorSage.Application.Remediation.Interfaces.IRemediationValidator;
+using ValidationResult = RuntimeErrorSage.Application.Models.Validation.ValidationResult;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Application.Models.Graph;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Model.Models.Metrics;
-using RuntimeErrorSage.Model.LLM.Interfaces;
+using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Validation.Interfaces;
-using RuntimeErrorSage.Model.Analysis.Interfaces;
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Validation.Interfaces;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Model.Remediation;
+namespace RuntimeErrorSage.Application.Remediation;
 
 /// <summary>
 /// Validates remediation actions and strategies.

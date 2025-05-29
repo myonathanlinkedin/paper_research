@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.LLM;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.LLM;
 using System.Text.Json;
 using System.Text;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.LLM.Interfaces;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.LLM.Interfaces;
 
-namespace RuntimeErrorSage.Model.Remediation
+namespace RuntimeErrorSage.Application.Remediation
 {
     /// <summary>
     /// Client for interacting with the Qwen 2.5 7B Instruct 1M language model.

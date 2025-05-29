@@ -1,7 +1,7 @@
 using System;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 
-namespace RuntimeErrorSage.Model.Models.Error.Factories
+namespace RuntimeErrorSage.Application.Models.Error.Factories
 {
     /// <summary>
     /// Factory for creating RelatedError instances.

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.LLM;
-using RuntimeErrorSage.Model.Models.Context;
+using RuntimeErrorSage.Application.Models.LLM;
+using RuntimeErrorSage.Application.Models.Context;
 
-namespace RuntimeErrorSage.Model.Models.Graph;
+namespace RuntimeErrorSage.Application.Models.Graph;
 
 /// <summary>
 /// Represents the result of a graph analysis operation.
@@ -30,7 +30,7 @@ public class GraphAnalysisResult
     /// <summary>
     /// Gets or sets the related errors found during analysis.
     /// </summary>
-    public List<RuntimeErrorSage.Model.Models.Error.RelatedError> RelatedErrors { get; set; } = new();
+    public List<RuntimeErrorSage.Application.Models.Error.RelatedError> RelatedErrors { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the analysis start time.

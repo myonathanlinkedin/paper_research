@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
-using RuntimeErrorSage.Model.Storage;
-using RuntimeErrorSage.Model.Models.Health;
+using RuntimeErrorSage.Application.Storage;
+using RuntimeErrorSage.Application.Models.Health;
 
-namespace RuntimeErrorSage.Model.Health;
+namespace RuntimeErrorSage.Application.Health;
 
 /// <summary>
 /// Health check for Redis connection.

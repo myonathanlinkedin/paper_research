@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RuntimeErrorSage.Model.Extensions;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Models.Execution;
+using RuntimeErrorSage.Application.Extensions;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Execution;
 
-namespace RuntimeErrorSage.Model.Examples
+namespace RuntimeErrorSage.Application.Examples
 {
     /// <summary>
     /// Examples showing how to properly handle nullable TimeSpan properties

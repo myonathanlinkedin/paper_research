@@ -1,20 +1,20 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Model.Analysis.Interfaces;
-using RuntimeErrorSage.Model.Exceptions;
-using RuntimeErrorSage.Model.Extensions;
-using RuntimeErrorSage.Model.MCP.Interfaces;
-using RuntimeErrorSage.Model.Models.Common;
-using RuntimeErrorSage.Model.Models.Context;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Storage.Interfaces;
-using ConnectionState = RuntimeErrorSage.Model.Models.Enums.ConnectionState;
-using ContextHistory = RuntimeErrorSage.Model.Models.Context.ContextHistory;
-using TimeRange = RuntimeErrorSage.Model.Models.Common.TimeRange;
-using RuntimeErrorSage.Model.Models.MCP;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Exceptions;
+using RuntimeErrorSage.Application.Extensions;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Application.Models.Common;
+using RuntimeErrorSage.Application.Models.Context;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Storage.Interfaces;
+using ConnectionState = RuntimeErrorSage.Application.Models.Enums.ConnectionState;
+using ContextHistory = RuntimeErrorSage.Application.Models.Context.ContextHistory;
+using TimeRange = RuntimeErrorSage.Application.Models.Common.TimeRange;
+using RuntimeErrorSage.Application.Models.MCP;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.MCP;
+namespace RuntimeErrorSage.Application.MCP;
 
 /// <summary>
 /// Implements the Model Context Protocol (MCP) client for error context analysis.
@@ -29,7 +29,7 @@ public class MCPClient : IMCPClient, IDisposable
     private readonly Dictionary<string, List<ContextHistory>> _contextHistory;
     private readonly Dictionary<string, Func<ErrorContext, Task>> _contextSubscribers;
     private readonly MCPClientOptions _options;
-    private readonly RuntimeErrorSage.Model.Storage.Interfaces.IPatternStorage _storage;
+    private readonly RuntimeErrorSage.Application.Storage.Interfaces.IPatternStorage _storage;
     private readonly IErrorAnalyzer _errorAnalyzer;
     private bool _disposed;
 
@@ -39,7 +39,7 @@ public class MCPClient : IMCPClient, IDisposable
     public MCPClient(
         ILogger<MCPClient> logger,
         IOptions<MCPClientOptions> options,
-        RuntimeErrorSage.Model.Storage.Interfaces.IPatternStorage storage,
+        RuntimeErrorSage.Application.Storage.Interfaces.IPatternStorage storage,
         IErrorAnalyzer errorAnalyzer)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

@@ -1,8 +1,8 @@
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Graph;
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Model.Models.Error;
+namespace RuntimeErrorSage.Application.Models.Error;
 
 /// <summary>
 /// Represents the result of an error analysis.

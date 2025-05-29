@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Models.Enums
+namespace RuntimeErrorSage.Application.Models.Enums
 {
     /// <summary>
     /// Represents the status of a remediation suggestion.

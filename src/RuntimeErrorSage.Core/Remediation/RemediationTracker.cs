@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Execution;
-using RuntimeErrorSage.Model.Models.Metrics;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Remediation;
+using RuntimeErrorSage.Application.Models.Execution;
+using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Remediation;
 
-namespace RuntimeErrorSage.Model.Remediation;
+namespace RuntimeErrorSage.Application.Remediation;
 
 /// <summary>
 /// Tracks remediation execution status and history.

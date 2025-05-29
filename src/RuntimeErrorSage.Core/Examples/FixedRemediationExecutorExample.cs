@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Model.Extensions;
-using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Application.Extensions;
+using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Execution;
-using RuntimeErrorSage.Model.Models.Graph;
-using RuntimeErrorSage.Model.Models.Metrics;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Models.Validation;
-using RuntimeErrorSage.Model.Remediation.Interfaces;
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Model.Analysis;
-using RuntimeErrorSage.Model.Models.Common;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Execution;
+using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Analysis;
+using RuntimeErrorSage.Application.Models.Common;
 
-namespace RuntimeErrorSage.Model.Examples
+namespace RuntimeErrorSage.Application.Examples
 {
     /// <summary>
     /// Examples showing the fixed patterns for common errors in RemediationExecutor
@@ -704,13 +704,13 @@ namespace RuntimeErrorSage.Model.Examples
             // var remediationStatus = RemediationStatusEnum.Success;
             
             // CORRECT: Using fully qualified name
-            var remediationStatus = RuntimeErrorSage.Model.Models.Remediation.RemediationStatusEnum.Success;
+            var remediationStatus = RuntimeErrorSage.Application.Models.Remediation.RemediationStatusEnum.Success;
             
             // INCORRECT: Using ambiguous ValidationResult
             // var validationResult = new ValidationResult();
             
             // CORRECT: Using fully qualified name
-            var validationResult = new RuntimeErrorSage.Model.Models.Validation.ValidationResult();
+            var validationResult = new RuntimeErrorSage.Application.Models.Validation.ValidationResult();
             
             // Create a strategy with explicit namespace to avoid ambiguity
             Models.Remediation.Interfaces.IRemediationStrategy strategy = _strategy;

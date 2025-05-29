@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Models.Error;
+namespace RuntimeErrorSage.Application.Models.Error;
 
 /// <summary>
 /// Represents a service call in the error context.

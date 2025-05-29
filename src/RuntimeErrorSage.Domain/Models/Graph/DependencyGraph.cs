@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Graph
+namespace RuntimeErrorSage.Application.Models.Graph
 {
     /// <summary>
     /// Represents a dependency graph for error analysis.

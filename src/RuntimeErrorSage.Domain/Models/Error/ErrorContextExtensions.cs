@@ -1,7 +1,7 @@
 using System;
-using RuntimeErrorSage.Model.Models.Context;
+using RuntimeErrorSage.Application.Models.Context;
 
-namespace RuntimeErrorSage.Model.Models.Error;
+namespace RuntimeErrorSage.Application.Models.Error;
 
 /// <summary>
 /// Extension methods for ErrorContext

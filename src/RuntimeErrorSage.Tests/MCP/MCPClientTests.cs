@@ -4,16 +4,16 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using RuntimeErrorSage.Model.Analysis.Interfaces;
-using RuntimeErrorSage.Model.MCP;
-using RuntimeErrorSage.Model.MCP.Interfaces;
-using RuntimeErrorSage.Model.Models.Context;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.MCP;
-using RuntimeErrorSage.Model.Storage.Interfaces;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.MCP;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Application.Models.Context;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.MCP;
+using RuntimeErrorSage.Application.Storage.Interfaces;
 using Xunit;
 
-namespace RuntimeErrorSage.Model.Tests.MCP
+namespace RuntimeErrorSage.Application.Tests.MCP
 {
     public class MCPClientTests
     {

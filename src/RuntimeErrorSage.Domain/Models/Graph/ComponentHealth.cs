@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Graph
+namespace RuntimeErrorSage.Application.Models.Graph
 {
     /// <summary>
     /// Represents the health status of a component in the dependency graph.

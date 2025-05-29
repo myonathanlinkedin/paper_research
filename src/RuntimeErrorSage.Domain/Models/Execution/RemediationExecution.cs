@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Metrics;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Validation;
 
-namespace RuntimeErrorSage.Model.Models.Execution
+namespace RuntimeErrorSage.Application.Models.Execution
 {
     /// <summary>
     /// Represents the execution status and details of a remediation action.

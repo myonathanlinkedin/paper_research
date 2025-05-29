@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Application.Models.Validation;
 
-namespace RuntimeErrorSage.Model.Models.Remediation.Interfaces
+namespace RuntimeErrorSage.Application.Models.Remediation.Interfaces
 {
     /// <summary>
     /// Interface for remediation strategies that can be executed to resolve errors.

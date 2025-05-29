@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Validation
+namespace RuntimeErrorSage.Application.Models.Validation
 {
     /// <summary>
     /// Represents the result of a validation.

@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Model.Models.Execution;
+namespace RuntimeErrorSage.Application.Models.Execution;
 
 /// <summary>
 /// Represents the execution status of a rollback operation.

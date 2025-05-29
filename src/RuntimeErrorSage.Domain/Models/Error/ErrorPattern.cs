@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Error;
+namespace RuntimeErrorSage.Application.Models.Error;
 
 /// <summary>
 /// Represents a pattern of errors that can be used for analysis and remediation.

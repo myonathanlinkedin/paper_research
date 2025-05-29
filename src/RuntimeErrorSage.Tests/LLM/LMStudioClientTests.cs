@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using RuntimeErrorSage.Model.LLM;
+using RuntimeErrorSage.Application.LLM;
 
 namespace RuntimeErrorSage.Tests.LLM
 {

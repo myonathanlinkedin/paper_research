@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Model.Classifier.Interfaces;
+using RuntimeErrorSage.Application.Classifier.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Graph;
-using RuntimeErrorSage.Model.Models.Interfaces;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Application.Models.Interfaces;
 
-namespace RuntimeErrorSage.Model.Classifier;
+namespace RuntimeErrorSage.Application.Classifier;
 
 public class ErrorClassifier : IErrorClassifier
 {

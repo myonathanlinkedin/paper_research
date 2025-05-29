@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Model.Context.Interfaces;
-using RuntimeErrorSage.Model.Interfaces;
-using RuntimeErrorSage.Model.Models.Context;
+using RuntimeErrorSage.Application.Context.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Application.Models.Context;
 using RuntimeErrorSage.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
-using RuntimeErrorSage.Model.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
 
-namespace RuntimeErrorSage.Model.Models.MCP;
+namespace RuntimeErrorSage.Application.Models.MCP;
 
 /// <summary>
 /// Implements the Model Context Protocol (MCP) for error analysis.

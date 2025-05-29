@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace RuntimeErrorSage.Model.Models.Validation;
+namespace RuntimeErrorSage.Application.Models.Validation;
 
 /// <summary>
 /// Exception thrown when validation fails.

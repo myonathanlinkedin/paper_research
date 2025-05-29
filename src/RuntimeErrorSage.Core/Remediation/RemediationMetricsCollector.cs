@@ -1,29 +1,29 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Model.Interfaces;
-using RuntimeErrorSage.Model.Models.Common;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Options;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Application.Models.Common;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Options;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using RuntimeErrorSage.Model.Models.Metrics;
+using RuntimeErrorSage.Application.Models.Metrics;
 using RuntimeErrorSage.Domain.Enums;
-using SeverityLevel = RuntimeErrorSage.Model.Models.Enums.SeverityLevel;
-using ValidationError = RuntimeErrorSage.Model.Models.Validation.ValidationError;
-using ValidationResult = RuntimeErrorSage.Model.Models.Validation.ValidationResult;
-using ValidationWarning = RuntimeErrorSage.Model.Models.Validation.ValidationWarning;
-using ValidationSeverity = RuntimeErrorSage.Model.Models.Enums.ValidationSeverity;
+using SeverityLevel = RuntimeErrorSage.Application.Models.Enums.SeverityLevel;
+using ValidationError = RuntimeErrorSage.Application.Models.Validation.ValidationError;
+using ValidationResult = RuntimeErrorSage.Application.Models.Validation.ValidationResult;
+using ValidationWarning = RuntimeErrorSage.Application.Models.Validation.ValidationWarning;
+using ValidationSeverity = RuntimeErrorSage.Application.Models.Enums.ValidationSeverity;
 using System;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Model.Models.Graph;
-using RuntimeErrorSage.Model.Remediation.Interfaces;
-using RuntimeErrorSage.Model.LLM.Interfaces;
-using RuntimeErrorSage.Model.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Application.LLM.Interfaces;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
 
-namespace RuntimeErrorSage.Model.Remediation;
+namespace RuntimeErrorSage.Application.Remediation;
 
 /// <summary>
 /// Collects and aggregates remediation metrics.

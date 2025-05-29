@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Options
+namespace RuntimeErrorSage.Application.Options
 {
     /// <summary>
     /// Configuration options for the RemediationMetricsCollector.

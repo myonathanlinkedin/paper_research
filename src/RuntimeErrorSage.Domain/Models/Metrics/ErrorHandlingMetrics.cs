@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Metrics;
+namespace RuntimeErrorSage.Application.Models.Metrics;
 
 /// <summary>
 /// Represents metrics collected during error handling.

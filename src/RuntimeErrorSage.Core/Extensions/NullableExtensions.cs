@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Extensions
+namespace RuntimeErrorSage.Application.Extensions
 {
     /// <summary>
     /// Extension methods for nullable types.

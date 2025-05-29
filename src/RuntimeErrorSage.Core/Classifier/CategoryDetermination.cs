@@ -1,6 +1,6 @@
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 
-namespace RuntimeErrorSage.Model.Classifier;
+namespace RuntimeErrorSage.Application.Classifier;
 
 /// <summary>
 /// Provides functionality for determining error categories based on analysis results.

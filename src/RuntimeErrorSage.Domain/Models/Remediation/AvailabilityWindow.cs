@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     /// <summary>
     /// Represents a time window for availability.

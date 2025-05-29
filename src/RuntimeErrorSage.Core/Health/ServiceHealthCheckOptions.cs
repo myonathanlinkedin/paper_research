@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Health
+namespace RuntimeErrorSage.Application.Health
 {
     public class ServiceHealthCheckOptions
     {

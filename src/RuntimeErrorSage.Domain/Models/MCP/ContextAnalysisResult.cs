@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.MCP
+namespace RuntimeErrorSage.Application.Models.MCP
 {
     public class ContextAnalysisResult
     {

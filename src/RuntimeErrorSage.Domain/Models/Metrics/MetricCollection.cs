@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RuntimeErrorSage.Model.Models.Metrics
+namespace RuntimeErrorSage.Application.Models.Metrics
 {
     /// <summary>
     /// Represents a collection of metric values.

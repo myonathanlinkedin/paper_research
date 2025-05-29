@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.LLM.Options
+namespace RuntimeErrorSage.Application.LLM.Options
 {
     public class LMStudioOptions
     {

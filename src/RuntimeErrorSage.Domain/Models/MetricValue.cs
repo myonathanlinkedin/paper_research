@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Services.Models
+namespace RuntimeErrorSage.Application.Services.Models
 {
     /// <summary>
     /// Represents a metric value with its unit and metadata.

@@ -1,7 +1,7 @@
 using System;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Middleware;
+namespace RuntimeErrorSage.Application.Middleware;
 
 /// <summary>
 /// Represents an error response.

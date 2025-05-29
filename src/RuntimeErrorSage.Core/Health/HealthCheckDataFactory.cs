@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Health
+namespace RuntimeErrorSage.Application.Health
 {
     /// <summary>
     /// Default implementation of IHealthCheckDataFactory.

@@ -3,12 +3,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Model.LLM;
-using RuntimeErrorSage.Model.LLM.Options;
-using RuntimeErrorSage.Model.Options;
-using RuntimeErrorSage.Model.LLM.Interfaces;
+using RuntimeErrorSage.Application.LLM;
+using RuntimeErrorSage.Application.LLM.Options;
+using RuntimeErrorSage.Application.Options;
+using RuntimeErrorSage.Application.LLM.Interfaces;
 
-namespace RuntimeErrorSage.Model.Health
+namespace RuntimeErrorSage.Application.Health
 {
     public class LMStudioHealthCheck : IHealthCheck
     {

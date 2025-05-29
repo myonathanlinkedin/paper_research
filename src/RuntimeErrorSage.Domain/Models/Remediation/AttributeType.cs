@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     /// <summary>
     /// Defines the types of attributes that can be associated with remediation actions.

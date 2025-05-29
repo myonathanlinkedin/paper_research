@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Application.Models.Graph;
 
-namespace RuntimeErrorSage.Model.Models.Analysis
+namespace RuntimeErrorSage.Application.Models.Analysis
 {
     /// <summary>
     /// Represents the result of an impact analysis operation.

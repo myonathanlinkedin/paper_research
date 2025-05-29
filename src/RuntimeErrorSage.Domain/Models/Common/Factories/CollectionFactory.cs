@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using RuntimeErrorSage.Model.Models.Common.Interfaces;
+using RuntimeErrorSage.Application.Models.Common.Interfaces;
 
-namespace RuntimeErrorSage.Model.Models.Common.Factories
+namespace RuntimeErrorSage.Application.Models.Common.Factories
 {
     /// <summary>
     /// Factory for creating collection instances.

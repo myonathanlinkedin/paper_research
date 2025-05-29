@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Application.Models.Graph;
 
-namespace RuntimeErrorSage.Model.Examples
+namespace RuntimeErrorSage.Application.Examples
 {
     /// <summary>
     /// Examples showing how to properly access properties through KeyValuePair

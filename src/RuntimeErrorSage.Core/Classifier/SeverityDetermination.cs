@@ -1,7 +1,7 @@
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Classifier;
+namespace RuntimeErrorSage.Application.Classifier;
 
 /// <summary>
 /// Provides functionality for determining error severity based on analysis results.

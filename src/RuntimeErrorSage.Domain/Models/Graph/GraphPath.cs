@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Graph;
+namespace RuntimeErrorSage.Application.Models.Graph;
 
 /// <summary>
 /// Represents a path between nodes in a dependency graph.

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.LLM;
+namespace RuntimeErrorSage.Application.Models.LLM;
 
 /// <summary>
 /// Represents metrics for a model execution.

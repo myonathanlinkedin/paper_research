@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Models.LLM;
+namespace RuntimeErrorSage.Application.Models.LLM;
 
 /// <summary>
 /// Represents a code snippet with contextual information.

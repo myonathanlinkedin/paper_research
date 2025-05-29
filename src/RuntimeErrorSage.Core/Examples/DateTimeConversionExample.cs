@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Model.Examples;
+namespace RuntimeErrorSage.Application.Examples;
 
 /// <summary>
 /// Demonstrates proper DateTime conversion patterns

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Execution;
+namespace RuntimeErrorSage.Application.Models.Execution;
 
 /// <summary>
 /// Contains detailed information about a rollback execution.

@@ -1,8 +1,8 @@
-using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Application.Models.Validation;
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Model.Models.Remediation
+namespace RuntimeErrorSage.Application.Models.Remediation
 {
     public class DefaultValidationResultStorage : IValidationResultStorage
     {

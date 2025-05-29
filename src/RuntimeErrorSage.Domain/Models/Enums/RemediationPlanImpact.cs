@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Model.Models.Enums;
+namespace RuntimeErrorSage.Application.Models.Enums;
 
 /// <summary>
 /// Defines the impact levels of remediation plans.

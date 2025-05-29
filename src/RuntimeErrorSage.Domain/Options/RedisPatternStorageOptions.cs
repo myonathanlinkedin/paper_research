@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Options;
+namespace RuntimeErrorSage.Application.Options;
 
 /// <summary>
 /// Configuration options for Redis pattern storage.

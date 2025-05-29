@@ -1,6 +1,6 @@
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Model.Models.Remediation;
-namespace RuntimeErrorSage.Model.Models.Common;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Remediation;
+namespace RuntimeErrorSage.Application.Models.Common;
 
 /// <summary>
 /// Defines the priority levels for remediation actions.

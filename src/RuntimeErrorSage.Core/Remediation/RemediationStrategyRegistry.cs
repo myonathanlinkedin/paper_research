@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Remediation;
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Model.Remediation.Interfaces;
-using RuntimeErrorSage.Model.Remediation.Metadata;
-using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Remediation.Metadata;
+using RuntimeErrorSage.Application.Interfaces;
 
-namespace RuntimeErrorSage.Model.Remediation;
+namespace RuntimeErrorSage.Application.Remediation;
 
 /// <summary>
 /// Implements a registry pattern for managing remediation strategies.

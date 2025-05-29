@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Models.Health;
+namespace RuntimeErrorSage.Application.Models.Health;
 
 /// <summary>
 /// Represents a health prediction for a system component.

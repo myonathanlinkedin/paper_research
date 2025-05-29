@@ -1,6 +1,6 @@
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Model.Examples;
+namespace RuntimeErrorSage.Application.Examples;
 
 /// <summary>
 /// Demonstrates proper Enum conversion patterns

@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Storage
+namespace RuntimeErrorSage.Application.Storage
 {
     public class RedisPatternStorageOptions
     {

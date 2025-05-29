@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using RuntimeErrorSage.Model.Analysis;
-using RuntimeErrorSage.Model.MCP.Interfaces;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Interfaces;
-using RuntimeErrorSage.Model.Options;
-using RuntimeErrorSage.Model.Storage.Interfaces;
+using RuntimeErrorSage.Application.Analysis;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Interfaces;
+using RuntimeErrorSage.Application.Options;
+using RuntimeErrorSage.Application.Storage.Interfaces;
 using Xunit;
 
 namespace RuntimeErrorSage.Tests.Analysis

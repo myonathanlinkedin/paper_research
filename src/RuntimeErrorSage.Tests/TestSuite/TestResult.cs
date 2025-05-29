@@ -1,5 +1,5 @@
 using System;
-using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Application.Models.Error;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
 

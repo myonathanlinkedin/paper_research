@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Models.Monitoring
+namespace RuntimeErrorSage.Application.Models.Monitoring
 {
     /// <summary>
     /// Represents the result of a monitoring operation.

@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Models.Enums
+namespace RuntimeErrorSage.Application.Models.Enums
 {
     /// <summary>
     /// Extension methods for converting between different severity types.

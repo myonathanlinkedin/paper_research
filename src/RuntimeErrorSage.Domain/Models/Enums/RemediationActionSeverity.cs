@@ -1,6 +1,6 @@
-using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Model.Models.Remediation;
-namespace RuntimeErrorSage.Model.Models.Enums;
+using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Models.Remediation;
+namespace RuntimeErrorSage.Application.Models.Enums;
 
 /// <summary>
 /// Represents the severity of a remediation action.

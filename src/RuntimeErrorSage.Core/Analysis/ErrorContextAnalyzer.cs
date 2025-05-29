@@ -2,17 +2,17 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Model.Analysis.Interfaces;
-using RuntimeErrorSage.Model.Models.Error;
-using RuntimeErrorSage.Model.Models.Analysis;
-using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Application.Models.Analysis;
+using RuntimeErrorSage.Application.Models.Graph;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Model.Models.Graph.Factories;
-using RuntimeErrorSage.Model.Models.Error.Factories;
-using RuntimeErrorSage.Model.Models.Common.Factories;
-using RuntimeErrorSage.Model.Models.Common.Interfaces;
+using RuntimeErrorSage.Application.Models.Graph.Factories;
+using RuntimeErrorSage.Application.Models.Error.Factories;
+using RuntimeErrorSage.Application.Models.Common.Factories;
+using RuntimeErrorSage.Application.Models.Common.Interfaces;
 
-namespace RuntimeErrorSage.Model.Analysis
+namespace RuntimeErrorSage.Application.Analysis
 {
     /// <summary>
     /// Analyzes error contexts to determine remediation options.

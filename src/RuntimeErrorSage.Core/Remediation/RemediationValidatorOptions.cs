@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Model.Remediation
+namespace RuntimeErrorSage.Application.Remediation
 {
     /// <summary>
     /// Options for the remediation validator.
