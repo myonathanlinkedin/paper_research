@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RuntimeErrorSage.Core\RuntimeErrorSage.API.Core.csproj" />
     <ProjectReference Include="..\RuntimeErrorSage.Domain\RuntimeErrorSage.Domain.csproj" />
   </ItemGroup>
 

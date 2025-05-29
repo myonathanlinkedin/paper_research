@@ -27,7 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RuntimeErrorSage.Application\RuntimeErrorSage.Application.csproj" />
     <ProjectReference Include="..\RuntimeErrorSage.Domain\RuntimeErrorSage.Domain.csproj" />
+    <ProjectReference Include="..\RuntimeErrorSage.Infrastructure\RuntimeErrorSage.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
