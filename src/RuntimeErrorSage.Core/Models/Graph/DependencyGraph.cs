@@ -21,6 +21,21 @@ namespace RuntimeErrorSage.Core.Models.Graph
         public string Name { get; set; } = "Dependency Graph";
 
         /// <summary>
+        /// Gets or sets the description of the graph.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the creation time of the graph.
+        /// </summary>
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the last update time of the graph.
+        /// </summary>
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
         /// Gets or sets the nodes in the graph.
         /// </summary>
         public List<GraphNode> Nodes { get; set; } = new List<GraphNode>();
@@ -29,11 +44,6 @@ namespace RuntimeErrorSage.Core.Models.Graph
         /// Gets or sets the edges in the graph.
         /// </summary>
         public List<GraphEdge> Edges { get; set; } = new List<GraphEdge>();
-
-        /// <summary>
-        /// Gets or sets the creation time of the graph.
-        /// </summary>
-        public DateTime CreationTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the root node of the graph.

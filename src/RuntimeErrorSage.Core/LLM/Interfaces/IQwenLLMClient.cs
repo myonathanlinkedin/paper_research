@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Context;
+using RuntimeErrorSage.Core.Models.LLM;
 
 namespace RuntimeErrorSage.Core.LLM.Interfaces
 {
@@ -68,5 +70,12 @@ namespace RuntimeErrorSage.Core.LLM.Interfaces
         /// <param name="temperature">The temperature to use for generation.</param>
         /// <returns>The generated response.</returns>
         Task<string> GenerateResponseWithContextSystemMessageAndConversationHistoryAsync(string prompt, string context, string systemMessage, string[] conversationHistory, int maxTokens = 1024, float temperature = 0.7f);
+
+        /// <summary>
+        /// Analyzes the given context using the LLM
+        /// </summary>
+        /// <param name="context">The context to analyze</param>
+        /// <returns>The analysis result</returns>
+        Task<LLMAnalysisResult> AnalyzeContextAsync(RuntimeContext context);
     }
 } 

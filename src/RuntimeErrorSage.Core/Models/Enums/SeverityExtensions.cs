@@ -66,7 +66,7 @@ namespace RuntimeErrorSage.Core.Models.Enums
                 ValidationSeverity.Critical => SeverityLevel.Critical,
                 ValidationSeverity.Error => SeverityLevel.High,
                 ValidationSeverity.Warning => SeverityLevel.Medium,
-                ValidationSeverity.Info => SeverityLevel.Info,
+                ValidationSeverity.Info => SeverityLevel.Low,
                 _ => SeverityLevel.Unknown
             };
         }
@@ -82,8 +82,7 @@ namespace RuntimeErrorSage.Core.Models.Enums
                 SeverityLevel.High => ErrorSeverity.High,
                 SeverityLevel.Medium => ErrorSeverity.Medium,
                 SeverityLevel.Low => ErrorSeverity.Low,
-                SeverityLevel.Info => ErrorSeverity.Info,
-                _ => ErrorSeverity.Info
+                _ => ErrorSeverity.Unknown
             };
         }
 
@@ -129,6 +128,7 @@ namespace RuntimeErrorSage.Core.Models.Enums
                 SeverityLevel.Critical => ValidationSeverity.Critical,
                 SeverityLevel.High => ValidationSeverity.Error,
                 SeverityLevel.Medium => ValidationSeverity.Warning,
+                SeverityLevel.Low => ValidationSeverity.Info,
                 _ => ValidationSeverity.Info
             };
         }

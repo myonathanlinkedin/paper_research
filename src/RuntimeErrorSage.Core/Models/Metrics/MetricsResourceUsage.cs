@@ -4,19 +4,24 @@ using System.Collections.Generic;
 namespace RuntimeErrorSage.Core.Models.Metrics
 {
     /// <summary>
-    /// Represents resource usage metrics.
+    /// Represents resource usage metrics for a specific phase or operation
     /// </summary>
-    public class ResourceUsage
+    public class MetricsResourceUsage
     {
         /// <summary>
-        /// Gets or sets the CPU usage percentage.
+        /// Memory usage in megabytes
+        /// </summary>
+        public double MemoryUsage { get; set; }
+
+        /// <summary>
+        /// CPU usage as a percentage
         /// </summary>
         public double CpuUsage { get; set; }
 
         /// <summary>
-        /// Gets or sets the memory usage in bytes.
+        /// Timestamp when the metrics were collected
         /// </summary>
-        public long MemoryUsage { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the disk usage in bytes.
@@ -39,11 +44,6 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         public int HandleCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the timestamp of the measurement.
-        /// </summary>
-        public DateTime Timestamp { get; set; }
-
-        /// <summary>
         /// Gets or sets additional metadata.
         /// </summary>
         public Dictionary<string, string> Metadata { get; set; } = new();
@@ -51,9 +51,9 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// <summary>
         /// Creates a new instance of ResourceUsage with the current system metrics.
         /// </summary>
-        public static ResourceUsage GetCurrent()
+        public static MetricsResourceUsage GetCurrent()
         {
-            return new ResourceUsage
+            return new MetricsResourceUsage
             {
                 CpuUsage = GetCpuUsage(),
                 MemoryUsage = GetMemoryUsage(),

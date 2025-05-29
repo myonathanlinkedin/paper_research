@@ -18,7 +18,12 @@ namespace RuntimeErrorSage.Core.Models.Enums
         /// <summary>
         /// The rule generates an error.
         /// </summary>
-        Error
+        Error,
+
+        /// <summary>
+        /// The rule generates a critical error.
+        /// </summary>
+        Critical
     }
 } 
 

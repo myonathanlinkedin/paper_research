@@ -1,32 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Core.Analysis.Interfaces;
 using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Options;
-using RuntimeErrorSage.Core.Validation;
-using RuntimeErrorSage.Core.Graph;
-using RuntimeErrorSage.Core.LLM;
-using RuntimeErrorSage.Core.MCP;
-using RuntimeErrorSage.Core.Models.MCP;
 using RuntimeErrorSage.Core.LLM.Interfaces;
-using RuntimeErrorSage.Core.Exceptions;
-using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.Context;
 using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Runtime.Interfaces;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
-using RuntimeErrorSage.Core.Graph.Interfaces;
-using RuntimeErrorSage.Core.Runtime.Exceptions;
-using System.ComponentModel.DataAnnotations;
+using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Core.Models.MCP;
+using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Core.Options;
+using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Runtime.Exceptions;
+using RuntimeErrorSage.Core.Runtime.Interfaces;
 using RuntimeErrorSage.Core.Services.Interfaces;
-using RuntimeErrorSage.Core.Remediation;
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using ValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
 
 namespace RuntimeErrorSage.Core.Services;
 
@@ -112,11 +101,11 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
             var analysisResult = await _errorAnalysisService.AnalyzeExceptionAsync(exception, enrichedContext);
 
             // Validate the analysis result
-            var validationResult = await _validationRegistry.ValidateAsync(enrichedContext);
+            var validationResult = await _validationRegistry.ValidateAsync(context.Id, enrichedContext);
             if (!validationResult.IsValid)
             {
                 _logger.LogWarning("Analysis validation failed: {Errors}", string.Join(", ", validationResult.Errors));
-                analysisResult.Status = AnalysisStatus.ValidationFailed;
+                analysisResult.Status = AnalysisStatus.Failed;
                 analysisResult.Details["ValidationErrors"] = validationResult.Errors;
             }
 
@@ -147,33 +136,22 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
             var plan = await _remediationAnalyzer.AnalyzeErrorAsync(context);
             if (!plan.IsValid)
             {
-                return new RemediationResult
-                {
-                    RemediationId = Guid.NewGuid().ToString(),
-                    Status = "Failed",
-                    Message = "Failed to create valid remediation plan",
-                    Timestamp = DateTime.UtcNow
-                };
+                return new RemediationResult(context, RemediationStatusEnum.Failed, "Failed to create valid remediation plan", Guid.NewGuid().ToString());
             }
 
             // Validate remediation plan
-            var validationResult = await _remediationValidator.ValidateRemediationAsync(context);
+            var validationResult = await _remediationValidator.ValidateRemediationAsync(analysisResult, context);
             if (!validationResult.IsValid)
             {
-                return new RemediationResult
-                {
-                    RemediationId = Guid.NewGuid().ToString(),
-                    Status = "ValidationFailed",
-                    Message = string.Join(", ", validationResult.Errors),
-                    Timestamp = DateTime.UtcNow
-                };
+                return new RemediationResult(context, RemediationStatusEnum.ValidationFailed, string.Join(", ", validationResult.Errors), Guid.NewGuid().ToString());
             }
 
             // Execute remediation
             var result = await _remediationService.ApplyRemediationAsync(context);
 
             // Collect metrics
-            await _metricsCollector.CollectMetricsAsync(context, result);
+            var metrics = await _metricsCollector.CollectMetricsAsync(context);
+            result.Metrics = metrics;
 
             return result;
         }
@@ -199,11 +177,11 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
             enrichedContext.AddMetadata("GraphAnalysis", graphAnalysis); // Use AddMetadata method to add data
 
             // Analyze with LLM
-            var llmAnalysis = await _llmClient.AnalyzeContextAsync(enrichedContext);
+            var llmAnalysis = await _llmClient.AnalyzeContextAsync(context.ToRuntimeContext());
             enrichedContext.AddMetadata("LLMAnalysis", llmAnalysis); // Use AddMetadata method to add data
 
             // Add MCP analysis
-            var mcpAnalysis = await _mcp.AnalyzeContextAsync(enrichedContext);
+            var mcpAnalysis = await _mcp.AnalyzeContextAsync(context.ToRuntimeContext());
             enrichedContext.AddMetadata("MCPAnalysis", mcpAnalysis); // Use AddMetadata method to add data
 
             return enrichedContext;
@@ -239,16 +217,26 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
         {
             _logger.LogInformation("Configuring RuntimeErrorSage service");
             // Configure services with options
-            _errorAnalysisService.Configure(options);
-            _remediationService.Configure(options);
-            _contextEnrichmentService.Configure(options);
-            _validationRegistry.Configure(options);
-            _errorContextAnalyzer.Configure(options);
-            _remediationAnalyzer.Configure(options);
-            _remediationValidator.Configure(options);
-            _metricsCollector.Configure(options);
-            _mcp.Configure(options);
-            _llmClient.Configure(options);
+            if (_errorAnalysisService is IConfigurable configurable)
+                configurable.Configure(options);
+            if (_remediationService is IConfigurable configurable2)
+                configurable2.Configure(options);
+            if (_contextEnrichmentService is IConfigurable configurable3)
+                configurable3.Configure(options);
+            if (_validationRegistry is IConfigurable configurable4)
+                configurable4.Configure(options);
+            if (_errorContextAnalyzer is IConfigurable configurable5)
+                configurable5.Configure(options);
+            if (_remediationAnalyzer is IConfigurable configurable6)
+                configurable6.Configure(options);
+            if (_remediationValidator is IConfigurable configurable7)
+                configurable7.Configure(options);
+            if (_metricsCollector is IConfigurable configurable8)
+                configurable8.Configure(options);
+            if (_mcp is IConfigurable configurable9)
+                configurable9.Configure(options);
+            if (_llmClient is IConfigurable configurable10)
+                configurable10.Configure(options);
         }
         catch (Exception ex)
         {
@@ -283,7 +271,20 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
 
             // Calculate metrics
             metrics.TotalProcessingTime = DateTime.UtcNow - startTime;
-            metrics.PhaseResourceUsage = await _metricsCollector.CollectMetricsAsync();
+            var resourceUsage = await _metricsCollector.CollectMetricsAsync(context);
+            metrics.PhaseResourceUsage = new Dictionary<string, MetricsResourceUsage>();
+            foreach (var kvp in resourceUsage)
+            {
+                if (kvp.Value is MetricsResourceUsage usage)
+                {
+                    metrics.PhaseResourceUsage[kvp.Key] = new MetricsResourceUsage
+                    {
+                        CpuUsage = usage.CpuUsage,
+                        MemoryUsage = usage.MemoryUsage,
+                        Timestamp = DateTime.UtcNow
+                    };
+                }
+            }
 
             // Combine results
             var result = new ErrorAnalysisResult
@@ -296,8 +297,8 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
                 Confidence = analysisResult.Confidence,
                 Accuracy = analysisResult.Accuracy,
                 Latency = metrics.TotalProcessingTime.TotalMilliseconds,
-                MemoryUsage = metrics.PhaseResourceUsage["analysis"].MemoryUsageMB * 1024 * 1024,
-                CpuUsage = metrics.PhaseResourceUsage["analysis"].CPUUsagePercent,
+                MemoryUsage = metrics.PhaseResourceUsage["Analysis"].MemoryUsage,
+                CpuUsage = metrics.PhaseResourceUsage["Analysis"].CpuUsage,
                 DependencyGraph = graphResult.DependencyGraph,
                 ImpactResults = graphResult.ImpactResults,
                 RelatedErrors = graphResult.RelatedErrors,
@@ -429,7 +430,40 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
         try
         {
             _logger.LogInformation("Analyzing context graph");
-            return await _errorContextAnalyzer.AnalyzeContextAsync(context);
+            var analysis = await _errorContextAnalyzer.AnalyzeContextAsync(context);
+            
+            // Convert RemediationAnalysis to GraphAnalysisResult
+            return new GraphAnalysisResult
+            {
+                // TODO: Set the properties based on the analysis
+                //AnalysisId = analysis.AnalysisId,
+                //Context = new RuntimeContext
+                //{
+                //    ContextId = context.Id,
+                //    ApplicationName = context.ComponentName,
+                //    Environment = context.ServiceName,
+                //    CorrelationId = context.CorrelationId,
+                //    Timestamp = context.Timestamp,
+                //    Metadata = context.Metadata.ToDictionary(kv => kv.Key, kv => kv.Value)
+                //},
+                Status = AnalysisStatus.Completed,
+                StartTime = analysis.Timestamp,
+                EndTime = DateTime.UtcNow,
+                CorrelationId = context.CorrelationId,
+                ComponentId = context.ComponentId,
+                ComponentName = context.ComponentName,
+                IsValid = true, // Default to true since the class doesn't have this property
+                ErrorMessage = string.Empty, // Default to empty since the class doesn't have this property
+                Metadata = new Dictionary<string, object>
+                {
+                    { "ConfidenceLevel", analysis.ConfidenceLevel },
+                    { "Suggestions", analysis.Suggestions },
+                    { "RelatedErrors", analysis.RelatedErrors },
+                    { "DependencyGraph", analysis.DependencyGraph },
+                    { "RootCause", analysis.RootCause },
+                    { "AdditionalContext", analysis.AdditionalContext }
+                }
+            };
         }
         catch (Exception ex)
         {
@@ -446,7 +480,7 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
             _logger.LogInformation("Analyzing error context with LLM");
 
             // Analyze with LLM
-            var llmAnalysis = await _llmClient.AnalyzeContextAsync(context);
+            var llmAnalysis = await _llmClient.AnalyzeContextAsync(context.ToRuntimeContext());
 
             // Enrich with additional insights
             var enrichedAnalysis = await _errorAnalyzer.EnrichLLMAnalysisAsync(llmAnalysis);
@@ -462,5 +496,11 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
             _logger.LogError(ex, "Error analyzing with LLM");
             throw new RuntimeErrorSageException("Failed to analyze with LLM", ex);
         }
+    }
+
+    //TODO
+    Task<System.ComponentModel.DataAnnotations.ValidationResult> IRuntimeErrorSageService.ValidateContextAsync(ErrorContext context)
+    {
+        throw new NotImplementedException();
     }
 } 

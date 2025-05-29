@@ -90,6 +90,16 @@ namespace RuntimeErrorSage.Core.Models.Graph
         public double ErrorProbability { get; set; }
 
         /// <summary>
+        /// Gets or sets the list of dependencies (nodes this node depends on)
+        /// </summary>
+        public List<string> Dependencies { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Gets or sets the list of dependents (nodes that depend on this node)
+        /// </summary>
+        public List<string> Dependents { get; set; } = new List<string>();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="GraphNode"/> class.
         /// </summary>
         public GraphNode()

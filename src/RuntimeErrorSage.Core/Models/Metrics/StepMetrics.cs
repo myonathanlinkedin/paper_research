@@ -57,12 +57,12 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// <summary>
         /// Gets or sets the resource usage at the start of the step.
         /// </summary>
-        public ResourceUsage StartResourceUsage { get; set; } = new ResourceUsage();
+        public MetricsResourceUsage StartResourceUsage { get; set; } = new MetricsResourceUsage();
 
         /// <summary>
         /// Gets or sets the resource usage at the end of the step.
         /// </summary>
-        public ResourceUsage EndResourceUsage { get; set; } = new ResourceUsage();
+        public MetricsResourceUsage EndResourceUsage { get; set; } = new MetricsResourceUsage();
 
         /// <summary>
         /// Gets or sets additional metadata.
@@ -79,15 +79,16 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// </summary>
         public bool IsSuccessful => Status == ActionStatus.Completed;
 
-        /// <summary>
-        /// Gets the memory usage difference.
-        /// </summary>
-        public long MemoryUsageDiff => EndResourceUsage.MemoryUsageBytes - StartResourceUsage.MemoryUsageBytes;
+        // TODO: Implement memory and CPU usage differences if needed   
+        ///// <summary>
+        ///// Gets the memory usage difference.
+        ///// </summary>
+        //public long MemoryUsageDiff => EndResourceUsage.MemoryUsageBytes - StartResourceUsage.MemoryUsageBytes;
 
-        /// <summary>
-        /// Gets the CPU usage difference.
-        /// </summary>
-        public double CpuUsageDiff => EndResourceUsage.CpuUsagePercent - StartResourceUsage.CpuUsagePercent;
+        ///// <summary>
+        ///// Gets the CPU usage difference.
+        ///// </summary>
+        //public double CpuUsageDiff => EndResourceUsage.CpuUsagePercent - StartResourceUsage.CpuUsagePercent;
 
         /// <summary>
         /// Creates a new step metrics instance.

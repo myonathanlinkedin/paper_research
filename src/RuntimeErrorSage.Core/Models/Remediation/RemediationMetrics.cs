@@ -10,6 +10,11 @@ namespace RuntimeErrorSage.Core.Models.Remediation
     public class RemediationMetrics
     {
         /// <summary>
+        /// Gets or sets the unique identifier for the execution.
+        /// </summary>
+        public string ExecutionId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
         /// Gets or sets the timestamp of the metrics.
         /// </summary>
         public DateTime Timestamp { get; set; }
@@ -67,12 +72,12 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets the metric values.
         /// </summary>
-        public Dictionary<string, double> Values { get; set; } = new();
+        public Dictionary<string, object> Values { get; set; } = new Dictionary<string, object>();
         
         /// <summary>
         /// Gets or sets the metric labels.
         /// </summary>
-        public Dictionary<string, string> Labels { get; set; } = new();
+        public Dictionary<string, string> Labels { get; set; } = new Dictionary<string, string>();
         
         /// <summary>
         /// Gets or sets the success flag.

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Services.Interfaces;
+using RuntimeErrorSage.Core.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Services;
 
@@ -49,10 +50,10 @@ public class GraphBuilder : IGraphBuilder
                         Type = GraphNodeType.Component,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                        Metadata = new Dictionary<string, object>()
+                        Metadata = new Dictionary<string, string>()
                     };
 
-                    graph.Nodes[componentId] = node;
+                    graph.Nodes.Add(node);
 
                     // Add edges for dependencies
                     foreach (var dependencyId in dependencies)
@@ -61,7 +62,7 @@ public class GraphBuilder : IGraphBuilder
                         {
                             Source = node,
                             Target = new GraphNode { Id = dependencyId },
-                            Type = GraphEdgeType.Dependency,
+                            Type = GraphEdgeType.DependsOn.ToString(),
                             Weight = 1.0,
                             Label = "depends_on",
                             IsDirected = true,
@@ -81,24 +82,24 @@ public class GraphBuilder : IGraphBuilder
                 {
                     Id = context.ErrorSource,
                     Name = "Error Source",
-                    Type = GraphNodeType.Error,
+                    Type = GraphNodeType.Unknown,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    Metadata = new Dictionary<string, object>
+                    Metadata = new Dictionary<string, string>
                     {
                         { "ErrorType", context.ErrorType },
                         { "ErrorMessage", context.Message }
                     }
                 };
 
-                graph.Nodes[context.ErrorSource] = errorNode;
+                graph.Nodes.Add(errorNode);
             }
 
             // Add metadata
             graph.Metadata["ErrorId"] = context.ErrorId;
-            graph.Metadata["Timestamp"] = DateTime.UtcNow;
-            graph.Metadata["ComponentCount"] = graph.Nodes.Count;
-            graph.Metadata["EdgeCount"] = graph.Edges.Count;
+            graph.Metadata["Timestamp"] = DateTime.UtcNow.ToString("o");
+            graph.Metadata["ComponentCount"] = graph.Nodes.Count.ToString();
+            graph.Metadata["EdgeCount"] = graph.Edges.Count.ToString();
 
             await Task.CompletedTask;
             return graph;

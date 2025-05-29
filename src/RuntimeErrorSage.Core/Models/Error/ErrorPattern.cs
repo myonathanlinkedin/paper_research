@@ -5,67 +5,72 @@ using RuntimeErrorSage.Core.Models.Enums;
 namespace RuntimeErrorSage.Core.Models.Error;
 
 /// <summary>
-/// Represents a pattern of errors in the system.
+/// Represents a pattern of errors that can be used for analysis and remediation.
 /// </summary>
 public class ErrorPattern
 {
     /// <summary>
     /// Gets or sets the unique identifier for this pattern.
     /// </summary>
-    public string PatternId { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Gets or sets the pattern name.
+    /// Gets or sets the name of the service where this pattern occurs.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string ServiceName { get; set; }
 
     /// <summary>
-    /// Gets or sets the pattern description.
+    /// Gets or sets the type of error this pattern represents.
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    public string ErrorType { get; set; }
 
     /// <summary>
-    /// Gets or sets the error severity.
+    /// Gets or sets the name of the operation where this pattern occurs.
     /// </summary>
-    public ErrorSeverity Severity { get; set; }
+    public string OperationName { get; set; }
 
     /// <summary>
-    /// Gets or sets the pattern frequency.
+    /// Gets or sets when this pattern was first observed.
     /// </summary>
-    public int Frequency { get; set; }
+    public DateTime FirstOccurrence { get; set; }
 
     /// <summary>
-    /// Gets or sets the pattern tags.
+    /// Gets or sets when this pattern was last updated.
     /// </summary>
-    public List<string> Tags { get; set; } = new();
+    public DateTime LastUpdated { get; set; }
 
     /// <summary>
-    /// Gets or sets the pattern category.
+    /// Gets or sets the number of times this pattern has been observed.
     /// </summary>
-    public string Category { get; set; } = string.Empty;
+    public int OccurrenceCount { get; set; }
 
     /// <summary>
-    /// Gets or sets the pattern creation timestamp.
+    /// Gets or sets the context in which this pattern occurs.
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public Dictionary<string, object> Context { get; set; } = new Dictionary<string, object>();
 
     /// <summary>
-    /// Gets or sets the pattern last update timestamp.
+    /// Gets or sets the remediation strategies for this pattern.
     /// </summary>
-    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+    public List<string> RemediationStrategies { get; set; } = new List<string>();
 
     /// <summary>
-    /// Gets or sets the pattern metadata.
+    /// Gets or sets additional metadata about this pattern.
     /// </summary>
-    public Dictionary<string, object> Metadata { get; set; } = new();
+    public Dictionary<string, object> PatternMetadata { get; set; } = new Dictionary<string, object>();
 
     /// <summary>
-    /// Gets or sets whether the pattern is active.
+    /// Gets or sets whether this pattern is currently active.
     /// </summary>
     public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the pattern confidence score (0-1).
+    /// Gets or sets the analysis result for this pattern.
     /// </summary>
-    public double ConfidenceScore { get; set; }
+    public ErrorAnalysisResult Analysis { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional notes about this pattern.
+    /// </summary>
+    public string Notes { get; set; }
 } 

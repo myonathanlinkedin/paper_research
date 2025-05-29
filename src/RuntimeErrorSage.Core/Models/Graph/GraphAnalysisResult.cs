@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Core.Models.Context;
 
 namespace RuntimeErrorSage.Core.Models.Graph;
 
@@ -55,6 +56,11 @@ public class GraphAnalysisResult
     /// Gets or sets the analysis error message if any.
     /// </summary>
     public string ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the analysis is valid.
+    /// </summary>
+    public bool IsValid { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the analysis metadata.
@@ -110,4 +116,9 @@ public class GraphAnalysisResult
     /// Gets or sets additional context.
     /// </summary>
     public Dictionary<string, object> AdditionalContext { get; set; } = new Dictionary<string, object>();
+
+    /// <summary>
+    /// Gets or sets the analysis insights.
+    /// </summary>
+    public GraphInsights Insights { get; set; }
 }

@@ -50,12 +50,12 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// <summary>
         /// Gets or sets the average resource usage during executions.
         /// </summary>
-        public ResourceUsage AverageResourceUsage { get; set; } = new();
+        public MetricsResourceUsage AverageResourceUsage { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the peak resource usage during executions.
         /// </summary>
-        public ResourceUsage PeakResourceUsage { get; set; } = new();
+        public MetricsResourceUsage PeakResourceUsage { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the number of timeouts encountered.

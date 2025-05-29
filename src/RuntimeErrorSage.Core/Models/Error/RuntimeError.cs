@@ -10,14 +10,9 @@ namespace RuntimeErrorSage.Core.Models.Error
     public class RuntimeError
     {
         /// <summary>
-        /// Gets or sets the unique identifier for this error.
+        /// Gets or sets the unique identifier of the error.
         /// </summary>
         public string Id { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// Gets or sets the error type.
-        /// </summary>
-        public string Type { get; set; }
 
         /// <summary>
         /// Gets or sets the error message.
@@ -25,14 +20,14 @@ namespace RuntimeErrorSage.Core.Models.Error
         public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets the source of the error.
+        /// Gets or sets the error type.
         /// </summary>
-        public string Source { get; set; }
+        public string ErrorType { get; set; }
 
         /// <summary>
-        /// Gets or sets the stack trace.
+        /// Gets or sets the component ID where the error occurred.
         /// </summary>
-        public string StackTrace { get; set; }
+        public string ComponentId { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp when the error occurred.
@@ -40,9 +35,14 @@ namespace RuntimeErrorSage.Core.Models.Error
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets additional metadata.
+        /// Gets or sets the stack trace of the error.
         /// </summary>
-        public Dictionary<string, string> Metadata { get; set; } = new();
+        public string StackTrace { get; set; }
+
+        /// <summary>
+        /// Gets or sets additional metadata about the error.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RuntimeError"/> class.
@@ -70,9 +70,8 @@ namespace RuntimeErrorSage.Core.Models.Error
             ArgumentNullException.ThrowIfNull(message);
             ArgumentNullException.ThrowIfNull(source);
 
-            Type = type;
+            ErrorType = type;
             Message = message;
-            Source = source;
             StackTrace = stackTrace;
             if (metadata != null)
             {

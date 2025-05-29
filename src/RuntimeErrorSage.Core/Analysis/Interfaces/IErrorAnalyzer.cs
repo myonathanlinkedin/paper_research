@@ -1,5 +1,7 @@
+using System;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.LLM;
 
 namespace RuntimeErrorSage.Core.Analysis.Interfaces;
 
@@ -28,4 +30,19 @@ public interface IErrorAnalyzer
     /// <param name="analysis">The analysis.</param>
     /// <returns>True if the analysis is valid; otherwise, false.</returns>
     bool ValidateAnalysis(ErrorAnalysis analysis);
+
+    /// <summary>
+    /// Analyzes an error and its context
+    /// </summary>
+    /// <param name="exception">The exception to analyze</param>
+    /// <param name="context">The error context</param>
+    /// <returns>The analysis result</returns>
+    Task<ErrorAnalysisResult> AnalyzeErrorAsync(Exception exception, ErrorContext context);
+
+    /// <summary>
+    /// Enriches an LLM analysis with additional insights
+    /// </summary>
+    /// <param name="llmAnalysis">The LLM analysis to enrich</param>
+    /// <returns>The enriched analysis</returns>
+    Task<LLMAnalysisResult> EnrichLLMAnalysisAsync(LLMAnalysisResult llmAnalysis);
 } 

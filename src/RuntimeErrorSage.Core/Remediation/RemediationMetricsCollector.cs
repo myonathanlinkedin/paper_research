@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using RuntimeErrorSage.Core.Models.Metrics;
+using RuntimeErrorSage.Core.Models.Enums;
 using SeverityLevel = RuntimeErrorSage.Core.Models.Enums.SeverityLevel;
 using ValidationError = RuntimeErrorSage.Core.Models.Validation.ValidationError;
 using ValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
@@ -98,17 +99,18 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             { nameof(ValidateMetricsAsync), new EventId(13, nameof(ValidateMetricsAsync)) }
         };
 
-        _remediationMetricsListFactory = remediationMetricsListFactory ?? (() => new List<RemediationMetrics>());
-        _stepMetricsListFactory = stepMetricsListFactory ?? (() => new List<StepMetrics>());
-        _metricValueListFactory = metricValueListFactory ?? (() => new List<Models.Remediation.MetricValue>());
-        _validationWarningListFactory = validationWarningListFactory ?? (() => new List<ValidationWarning>());
+        // TODO: Implement factories for lists if needed
+        //_remediationMetricsListFactory = remediationMetricsListFactory ?? (() => new List<RemediationMetrics>());
+        //_stepMetricsListFactory = stepMetricsListFactory ?? (() => new List<StepMetrics>());
+        //_metricValueListFactory = metricValueListFactory ?? (() => new List<Models.Remediation.MetricValue>());
+        //_validationWarningListFactory = validationWarningListFactory ?? (() => new List<ValidationWarning>());
 
-        // Setup collection timer with dueTime and period in milliseconds
-        _collectionTimer = new Timer(
-            async _ => await CollectMetricsAsync().ConfigureAwait(false),
-            null,
-            0, // Start immediately
-            (int)_options.CollectionInterval.TotalMilliseconds);
+        //// Setup collection timer with dueTime and period in milliseconds
+        //_collectionTimer = new Timer(
+        //    async _ => await CollectMetricsAsync().ConfigureAwait(false),
+        //    null,
+        //    0, // Start immediately
+        //    (int)_options.CollectionInterval.TotalMilliseconds);
     }
 
     /// <inheritdoc/>
@@ -121,24 +123,14 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
     public string Version => "1.0.0";
 
     /// <inheritdoc/>
-    public async Task<Dictionary<string, object>> CollectMetricsAsync(ErrorContext context)
+    public async Task<Dictionary<string, object>> CollectMetricsAsync(ErrorContext context = null)
     {
-        ArgumentNullException.ThrowIfNull(context);
-        ThrowIfDisposed();
-
         try
         {
             _logger.LogInformation(_eventIds[nameof(CollectMetricsAsync)], 
-                "Collecting metrics for context {ContextId}", context.ContextId);
+                "Collecting metrics for context {ContextId}", context?.Id ?? "system");
 
-            var metrics = new Dictionary<string, object>
-            {
-                ["error_type"] = context.ErrorType,
-                ["error_severity"] = context.Severity,
-                ["component_id"] = context.ComponentId,
-                ["component_name"] = context.ComponentName,
-                ["timestamp"] = DateTime.UtcNow
-            };
+            var metrics = new Dictionary<string, object>();
 
             // Add system metrics
             var systemMetrics = await CollectSystemMetricsAsync(_cts.Token);
@@ -147,26 +139,29 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                 metrics[key] = value;
             }
 
-            // Add network metrics
-            var networkMetrics = await CollectNetworkMetricsAsync(context);
-            foreach (var (key, value) in networkMetrics)
+            if (context != null)
             {
-                metrics[key] = value;
-            }
-
-            // Add error metrics
-            var errorMetrics = await CollectErrorMetricsAsync(context);
-            foreach (var (key, value) in errorMetrics)
-            {
-                metrics[key] = value;
-            }
-
-            // Add additional context
-            if (context.AdditionalContext != null)
-            {
-                foreach (var kvp in context.AdditionalContext)
+                // Add network metrics
+                var networkMetrics = await CollectNetworkMetricsAsync(context);
+                foreach (var (key, value) in networkMetrics)
                 {
-                    metrics[kvp.Key] = kvp.Value;
+                    metrics[key] = value;
+                }
+
+                // Add error metrics
+                var errorMetrics = await CollectErrorMetricsAsync(context);
+                foreach (var (key, value) in errorMetrics)
+                {
+                    metrics[key] = value;
+                }
+
+                // Add additional context
+                if (context.AdditionalContext != null)
+                {
+                    foreach (var kvp in context.AdditionalContext)
+                    {
+                        metrics[kvp.Key] = kvp.Value;
+                    }
                 }
             }
 
@@ -175,7 +170,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         catch (Exception ex)
         {
             _logger.LogError(_eventIds[nameof(CollectMetricsAsync)], ex, 
-                "Error collecting metrics for context {ContextId}", context.ContextId);
+                "Error collecting metrics for context {ContextId}", context?.Id ?? "system");
             throw;
         }
     }
@@ -403,7 +398,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             var metricsStepMetrics = new StepMetrics
             {
                 StepId = metrics.StepId,
-                ActionId = metrics.StepName,
+                //ActionId = metrics.StepName, // TODO: implement if needed 
                 DurationMs = metrics.DurationMs,
                 Status = metrics.Status,
                 StartTime = DateTime.UtcNow,
@@ -494,7 +489,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                         {
                             result.Values[key] = ((double)result.Values[key] + doubleValue) / 2;
                         }
-                        else if (value is long longValue)
+                        else if (value is double longValue)
                         {
                             result.Values[key] = ((long)result.Values[key] + longValue) / 2;
                         }
@@ -568,7 +563,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                 }
             }
 
-            result.Warnings = warnings;
+            //TODO: Implement additional validation logic as needed
+            // result.Warnings = warnings;
             return result;
         }
         catch (Exception ex)
@@ -633,7 +629,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                 metrics["request_url"] = httpContext.Url;
                 metrics["request_method"] = httpContext.Method;
                 metrics["status_code"] = httpContext.StatusCode;
-                metrics["response_time"] = httpContext.ResponseTime;
+                // metrics["response_time"] = httpContext.ResponseTime; // TODO: implement if needed
                 metrics["request_size"] = httpContext.RequestBody?.Length ?? 0;
                 metrics["response_size"] = httpContext.ResponseBody?.Length ?? 0;
             }
@@ -670,7 +666,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                 metrics["database_name"] = dbContext.DatabaseName;
                 metrics["database_operation"] = dbContext.OperationName;
                 metrics["database_error_code"] = dbContext.ErrorCode;
-                metrics["database_error_state"] = dbContext.ErrorState;
+                //metrics["database_error_state"] = dbContext.ErrorState; // TODO:  implement if needed
             }
 
             return metrics;
@@ -777,17 +773,29 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
     private void AddValidationMetric(ValidationResult result, string message, SeverityLevel severity)
     {
-        result.AddWarning(message, severity.ToValidationSeverity());
+        result.AddWarning(new ValidationWarning
+        {
+            Message = message,
+            Severity = severity.ToValidationSeverity()
+        });
     }
 
     private void AddErrorMetric(ValidationResult result, string message, SeverityLevel severity)
     {
-        result.AddError(message, severity.ToValidationSeverity());
+        result.AddError(new ValidationError
+        {
+            Message = message,
+            Severity = severity.ToValidationSeverity()
+        });
     }
 
     private void AddWarningMetric(ValidationResult result, string message, SeverityLevel severity)
     {
-        result.AddWarning(message, severity.ToValidationSeverity());
+        result.AddWarning(new ValidationWarning
+        {
+            Message = message,
+            Severity = severity.ToValidationSeverity()
+        });
     }
 } 
 

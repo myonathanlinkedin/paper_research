@@ -271,4 +271,93 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<GraphAnalysisResult> AnalyzeContextAsync(ErrorContext context)
+    {
+        if (context == null)
+            throw new ArgumentNullException(nameof(context));
+
+        var graph = new DependencyGraph();
+        // Add nodes and edges based on context
+        //var node = new GraphNode
+        //{
+        //    Id = context.Id,
+        //    Type = GraphNodeType.Error,
+        //    Metadata = new Dictionary<string, object>
+        //    {
+        //        { "ComponentName", context.ComponentName },
+        //        { "ServiceName", context.ServiceName },
+        //        { "Timestamp", context.Timestamp }
+        //    }
+        //};
+
+        //graph.Nodes.Add(node);
+
+        //var analysis = AnalyzeDependencies(graph);
+        //var affectedComponents = IdentifyAffectedComponents(graph, context.Id);
+        //var impactScore = CalculateImpactScore(graph, context.Id);
+
+        //// Convert RuntimeContext to ErrorContext
+        //var errorContext = new ErrorContext
+        //{
+        //    Id = context.ContextId,
+        //    ComponentId = context.ComponentId,
+        //    ComponentName = context.ComponentName,
+        //    ServiceName = context.ApplicationName,
+        //    CorrelationId = context.CorrelationId,
+        //    Timestamp = context.Timestamp,
+        //    Metadata = context.Metadata.ToDictionary(kv => kv.Key, kv => kv.Value.ToString())
+        //};
+
+        //// Convert Dictionary<string, object> to List<ImpactAnalysisResult>
+        //var impactResults = new List<ImpactAnalysisResult>();
+        //foreach (var kvp in analysis)
+        //{
+        //    impactResults.Add(new ImpactAnalysisResult
+        //    {
+        //        ComponentId = kvp.Key,
+        //        Impact = (ImpactLevel)Convert.ToInt32(kvp.Value)
+        //    });
+        //}
+
+        //// Convert List<GraphNode> to List<RelatedError>
+        //var relatedErrors = affectedComponents.Select(node => new RelatedError
+        //{
+        //    Id = node.Id,
+        //    Type = node.Type,
+        //    Message = node.Message,
+        //    Severity = node.Severity.ToErrorSeverity()
+        //}).ToList();
+
+        //return new GraphAnalysisResult
+        //{
+        //    AnalysisId = Guid.NewGuid().ToString(),
+        //    Context = context.ToRuntimeContext(),
+        //    Status = AnalysisStatus.Completed,
+        //    StartTime = DateTime.UtcNow,
+        //    EndTime = DateTime.UtcNow,
+        //    CorrelationId = context.CorrelationId,
+        //    ComponentId = context.ComponentId,
+        //    ComponentName = context.ComponentName,
+        //    IsValid = true,
+        //    DependencyGraph = graph,
+        //    ImpactResults = impactResults,
+        //    RelatedErrors = relatedErrors,
+        //    Metrics = new Dictionary<string, double>
+        //    {
+        //        { "ImpactScore", impactScore }
+        //    }
+        //};
+
+        // TODO: 
+        throw new NotImplementedException("AnalyzeContextAsync method is not implemented yet.");
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> ValidateConfigurationAsync()
+    {
+        // Validate the analyzer's configuration
+        return true; // For now, always return true
+    }
 } 

@@ -11,17 +11,17 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <summary>
         /// Gets or sets the name of the metric
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the value of the metric
         /// </summary>
-        public double Value { get; set; }
+        public object Value { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp when the metric was recorded
         /// </summary>
-        public DateTime Timestamp { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the unit of measurement for the metric
@@ -59,11 +59,15 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         public Dictionary<string, object> Metadata { get; set; }
 
         /// <summary>
+        /// Gets or sets the metric labels.
+        /// </summary>
+        public Dictionary<string, string> Labels { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
         /// Initializes a new instance of the MetricValue class
         /// </summary>
         public MetricValue()
         {
-            Timestamp = DateTime.UtcNow;
             Tags = Array.Empty<string>();
             Metadata = new Dictionary<string, object>();
         }
@@ -73,7 +77,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// </summary>
         /// <param name="name">The name of the metric</param>
         /// <param name="value">The value of the metric</param>
-        public MetricValue(string name, double value) : this()
+        public MetricValue(string name, object value) : this()
         {
             Name = name;
             Value = value;
@@ -85,7 +89,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <param name="name">The name of the metric</param>
         /// <param name="value">The value of the metric</param>
         /// <param name="unit">The unit of measurement</param>
-        public MetricValue(string name, double value, string unit) : this(name, value)
+        public MetricValue(string name, object value, string unit) : this(name, value)
         {
             Unit = unit;
         }
@@ -97,7 +101,7 @@ namespace RuntimeErrorSage.Core.Models.Remediation
         /// <param name="value">The value of the metric</param>
         /// <param name="unit">The unit of measurement</param>
         /// <param name="description">The description of the metric</param>
-        public MetricValue(string name, double value, string unit, string description) : this(name, value, unit)
+        public MetricValue(string name, object value, string unit, string description) : this(name, value, unit)
         {
             Description = description;
         }

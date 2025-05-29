@@ -5,6 +5,7 @@ using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 using RuntimeErrorSage.Core.Models.LLM;
 using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Models.Context;
 
 namespace RuntimeErrorSage.Core.Models.Remediation;
 
@@ -92,4 +93,19 @@ public class RemediationAnalysis
     /// Gets or sets the error message if analysis failed.
     /// </summary>
     public string ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the runtime context.
+    /// </summary>
+    public RuntimeContext RuntimeContext { get; set; }
+
+    /// <summary>
+    /// Gets or sets the remediation steps.
+    /// </summary>
+    public List<string> RemediationSteps { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Gets or sets the remediation result.
+    /// </summary>
+    public RemediationResult Result { get; set; }
 } 

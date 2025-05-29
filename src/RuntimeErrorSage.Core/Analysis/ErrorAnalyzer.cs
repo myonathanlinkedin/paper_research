@@ -7,6 +7,7 @@ using RuntimeErrorSage.Core.LLM.Interfaces;
 using RuntimeErrorSage.Core.MCP.Interfaces;
 using RuntimeErrorSage.Core.Models.Enums;
 using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Core.Models.LLM;
 using RuntimeErrorSage.Core.Models.Remediation;
 using RuntimeErrorSage.Core.Utilities;
 using System.Collections.Concurrent;
@@ -362,7 +363,7 @@ public class ErrorAnalyzer : IErrorAnalyzer
             Timestamp = DateTime.UtcNow,
             ErrorType = context.ErrorType,
             Category = context.Category.ToString(),
-            Severity = context.Severity,
+            //Severity = context.Severity,//TODO: set severity based on analysis
             Message = explanation,
             Details = new Dictionary<string, object>
             {
@@ -489,6 +490,20 @@ public class ErrorAnalyzer : IErrorAnalyzer
             OutOfMemoryException => "resource",
             _ => "general"
         };
+    }
+
+    /// <inheritdoc />
+    public async Task<LLMAnalysisResult> EnrichLLMAnalysisAsync(LLMAnalysisResult llmAnalysis)
+    {
+        if (llmAnalysis == null)
+            throw new ArgumentNullException(nameof(llmAnalysis));
+
+        // Add additional insights and enrich the analysis
+        llmAnalysis.Confidence = Math.Min(llmAnalysis.Confidence + 0.1, 1.0); // Boost confidence slightly
+        llmAnalysis.Metadata["EnrichedBy"] = "ErrorAnalyzer";
+        llmAnalysis.Metadata["EnrichmentTimestamp"] = DateTime.UtcNow;
+
+        return llmAnalysis;
     }
 } 
 

@@ -64,6 +64,16 @@ namespace RuntimeErrorSage.Core.Models.Graph
         public bool IsBidirectional { get; set; }
 
         /// <summary>
+        /// Gets or sets the creation time of the edge.
+        /// </summary>
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the last update time of the edge.
+        /// </summary>
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="GraphEdge"/> class.
         /// </summary>
         public GraphEdge()

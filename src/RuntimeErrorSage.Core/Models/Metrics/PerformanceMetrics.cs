@@ -62,4 +62,14 @@ public class PerformanceMetrics
     /// Gets or sets the collection interval in seconds.
     /// </summary>
     public int CollectionInterval { get; set; }
-} 
+
+    /// <summary>
+    /// Gets or sets the total processing time.
+    /// </summary>
+    public TimeSpan TotalProcessingTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets the resource usage by phase.
+    /// </summary>
+    public Dictionary<string, MetricsResourceUsage> PhaseResourceUsage { get; set; } = new Dictionary<string, MetricsResourceUsage>();
+}

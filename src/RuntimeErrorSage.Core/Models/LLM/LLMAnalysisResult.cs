@@ -50,6 +50,21 @@ public class LLMAnalysisResult
     public List<LLMSuggestion> Suggestions { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the analysis insights
+    /// </summary>
+    public string Insights { get; set; }
+
+    /// <summary>
+    /// Gets or sets the graph analysis insights
+    /// </summary>
+    public GraphInsights GraphInsights { get; set; }
+
+    /// <summary>
+    /// Gets or sets the analysis metadata
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+
+    /// <summary>
     /// Gets or sets the timestamp when the analysis result was created.
     /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;

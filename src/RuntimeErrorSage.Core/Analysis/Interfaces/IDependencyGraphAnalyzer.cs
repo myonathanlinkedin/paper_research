@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Models.Graph;
 
 namespace RuntimeErrorSage.Core.Analysis.Interfaces
@@ -30,5 +32,18 @@ namespace RuntimeErrorSage.Core.Analysis.Interfaces
         /// <param name="componentId">The ID of the component to analyze.</param>
         /// <returns>A score between 0 and 1 indicating the impact level.</returns>
         double CalculateImpactScore(DependencyGraph dependencyGraph, string componentId);
+
+        /// <summary>
+        /// Analyzes the context and returns graph analysis results
+        /// </summary>
+        /// <param name="context">The error context to analyze</param>
+        /// <returns>The graph analysis result</returns>
+        Task<GraphAnalysisResult> AnalyzeContextAsync(ErrorContext context);
+
+        /// <summary>
+        /// Validates the analyzer's configuration
+        /// </summary>
+        /// <returns>True if the configuration is valid; otherwise, false</returns>
+        Task<bool> ValidateConfigurationAsync();
     }
 } 

@@ -61,12 +61,12 @@ namespace RuntimeErrorSage.Core.Models.Metrics
         /// <summary>
         /// Gets or sets the average resource usage during executions.
         /// </summary>
-        public ResourceUsage AverageResourceUsage { get; set; } = new();
+        public MetricsResourceUsage AverageResourceUsage { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the peak resource usage during executions.
         /// </summary>
-        public ResourceUsage PeakResourceUsage { get; set; } = new();
+        public MetricsResourceUsage PeakResourceUsage { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the number of retries attempted.
@@ -107,7 +107,7 @@ namespace RuntimeErrorSage.Core.Models.Metrics
             double durationMs,
             bool isSuccessful,
             string? errorType = null,
-            ResourceUsage? resourceUsage = null,
+            MetricsResourceUsage? resourceUsage = null,
             int retryCount = 0,
             bool isTimeout = false,
             bool isValidationFailure = false)
@@ -147,7 +147,7 @@ namespace RuntimeErrorSage.Core.Models.Metrics
                 ValidationFailureCount++;
         }
 
-        private void UpdateResourceUsage(ResourceUsage usage)
+        private void UpdateResourceUsage(MetricsResourceUsage usage)
         {
             // Update average resource usage
             if (ExecutionCount == 1)

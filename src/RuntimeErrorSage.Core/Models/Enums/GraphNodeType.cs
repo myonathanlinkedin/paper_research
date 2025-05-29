@@ -21,22 +21,32 @@ public enum GraphNodeType
     Component = 2,
     
     /// <summary>
+    /// Error node type.
+    /// </summary>
+    Error = 3,
+    
+    /// <summary>
+    /// Dependency node type.
+    /// </summary>
+    Dependency = 4,
+    
+    /// <summary>
     /// Resource node type.
     /// </summary>
-    Resource = 3,
+    Resource = 5,
     
     /// <summary>
     /// Database node type.
     /// </summary>
-    Database = 4,
+    Database = 6,
     
     /// <summary>
     /// API node type.
     /// </summary>
-    API = 5,
+    API = 7,
     
     /// <summary>
     /// Infrastructure node type.
     /// </summary>
-    Infrastructure = 6
+    Infrastructure = 8
 } 
