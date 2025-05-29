@@ -103,7 +103,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 {
                     ActionId = suggestion.SuggestionId,
                     Severity = RemediationSeverity.Medium,
-                    Scope = "Global",
+                    Scope = ImpactScope.Global,
                     AffectedComponents = new List<string>(),
                     EstimatedDuration = TimeSpan.FromMinutes(5)
                 };

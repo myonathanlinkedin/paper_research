@@ -1,8 +1,7 @@
 namespace RuntimeErrorSage.Domain.Enums
 {
     /// <summary>
-    /// Represents the severity level of an error, event, or action.
-    /// This is the canonical severity enum for the entire system.
+    /// Defines the severity level of an error or issue.
     /// </summary>
     public enum SeverityLevel
     {
@@ -12,32 +11,32 @@ namespace RuntimeErrorSage.Domain.Enums
         Unknown = 0,
 
         /// <summary>
-        /// Informational severity level. No impact on functionality.
+        /// Informational severity level.
         /// </summary>
         Info = 1,
 
         /// <summary>
-        /// Low severity level. Minor issues or warnings.
+        /// Low severity level.
         /// </summary>
         Low = 2,
 
         /// <summary>
-        /// Medium severity level. Functionality is impaired but not blocked.
+        /// Medium severity level.
         /// </summary>
         Medium = 3,
 
         /// <summary>
-        /// High severity level. Major functionality is affected.
+        /// High severity level.
         /// </summary>
         High = 4,
 
         /// <summary>
-        /// Critical severity level. System is unusable or data is at risk.
+        /// Critical severity level.
         /// </summary>
         Critical = 5,
 
         /// <summary>
-        /// Catastrophic severity level. System-wide failure or data loss.
+        /// Catastrophic severity level.
         /// </summary>
         Catastrophic = 6
     }

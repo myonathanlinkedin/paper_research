@@ -207,4 +207,8 @@ Thumbs.db
 *.txt
 
 projectstructure.txt
-solid_report.txt 
+solid_report.txt
+
+# PowerShell files
+*.ps1
+!analyze_code.ps1 

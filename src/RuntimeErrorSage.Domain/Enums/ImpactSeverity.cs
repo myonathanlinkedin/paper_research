@@ -38,5 +38,10 @@ public enum ImpactSeverity
     /// <summary>
     /// Catastrophic impact.
     /// </summary>
-    Catastrophic = 6
+    Catastrophic = 6,
+
+    /// <summary>
+    /// Low impact.
+    /// </summary>
+    Low = 7
 } 

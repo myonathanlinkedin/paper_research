@@ -48,5 +48,10 @@ public enum ImpactScope
     /// <summary>
     /// Impact affects the entire global system.
     /// </summary>
-    Global = 8
+    Global = 8,
+
+    /// <summary>
+    /// Impact affects a specific module.
+    /// </summary>
+    Module = 9
 } 
