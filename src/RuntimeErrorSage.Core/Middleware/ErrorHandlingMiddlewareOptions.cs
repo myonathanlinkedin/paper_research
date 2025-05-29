@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Core.Middleware;
+namespace RuntimeErrorSage.Model.Middleware;
 
 /// <summary>
 /// Configuration options for the error handling middleware.

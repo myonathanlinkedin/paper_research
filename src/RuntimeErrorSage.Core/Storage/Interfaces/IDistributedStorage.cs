@@ -1,8 +1,8 @@
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Storage;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Storage;
 
-namespace RuntimeErrorSage.Core.Interfaces
+namespace RuntimeErrorSage.Model.Interfaces
 {
     /// <summary>
     /// Interface for distributed storage operations.

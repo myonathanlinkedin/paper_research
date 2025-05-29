@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Extensions;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Model.Extensions;
+using RuntimeErrorSage.Model.Models.Remediation;
 
-namespace RuntimeErrorSage.Core.Examples
+namespace RuntimeErrorSage.Model.Examples
 {
     /// <summary>
     /// Example code showing how to use TimeSpanExtensions.

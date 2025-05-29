@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Options;
-using RuntimeErrorSage.Core.Storage.Exceptions;
-using RuntimeErrorSage.Core.Storage.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Options;
+using RuntimeErrorSage.Model.Storage.Exceptions;
+using RuntimeErrorSage.Model.Storage.Interfaces;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace RuntimeErrorSage.Core.Storage;
+namespace RuntimeErrorSage.Model.Storage;
 
 /// <summary>
 /// Redis-based implementation of pattern storage

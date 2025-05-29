@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Core.Middleware;
+namespace RuntimeErrorSage.Model.Middleware;
 
 /// <summary>
 /// Represents the context of an HTTP request.

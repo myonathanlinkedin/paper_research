@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.LLM.Interfaces;
-using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Model.Remediation.Interfaces;
+using RuntimeErrorSage.Model.LLM.Interfaces;
+using RuntimeErrorSage.Model.Interfaces;
 
-namespace RuntimeErrorSage.Core.Remediation.Strategies
+namespace RuntimeErrorSage.Model.Remediation.Strategies
 {
     /// <summary>
     /// Strategy for alerting about errors.

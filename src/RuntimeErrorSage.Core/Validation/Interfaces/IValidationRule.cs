@@ -1,8 +1,8 @@
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Validation;
 using System.Threading.Tasks;
 
-namespace RuntimeErrorSage.Core.Validation.Interfaces;
+namespace RuntimeErrorSage.Model.Validation.Interfaces;
 
 /// <summary>
 /// Represents a validation rule that can be applied to validate operations.

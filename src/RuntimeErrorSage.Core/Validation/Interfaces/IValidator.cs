@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Validation;
 
-namespace RuntimeErrorSage.Core.Interfaces
+namespace RuntimeErrorSage.Model.Interfaces
 {
     /// <summary>
     /// Interface for validators.

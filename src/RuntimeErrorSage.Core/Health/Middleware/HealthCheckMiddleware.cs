@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.IO;
 
-namespace RuntimeErrorSage.Core.Health.Middleware
+namespace RuntimeErrorSage.Model.Health.Middleware
 {
     public class HealthCheckMiddleware
     {

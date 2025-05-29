@@ -2,9 +2,9 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Microsoft.Extensions.Logging;
 using Moq;
-using RuntimeErrorSage.Core.LLM;
-using RuntimeErrorSage.Core.MCP;
-using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Model.LLM;
+using RuntimeErrorSage.Model.MCP;
+using RuntimeErrorSage.Model.Analysis;
 
 namespace RuntimeErrorSage.Tests.Performance;
 

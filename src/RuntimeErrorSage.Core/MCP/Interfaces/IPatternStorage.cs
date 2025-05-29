@@ -1,8 +1,8 @@
 using System;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Error;
 
-namespace RuntimeErrorSage.Core.MCP.Interfaces
+namespace RuntimeErrorSage.Model.MCP.Interfaces
 {
     /// <summary>
     /// Interface for storing and retrieving patterns.

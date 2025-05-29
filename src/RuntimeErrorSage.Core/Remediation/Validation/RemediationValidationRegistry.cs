@@ -5,15 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Validation;
-using RemediationPlan = RuntimeErrorSage.Core.Models.Remediation.RemediationPlan;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using CoreValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Validation;
+using RemediationPlan = RuntimeErrorSage.Model.Models.Remediation.RemediationPlan;
+using RuntimeErrorSage.Model.Remediation.Interfaces;
+using CoreValidationResult = RuntimeErrorSage.Model.Models.Validation.ValidationResult;
 using DataAnnotationsValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Remediation;
 
-namespace RuntimeErrorSage.Core.Remediation.Validation;
+namespace RuntimeErrorSage.Model.Remediation.Validation;
 
 /// <summary>
 /// Registry for managing remediation validation rules with caching support.

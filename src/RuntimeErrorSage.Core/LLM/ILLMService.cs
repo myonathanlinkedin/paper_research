@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace RuntimeErrorSage.Core.LLM;
+namespace RuntimeErrorSage.Model.LLM;
 
 /// <summary>
 /// Defines the interface for LLM services.

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace RuntimeErrorSage.Core.LLM.Interfaces
+namespace RuntimeErrorSage.Model.LLM.Interfaces
 {
     public interface ILMStudioClient
     {

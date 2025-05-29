@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Core.MCP.Options;
+namespace RuntimeErrorSage.Model.MCP.Options;
 
 public class DistributedStorageOptions
 {

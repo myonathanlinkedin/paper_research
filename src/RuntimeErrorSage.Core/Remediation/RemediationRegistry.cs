@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.LLM.Interfaces;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Graph;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Model.LLM.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Analysis.Interfaces;
 
-namespace RuntimeErrorSage.Core.Remediation
+namespace RuntimeErrorSage.Model.Remediation
 {
     /// <summary>
     /// Registry for managing remediation strategies and actions.

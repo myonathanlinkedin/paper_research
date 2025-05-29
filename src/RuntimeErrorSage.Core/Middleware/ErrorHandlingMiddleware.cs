@@ -5,14 +5,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Text.Json;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.MCP.Interfaces;
-using RuntimeErrorSage.Core.Runtime.Interfaces;
-using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Remediation.Interfaces;
+using RuntimeErrorSage.Model.MCP.Interfaces;
+using RuntimeErrorSage.Model.Runtime.Interfaces;
+using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Core.Middleware;
+namespace RuntimeErrorSage.Model.Middleware;
 
 /// <summary>
 /// Middleware for handling errors in the application.

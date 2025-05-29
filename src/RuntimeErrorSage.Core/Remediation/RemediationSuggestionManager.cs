@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Model.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Analysis.Interfaces;
 
-namespace RuntimeErrorSage.Core.Remediation
+namespace RuntimeErrorSage.Model.Remediation
 {
     public class RemediationSuggestionManager : IRemediationSuggestionManager
     {

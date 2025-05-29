@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Graph;
-using RuntimeErrorSage.Core.Models.Analysis;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Model.Models.Analysis;
 
-namespace RuntimeErrorSage.Core.Analysis.Interfaces;
+namespace RuntimeErrorSage.Model.Analysis.Interfaces;
 
 /// <summary>
 /// Interface for analyzing error contexts.

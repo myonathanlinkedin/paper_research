@@ -4,9 +4,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using RuntimeErrorSage.Core.LLM;
-using RuntimeErrorSage.Core.Health;
-using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Model.LLM;
+using RuntimeErrorSage.Model.Health;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Tests.Health
 {

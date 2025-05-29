@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Context;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Context;
 
-namespace RuntimeErrorSage.Core.Context.Interfaces
+namespace RuntimeErrorSage.Model.Context.Interfaces
 {
     /// <summary>
     /// Interface for providing error context.

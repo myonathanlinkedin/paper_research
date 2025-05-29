@@ -1,19 +1,19 @@
 using System;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Options;
-using RemediationResult = RuntimeErrorSage.Core.Models.Remediation.RemediationResult;
-using RuntimeErrorSage.Core.Analysis;
-using RuntimeErrorSage.Core.Remediation;
-using RuntimeErrorSage.Core.MCP;
-using RuntimeErrorSage.Core.LLM;
-using RuntimeErrorSage.Core.Validation;
-using RuntimeErrorSage.Core.Graph;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Options;
+using RemediationResult = RuntimeErrorSage.Model.Models.Remediation.RemediationResult;
+using RuntimeErrorSage.Model.Analysis;
+using RuntimeErrorSage.Model.Remediation;
+using RuntimeErrorSage.Model.MCP;
+using RuntimeErrorSage.Model.LLM;
+using RuntimeErrorSage.Model.Validation;
+using RuntimeErrorSage.Model.Graph;
 using System.ComponentModel.DataAnnotations;
-using RuntimeErrorSage.Core.Models.Graph;
-using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Model.Models.LLM;
 
-namespace RuntimeErrorSage.Core.Runtime.Interfaces
+namespace RuntimeErrorSage.Model.Runtime.Interfaces
 {
     /// <summary>
     /// Defines the core service interface for RuntimeErrorSage runtime intelligence.
@@ -46,7 +46,7 @@ namespace RuntimeErrorSage.Core.Runtime.Interfaces
         /// Registers a custom remediation strategy.
         /// </summary>
         /// <param name="strategy">The remediation strategy to register</param>
-        void RegisterRemediationStrategy(RuntimeErrorSage.Core.Models.Remediation.Interfaces.IRemediationStrategy strategy);
+        void RegisterRemediationStrategy(RuntimeErrorSage.Model.Models.Remediation.Interfaces.IRemediationStrategy strategy);
 
         /// <summary>
         /// Configures the service with specific settings.

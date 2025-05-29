@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Core.MCP;
+namespace RuntimeErrorSage.Model.MCP;
 
 /// <summary>
 /// Options for the MCP client.

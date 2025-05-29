@@ -1,21 +1,21 @@
 using Xunit;
 using FluentAssertions;
-using RuntimeErrorSage.Core.Analysis;
-using RuntimeErrorSage.Core.Remediation;
-using RuntimeErrorSage.Core.MCP;
-using RuntimeErrorSage.Core.Graph;
+using RuntimeErrorSage.Model.Analysis;
+using RuntimeErrorSage.Model.Remediation;
+using RuntimeErrorSage.Model.MCP;
+using RuntimeErrorSage.Model.Graph;
 using Moq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using RuntimeErrorSage.Tests.Helpers;
 using System;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Graph;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Services;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Services;
+using RuntimeErrorSage.Model.Remediation.Interfaces;
 
 namespace RuntimeErrorSage.Tests.Scenarios;
 

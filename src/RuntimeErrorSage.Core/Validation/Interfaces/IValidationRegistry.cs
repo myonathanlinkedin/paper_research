@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Validation;
+using RuntimeErrorSage.Model.Models.Validation;
 
-namespace RuntimeErrorSage.Core.Interfaces
+namespace RuntimeErrorSage.Model.Interfaces
 {
     /// <summary>
     /// Interface for managing validators.

@@ -1,16 +1,16 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.MCP.Options;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Storage;
+using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Model.MCP.Options;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Storage;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
 using System.Text.Json;
-using RuntimeErrorSage.Core.MCP.Exceptions;
-using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Model.MCP.Exceptions;
+using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Core.MCP;
+namespace RuntimeErrorSage.Model.MCP;
 
 public class RedisDistributedStorage : IDistributedStorage, IDisposable
 {

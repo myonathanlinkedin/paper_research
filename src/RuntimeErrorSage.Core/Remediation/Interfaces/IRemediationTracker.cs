@@ -1,12 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Execution;
-using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Execution;
+using RuntimeErrorSage.Model.Models.Metrics;
+using RuntimeErrorSage.Model.Models.Remediation;
 
-namespace RuntimeErrorSage.Core.Interfaces
+namespace RuntimeErrorSage.Model.Interfaces
 {
     /// <summary>
     /// Interface for tracking remediation progress and status.

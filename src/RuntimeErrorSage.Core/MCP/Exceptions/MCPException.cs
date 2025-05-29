@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace RuntimeErrorSage.Core.Exceptions
+namespace RuntimeErrorSage.Model.Exceptions
 {
     /// <summary>
     /// Exception thrown when an error occurs during Model Context Protocol operations.

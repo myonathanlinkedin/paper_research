@@ -1,7 +1,7 @@
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Core.Examples;
+namespace RuntimeErrorSage.Model.Examples;
 
 /// <summary>
 /// Demonstrates proper RemediationAction conversion patterns

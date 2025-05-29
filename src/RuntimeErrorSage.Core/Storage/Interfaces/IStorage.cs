@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Error;
 
-namespace RuntimeErrorSage.Core.Storage.Interfaces
+namespace RuntimeErrorSage.Model.Storage.Interfaces
 {
     /// <summary>
     /// Represents a storage interface for error contexts and analysis results.

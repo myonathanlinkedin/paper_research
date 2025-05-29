@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.LLM;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.LLM;
+using RuntimeErrorSage.Model.Models.Remediation;
 
-namespace RuntimeErrorSage.Core.LLM.Interfaces
+namespace RuntimeErrorSage.Model.LLM.Interfaces
 {
     /// <summary>
     /// Interface for Qwen LLM client operations.

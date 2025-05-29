@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Remediation;
 
-namespace RuntimeErrorSage.Core.Interfaces
+namespace RuntimeErrorSage.Model.Interfaces
 {
     /// <summary>
     /// Interface for analyzing remediation operations.

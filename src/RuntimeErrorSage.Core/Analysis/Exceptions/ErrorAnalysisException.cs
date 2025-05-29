@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace RuntimeErrorSage.Core.Analysis.Exceptions
+namespace RuntimeErrorSage.Model.Analysis.Exceptions
 {
     /// <summary>
     /// Exception thrown when an error occurs during error analysis operations.

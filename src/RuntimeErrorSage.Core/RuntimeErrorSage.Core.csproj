@@ -46,24 +46,19 @@
     <Folder Include="Metrics\Errors\" />
     <Folder Include="Middleware\Interfaces\" />
     <Folder Include="Middleware\Errors\" />
-    <Folder Include="Options\Interfaces\" />
-    <Folder Include="Options\Errors\" />
-    <Folder Include="Options\Exceptions\" />
     <Folder Include="Pattern\Errors\" />
     <Folder Include="Remediation\Errors\" />
     <Folder Include="Runtime\Errors\" />
-    <Folder Include="Services\Exceptions\" />
-    <Folder Include="Services\Errors\" />
     <Folder Include="Storage\Errors\" />
-    <Folder Include="Utilities\Interfaces\" />
-    <Folder Include="Utilities\Exceptions\" />
-    <Folder Include="Utilities\Errors\" />
+    <Folder Include="Storage\Utilities\Interfaces\" />
+    <Folder Include="Storage\Utilities\Exceptions\" />
+    <Folder Include="Storage\Utilities\Errors\" />
     <Folder Include="Validation\Exceptions\" />
     <Folder Include="Validation\Errors\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="Models/Classification/ClassificationResult.cs" />
+    <ProjectReference Include="..\RuntimeErrorSage.Domain\RuntimeErrorSage.Domain.csproj" />
   </ItemGroup>
 
 </Project>

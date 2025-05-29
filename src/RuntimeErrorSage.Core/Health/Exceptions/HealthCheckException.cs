@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Core.Health.Exceptions
+namespace RuntimeErrorSage.Model.Health.Exceptions
 {
     public class HealthCheckException : Exception
     {

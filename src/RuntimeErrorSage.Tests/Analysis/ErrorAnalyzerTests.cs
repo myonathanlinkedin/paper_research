@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-using RuntimeErrorSage.Core.Analysis;
-using RuntimeErrorSage.Core.LLM;
+using RuntimeErrorSage.Model.Analysis;
+using RuntimeErrorSage.Model.LLM;
 
 namespace RuntimeErrorSage.Tests.Analysis
 {

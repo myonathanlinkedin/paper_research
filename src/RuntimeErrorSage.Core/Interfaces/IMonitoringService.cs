@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.Models.Monitoring;
+using RuntimeErrorSage.Model.Models.Metrics;
+using RuntimeErrorSage.Model.Models.Monitoring;
 
-namespace RuntimeErrorSage.Core.Interfaces
+namespace RuntimeErrorSage.Model.Interfaces
 {
     /// <summary>
     /// Interface for monitoring service operations.

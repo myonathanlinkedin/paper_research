@@ -1,7 +1,7 @@
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Core.Remediation.Interfaces
+namespace RuntimeErrorSage.Model.Remediation.Interfaces
 {
     /// <summary>
     /// Interface for defining remediation validation rules.

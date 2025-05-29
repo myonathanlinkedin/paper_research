@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Model.Models.Error;
 
 namespace RuntimeErrorSage.Tests.TestSuite.Models;
 

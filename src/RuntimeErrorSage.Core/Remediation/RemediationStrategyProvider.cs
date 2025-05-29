@@ -3,17 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.LLM.Interfaces;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Model.LLM.Interfaces;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Analysis.Interfaces;
+using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Core.Remediation;
+namespace RuntimeErrorSage.Model.Remediation;
 
 /// <summary>
 /// Provides remediation strategies based on error context analysis.

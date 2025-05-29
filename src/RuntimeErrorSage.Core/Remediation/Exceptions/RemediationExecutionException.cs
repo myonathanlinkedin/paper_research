@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Core.Remediation.Exceptions;
+namespace RuntimeErrorSage.Model.Remediation.Exceptions;
 
 /// <summary>
 /// Exception thrown when a remediation execution fails.

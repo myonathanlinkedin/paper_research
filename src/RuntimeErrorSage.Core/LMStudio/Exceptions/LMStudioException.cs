@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Core.LMStudio.Exceptions
+namespace RuntimeErrorSage.Model.LMStudio.Exceptions
 {
     public class LMStudioException : Exception
     {

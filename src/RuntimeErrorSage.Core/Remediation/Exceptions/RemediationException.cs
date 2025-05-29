@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Core.Exceptions
+namespace RuntimeErrorSage.Model.Exceptions
 {
     public class RemediationException : Exception
     {

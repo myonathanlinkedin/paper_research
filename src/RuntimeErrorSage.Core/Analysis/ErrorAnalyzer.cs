@@ -1,20 +1,20 @@
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Analysis.Exceptions;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
-using RuntimeErrorSage.Core.Exceptions;
-using RuntimeErrorSage.Core.LLM;
-using RuntimeErrorSage.Core.LLM.Interfaces;
-using RuntimeErrorSage.Core.MCP.Interfaces;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.LLM;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Utilities;
+using RuntimeErrorSage.Model.Analysis.Exceptions;
+using RuntimeErrorSage.Model.Analysis.Interfaces;
+using RuntimeErrorSage.Model.Exceptions;
+using RuntimeErrorSage.Model.LLM;
+using RuntimeErrorSage.Model.LLM.Interfaces;
+using RuntimeErrorSage.Model.MCP.Interfaces;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.LLM;
+using RuntimeErrorSage.Model.Models.Remediation;
 using System.Collections.Concurrent;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using RuntimeErrorSage.Core.Storage.Utilities;
 
-namespace RuntimeErrorSage.Core.Analysis;
+namespace RuntimeErrorSage.Model.Analysis;
 
 /// <summary>
 /// Analyzes errors using a local LLM.

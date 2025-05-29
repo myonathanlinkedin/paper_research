@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Common;
-using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Model.Models.Common;
+using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Core.Metrics.Interfaces;
+namespace RuntimeErrorSage.Model.Metrics.Interfaces;
 
 /// <summary>
 /// Interface for collecting metrics.

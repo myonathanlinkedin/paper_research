@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace RuntimeErrorSage.Core.Health.Interfaces
+namespace RuntimeErrorSage.Model.Health.Interfaces
 {
     /// <summary>
     /// Defines the interface for health check providers.

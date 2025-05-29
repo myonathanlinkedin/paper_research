@@ -1,28 +1,28 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Core.Models.Common;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Health;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Models.Common;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Health;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Model.Remediation.Interfaces;
 using System.Collections.Concurrent;
-using IRemediationValidator = RuntimeErrorSage.Core.Remediation.Interfaces.IRemediationValidator;
-using ValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Models.Graph;
+using IRemediationValidator = RuntimeErrorSage.Model.Remediation.Interfaces.IRemediationValidator;
+using ValidationResult = RuntimeErrorSage.Model.Models.Validation.ValidationResult;
+using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Model.Models.Graph;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.LLM.Interfaces;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Validation.Interfaces;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Models.Metrics;
+using RuntimeErrorSage.Model.LLM.Interfaces;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Validation.Interfaces;
+using RuntimeErrorSage.Model.Analysis.Interfaces;
+using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Core.Remediation;
+namespace RuntimeErrorSage.Model.Remediation;
 
 /// <summary>
 /// Validates remediation actions and strategies.

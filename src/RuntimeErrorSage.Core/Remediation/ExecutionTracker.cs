@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Concurrent;
-using RuntimeErrorSage.Core.Models.Execution;
+using RuntimeErrorSage.Model.Models.Execution;
 
-namespace RuntimeErrorSage.Core.Remediation
+namespace RuntimeErrorSage.Model.Remediation
 {
     public class ExecutionTracker
     {

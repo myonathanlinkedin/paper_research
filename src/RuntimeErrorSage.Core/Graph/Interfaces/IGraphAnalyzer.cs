@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Graph;
 
-namespace RuntimeErrorSage.Core.Graph.Interfaces;
+namespace RuntimeErrorSage.Model.Graph.Interfaces;
 
 /// <summary>
 /// Interface for analyzing graphs and their dependencies.

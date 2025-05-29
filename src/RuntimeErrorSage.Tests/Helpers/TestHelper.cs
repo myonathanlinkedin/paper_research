@@ -1,18 +1,18 @@
-using RuntimeErrorSage.Core.Analysis;
-using RuntimeErrorSage.Core.Remediation;
-using RuntimeErrorSage.Core.MCP;
+using RuntimeErrorSage.Model.Analysis;
+using RuntimeErrorSage.Model.Remediation;
+using RuntimeErrorSage.Model.MCP;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.MCP.Interfaces;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Execution;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Model.MCP.Interfaces;
+using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Execution;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Tests.Helpers;
 

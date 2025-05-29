@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Context;
-using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Model.Models.Context;
+using RuntimeErrorSage.Model.Models.LLM;
 
-namespace RuntimeErrorSage.Core.LLM.Interfaces
+namespace RuntimeErrorSage.Model.LLM.Interfaces
 {
     /// <summary>
     /// Interface for interacting with the Qwen 2.5 7B Instruct 1M LLM.

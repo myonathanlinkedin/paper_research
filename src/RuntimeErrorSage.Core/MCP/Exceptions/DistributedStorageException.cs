@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Core.MCP.Exceptions;
+namespace RuntimeErrorSage.Model.MCP.Exceptions;
 
 public class DistributedStorageException : Exception
 {

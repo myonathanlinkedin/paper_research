@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Backup;
+using RuntimeErrorSage.Model.Models.Backup;
 
-namespace RuntimeErrorSage.Core.Interfaces
+namespace RuntimeErrorSage.Model.Interfaces
 {
     /// <summary>
     /// Interface for backup service operations.

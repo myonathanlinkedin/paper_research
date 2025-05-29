@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Core.MCP.Exceptions
+namespace RuntimeErrorSage.Model.MCP.Exceptions
 {
     /// <summary>
     /// Exception thrown when there is an error with MCP subscriptions.

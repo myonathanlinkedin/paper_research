@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Graph;
 
-namespace RuntimeErrorSage.Core.Remediation.Interfaces
+namespace RuntimeErrorSage.Model.Remediation.Interfaces
 {
     /// <summary>
     /// Interface for analyzing error context graphs for remediation purposes.

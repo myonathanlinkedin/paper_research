@@ -1,6 +1,6 @@
-using RuntimeErrorSage.Core.Options;
+using RuntimeErrorSage.Model.Options;
 
-namespace RuntimeErrorSage.Core.Interfaces;
+namespace RuntimeErrorSage.Model.Interfaces;
 
 /// <summary>
 /// Interface for configurable components

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Core.Extensions;
+namespace RuntimeErrorSage.Model.Extensions;
 
 /// <summary>
 /// Extension methods for Dictionary to simplify common operations.

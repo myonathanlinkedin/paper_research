@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Core.Remediation.Metadata;
+namespace RuntimeErrorSage.Model.Remediation.Metadata;
 
 /// <summary>
 /// Metadata for a remediation strategy, including version, description, author, and requirements.

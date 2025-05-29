@@ -1,9 +1,9 @@
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Remediation;
 using System.ComponentModel.DataAnnotations;
-using RemediationPlan = RuntimeErrorSage.Core.Models.Remediation.RemediationPlan;
+using RemediationPlan = RuntimeErrorSage.Model.Models.Remediation.RemediationPlan;
 
-namespace RuntimeErrorSage.Core.Remediation.Interfaces;
+namespace RuntimeErrorSage.Model.Remediation.Interfaces;
 
 /// <summary>
 /// Defines the interface for managing remediation validation rules.

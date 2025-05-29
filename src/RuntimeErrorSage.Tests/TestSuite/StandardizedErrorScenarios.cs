@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Services;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Services;
 
 namespace RuntimeErrorSage.Tests.TestSuite
 {

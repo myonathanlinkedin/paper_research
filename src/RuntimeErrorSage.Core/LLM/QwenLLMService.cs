@@ -4,9 +4,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Model.Models.LLM;
 
-namespace RuntimeErrorSage.Core.LLM;
+namespace RuntimeErrorSage.Model.LLM;
 
 /// <summary>
 /// Implements the LLM service using Qwen 2.5 7B Instruct 1M.

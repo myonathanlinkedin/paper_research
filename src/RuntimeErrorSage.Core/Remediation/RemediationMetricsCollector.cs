@@ -1,29 +1,29 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Models.Common;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Options;
+using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Model.Models.Common;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Options;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.Models.Enums;
-using SeverityLevel = RuntimeErrorSage.Core.Models.Enums.SeverityLevel;
-using ValidationError = RuntimeErrorSage.Core.Models.Validation.ValidationError;
-using ValidationResult = RuntimeErrorSage.Core.Models.Validation.ValidationResult;
-using ValidationWarning = RuntimeErrorSage.Core.Models.Validation.ValidationWarning;
-using ValidationSeverity = RuntimeErrorSage.Core.Models.Enums.ValidationSeverity;
+using RuntimeErrorSage.Model.Models.Metrics;
+using RuntimeErrorSage.Domain.Enums;
+using SeverityLevel = RuntimeErrorSage.Model.Models.Enums.SeverityLevel;
+using ValidationError = RuntimeErrorSage.Model.Models.Validation.ValidationError;
+using ValidationResult = RuntimeErrorSage.Model.Models.Validation.ValidationResult;
+using ValidationWarning = RuntimeErrorSage.Model.Models.Validation.ValidationWarning;
+using ValidationSeverity = RuntimeErrorSage.Model.Models.Enums.ValidationSeverity;
 using System;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Graph;
-using RuntimeErrorSage.Core.Remediation.Interfaces;
-using RuntimeErrorSage.Core.LLM.Interfaces;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Model.Remediation.Interfaces;
+using RuntimeErrorSage.Model.LLM.Interfaces;
+using RuntimeErrorSage.Model.Analysis.Interfaces;
 
-namespace RuntimeErrorSage.Core.Remediation;
+namespace RuntimeErrorSage.Model.Remediation;
 
 /// <summary>
 /// Collects and aggregates remediation metrics.

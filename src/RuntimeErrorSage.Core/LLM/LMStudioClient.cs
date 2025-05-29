@@ -5,12 +5,12 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Core.Exceptions;
-using RuntimeErrorSage.Core.LLM.Options;
-using RuntimeErrorSage.Core.Models.LLM;
-using RuntimeErrorSage.Core.LLM.Interfaces;
+using RuntimeErrorSage.Model.Exceptions;
+using RuntimeErrorSage.Model.LLM.Options;
+using RuntimeErrorSage.Model.Models.LLM;
+using RuntimeErrorSage.Model.LLM.Interfaces;
 
-namespace RuntimeErrorSage.Core.LLM
+namespace RuntimeErrorSage.Model.LLM
 {
     public class LMStudioClient : ILMStudioClient
     {

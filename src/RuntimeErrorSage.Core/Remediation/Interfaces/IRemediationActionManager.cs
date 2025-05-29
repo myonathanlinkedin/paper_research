@@ -1,10 +1,10 @@
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Core.Remediation.Interfaces
+namespace RuntimeErrorSage.Model.Remediation.Interfaces
 {
     public interface IRemediationActionManager
     {

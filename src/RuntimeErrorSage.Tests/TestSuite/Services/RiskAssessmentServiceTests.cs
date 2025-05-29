@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using Moq;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Services;
-using RuntimeErrorSage.Core.Utilities;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Services;
+using RuntimeErrorSage.Model.Utilities;
 
 namespace RuntimeErrorSage.Tests.TestSuite.Services
 {

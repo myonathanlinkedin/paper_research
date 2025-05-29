@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Graph;
 
-namespace RuntimeErrorSage.Core.Classifier.Interfaces;
+namespace RuntimeErrorSage.Model.Classifier.Interfaces;
 
 /// <summary>
 /// Interface for classifying errors.

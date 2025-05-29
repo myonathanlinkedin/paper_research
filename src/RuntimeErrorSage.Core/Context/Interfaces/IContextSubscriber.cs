@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Model.Models.Error;
 
-namespace RuntimeErrorSage.Core.Context.Interfaces
+namespace RuntimeErrorSage.Model.Context.Interfaces
 {
     /// <summary>
     /// Defines the interface for context subscribers.

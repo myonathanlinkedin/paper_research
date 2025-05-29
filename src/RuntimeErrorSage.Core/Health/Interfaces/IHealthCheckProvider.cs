@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RuntimeErrorSage.Core.Health.Interfaces
+namespace RuntimeErrorSage.Model.Health.Interfaces
 {
     public interface IHealthCheckProvider
     {

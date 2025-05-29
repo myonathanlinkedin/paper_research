@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RuntimeErrorSage.Core.Storage.Interfaces
+namespace RuntimeErrorSage.Model.Storage.Interfaces
 {
     /// <summary>
     /// Defines the contract for storing and retrieving error patterns

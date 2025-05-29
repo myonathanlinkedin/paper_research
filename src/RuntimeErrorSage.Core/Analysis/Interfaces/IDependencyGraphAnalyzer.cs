@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Graph;
 
-namespace RuntimeErrorSage.Core.Analysis.Interfaces
+namespace RuntimeErrorSage.Model.Analysis.Interfaces
 {
     /// <summary>
     /// Interface for analyzing dependency graphs in the context of error analysis.

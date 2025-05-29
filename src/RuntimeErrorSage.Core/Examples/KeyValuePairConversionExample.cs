@@ -1,6 +1,6 @@
-using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Model.Models.Graph;
 
-namespace RuntimeErrorSage.Core.Examples;
+namespace RuntimeErrorSage.Model.Examples;
 
 /// <summary>
 /// Demonstrates proper KeyValuePair to DependencyNode conversion patterns

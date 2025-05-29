@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Concurrent;
-using RuntimeErrorSage.Core.Models.Execution;
-using RuntimeErrorSage.Core.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Execution;
+using RuntimeErrorSage.Model.Models.Remediation;
 
-namespace RuntimeErrorSage.Core.Remediation
+namespace RuntimeErrorSage.Model.Remediation
 {
     public class ActionExecutionTracker
     {

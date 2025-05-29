@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Core.Health
+namespace RuntimeErrorSage.Model.Health
 {
     /// <summary>
     /// Interface for creating health check data.

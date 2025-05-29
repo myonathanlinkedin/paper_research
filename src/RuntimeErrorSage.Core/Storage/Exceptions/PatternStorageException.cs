@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace RuntimeErrorSage.Core.Storage.Exceptions;
+namespace RuntimeErrorSage.Model.Storage.Exceptions;
 
 /// <summary>
 /// Exception thrown when there is an error in pattern storage operations.

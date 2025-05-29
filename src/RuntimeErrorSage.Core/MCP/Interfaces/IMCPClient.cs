@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.MCP;
-using RuntimeErrorSage.Core.Models.Remediation;
-using ContextHistory = RuntimeErrorSage.Core.Models.Context.ContextHistory;
-using TimeRange = RuntimeErrorSage.Core.Models.Common.TimeRange;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.MCP;
+using RuntimeErrorSage.Model.Models.Remediation;
+using ContextHistory = RuntimeErrorSage.Model.Models.Context.ContextHistory;
+using TimeRange = RuntimeErrorSage.Model.Models.Common.TimeRange;
 
-namespace RuntimeErrorSage.Core.MCP.Interfaces
+namespace RuntimeErrorSage.Model.MCP.Interfaces
 {
     /// <summary>
     /// Defines the interface for the Model Context Protocol client.

@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace RuntimeErrorSage.Core.Runtime.Exceptions;
+namespace RuntimeErrorSage.Model.Runtime.Exceptions;
 
 /// <summary>
 /// Represents errors that occur during RuntimeErrorSage operations.

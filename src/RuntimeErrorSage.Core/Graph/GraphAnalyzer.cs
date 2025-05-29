@@ -1,25 +1,25 @@
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Graph.Interfaces;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Graph;
-using RuntimeErrorSage.Core.Services.Interfaces;
+using RuntimeErrorSage.Model.Graph.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Graph;
+using RuntimeErrorSage.Model.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Classifier.Interfaces;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Interfaces;
-using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Model.Classifier.Interfaces;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Interfaces;
+using RuntimeErrorSage.Model.Models.Metrics;
+using RuntimeErrorSage.Model.Analysis.Interfaces;
 
-namespace RuntimeErrorSage.Core.Graph;
+namespace RuntimeErrorSage.Model.Graph;
 
 /// <summary>
 /// Implements the graph-based context analysis as specified in the research paper.
 /// This implementation follows the mathematical framework described in Section 3.
 /// </summary>
-public class GraphAnalyzer : RuntimeErrorSage.Core.Graph.Interfaces.IDependencyGraphAnalyzer
+public class GraphAnalyzer : RuntimeErrorSage.Model.Graph.Interfaces.IDependencyGraphAnalyzer
 {
     private readonly ILogger<GraphAnalyzer> _logger;
     private readonly IGraphBuilder _graphBuilder;

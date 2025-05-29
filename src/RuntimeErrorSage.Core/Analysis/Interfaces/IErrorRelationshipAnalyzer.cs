@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Enums;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Core.Analysis.Interfaces
+namespace RuntimeErrorSage.Model.Analysis.Interfaces
 {
     /// <summary>
     /// Interface for analyzing relationships between errors.

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using RuntimeErrorSage.Core.Models.Graph;
+using RuntimeErrorSage.Model.Models.Graph;
 
-namespace RuntimeErrorSage.Core.Extensions
+namespace RuntimeErrorSage.Model.Extensions
 {
     /// <summary>
     /// Extension methods for KeyValuePair objects in the RuntimeErrorSage codebase.

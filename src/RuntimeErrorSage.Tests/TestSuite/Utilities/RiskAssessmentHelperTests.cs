@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using Xunit;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Utilities;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Core.Storage.Utilities;
 
 namespace RuntimeErrorSage.Tests.TestSuite.Utilities
 {

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Model.Models.Error;
 
-namespace RuntimeErrorSage.Core.Pattern.Interfaces
+namespace RuntimeErrorSage.Model.Pattern.Interfaces
 {
     /// <summary>
     /// Interface for pattern recognition functionality.

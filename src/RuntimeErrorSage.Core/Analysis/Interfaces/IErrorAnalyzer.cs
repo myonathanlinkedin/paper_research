@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.LLM;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.LLM;
 
-namespace RuntimeErrorSage.Core.Analysis.Interfaces;
+namespace RuntimeErrorSage.Model.Analysis.Interfaces;
 
 /// <summary>
 /// Defines the interface for error analyzers.

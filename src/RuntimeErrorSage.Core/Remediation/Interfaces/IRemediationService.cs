@@ -1,15 +1,15 @@
-using RuntimeErrorSage.Core.Interfaces;
+using RuntimeErrorSage.Model.Interfaces;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Remediation;
-using RuntimeErrorSage.Core.Models.Metrics;
-using RuntimeErrorSage.Core.Models.Common;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Validation;
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Core.Options;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Remediation;
+using RuntimeErrorSage.Model.Models.Metrics;
+using RuntimeErrorSage.Model.Models.Common;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Model.Models.Validation;
+using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Options;
 
-namespace RuntimeErrorSage.Core.Interfaces
+namespace RuntimeErrorSage.Model.Interfaces
 {
     /// <summary>
     /// Interface for managing remediation operations.

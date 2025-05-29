@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Xunit;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Services;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Services;
 using RuntimeErrorSage.Tests.TestSuite.Models;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Model.Analysis.Interfaces;
 
 namespace RuntimeErrorSage.Tests.TestSuite
 {

@@ -1,17 +1,16 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Core.Exceptions;
-using RuntimeErrorSage.Core.MCP.Interfaces;
-using RuntimeErrorSage.Core.Models.Enums;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Interfaces;
-using RuntimeErrorSage.Core.Options;
-using RuntimeErrorSage.Core.Pattern.Interfaces;
-using RuntimeErrorSage.Core.Storage.Interfaces;
-using RuntimeErrorSage.Core.Utilities;
+using RuntimeErrorSage.Core.Storage.Utilities;
+using RuntimeErrorSage.Model.Exceptions;
+using RuntimeErrorSage.Model.MCP.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Interfaces;
+using RuntimeErrorSage.Model.Options;
+using RuntimeErrorSage.Model.Pattern.Interfaces;
+using RuntimeErrorSage.Model.Storage.Interfaces;
 using System.Collections.Concurrent;
 
-namespace RuntimeErrorSage.Core.Analysis
+namespace RuntimeErrorSage.Model.Analysis
 {
     /// <summary>
     /// Implements pattern recognition for error analysis.

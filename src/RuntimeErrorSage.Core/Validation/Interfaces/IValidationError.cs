@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Core.Validation.Interfaces
+namespace RuntimeErrorSage.Model.Validation.Interfaces
 {
     /// <summary>
     /// Represents a validation error

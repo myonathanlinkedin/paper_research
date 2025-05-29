@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Core.Models.Error;
-using RuntimeErrorSage.Core.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Model.Models.Error;
+using RuntimeErrorSage.Model.Models.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Core.Remediation.Interfaces
+namespace RuntimeErrorSage.Model.Remediation.Interfaces
 {
     /// <summary>
     /// Interface for registering and retrieving remediation strategies.
