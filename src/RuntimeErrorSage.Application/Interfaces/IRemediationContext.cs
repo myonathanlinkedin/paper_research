@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Models.Error;
@@ -30,7 +29,7 @@ namespace RuntimeErrorSage.Application.Remediation.Interfaces
         /// <summary>
         /// Gets the remediation history.
         /// </summary>
-        Collection<RemediationResult> History { get; }
+        List<RemediationResult> History { get; }
 
         /// <summary>
         /// Gets the context data.
@@ -59,9 +58,3 @@ namespace RuntimeErrorSage.Application.Remediation.Interfaces
         void ClearContext();
     }
 } 
-
-
-
-
-
-

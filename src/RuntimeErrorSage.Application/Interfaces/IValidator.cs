@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Models.Validation;
@@ -65,7 +64,3 @@ namespace RuntimeErrorSage.Application.Interfaces
         bool CanValidate(object context);
     }
 } 
-
-
-
-

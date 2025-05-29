@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Context.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
@@ -24,8 +23,8 @@ public class ModelContextProtocol
         IContextProvider contextProvider,
         IErrorContextAnalyzer errorContextAnalyzer)
     {
-        _contextProvider = contextProvider ?? ArgumentNullException.ThrowIfNull(nameof(contextProvider));
-        _errorContextAnalyzer = errorContextAnalyzer ?? ArgumentNullException.ThrowIfNull(nameof(errorContextAnalyzer));
+        _contextProvider = contextProvider ?? throw new ArgumentNullException(nameof(contextProvider));
+        _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
         _contextCache = new Dictionary<string, ContextMetadata>();
     }
 
@@ -79,7 +78,3 @@ public class ModelContextProtocol
         return await _contextProvider.ValidateContextAsync(contextId, metadata);
     }
 } 
-
-
-
-

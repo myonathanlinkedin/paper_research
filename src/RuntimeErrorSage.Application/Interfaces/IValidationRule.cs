@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Models.Validation;
 using System.Threading.Tasks;
@@ -42,9 +41,3 @@ public interface IValidationRule
     /// <returns>The validation result.</returns>
     Task<ValidationResult> ValidateAsync(ValidationContext context);
 } 
-
-
-
-
-
-

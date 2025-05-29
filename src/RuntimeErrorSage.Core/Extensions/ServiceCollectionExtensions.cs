@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -78,10 +77,4 @@ namespace RuntimeErrorSage.Application.Extensions
         }
     }
 } 
-
-
-
-
-
-
 

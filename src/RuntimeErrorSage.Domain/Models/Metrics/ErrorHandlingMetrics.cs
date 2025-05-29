@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -14,47 +13,47 @@ public class ErrorHandlingMetrics
     /// <summary>
     /// Gets or sets the unique identifier for these metrics.
     /// </summary>
-    public string MetricsId { get; } = Guid.NewGuid().ToString();
+    public string MetricsId { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets when the metrics were recorded.
     /// </summary>
-    public DateTime Timestamp { get; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the error type.
     /// </summary>
-    public string ErrorType { get; } = string.Empty;
+    public string ErrorType { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error severity.
     /// </summary>
-    public ErrorSeverity Severity { get; }
+    public ErrorSeverity Severity { get; set; }
 
     /// <summary>
     /// Gets or sets the duration of error handling in milliseconds.
     /// </summary>
-    public double DurationMs { get; }
+    public double DurationMs { get; set; }
 
     /// <summary>
     /// Gets or sets whether the error was successfully handled.
     /// </summary>
-    public bool Success { get; }
+    public bool Success { get; set; }
 
     /// <summary>
     /// Gets or sets the number of remediation attempts.
     /// </summary>
-    public int RemediationAttempts { get; }
+    public int RemediationAttempts { get; set; }
 
     /// <summary>
     /// Gets or sets the memory usage during error handling in bytes.
     /// </summary>
-    public long MemoryUsageBytes { get; }
+    public long MemoryUsageBytes { get; set; }
 
     /// <summary>
     /// Gets or sets the CPU usage percentage during error handling.
     /// </summary>
-    public double CpuUsagePercent { get; }
+    public double CpuUsagePercent { get; set; }
 
     /// <summary>
     /// Gets or sets any additional metrics collected.
@@ -66,9 +65,3 @@ public class ErrorHandlingMetrics
     /// </summary>
     public Dictionary<string, string> Labels { get; set; } = new();
 } 
-
-
-
-
-
-

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -14,61 +13,55 @@ namespace RuntimeErrorSage.Application.Models.LLM
         /// <summary>
         /// Gets or sets the unique identifier of the suggestion.
         /// </summary>
-        public string Id { get; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the action to be taken.
         /// </summary>
-        public string Action { get; } = string.Empty;
+        public string Action { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the priority of the suggestion.
         /// </summary>
-        public RemediationPriority Priority { get; }
+        public RemediationPriority Priority { get; set; }
 
         /// <summary>
         /// Gets or sets the impact of the suggestion.
         /// </summary>
-        public string Impact { get; } = string.Empty;
+        public string Impact { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the risk level of the suggestion.
         /// </summary>
-        public RemediationRiskLevel Risk { get; }
+        public RemediationRiskLevel Risk { get; set; }
 
         /// <summary>
         /// Gets or sets the validation requirements.
         /// </summary>
-        public string Validation { get; } = string.Empty;
+        public string Validation { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the confidence score.
         /// </summary>
-        public double Confidence { get; }
+        public double Confidence { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp of the suggestion.
         /// </summary>
-        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the step-by-step instructions for implementing the suggestion.
         /// </summary>
-        public IReadOnlyCollection<Steps> Steps { get; } = new();
+        public List<string> Steps { get; set; } = new();
         
         /// <summary>
         /// Gets or sets additional metadata about the suggestion.
         /// </summary>
         public Dictionary<string, object> Metadata { get; set; } = new();
 
-        public string ErrorId { get; } = string.Empty;
-        public string CorrelationId { get; } = string.Empty;
-        public string Description { get; } = string.Empty;
+        public string ErrorId { get; set; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
     }
 } 
-
-
-
-
-
-

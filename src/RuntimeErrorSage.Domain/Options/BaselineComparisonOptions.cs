@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Options
@@ -13,30 +12,24 @@ namespace RuntimeErrorSage.Application.Options
         /// Gets or sets whether to compare with traditional error handling.
         /// Required by research (try-catch baseline).
         /// </summary>
-        public bool CompareWithTraditionalHandling { get; }
+        public bool CompareWithTraditionalHandling { get; set; }
 
         /// <summary>
         /// Gets or sets whether to compare with static analysis tools.
         /// Required by research (static analysis baseline).
         /// </summary>
-        public bool CompareWithStaticAnalysis { get; }
+        public bool CompareWithStaticAnalysis { get; set; }
 
         /// <summary>
         /// Gets or sets whether to compare with manual debugging process.
         /// Required by research (manual debugging baseline).
         /// </summary>
-        public bool CompareWithManualDebugging { get; }
+        public bool CompareWithManualDebugging { get; set; }
 
         /// <summary>
         /// Gets or sets whether to include metrics comparison.
         /// Required by research for evaluation.
         /// </summary>
-        public bool IncludeMetricsComparison { get; }
+        public bool IncludeMetricsComparison { get; set; }
     }
 } 
-
-
-
-
-
-

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -15,32 +14,32 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the unique identifier of the suggestion.
         /// </summary>
-        public string SuggestionId { get; } = Guid.NewGuid().ToString();
+        public string SuggestionId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the title of the suggestion.
         /// </summary>
-        public string Title { get; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the description of the suggestion.
         /// </summary>
-        public string Description { get; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the strategy name.
         /// </summary>
-        public string StrategyName { get; } = string.Empty;
+        public string StrategyName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the priority of the suggestion.
         /// </summary>
-        public RemediationPriority Priority { get; } = RemediationPriority.Medium;
+        public RemediationPriority Priority { get; set; } = RemediationPriority.Medium;
 
         /// <summary>
         /// Gets or sets the confidence level of the suggestion (0-1).
         /// </summary>
-        public double ConfidenceLevel { get; }
+        public double ConfidenceLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the required parameters for the remediation.
@@ -50,52 +49,52 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the expected outcome of the remediation.
         /// </summary>
-        public string ExpectedOutcome { get; } = string.Empty;
+        public string ExpectedOutcome { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the potential risks of the remediation.
         /// </summary>
-        public IReadOnlyCollection<PotentialRisks> PotentialRisks { get; } = new Collection<string>();
+        public List<string> PotentialRisks { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the timestamp of the suggestion.
         /// </summary>
-        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the correlation ID.
         /// </summary>
-        public string CorrelationId { get; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the list of remediation actions.
         /// </summary>
-        public IReadOnlyCollection<Actions> Actions { get; } = new Collection<RemediationAction>();
+        public List<RemediationAction> Actions { get; set; } = new List<RemediationAction>();
 
         /// <summary>
         /// Gets or sets the error context.
         /// </summary>
-        public ErrorContext ErrorContext { get; }
+        public ErrorContext ErrorContext { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the suggestion.
         /// </summary>
-        public SuggestionStatus Status { get; } = SuggestionStatus.Pending;
+        public SuggestionStatus Status { get; set; } = SuggestionStatus.Pending;
 
         /// <summary>
         /// Gets or sets the list of strategies.
         /// </summary>
-        public IReadOnlyCollection<Strategies> Strategies { get; } = new Collection<string>();
+        public List<string> Strategies { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the confidence score.
         /// </summary>
-        public double ConfidenceScore { get; }
+        public double ConfidenceScore { get; set; }
 
         /// <summary>
         /// Gets or sets the message.
         /// </summary>
-        public string Message { get; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// Creates a suggestion from a strategy.
@@ -107,7 +106,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         {
             if (strategy == null)
             {
-                ArgumentNullException.ThrowIfNull(nameof(strategy));
+                throw new ArgumentNullException(nameof(strategy));
             }
 
             return new RemediationSuggestion
@@ -121,9 +120,3 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
-
-
-
-
-
-

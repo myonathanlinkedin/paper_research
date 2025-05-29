@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Tests.TestSuite.Models;
@@ -11,12 +10,12 @@ namespace RuntimeErrorSage.Tests.TestSuite;
 public class TestScenarioRunner
 {
     private readonly IErrorAnalyzer _errorAnalyzer;
-    private readonly Collection<TestResult> _results;
+    private readonly List<TestResult> _results;
 
     public TestScenarioRunner(IErrorAnalyzer errorAnalyzer)
     {
         _errorAnalyzer = errorAnalyzer;
-        _results = new Collection<TestResult>();
+        _results = new List<TestResult>();
     }
 
     /// <summary>
@@ -70,7 +69,7 @@ public class TestScenarioRunner
     /// <summary>
     /// Gets all test results
     /// </summary>
-    public IReadOnlyCollection<TestResult> GetResults() => _results;
+    public IReadOnlyList<TestResult> GetResults() => _results;
 
     private bool ValidateResults(ErrorAnalysis analysis, TestScenario scenario)
     {
@@ -83,9 +82,3 @@ public class TestScenarioRunner
         return errorTypeMatch && errorMessageMatch && remediationMatch;
     }
 } 
-
-
-
-
-
-

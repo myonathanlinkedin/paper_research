@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,9 +24,9 @@ public class TestSuiteAnalysis
     /// <param name="scenarios">The scenarios.</param>
     public TestSuiteAnalysis(TestSuiteResult result, TestSuiteMetrics metrics, TestSuiteScenarios scenarios)
     {
-        _result = result ?? ArgumentNullException.ThrowIfNull(nameof(result));
-        _metrics = metrics ?? ArgumentNullException.ThrowIfNull(nameof(metrics));
-        _scenarios = scenarios ?? ArgumentNullException.ThrowIfNull(nameof(scenarios));
+        _result = result ?? throw new ArgumentNullException(nameof(result));
+        _metrics = metrics ?? throw new ArgumentNullException(nameof(metrics));
+        _scenarios = scenarios ?? throw new ArgumentNullException(nameof(scenarios));
         _insights = new Dictionary<string, object>();
         Analyze();
     }
@@ -164,7 +163,7 @@ public class TestSuiteAnalysis
     /// </summary>
     private void GenerateInsights()
     {
-        var insights = new Collection<string>();
+        var insights = new List<string>();
 
         // Performance insights
         if (_metrics.AverageDuration > TimeSpan.FromSeconds(1))
@@ -234,7 +233,7 @@ public class TestSuiteAnalysis
     /// </summary>
     /// <param name="key">The key.</param>
     /// <returns>The insight.</returns>
-    public string key { ArgumentNullException.ThrowIfNull(string key); }
+    public object GetInsight(string key)
     {
         if (string.IsNullOrEmpty(key))
             throw new ArgumentException("Key cannot be null or empty.", nameof(key));
@@ -246,16 +245,10 @@ public class TestSuiteAnalysis
     /// Gets the insights.
     /// </summary>
     /// <returns>The insights.</returns>
-    public IReadOnlyCollection<string> GetInsights()
+    public IReadOnlyList<string> GetInsights()
     {
-        return _insights.TryGetValue("Insights", out var value) && value is Collection<string> insights
+        return _insights.TryGetValue("Insights", out var value) && value is List<string> insights
             ? insights
             : Array.Empty<string>();
     }
 } 
-
-
-
-
-
-

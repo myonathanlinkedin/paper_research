@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Remediation;
 using System;
@@ -12,8 +11,8 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     /// </summary>
     public class RemediationActionCoupling
     {
-        private readonly Dictionary<string, Collection<string>> _dependencies = new();
-        private readonly Dictionary<string, Collection<string>> _dependents = new();
+        private readonly Dictionary<string, List<string>> _dependencies = new();
+        private readonly Dictionary<string, List<string>> _dependents = new();
         private readonly Dictionary<string, CouplingType> _couplingTypes = new();
 
         /// <summary>
@@ -21,10 +20,10 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <returns>The list of dependent action IDs.</returns>
-        public IReadOnlyCollection<string> GetDependencies(string actionId)
+        public IReadOnlyList<string> GetDependencies(string actionId)
         {
             ArgumentNullException.ThrowIfNull(actionId);
-            return _dependencies.TryGetValue(actionId, out var deps) ? deps : new Collection<string>();
+            return _dependencies.TryGetValue(actionId, out var deps) ? deps : new List<string>();
         }
 
         /// <summary>
@@ -32,10 +31,10 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <returns>The list of dependent action IDs.</returns>
-        public IReadOnlyCollection<string> GetDependents(string actionId)
+        public IReadOnlyList<string> GetDependents(string actionId)
         {
             ArgumentNullException.ThrowIfNull(actionId);
-            return _dependents.TryGetValue(actionId, out var deps) ? deps : new Collection<string>();
+            return _dependents.TryGetValue(actionId, out var deps) ? deps : new List<string>();
         }
 
         /// <summary>
@@ -44,18 +43,18 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <param name="actionId">The action ID.</param>
         /// <param name="dependencyId">The dependency ID.</param>
         /// <param name="couplingType">The type of coupling.</param>
-        public string actionId, string dependencyId, CouplingType couplingType { ArgumentNullException.ThrowIfNull(string actionId, string dependencyId, CouplingType couplingType); }
+        public void AddDependency(string actionId, string dependencyId, CouplingType couplingType)
         {
             ArgumentNullException.ThrowIfNull(actionId);
             ArgumentNullException.ThrowIfNull(dependencyId);
 
             if (!_dependencies.ContainsKey(actionId))
-                _dependencies[actionId] = new Collection<string>();
+                _dependencies[actionId] = new List<string>();
             if (!_dependencies[actionId].Contains(dependencyId))
                 _dependencies[actionId].Add(dependencyId);
 
             if (!_dependents.ContainsKey(dependencyId))
-                _dependents[dependencyId] = new Collection<string>();
+                _dependents[dependencyId] = new List<string>();
             if (!_dependents[dependencyId].Contains(actionId))
                 _dependents[dependencyId].Add(actionId);
 
@@ -67,7 +66,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <param name="dependencyId">The dependency ID.</param>
-        public string actionId, string dependencyId { ArgumentNullException.ThrowIfNull(string actionId, string dependencyId); }
+        public void RemoveDependency(string actionId, string dependencyId)
         {
             ArgumentNullException.ThrowIfNull(actionId);
             ArgumentNullException.ThrowIfNull(dependencyId);
@@ -87,7 +86,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <param name="actionId">The action ID.</param>
         /// <param name="dependencyId">The dependency ID.</param>
         /// <returns>The coupling type.</returns>
-        public string actionId, string dependencyId { ArgumentNullException.ThrowIfNull(string actionId, string dependencyId); }
+        public CouplingType GetCouplingType(string actionId, string dependencyId)
         {
             ArgumentNullException.ThrowIfNull(actionId);
             ArgumentNullException.ThrowIfNull(dependencyId);
@@ -148,10 +147,6 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
-
-
-
-
 
 
 

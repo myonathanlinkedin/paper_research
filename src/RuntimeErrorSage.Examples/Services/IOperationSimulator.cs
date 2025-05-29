@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Examples.Models;
 using RuntimeErrorSage.Examples.Models.Responses;
@@ -38,8 +37,4 @@ public interface IOperationSimulator
     /// <returns>Operation response with status and error details if any</returns>
     Task<OperationResponse> SimulateResourceAllocationAsync(ResourceRequest request);
 } 
-
-
-
-
 

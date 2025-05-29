@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -68,9 +67,3 @@ namespace RuntimeErrorSage.Application.Storage.Interfaces
         Task<long> GetPatternCountAsync();
     }
 } 
-
-
-
-
-
-

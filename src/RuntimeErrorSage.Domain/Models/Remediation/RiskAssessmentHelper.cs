@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -45,9 +44,9 @@ public static class RiskAssessmentHelper
     /// </summary>
     /// <param name="riskLevel">The risk level.</param>
     /// <returns>A list of recommended mitigation steps.</returns>
-    public static Collection<string> GenerateMitigationSteps(RemediationRiskLevel riskLevel)
+    public static List<string> GenerateMitigationSteps(RemediationRiskLevel riskLevel)
     {
-        var steps = new Collection<string>();
+        var steps = new List<string>();
 
         // Add common steps for all risk levels
         steps.Add("Review the remediation plan before execution");
@@ -88,9 +87,9 @@ public static class RiskAssessmentHelper
     /// </summary>
     /// <param name="riskLevel">The risk level.</param>
     /// <returns>A list of potential issues.</returns>
-    public static Collection<string> GeneratePotentialIssues(RemediationRiskLevel riskLevel)
+    public static List<string> GeneratePotentialIssues(RemediationRiskLevel riskLevel)
     {
-        var issues = new Collection<string>();
+        var issues = new List<string>();
 
         // Add risk-level-specific issues
         switch (riskLevel)
@@ -121,9 +120,3 @@ public static class RiskAssessmentHelper
         return issues;
     }
 } 
-
-
-
-
-
-

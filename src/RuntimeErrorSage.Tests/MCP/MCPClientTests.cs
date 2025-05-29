@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -64,7 +63,7 @@ namespace RuntimeErrorSage.Application.Tests.MCP
                 ErrorId = "test-error-1",
                 ErrorType = "RuntimeError",
                 Message = "Test error message",
-                ComponentGraph = new Collection<ComponentNode>()
+                ComponentGraph = new List<ComponentNode>()
             };
 
             _errorAnalyzerMock.Setup(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()))
@@ -107,7 +106,7 @@ namespace RuntimeErrorSage.Application.Tests.MCP
                 ErrorId = "test-error-2",
                 ErrorType = "RuntimeError",
                 Message = "Test error message",
-                ComponentGraph = new Collection<ComponentNode>()
+                ComponentGraph = new List<ComponentNode>()
             };
 
             var callbackCalled = false;
@@ -180,8 +179,3 @@ namespace RuntimeErrorSage.Application.Tests.MCP
         }
     }
 } 
-
-
-
-
-

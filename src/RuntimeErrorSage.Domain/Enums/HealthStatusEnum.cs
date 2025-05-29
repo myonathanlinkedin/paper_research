@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
@@ -70,9 +69,3 @@ public static class HealthStatusEnumExtensions
         };
     }
 } 
-
-
-
-
-
-

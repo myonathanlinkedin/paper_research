@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -13,37 +12,37 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the state of the remediation.
         /// </summary>
-        public RemediationState State { get; } = RemediationState.NotStarted;
+        public RemediationState State { get; set; } = RemediationState.NotStarted;
 
         /// <summary>
         /// Gets or sets the message describing the status.
         /// </summary>
-        public string Message { get; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets when the status was last updated.
         /// </summary>
-        public DateTime LastUpdated { get; } = DateTime.UtcNow;
+        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the progress percentage (0-100).
         /// </summary>
-        public double Progress { get; }
+        public double Progress { get; set; }
 
         /// <summary>
         /// Gets or sets any error details.
         /// </summary>
-        public string ErrorDetails { get; } = string.Empty;
+        public string ErrorDetails { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets any warnings.
         /// </summary>
-        public IReadOnlyCollection<Warnings> Warnings { get; } = new();
+        public List<string> Warnings { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the status history.
         /// </summary>
-        public IReadOnlyCollection<History> History { get; } = new();
+        public List<StatusHistoryEntry> History { get; set; } = new();
 
         /// <summary>
         /// Gets or sets any additional status metadata.
@@ -115,9 +114,3 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
-
-
-
-
-
-

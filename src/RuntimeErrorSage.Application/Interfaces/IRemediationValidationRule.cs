@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 
@@ -37,9 +36,3 @@ namespace RuntimeErrorSage.Application.Remediation.Interfaces
         ValidationSeverity Severity { get; }
     }
 } 
-
-
-
-
-
-

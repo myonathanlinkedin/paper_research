@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -60,9 +59,9 @@ namespace RuntimeErrorSage.Core.Storage.Utilities
         /// </summary>
         /// <param name="riskLevel">The risk level.</param>
         /// <returns>A list of potential issues.</returns>
-        public static Collection<string> GeneratePotentialIssues(RemediationRiskLevel riskLevel)
+        public static List<string> GeneratePotentialIssues(RemediationRiskLevel riskLevel)
         {
-            var issues = new Collection<string>();
+            var issues = new List<string>();
             
             switch (riskLevel)
             {
@@ -109,9 +108,9 @@ namespace RuntimeErrorSage.Core.Storage.Utilities
         /// </summary>
         /// <param name="riskLevel">The risk level.</param>
         /// <returns>A list of mitigation steps.</returns>
-        public static Collection<string> GenerateMitigationSteps(RemediationRiskLevel riskLevel)
+        public static List<string> GenerateMitigationSteps(RemediationRiskLevel riskLevel)
         {
-            var steps = new Collection<string>();
+            var steps = new List<string>();
             
             // Common steps for all risk levels
             steps.Add("Verify system state before execution");
@@ -208,9 +207,3 @@ namespace RuntimeErrorSage.Core.Storage.Utilities
         }
     }
 } 
-
-
-
-
-
-

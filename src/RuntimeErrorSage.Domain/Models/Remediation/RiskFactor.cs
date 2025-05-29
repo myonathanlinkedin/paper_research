@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Application.Models.Remediation
 {
     /// <summary>
@@ -9,27 +8,21 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the risk factor name.
         /// </summary>
-        public string Name { get; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the risk factor description.
         /// </summary>
-        public string Description { get; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the risk factor weight (0-1).
         /// </summary>
-        public double Weight { get; }
+        public double Weight { get; set; }
 
         /// <summary>
         /// Gets or sets the risk factor score (0-1).
         /// </summary>
-        public double Score { get; }
+        public double Score { get; set; }
     }
 } 
-
-
-
-
-
-

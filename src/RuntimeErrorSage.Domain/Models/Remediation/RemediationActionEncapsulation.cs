@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Remediation;
 using System;
@@ -17,7 +16,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the encapsulation level.
         /// </summary>
-        public EncapsulationLevel Level { get; } = EncapsulationLevel.Private;
+        public EncapsulationLevel Level { get; set; } = EncapsulationLevel.Private;
 
         /// <summary>
         /// Gets or sets whether the action is encapsulated.
@@ -34,7 +33,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public string key, object value { ArgumentNullException.ThrowIfNull(string key, object value); }
+        public void SetPrivateData(string key, object value)
         {
             ArgumentNullException.ThrowIfNull(key);
             _privateData[key] = value;
@@ -46,7 +45,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>The value.</returns>
-        public string key { ArgumentNullException.ThrowIfNull(string key); }
+        public object GetPrivateData(string key)
         {
             ArgumentNullException.ThrowIfNull(key);
             return _privateData.TryGetValue(key, out var value) ? value : null;
@@ -57,7 +56,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="handler">The handler.</param>
-        public string key, Action<object> handler { ArgumentNullException.ThrowIfNull(string key, Action<object> handler); }
+        public void RegisterStateChangeHandler(string key, Action<object> handler)
         {
             ArgumentNullException.ThrowIfNull(key);
             ArgumentNullException.ThrowIfNull(handler);
@@ -95,12 +94,6 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     }
 }
  
-
-
-
-
-
-
 
 
 

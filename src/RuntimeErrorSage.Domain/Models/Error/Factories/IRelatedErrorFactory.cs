@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Error;
 
 namespace RuntimeErrorSage.Application.Models.Error.Factories
@@ -19,8 +18,3 @@ namespace RuntimeErrorSage.Application.Models.Error.Factories
         RelatedError Create(string errorMessage, string errorType, string correlationId, string relationshipType);
     }
 } 
-
-
-
-
-

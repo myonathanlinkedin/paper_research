@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Application.Models.Context;
@@ -65,9 +64,3 @@ namespace RuntimeErrorSage.Application.Context.Interfaces
         Task UpdateContextMetadataAsync(ContextMetadata metadata);
     }
 } 
-
-
-
-
-
-

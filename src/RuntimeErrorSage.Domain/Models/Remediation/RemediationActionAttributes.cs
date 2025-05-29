@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Remediation;
 using System;
@@ -20,7 +19,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <param name="actionId">The action ID.</param>
         /// <param name="attributeType">The type of attribute.</param>
         /// <param name="value">The attribute value.</param>
-        public string actionId, AttributeType attributeType, object value { ArgumentNullException.ThrowIfNull(string actionId, AttributeType attributeType, object value); }
+        public void SetAttribute(string actionId, AttributeType attributeType, object value)
         {
             ArgumentNullException.ThrowIfNull(actionId);
             ArgumentNullException.ThrowIfNull(value);
@@ -38,7 +37,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <param name="actionId">The action ID.</param>
         /// <param name="attributeType">The type of attribute.</param>
         /// <returns>The attribute value, or null if not found.</returns>
-        public string actionId, AttributeType attributeType { ArgumentNullException.ThrowIfNull(string actionId, AttributeType attributeType); }
+        public object GetAttribute(string actionId, AttributeType attributeType)
         {
             ArgumentNullException.ThrowIfNull(actionId);
 
@@ -66,7 +65,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <param name="attributeType">The type of attribute.</param>
-        public string actionId, AttributeType attributeType { ArgumentNullException.ThrowIfNull(string actionId, AttributeType attributeType); }
+        public void RemoveAttribute(string actionId, AttributeType attributeType)
         {
             ArgumentNullException.ThrowIfNull(actionId);
 
@@ -80,7 +79,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Clears all attributes for an action.
         /// </summary>
         /// <param name="actionId">The action ID.</param>
-        public string actionId { ArgumentNullException.ThrowIfNull(string actionId); }
+        public void ClearAttributes(string actionId)
         {
             ArgumentNullException.ThrowIfNull(actionId);
             _attributes.Remove(actionId);
@@ -95,11 +94,5 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
-
-
-
-
-
-
 
 

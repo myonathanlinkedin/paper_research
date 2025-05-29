@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Xunit;
 using FluentAssertions;
 using RuntimeErrorSage.Application.Analysis;
@@ -70,14 +69,14 @@ public class GraphAnalysisTests
 
         var graphAnalysis = new GraphAnalysis
         {
-            Nodes = new Collection<GraphNode>
+            Nodes = new List<GraphNode>
             {
                 new() { Id = "UserService", Type = "Service", Status = "Healthy" },
                 new() { Id = "AuthService", Type = "Service", Status = "Degraded" },
                 new() { Id = "LoggingService", Type = "Service", Status = "Healthy" },
                 new() { Id = "Database", Type = "Database", Status = "Error" }
             },
-            Edges = new Collection<GraphEdge>
+            Edges = new List<GraphEdge>
             {
                 new() { Source = "UserService", Target = "Database", Type = "DependsOn" },
                 new() { Source = "AuthService", Target = "Database", Type = "DependsOn" },
@@ -133,13 +132,13 @@ public class GraphAnalysisTests
 
         var graphAnalysis = new GraphAnalysis
         {
-            Nodes = new Collection<GraphNode>
+            Nodes = new List<GraphNode>
             {
                 new() { Id = "ServiceA", Type = "Service", Status = "Error" },
                 new() { Id = "ServiceB", Type = "Service", Status = "Degraded" },
                 new() { Id = "ServiceC", Type = "Service", Status = "Degraded" }
             },
-            Edges = new Collection<GraphEdge>
+            Edges = new List<GraphEdge>
             {
                 new() { Source = "ServiceA", Target = "ServiceB", Type = "DependsOn" },
                 new() { Source = "ServiceB", Target = "ServiceC", Type = "DependsOn" },
@@ -190,7 +189,7 @@ public class GraphAnalysisTests
 
         var graphAnalysis = new GraphAnalysis
         {
-            Nodes = new Collection<GraphNode>
+            Nodes = new List<GraphNode>
             {
                 new() { Id = "Database", Type = "Database", Status = "Error" },
                 new() { Id = "AuthService", Type = "Service", Status = "Error" },
@@ -198,7 +197,7 @@ public class GraphAnalysisTests
                 new() { Id = "PaymentService", Type = "Service", Status = "Error" },
                 new() { Id = "NotificationService", Type = "Service", Status = "Degraded" }
             },
-            Edges = new Collection<GraphEdge>
+            Edges = new List<GraphEdge>
             {
                 new() { Source = "AuthService", Target = "Database", Type = "DependsOn" },
                 new() { Source = "UserService", Target = "AuthService", Type = "DependsOn" },
@@ -234,9 +233,3 @@ public class GraphAnalysisTests
         _errorContextAnalyzerMock.Verify(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()), Times.Once);
     }
 } 
-
-
-
-
-
-

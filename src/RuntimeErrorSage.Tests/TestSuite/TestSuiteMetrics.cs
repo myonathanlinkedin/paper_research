@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +11,8 @@ namespace RuntimeErrorSage.Tests.TestSuite;
 /// </summary>
 public class TestSuiteMetrics
 {
-    private readonly Collection<PerformanceMetric> _metrics;
-    private readonly Dictionary<string, Collection<double>> _metricHistory;
+    private readonly List<PerformanceMetric> _metrics;
+    private readonly Dictionary<string, List<double>> _metricHistory;
     private readonly Dictionary<string, double> _metricDistribution;
     private readonly Dictionary<string, double> _metricSuccessRate;
     private readonly Dictionary<string, double> _trendAnalysis;
@@ -23,8 +22,8 @@ public class TestSuiteMetrics
     /// </summary>
     public TestSuiteMetrics()
     {
-        _metrics = new Collection<PerformanceMetric>();
-        _metricHistory = new Dictionary<string, Collection<double>>();
+        _metrics = new List<PerformanceMetric>();
+        _metricHistory = new Dictionary<string, List<double>>();
         _metricDistribution = new Dictionary<string, double>();
         _metricSuccessRate = new Dictionary<string, double>();
         _trendAnalysis = new Dictionary<string, double>();
@@ -97,7 +96,7 @@ public class TestSuiteMetrics
     public void AddMetric(PerformanceMetric metric)
     {
         if (metric == null)
-            ArgumentNullException.ThrowIfNull(nameof(metric));
+            throw new ArgumentNullException(nameof(metric));
 
         _metrics.Add(metric);
         UpdateMetricHistory(metric);
@@ -139,7 +138,7 @@ public class TestSuiteMetrics
     {
         if (!_metricHistory.ContainsKey(metricName))
         {
-            _metricHistory[metricName] = new Collection<double>();
+            _metricHistory[metricName] = new List<double>();
         }
 
         _metricHistory[metricName].Add(value);
@@ -252,8 +251,3 @@ public class TestSuiteMetrics
         return (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
     }
 } 
-
-
-
-
-

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Examples.Exceptions;
 
 /// <summary>
@@ -34,8 +33,4 @@ public class FileOperationException : Exception
         Context = context;
     }
 } 
-
-
-
-
 

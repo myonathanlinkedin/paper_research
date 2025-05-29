@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Error
@@ -26,9 +25,3 @@ namespace RuntimeErrorSage.Application.Models.Error
         RuntimeError FromException(Exception exception);
     }
 } 
-
-
-
-
-
-

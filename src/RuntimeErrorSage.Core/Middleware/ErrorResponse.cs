@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Domain.Enums;
 
@@ -12,22 +11,22 @@ public class ErrorResponse
     /// <summary>
     /// Gets or sets the error ID.
     /// </summary>
-    public string ErrorId { get; } = string.Empty;
+    public string ErrorId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error message.
     /// </summary>
-    public string Message { get; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error type.
     /// </summary>
-    public string Type { get; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the severity level of the error.
     /// </summary>
-    public SeverityLevel Severity { get; }
+    public SeverityLevel Severity { get; set; }
 
     /// <summary>
     /// Gets or sets the error analysis.
@@ -42,11 +41,5 @@ public class ErrorResponse
     /// <summary>
     /// Gets or sets the error timestamp.
     /// </summary>
-    public DateTime Timestamp { get; }
+    public DateTime Timestamp { get; set; }
 } 
-
-
-
-
-
-

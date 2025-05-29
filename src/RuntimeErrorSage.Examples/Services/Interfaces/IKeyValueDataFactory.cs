@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Examples.Models;
 
 namespace RuntimeErrorSage.Examples.Services.Interfaces;
@@ -25,8 +24,3 @@ public interface IKeyValueDataFactory
     /// <returns>A new KeyValueData instance with metadata.</returns>
     KeyValueData CreateWithMetadata(string key, object value, Dictionary<string, object> metadata);
 } 
-
-
-
-
-

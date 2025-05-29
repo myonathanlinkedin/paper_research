@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Domain.Enums;
 
@@ -12,22 +11,16 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the state.
         /// </summary>
-        public RemediationState State { get; }
+        public RemediationState State { get; set; }
 
         /// <summary>
         /// Gets or sets the status message.
         /// </summary>
-        public string Message { get; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets when the status was recorded.
         /// </summary>
-        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 } 
-
-
-
-
-
-

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.MCP;
@@ -11,27 +10,27 @@ public class MCPClientOptions
     /// <summary>
     /// Gets or sets the base URL.
     /// </summary>
-    public string BaseUrl { get; }
+    public string BaseUrl { get; set; }
 
     /// <summary>
     /// Gets or sets the API key.
     /// </summary>
-    public string ApiKey { get; }
+    public string ApiKey { get; set; }
 
     /// <summary>
     /// Gets or sets the timeout in seconds.
     /// </summary>
-    public int TimeoutSeconds { get; } = 30;
+    public int TimeoutSeconds { get; set; } = 30;
 
     /// <summary>
     /// Gets or sets the retry count.
     /// </summary>
-    public int RetryCount { get; } = 3;
+    public int RetryCount { get; set; } = 3;
 
     /// <summary>
     /// Gets or sets the retry delay in seconds.
     /// </summary>
-    public int RetryDelaySeconds { get; } = 1;
+    public int RetryDelaySeconds { get; set; } = 1;
 
     /// <summary>
     /// Validates the options.
@@ -55,8 +54,3 @@ public class MCPClientOptions
             throw new ArgumentException("Retry delay must be greater than 0.", nameof(RetryDelaySeconds));
     }
 } 
-
-
-
-
-

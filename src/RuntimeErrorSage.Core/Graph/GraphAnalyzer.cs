@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Graph.Interfaces;
 using RuntimeErrorSage.Application.Models.Error;
@@ -73,7 +72,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
 
             // Analyze impact
             var impactResults = await AnalyzeImpactAsync(result.DependencyGraph, context.ErrorId);
-            result.ImpactResults = new Collection<ImpactAnalysisResult> { impactResults };
+            result.ImpactResults = new List<ImpactAnalysisResult> { impactResults };
 
             // Find related errors
             result.RelatedErrors = await _relationshipAnalyzer.FindRelatedErrorsAsync(context, result.DependencyGraph);
@@ -170,7 +169,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
     }
     
     /// <inheritdoc />
-    public async Task<Collection<GraphPath>> AnalyzeCriticalPathsAsync(DependencyGraph graph)
+    public async Task<List<GraphPath>> AnalyzeCriticalPathsAsync(DependencyGraph graph)
     {
         ArgumentNullException.ThrowIfNull(graph);
 
@@ -178,7 +177,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
         {
             _logger.LogInformation("Analyzing critical paths in dependency graph");
             
-            var criticalPaths = new Collection<GraphPath>();
+            var criticalPaths = new List<GraphPath>();
             
             // Find all terminal nodes (nodes with no outgoing edges)
             var terminalNodes = graph.Nodes
@@ -205,7 +204,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
     }
     
     /// <inheritdoc />
-    public async Task<Collection<DependencyNode>> IdentifyHighRiskNodesAsync(DependencyGraph graph, double threshold = 0.7)
+    public async Task<List<DependencyNode>> IdentifyHighRiskNodesAsync(DependencyGraph graph, double threshold = 0.7)
     {
         ArgumentNullException.ThrowIfNull(graph);
 
@@ -213,7 +212,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
         {
             _logger.LogInformation("Identifying high-risk nodes with threshold {Threshold}", threshold);
             
-            var highRiskNodes = new Collection<DependencyNode>();
+            var highRiskNodes = new List<DependencyNode>();
             
             foreach (var node in graph.Nodes)
             {
@@ -233,7 +232,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
     }
     
     /// <inheritdoc />
-    public async Task<Collection<GraphPath>> CalculateErrorPropagationPathsAsync(DependencyGraph graph, string errorNodeId)
+    public async Task<List<GraphPath>> CalculateErrorPropagationPathsAsync(DependencyGraph graph, string errorNodeId)
     {
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentNullException.ThrowIfNull(errorNodeId);
@@ -242,11 +241,11 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
         {
             _logger.LogInformation("Calculating error propagation paths from node {NodeId}", errorNodeId);
             
-            var propagationPaths = new Collection<GraphPath>();
+            var propagationPaths = new List<GraphPath>();
             var visited = new HashSet<string>();
             
             // Find all paths from the error node to terminal nodes
-            FindAllPathsFromNode(graph, errorNodeId, new Collection<string>(), visited, propagationPaths);
+            FindAllPathsFromNode(graph, errorNodeId, new List<string>(), visited, propagationPaths);
             
             return propagationPaths;
         }
@@ -304,7 +303,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
     }
     
     /// <inheritdoc />
-    public async Task<Collection<GraphCycle>> FindCyclesAsync(DependencyGraph graph)
+    public async Task<List<GraphCycle>> FindCyclesAsync(DependencyGraph graph)
     {
         ArgumentNullException.ThrowIfNull(graph);
 
@@ -312,7 +311,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
         {
             _logger.LogInformation("Finding cycles in dependency graph");
             
-            var cycles = new Collection<GraphCycle>();
+            var cycles = new List<GraphCycle>();
             var visited = new Dictionary<string, bool>();
             var recStack = new Dictionary<string, bool>();
             
@@ -328,7 +327,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
             {
                 if (!visited[node.Id])
                 {
-                    FindCyclesUtil(graph, node.Id, visited, recStack, new Collection<string>(), cycles);
+                    FindCyclesUtil(graph, node.Id, visited, recStack, new List<string>(), cycles);
                 }
             }
             
@@ -479,7 +478,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
         return path;
     }
     
-    private Collection<string> TopologicalSort(DependencyGraph graph)
+    private List<string> TopologicalSort(DependencyGraph graph)
     {
         var visited = new Dictionary<string, bool>();
         var stack = new Stack<string>();
@@ -519,8 +518,8 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
         stack.Push(nodeId);
     }
     
-    private void FindAllPathsFromNode(DependencyGraph graph, string nodeId, Collection<string> currentPath, 
-        HashSet<string> visited, Collection<GraphPath> paths)
+    private void FindAllPathsFromNode(DependencyGraph graph, string nodeId, List<string> currentPath, 
+        HashSet<string> visited, List<GraphPath> paths)
     {
         visited.Add(nodeId);
         currentPath.Add(nodeId);
@@ -530,7 +529,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
         {
             var newPath = new GraphPath
             {
-                Nodes = new Collection<string>(currentPath),
+                Nodes = new List<string>(currentPath),
                 Weight = currentPath.Count - 1
             };
             paths.Add(newPath);
@@ -578,7 +577,7 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
     }
     
     private void FindCyclesUtil(DependencyGraph graph, string nodeId, Dictionary<string, bool> visited,
-        Dictionary<string, bool> recStack, Collection<string> currentPath, Collection<GraphCycle> cycles)
+        Dictionary<string, bool> recStack, List<string> currentPath, List<GraphCycle> cycles)
     {
         visited[nodeId] = true;
         recStack[nodeId] = true;
@@ -779,7 +778,3 @@ public class GraphAnalyzer : RuntimeErrorSage.Application.Graph.Interfaces.IDepe
         return totalHealth / graph.Nodes.Count;
     }
 } 
-
-
-
-

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -46,7 +45,7 @@ namespace RuntimeErrorSage.Tests.LLM
             var prompt = "Test prompt";
             var expectedResponse = new LMStudioResponse
             {
-                Choices = new Collection<Choice>
+                Choices = new List<Choice>
                 {
                     new Choice { Text = "Test response" }
                 }
@@ -73,7 +72,7 @@ namespace RuntimeErrorSage.Tests.LLM
                 HttpStatusCode.OK,
                 JsonSerializer.Serialize(new LMStudioModelsResponse
                 {
-                    Data = new Collection<ModelInfo>
+                    Data = new List<ModelInfo>
                     {
                         new ModelInfo { Id = "test-model", Status = "loading" }
                     }
@@ -93,7 +92,7 @@ namespace RuntimeErrorSage.Tests.LLM
                 HttpStatusCode.OK,
                 JsonSerializer.Serialize(new LMStudioModelsResponse
                 {
-                    Data = new Collection<ModelInfo>
+                    Data = new List<ModelInfo>
                     {
                         new ModelInfo { Id = "test-model", Status = "ready" }
                     }
@@ -115,7 +114,7 @@ namespace RuntimeErrorSage.Tests.LLM
                 HttpStatusCode.OK,
                 JsonSerializer.Serialize(new LMStudioModelsResponse
                 {
-                    Data = new Collection<ModelInfo>
+                    Data = new List<ModelInfo>
                     {
                         new ModelInfo { Id = "test-model", Status = "loading" }
                     }
@@ -172,10 +171,4 @@ namespace RuntimeErrorSage.Tests.LLM
         }
     }
 } 
-
-
-
-
-
-
 

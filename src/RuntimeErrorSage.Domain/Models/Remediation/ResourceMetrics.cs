@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -12,27 +11,26 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the type of resource.
         /// </summary>
-        public string ResourceType { get; }
+        public string ResourceType { get; set; }
 
         /// <summary>
         /// Gets or sets the unit of measurement.
         /// </summary>
-        public string Unit { get; }
+        public string Unit { get; set; }
 
         /// <summary>
         /// Gets or sets the current usage.
         /// </summary>
-        public double CurrentUsage { get; }
+        public double CurrentUsage { get; set; }
 
         /// <summary>
         /// Gets or sets the peak usage.
         /// </summary>
-        public double PeakUsage { get; }
+        public double PeakUsage { get; set; }
 
         /// <summary>
         /// Gets or sets the usage history.
         /// </summary>
-        public IReadOnlyCollection<UsageHistory> UsageHistory { get; }
+        public List<UsageRecord> UsageHistory { get; set; }
     }
 } 
-

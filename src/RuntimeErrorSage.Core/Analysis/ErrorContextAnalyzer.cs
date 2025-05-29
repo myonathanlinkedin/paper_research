@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -59,12 +58,12 @@ namespace RuntimeErrorSage.Application.Analysis
             IRelatedErrorFactory relatedErrorFactory,
             ICollectionFactory collectionFactory)
         {
-            _logger = logger ?? ArgumentNullException.ThrowIfNull(logger);
-            _errorRelationshipAnalyzer = errorRelationshipAnalyzer ?? ArgumentNullException.ThrowIfNull(errorRelationshipAnalyzer);
-            _dependencyNodeFactory = dependencyNodeFactory ?? ArgumentNullException.ThrowIfNull(dependencyNodeFactory);
-            _runtimeErrorFactory = runtimeErrorFactory ?? ArgumentNullException.ThrowIfNull(runtimeErrorFactory);
-            _relatedErrorFactory = relatedErrorFactory ?? ArgumentNullException.ThrowIfNull(relatedErrorFactory);
-            _collectionFactory = collectionFactory ?? ArgumentNullException.ThrowIfNull(collectionFactory);
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _errorRelationshipAnalyzer = errorRelationshipAnalyzer ?? throw new ArgumentNullException(nameof(errorRelationshipAnalyzer));
+            _dependencyNodeFactory = dependencyNodeFactory ?? throw new ArgumentNullException(nameof(dependencyNodeFactory));
+            _runtimeErrorFactory = runtimeErrorFactory ?? throw new ArgumentNullException(nameof(runtimeErrorFactory));
+            _relatedErrorFactory = relatedErrorFactory ?? throw new ArgumentNullException(nameof(relatedErrorFactory));
+            _collectionFactory = collectionFactory ?? throw new ArgumentNullException(nameof(collectionFactory));
         }
 
         /// <summary>
@@ -90,7 +89,7 @@ namespace RuntimeErrorSage.Application.Analysis
                 var rootCause = await GetRootCauseAsync(context);
 
                 // Create remediation suggestions based on analysis
-                var suggestions = _collectionFactory.CreateCollection<Models.Remediation.RemediationSuggestion>();
+                var suggestions = _collectionFactory.CreateList<Models.Remediation.RemediationSuggestion>();
                 suggestions.Add(new Models.Remediation.RemediationSuggestion
                 {
                     Title = "Restart affected component",
@@ -127,7 +126,7 @@ namespace RuntimeErrorSage.Application.Analysis
         /// </summary>
         /// <param name="context">The error context.</param>
         /// <returns>The list of related errors.</returns>
-        public async Task<Collection<RelatedError>> GetRelatedErrorsAsync(ErrorContext context)
+        public async Task<List<RelatedError>> GetRelatedErrorsAsync(ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
 
@@ -135,7 +134,7 @@ namespace RuntimeErrorSage.Application.Analysis
             {
                 _logger.LogInformation("Getting related errors for context {ContextId}", context.ContextId);
 
-                var relatedErrors = _collectionFactory.CreateCollection<RelatedError>();
+                var relatedErrors = _collectionFactory.CreateList<RelatedError>();
                 relatedErrors.Add(_relatedErrorFactory.Create(
                     "Database connection timeout",
                     "Connection timeout",
@@ -282,14 +281,14 @@ namespace RuntimeErrorSage.Application.Analysis
             {
                 _logger.LogInformation("Building dependency graph for {ContextId}", context.ContextId);
 
-                var nodes = _collectionFactory.CreateCollection<DependencyNode>();
+                var nodes = _collectionFactory.CreateList<DependencyNode>();
                 nodes.Add(_dependencyNodeFactory.Create(
                     context.ErrorType,
                     context.ComponentId,
                     context.ComponentName,
                     true
                 ));
-                var edges = _collectionFactory.CreateCollection<DependencyEdge>();
+                var edges = _collectionFactory.CreateList<DependencyEdge>();
 
                 var graph = new DependencyGraph
                 {
@@ -323,7 +322,7 @@ namespace RuntimeErrorSage.Application.Analysis
             {
                 _logger.LogInformation("Analyzing impact for {ContextId}", context.ContextId);
 
-                var affectedComponents = _collectionFactory.CreateCollection<string>();
+                var affectedComponents = _collectionFactory.CreateList<string>();
                 affectedComponents.Add(context.ComponentId);
 
                 var result = new Models.Analysis.ImpactAnalysisResult
@@ -352,7 +351,7 @@ namespace RuntimeErrorSage.Application.Analysis
         /// <param name="sourceId">The source node ID.</param>
         /// <param name="targetId">The target node ID.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the shortest path as a list of DependencyNode.</returns>
-        public async Task<Collection<DependencyNode>> CalculateShortestPathAsync(string sourceId, string targetId)
+        public async Task<List<DependencyNode>> CalculateShortestPathAsync(string sourceId, string targetId)
         {
             ArgumentException.ThrowIfNullOrEmpty(sourceId);
             ArgumentException.ThrowIfNullOrEmpty(targetId);
@@ -361,7 +360,7 @@ namespace RuntimeErrorSage.Application.Analysis
             {
                 _logger.LogInformation("Calculating shortest path from {SourceId} to {TargetId}", sourceId, targetId);
 
-                var path = _collectionFactory.CreateCollection<DependencyNode>();
+                var path = _collectionFactory.CreateList<DependencyNode>();
                 path.Add(_dependencyNodeFactory.Create("Source", sourceId, "Source Component"));
                 path.Add(_dependencyNodeFactory.Create("Intermediate", Guid.NewGuid().ToString(), "Intermediate Component"));
                 path.Add(_dependencyNodeFactory.Create("Target", targetId, "Target Component"));
@@ -402,7 +401,3 @@ namespace RuntimeErrorSage.Application.Analysis
         }
     }
 } 
-
-
-
-

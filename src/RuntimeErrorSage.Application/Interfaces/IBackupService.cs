@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Backup;
@@ -33,8 +32,3 @@ namespace RuntimeErrorSage.Application.Interfaces
         Task<BackupListResult> ListBackupsAsync(string applicationId);
     }
 } 
-
-
-
-
-

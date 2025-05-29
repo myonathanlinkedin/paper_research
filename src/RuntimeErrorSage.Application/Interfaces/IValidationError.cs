@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Application.Validation.Interfaces
 {
     /// <summary>
@@ -22,9 +21,3 @@ namespace RuntimeErrorSage.Application.Validation.Interfaces
         string Details { get; }
     }
 } 
-
-
-
-
-
-

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Options;
@@ -11,26 +10,20 @@ public class RedisPatternStorageOptions
     /// <summary>
     /// Gets or sets the key prefix for Redis keys.
     /// </summary>
-    public string KeyPrefix { get; } = "pattern:";
+    public string KeyPrefix { get; set; } = "pattern:";
 
     /// <summary>
     /// Gets or sets the connection string for Redis.
     /// </summary>
-    public string ConnectionString { get; } = "localhost:6379";
+    public string ConnectionString { get; set; } = "localhost:6379";
 
     /// <summary>
     /// Gets or sets the database number to use.
     /// </summary>
-    public int Database { get; } = 0;
+    public int Database { get; set; } = 0;
 
     /// <summary>
     /// Gets or sets the timeout in milliseconds.
     /// </summary>
-    public int TimeoutMs { get; } = 5000;
+    public int TimeoutMs { get; set; } = 5000;
 } 
-
-
-
-
-
-

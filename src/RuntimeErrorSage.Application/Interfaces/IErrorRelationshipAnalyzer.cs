@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -39,7 +38,7 @@ namespace RuntimeErrorSage.Application.Analysis.Interfaces
         /// </summary>
         /// <param name="context">The error context.</param>
         /// <returns>The list of related errors.</returns>
-        Task<Collection<RelatedError>> FindRelatedErrorsAsync(ErrorContext context);
+        Task<List<RelatedError>> FindRelatedErrorsAsync(ErrorContext context);
 
         /// <summary>
         /// Analyzes the relationship between two errors.
@@ -54,14 +53,14 @@ namespace RuntimeErrorSage.Application.Analysis.Interfaces
         /// </summary>
         /// <param name="error">The error.</param>
         /// <returns>The list of related errors.</returns>
-        Task<Collection<RelatedError>> GetRelatedErrorsAsync(RuntimeError error);
+        Task<List<RelatedError>> GetRelatedErrorsAsync(RuntimeError error);
 
         /// <summary>
         /// Analyzes relationships between a set of errors.
         /// </summary>
         /// <param name="errors">The errors to analyze.</param>
         /// <returns>The list of error relationships.</returns>
-        Task<Collection<ErrorRelationship>> AnalyzeRelationshipsAsync(Collection<RuntimeError> errors);
+        Task<List<ErrorRelationship>> AnalyzeRelationshipsAsync(List<RuntimeError> errors);
 
         /// <summary>
         /// Calculates the relationship strength between two errors.
@@ -72,9 +71,3 @@ namespace RuntimeErrorSage.Application.Analysis.Interfaces
         Task<double> CalculateRelationshipStrengthAsync(RuntimeError source, RuntimeError target);
     }
 } 
-
-
-
-
-
-

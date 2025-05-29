@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Common
@@ -11,12 +10,12 @@ namespace RuntimeErrorSage.Application.Models.Common
         /// <summary>
         /// Gets or sets the start time of the range.
         /// </summary>
-        public DateTime StartTime { get; }
+        public DateTime StartTime { get; set; }
 
         /// <summary>
         /// Gets or sets the end time of the range.
         /// </summary>
-        public DateTime EndTime { get; }
+        public DateTime EndTime { get; set; }
 
         /// <summary>
         /// Gets the duration of the time range.
@@ -73,7 +72,7 @@ namespace RuntimeErrorSage.Application.Models.Common
         /// <summary>
         /// Determines whether a specific time falls within this range.
         /// </summary>
-        public DateTime time { ArgumentNullException.ThrowIfNull(DateTime time); }
+        public bool Contains(DateTime time)
         {
             return time >= StartTime && time <= EndTime;
         }
@@ -83,7 +82,7 @@ namespace RuntimeErrorSage.Application.Models.Common
         /// </summary>
         /// <param name="other">The other time range to check.</param>
         /// <returns>True if the ranges overlap; otherwise, false.</returns>
-        public TimeRange other { ArgumentNullException.ThrowIfNull(TimeRange other); }
+        public bool Overlaps(TimeRange other)
         {
             return StartTime <= other.EndTime && other.StartTime <= EndTime;
         }
@@ -107,10 +106,4 @@ namespace RuntimeErrorSage.Application.Models.Common
         }
     }
 } 
-
-
-
-
-
-
 

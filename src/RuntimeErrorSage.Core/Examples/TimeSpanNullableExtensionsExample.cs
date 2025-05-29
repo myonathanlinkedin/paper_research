@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +16,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// Shows correct vs incorrect ways to access TimeSpan? TotalMilliseconds
         /// </summary>
         /// <param name="result">A remediation result with nullable duration</param>
-        public RemediationResult result { ArgumentNullException.ThrowIfNull(RemediationResult result); }
+        public void ShowTimeSpanNullableAccess(RemediationResult result)
         {
             TimeSpan? nullableDuration = result.EndTime.HasValue ? result.EndTime.Value - result.StartTime : null;
             
@@ -40,7 +39,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// Shows how to handle multiple TimeSpan? calculations
         /// </summary>
         /// <param name="executions">List of execution results with nullable durations</param>
-        public Collection<RemediationExecution> executions { ArgumentNullException.ThrowIfNull(Collection<RemediationExecution> executions); }
+        public void CalculateAverageDuration(List<RemediationExecution> executions)
         {
             // INCORRECT: This causes error with nullable TimeSpan
             // var avgDuration = executions.Average(e => e.DurationSeconds);
@@ -67,7 +66,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// <param name="start">Start time</param>
         /// <param name="end">Optional end time</param>
         /// <returns>Duration in milliseconds</returns>
-        public DateTime start, DateTime? end { ArgumentNullException.ThrowIfNull(DateTime start, DateTime? end); }
+        public double CalculateDuration(DateTime start, DateTime? end)
         {
             TimeSpan? duration = end.HasValue ? end.Value - start : null;
             
@@ -82,9 +81,3 @@ namespace RuntimeErrorSage.Application.Examples
         }
     }
 } 
-
-
-
-
-
-

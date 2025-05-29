@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -13,27 +12,27 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <summary>
         /// Gets or sets the warning identifier.
         /// </summary>
-        public string WarningId { get; } = Guid.NewGuid().ToString();
+        public string WarningId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the warning code.
         /// </summary>
-        public string Code { get; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the warning message.
         /// </summary>
-        public string Message { get; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the warning source.
         /// </summary>
-        public string Source { get; } = string.Empty;
+        public string Source { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the warning severity.
         /// </summary>
-        public ValidationSeverity Severity { get; }
+        public ValidationSeverity Severity { get; set; }
 
         /// <summary>
         /// Gets or sets additional warning details.
@@ -41,6 +40,3 @@ namespace RuntimeErrorSage.Application.Models.Validation
         public Dictionary<string, object> Details { get; set; } = new();
     }
 } 
-
-
-

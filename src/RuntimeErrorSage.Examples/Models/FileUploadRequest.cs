@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Examples.Models;
 
 /// <summary>
@@ -14,17 +13,11 @@ public class FileUploadRequest
     /// <summary>
     /// The size of the file in bytes
     /// </summary>
-    public long FileSize { get; }
+    public long FileSize { get; set; }
 
     /// <summary>
     /// The MIME type of the file
     /// </summary>
     public string? ContentType { get; set; }
 } 
-
-
-
-
-
-
 

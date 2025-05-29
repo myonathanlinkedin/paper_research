@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -13,22 +12,22 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the unique identifier for this state.
         /// </summary>
-        public string StateId { get; } = Guid.NewGuid().ToString();
+        public string StateId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the status of the remediation.
         /// </summary>
-        public RemediationStatusEnum Status { get; }
+        public RemediationStatusEnum Status { get; set; }
 
         /// <summary>
         /// Gets or sets the current step of the remediation.
         /// </summary>
-        public string CurrentStep { get; } = string.Empty;
+        public string CurrentStep { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the progress of the remediation (0-100).
         /// </summary>
-        public int Progress { get; }
+        public int Progress { get; set; }
 
         /// <summary>
         /// Gets or sets the start time of the remediation.
@@ -43,7 +42,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the error message if the remediation failed.
         /// </summary>
-        public string ErrorMessage { get; } = string.Empty;
+        public string ErrorMessage { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the metadata of the remediation.
@@ -53,37 +52,31 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the completed steps.
         /// </summary>
-        public IReadOnlyCollection<CompletedSteps> CompletedSteps { get; } = new();
+        public List<string> CompletedSteps { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the failed steps.
         /// </summary>
-        public IReadOnlyCollection<FailedSteps> FailedSteps { get; } = new();
+        public List<string> FailedSteps { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the pending steps.
         /// </summary>
-        public IReadOnlyCollection<PendingSteps> PendingSteps { get; } = new();
+        public List<string> PendingSteps { get; set; } = new();
 
         /// <summary>
         /// Gets or sets whether the remediation was successful.
         /// </summary>
-        public bool IsSuccessful { get; }
+        public bool IsSuccessful { get; set; }
 
         /// <summary>
         /// Gets or sets whether the remediation has been rolled back.
         /// </summary>
-        public bool IsRolledBack { get; }
+        public bool IsRolledBack { get; set; }
 
         /// <summary>
         /// Gets or sets the rollback error message if the rollback failed.
         /// </summary>
-        public string RollbackErrorMessage { get; } = string.Empty;
+        public string RollbackErrorMessage { get; set; } = string.Empty;
     }
 } 
-
-
-
-
-
-

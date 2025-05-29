@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Application.Models.Graph
@@ -11,32 +10,32 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets the component id.
         /// </summary>
-        public string ComponentId { get; }
+        public string ComponentId { get; set; }
 
         /// <summary>
         /// Gets or sets the component name.
         /// </summary>
-        public string ComponentName { get; }
+        public string ComponentName { get; set; }
         
         /// <summary>
         /// Gets or sets whether the component is healthy.
         /// </summary>
-        public bool IsHealthy { get; }
+        public bool IsHealthy { get; set; }
         
         /// <summary>
         /// Gets or sets the health score (0-100).
         /// </summary>
-        public int HealthScore { get; }
+        public int HealthScore { get; set; }
         
         /// <summary>
         /// Gets or sets the status message.
         /// </summary>
-        public string StatusMessage { get; }
+        public string StatusMessage { get; set; }
         
         /// <summary>
         /// Gets or sets the health issues.
         /// </summary>
-        public IReadOnlyCollection<Issues> Issues { get; } = new();
+        public List<string> Issues { get; set; } = new();
         
         /// <summary>
         /// Gets or sets additional metrics.
@@ -44,9 +43,3 @@ namespace RuntimeErrorSage.Application.Models.Graph
         public Dictionary<string, object> Metrics { get; set; } = new();
     }
 } 
-
-
-
-
-
-

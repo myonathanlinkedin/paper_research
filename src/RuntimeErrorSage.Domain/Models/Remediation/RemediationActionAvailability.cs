@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
@@ -13,27 +12,27 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the list of availability windows.
         /// </summary>
-        public IReadOnlyCollection<Windows> Windows { get; } = new();
+        public List<AvailabilityWindow> Windows { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the current availability status.
         /// </summary>
-        public AvailabilityStatus Status { get; }
+        public AvailabilityStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets the last status update time.
         /// </summary>
-        public DateTime LastStatusUpdate { get; }
+        public DateTime LastStatusUpdate { get; set; }
 
         /// <summary>
         /// Gets or sets the reason for the current status.
         /// </summary>
-        public string StatusReason { get; }
+        public string StatusReason { get; set; }
 
         /// <summary>
         /// Gets or sets whether the action is currently available.
         /// </summary>
-        public bool IsAvailable { get; }
+        public bool IsAvailable { get; set; }
 
         /// <summary>
         /// Gets or sets the next available time if currently unavailable.
@@ -43,135 +42,131 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the maintenance window if applicable.
         /// </summary>
-        public AvailabilityWindow MaintenanceWindow { get; }
+        public AvailabilityWindow MaintenanceWindow { get; set; }
 
         /// <summary>
         /// Gets or sets the list of scheduled maintenance windows.
         /// </summary>
-        public IReadOnlyCollection<ScheduledMaintenance> ScheduledMaintenance { get; } = new();
+        public List<AvailabilityWindow> ScheduledMaintenance { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of blackout periods.
         /// </summary>
-        public IReadOnlyCollection<BlackoutPeriods> BlackoutPeriods { get; } = new();
+        public List<AvailabilityWindow> BlackoutPeriods { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed time zones.
         /// </summary>
-        public IReadOnlyCollection<AllowedTimeZones> AllowedTimeZones { get; } = new();
+        public List<string> AllowedTimeZones { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed regions.
         /// </summary>
-        public IReadOnlyCollection<AllowedRegions> AllowedRegions { get; } = new();
+        public List<string> AllowedRegions { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed environments.
         /// </summary>
-        public IReadOnlyCollection<AllowedEnvironments> AllowedEnvironments { get; } = new();
+        public List<string> AllowedEnvironments { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed applications.
         /// </summary>
-        public IReadOnlyCollection<AllowedApplications> AllowedApplications { get; } = new();
+        public List<string> AllowedApplications { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error types.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorTypes> AllowedErrorTypes { get; } = new();
+        public List<string> AllowedErrorTypes { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error severities.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorSeverities> AllowedErrorSeverities { get; } = new();
+        public List<string> AllowedErrorSeverities { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error sources.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorSources> AllowedErrorSources { get; } = new();
+        public List<string> AllowedErrorSources { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error categories.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorCategories> AllowedErrorCategories { get; } = new();
+        public List<string> AllowedErrorCategories { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error subcategories.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorSubcategories> AllowedErrorSubcategories { get; } = new();
+        public List<string> AllowedErrorSubcategories { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error tags.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorTags> AllowedErrorTags { get; } = new();
+        public List<string> AllowedErrorTags { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error attributes.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorAttributes> AllowedErrorAttributes { get; } = new();
+        public List<string> AllowedErrorAttributes { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error metadata.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorMetadata> AllowedErrorMetadata { get; } = new();
+        public List<string> AllowedErrorMetadata { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error context.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorContext> AllowedErrorContext { get; } = new();
+        public List<string> AllowedErrorContext { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error stack traces.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorStackTraces> AllowedErrorStackTraces { get; } = new();
+        public List<string> AllowedErrorStackTraces { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error messages.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorMessages> AllowedErrorMessages { get; } = new();
+        public List<string> AllowedErrorMessages { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error codes.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorCodes> AllowedErrorCodes { get; } = new();
+        public List<string> AllowedErrorCodes { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error exceptions.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorExceptions> AllowedErrorExceptions { get; } = new();
+        public List<string> AllowedErrorExceptions { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error inner exceptions.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorInnerExceptions> AllowedErrorInnerExceptions { get; } = new();
+        public List<string> AllowedErrorInnerExceptions { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error source.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorSource> AllowedErrorSource { get; } = new();
+        public List<string> AllowedErrorSource { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error target site.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorTargetSite> AllowedErrorTargetSite { get; } = new();
+        public List<string> AllowedErrorTargetSite { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error help link.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorHelpLink> AllowedErrorHelpLink { get; } = new();
+        public List<string> AllowedErrorHelpLink { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error data.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorData> AllowedErrorData { get; } = new();
+        public List<string> AllowedErrorData { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the list of allowed error hresult.
         /// </summary>
-        public IReadOnlyCollection<AllowedErrorHResult> AllowedErrorHResult { get; } = new();
+        public List<string> AllowedErrorHResult { get; set; } = new();
     }
 } 
-
-
-
-

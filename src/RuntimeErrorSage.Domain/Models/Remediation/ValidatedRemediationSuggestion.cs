@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation;
 using RuntimeErrorSage.Application.Models.Validation;
 
@@ -9,14 +8,8 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     /// </summary>
     public class ValidatedRemediationSuggestion
     {
-        public RemediationSuggestion Suggestion { get; }
-        public RemediationValidationResult ValidationResult { get; }
-        public double Score { get; }
+        public RemediationSuggestion Suggestion { get; set; }
+        public RemediationValidationResult ValidationResult { get; set; }
+        public double Score { get; set; }
     }
 } 
-
-
-
-
-
-

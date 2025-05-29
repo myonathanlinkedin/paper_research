@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Application.Models.Common.Interfaces
@@ -21,7 +20,7 @@ namespace RuntimeErrorSage.Application.Models.Common.Interfaces
         /// </summary>
         /// <typeparam name="T">The type of elements in the list.</typeparam>
         /// <returns>A new list instance.</returns>
-        Collection<T> CreateCollection<T>();
+        List<T> CreateList<T>();
 
         /// <summary>
         /// Creates a new hash set with the specified element type.
@@ -58,7 +57,7 @@ namespace RuntimeErrorSage.Application.Models.Common.Interfaces
         /// <typeparam name="TKey">The type of the keys in the sorted list.</typeparam>
         /// <typeparam name="TValue">The type of the values in the sorted list.</typeparam>
         /// <returns>A new sorted list instance.</returns>
-        SortedCollection<TKey, TValue> CreateSortedCollection<TKey, TValue>();
+        SortedList<TKey, TValue> CreateSortedList<TKey, TValue>();
 
         /// <summary>
         /// Creates a new sorted set with the specified element type.
@@ -72,7 +71,7 @@ namespace RuntimeErrorSage.Application.Models.Common.Interfaces
         /// </summary>
         /// <typeparam name="T">The type of elements in the linked list.</typeparam>
         /// <returns>A new linked list instance.</returns>
-        LinkedCollection<T> CreateLinkedCollection<T>();
+        LinkedList<T> CreateLinkedList<T>();
 
         /// <summary>
         /// Creates a new concurrent dictionary with the specified key and value types.
@@ -111,7 +110,3 @@ namespace RuntimeErrorSage.Application.Models.Common.Interfaces
         System.Collections.Concurrent.BlockingCollection<T> CreateBlockingCollection<T>();
     }
 } 
-
-
-
-

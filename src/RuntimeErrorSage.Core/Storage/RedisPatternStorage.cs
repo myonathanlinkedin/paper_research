@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Application.Models.Error;
@@ -30,19 +29,19 @@ public class RedisPatternStorage : IPatternStorage
         IConnectionMultiplexer redis,
         IOptions<RedisPatternStorageOptions> options)
     {
-        _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
-        _redis = redis ?? ArgumentNullException.ThrowIfNull(nameof(redis));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _redis = redis ?? throw new ArgumentNullException(nameof(redis));
         _keyPrefix = options?.Value?.KeyPrefix ?? "pattern:";
-        _options = options?.Value ?? ArgumentNullException.ThrowIfNull(nameof(options));
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public async Task<Collection<ErrorPattern>> GetAllPatternsAsync()
+    public async Task<List<ErrorPattern>> GetAllPatternsAsync()
     {
         try
         {
             var db = _redis.GetDatabase();
             var keys = await db.SetMembersAsync($"{_keyPrefix}all");
-            var patterns = new Collection<ErrorPattern>();
+            var patterns = new List<ErrorPattern>();
 
             foreach (var key in keys)
             {
@@ -83,13 +82,13 @@ public class RedisPatternStorage : IPatternStorage
         }
     }
 
-    public async Task<Collection<ErrorPattern>> GetPatternsByTagAsync(string tag)
+    public async Task<List<ErrorPattern>> GetPatternsByTagAsync(string tag)
     {
         try
         {
             var db = _redis.GetDatabase();
             var keys = await db.SetMembersAsync($"{_keyPrefix}tag:{tag}");
-            var patterns = new Collection<ErrorPattern>();
+            var patterns = new List<ErrorPattern>();
 
             foreach (var key in keys)
             {
@@ -109,13 +108,13 @@ public class RedisPatternStorage : IPatternStorage
         }
     }
 
-    public async Task<Collection<ErrorPattern>> GetPatternsByCategoryAsync(string category)
+    public async Task<List<ErrorPattern>> GetPatternsByCategoryAsync(string category)
     {
         try
         {
             var db = _redis.GetDatabase();
             var keys = await db.SetMembersAsync($"{_keyPrefix}category:{category}");
-            var patterns = new Collection<ErrorPattern>();
+            var patterns = new List<ErrorPattern>();
 
             foreach (var key in keys)
             {
@@ -306,9 +305,4 @@ public class RedisPatternStorage : IPatternStorage
         }
     }
 }
-
-
-
-
-
 

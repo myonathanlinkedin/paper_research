@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -12,37 +11,37 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Memory usage in megabytes
         /// </summary>
-        public double MemoryUsage { get; }
+        public double MemoryUsage { get; set; }
 
         /// <summary>
         /// CPU usage as a percentage
         /// </summary>
-        public double CpuUsage { get; }
+        public double CpuUsage { get; set; }
 
         /// <summary>
         /// Timestamp when the metrics were collected
         /// </summary>
-        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the disk usage in bytes.
         /// </summary>
-        public long DiskUsage { get; }
+        public long DiskUsage { get; set; }
 
         /// <summary>
         /// Gets or sets the network usage in bytes.
         /// </summary>
-        public long NetworkUsage { get; }
+        public long NetworkUsage { get; set; }
 
         /// <summary>
         /// Gets or sets the number of threads.
         /// </summary>
-        public int ThreadCount { get; }
+        public int ThreadCount { get; set; }
 
         /// <summary>
         /// Gets or sets the number of handles.
         /// </summary>
-        public int HandleCount { get; }
+        public int HandleCount { get; set; }
 
         /// <summary>
         /// Gets or sets additional metadata.
@@ -103,10 +102,4 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         }
     }
 } 
-
-
-
-
-
-
 

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Metrics;
 using System;
 
@@ -14,25 +13,19 @@ namespace RuntimeErrorSage.Application.Models
         /// Gets or sets the traditional error handling metrics.
         /// Required by research (try-catch baseline).
         /// </summary>
-        public ErrorHandlingMetrics TraditionalHandling { get; } = new();
+        public ErrorHandlingMetrics TraditionalHandling { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the static analysis metrics.
         /// Required by research (static analysis baseline).
         /// </summary>
-        public ErrorHandlingMetrics StaticAnalysis { get; } = new();
+        public ErrorHandlingMetrics StaticAnalysis { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the manual debugging metrics.
         /// Required by research (manual debugging baseline).
         /// </summary>
-        public ErrorHandlingMetrics ManualDebugging { get; } = new();
+        public ErrorHandlingMetrics ManualDebugging { get; set; } = new();
     }
 } 
-
-
-
-
-
-
 

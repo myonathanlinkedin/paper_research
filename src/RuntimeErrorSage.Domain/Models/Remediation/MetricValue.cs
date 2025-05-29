@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -12,42 +11,42 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the name of the metric
         /// </summary>
-        public string Name { get; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the value of the metric
         /// </summary>
-        public object Value { get; }
+        public object Value { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp when the metric was recorded
         /// </summary>
-        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the unit of measurement for the metric
         /// </summary>
-        public string Unit { get; }
+        public string Unit { get; set; }
 
         /// <summary>
         /// Gets or sets the description of the metric
         /// </summary>
-        public string Description { get; }
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the source of the metric
         /// </summary>
-        public string Source { get; }
+        public string Source { get; set; }
 
         /// <summary>
         /// Gets or sets the category of the metric
         /// </summary>
-        public string Category { get; }
+        public string Category { get; set; }
 
         /// <summary>
         /// Gets or sets the subcategory of the metric
         /// </summary>
-        public string Subcategory { get; }
+        public string Subcategory { get; set; }
 
         /// <summary>
         /// Gets or sets the tags associated with the metric
@@ -142,9 +141,3 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
-
-
-
-
-
-

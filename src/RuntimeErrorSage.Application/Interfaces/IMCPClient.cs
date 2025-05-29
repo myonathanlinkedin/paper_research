@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -44,7 +43,7 @@ namespace RuntimeErrorSage.Application.MCP.Interfaces
         /// <summary>
         /// Gets the context history for a given time range.
         /// </summary>
-        Task<Collection<ContextHistory>> GetContextHistoryAsync(string contextId, TimeRange range);
+        Task<List<ContextHistory>> GetContextHistoryAsync(string contextId, TimeRange range);
 
         /// <summary>
         /// Gets the connection status for a client.
@@ -64,7 +63,7 @@ namespace RuntimeErrorSage.Application.MCP.Interfaces
         /// <summary>
         /// Gets the available models.
         /// </summary>
-        Task<Collection<string>> GetAvailableModelsAsync();
+        Task<List<string>> GetAvailableModelsAsync();
 
         /// <summary>
         /// Gets metadata for a model.
@@ -90,19 +89,14 @@ namespace RuntimeErrorSage.Application.MCP.Interfaces
         /// Updates error patterns.
         /// </summary>
         /// <param name="patterns">The patterns to update.</param>
-        Task UpdateErrorPatternsAsync(Collection<ErrorPattern> patterns);
+        Task UpdateErrorPatternsAsync(List<ErrorPattern> patterns);
 
         /// <summary>
         /// Gets error patterns for a service.
         /// </summary>
         /// <param name="serviceName">The service name.</param>
         /// <returns>The list of error patterns.</returns>
-        Task<Collection<ErrorPattern>> GetErrorPatternsAsync(string serviceName);
+        Task<List<ErrorPattern>> GetErrorPatternsAsync(string serviceName);
     }
 } 
-
-
-
-
-
 

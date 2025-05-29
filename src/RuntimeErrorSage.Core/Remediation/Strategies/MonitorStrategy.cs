@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,16 +47,16 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         }
 
         /// <inheritdoc/>
-        public string Id { get; }
+        public string Id { get; set; }
 
         /// <inheritdoc/>
-        public string Name { get; }
+        public string Name { get; set; }
 
         /// <inheritdoc/>
-        public RemediationPriority Priority { get; }
+        public RemediationPriority Priority { get; set; }
 
         /// <inheritdoc/>
-        public string Description { get; }
+        public string Description { get; set; }
 
         /// <inheritdoc/>
         public Dictionary<string, object> Parameters { get; set; }
@@ -70,7 +69,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         {
             if (context == null)
             {
-                ArgumentNullException.ThrowIfNull(nameof(context));
+                throw new ArgumentNullException(nameof(context));
             }
 
             _logger.LogInformation("Executing monitoring strategy for error context {ErrorId}", context.Id);
@@ -83,7 +82,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
                 {
                     Success = monitoringResult.Success,
                     ErrorMessage = monitoringResult.Success ? null : monitoringResult.ErrorMessage,
-                    Actions = new Collection<RemediationActionResult>
+                    Actions = new List<RemediationActionResult>
                     {
                         _resultFactory.Create(
                             "Monitor System",
@@ -104,7 +103,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
                 {
                     Success = false,
                     ErrorMessage = ex.Message,
-                    Actions = new Collection<RemediationActionResult>(),
+                    Actions = new List<RemediationActionResult>(),
                     StrategyId = Id,
                     StrategyName = Name,
                     StartTime = DateTime.UtcNow,
@@ -188,9 +187,4 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         }
     }
 } 
-
-
-
-
-
 

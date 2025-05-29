@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +40,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         {
             _logger.LogInformation("Finding related errors for error {ErrorId}", context.ErrorId);
 
-            var relatedErrors = new Collection<RelatedErrorModel>();
+            var relatedErrors = new List<RelatedErrorModel>();
 
             // Find errors in the same component
             var componentErrors = await FindErrorsInComponentAsync(context, graph);
@@ -143,7 +142,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         {
             _logger.LogInformation("Analyzing relationships for error {ErrorId}", context.ErrorId);
 
-            var relationships = new Collection<RelatedErrorModel>();
+            var relationships = new List<RelatedErrorModel>();
 
             // Get previous errors from context
             if (context.PreviousErrors != null)
@@ -171,7 +170,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
     }
 
     /// <inheritdoc />
-    public RuntimeError source, RuntimeError target { ArgumentNullException.ThrowIfNull(RuntimeError source, RuntimeError target); }
+    public ErrorRelationship GetRelationshipType(RuntimeError source, RuntimeError target)
     {
         try
         {
@@ -294,7 +293,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
 
     private async Task<IEnumerable<RelatedErrorModel>> FindErrorsInComponentAsync(ErrorContext context, DependencyGraph graph)
     {
-        var errors = new Collection<RelatedErrorModel>();
+        var errors = new List<RelatedErrorModel>();
 
         if (string.IsNullOrEmpty(context.ComponentId))
             return errors;
@@ -317,7 +316,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
 
     private async Task<IEnumerable<RelatedErrorModel>> FindErrorsInDependentComponentsAsync(ErrorContext context, DependencyGraph graph)
     {
-        var errors = new Collection<RelatedErrorModel>();
+        var errors = new List<RelatedErrorModel>();
 
         if (string.IsNullOrEmpty(context.ComponentId))
             return errors;
@@ -350,7 +349,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
 
     private async Task<IEnumerable<RelatedErrorModel>> FindErrorsWithSimilarPatternsAsync(ErrorContext context, DependencyGraph graph)
     {
-        var errors = new Collection<RelatedErrorModel>();
+        var errors = new List<RelatedErrorModel>();
 
         // Find all error nodes
         var errorNodes = graph.Nodes.Values
@@ -390,28 +389,28 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
     public string Name => "DefaultErrorRelationshipAnalyzer";
     public string Version => "1.0.0";
 
-    public RuntimeError sourceError, RuntimeError targetError { ArgumentNullException.ThrowIfNull(RuntimeError sourceError, RuntimeError targetError); }
+    public double AnalyzeRelationship(RuntimeError sourceError, RuntimeError targetError)
     {
         // Dummy implementation for interface compliance
         return 0.5;
     }
 
-    public async Task<Collection<RelatedErrorModel>> FindRelatedErrorsAsync(ErrorContext context)
+    public async Task<List<RelatedErrorModel>> FindRelatedErrorsAsync(ErrorContext context)
     {
         // Dummy implementation for interface compliance
-        return new Collection<RelatedErrorModel>();
+        return new List<RelatedErrorModel>();
     }
 
-    public async Task<Collection<RelatedErrorModel>> GetRelatedErrorsAsync(RuntimeError error)
+    public async Task<List<RelatedErrorModel>> GetRelatedErrorsAsync(RuntimeError error)
     {
         var context = new ErrorContext(error, "Error context", DateTime.UtcNow);
         return await FindRelatedErrorsAsync(context);
     }
 
-    public async Task<Collection<ErrorRelationship>> AnalyzeRelationshipsAsync(Collection<RuntimeError> errors)
+    public async Task<List<ErrorRelationship>> AnalyzeRelationshipsAsync(List<RuntimeError> errors)
     {
         // Dummy implementation for interface compliance
-        return new Collection<ErrorRelationship>();
+        return new List<ErrorRelationship>();
     }
 
     public async Task<double> CalculateRelationshipStrengthAsync(RuntimeError source, RuntimeError target)
@@ -420,7 +419,3 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         return 0.5;
     }
 } 
-
-
-
-

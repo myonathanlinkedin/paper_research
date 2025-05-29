@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Remediation;
 using System;
@@ -14,7 +13,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     public class RemediationActionMetrics
     {
         private readonly Dictionary<string, double> _metrics = new();
-        private readonly Dictionary<string, Collection<double>> _historicalMetrics = new();
+        private readonly Dictionary<string, List<double>> _historicalMetrics = new();
         private readonly Dictionary<string, DateTime> _lastUpdated = new();
 
         /// <summary>
@@ -25,7 +24,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets the historical metrics.
         /// </summary>
-        public IReadOnlyDictionary<string, Collection<double>> HistoricalMetrics => _historicalMetrics;
+        public IReadOnlyDictionary<string, List<double>> HistoricalMetrics => _historicalMetrics;
 
         /// <summary>
         /// Gets the last update timestamps.
@@ -37,7 +36,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="name">The metric name.</param>
         /// <param name="value">The metric value.</param>
-        public string name, double value { ArgumentNullException.ThrowIfNull(string name, double value); }
+        public void RecordMetric(string name, double value)
         {
             ArgumentNullException.ThrowIfNull(name);
             
@@ -46,7 +45,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
 
             if (!_historicalMetrics.ContainsKey(name))
             {
-                _historicalMetrics[name] = new Collection<double>();
+                _historicalMetrics[name] = new List<double>();
             }
             _historicalMetrics[name].Add(value);
         }
@@ -56,7 +55,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="name">The metric name.</param>
         /// <returns>The average value.</returns>
-        public string name { ArgumentNullException.ThrowIfNull(string name); }
+        public double GetAverageMetric(string name)
         {
             if (!_historicalMetrics.ContainsKey(name) || _historicalMetrics[name].Count == 0)
             {
@@ -71,7 +70,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="name">The metric name.</param>
         /// <returns>The maximum value.</returns>
-        public string name { ArgumentNullException.ThrowIfNull(string name); }
+        public double GetMaxMetric(string name)
         {
             if (!_historicalMetrics.ContainsKey(name) || _historicalMetrics[name].Count == 0)
             {
@@ -86,7 +85,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="name">The metric name.</param>
         /// <returns>The minimum value.</returns>
-        public string name { ArgumentNullException.ThrowIfNull(string name); }
+        public double GetMinMetric(string name)
         {
             if (!_historicalMetrics.ContainsKey(name) || _historicalMetrics[name].Count == 0)
             {
@@ -101,7 +100,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <param name="executionTimeMs">The execution time in milliseconds.</param>
-        public string actionId, double executionTimeMs { ArgumentNullException.ThrowIfNull(string actionId, double executionTimeMs); }
+        public void RecordExecutionTime(string actionId, double executionTimeMs)
         {
             RecordMetric($"ExecutionTime_{actionId}", executionTimeMs);
         }
@@ -111,7 +110,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <param name="success">Whether the action was successful.</param>
-        public string actionId, bool success { ArgumentNullException.ThrowIfNull(string actionId, bool success); }
+        public void RecordSuccess(string actionId, bool success)
         {
             var successRate = success ? 1.0 : 0.0;
             RecordMetric($"SuccessRate_{actionId}", successRate);
@@ -123,7 +122,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <param name="actionId">The action ID.</param>
         /// <param name="resourceType">The type of resource.</param>
         /// <param name="usage">The resource usage value.</param>
-        public string actionId, string resourceType, double usage { ArgumentNullException.ThrowIfNull(string actionId, string resourceType, double usage); }
+        public void RecordResourceUsage(string actionId, string resourceType, double usage)
         {
             RecordMetric($"ResourceUsage_{actionId}_{resourceType}", usage);
         }
@@ -133,7 +132,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <param name="impact">The impact value.</param>
-        public string actionId, double impact { ArgumentNullException.ThrowIfNull(string actionId, double impact); }
+        public void RecordImpact(string actionId, double impact)
         {
             RecordMetric($"Impact_{actionId}", impact);
         }
@@ -143,7 +142,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <param name="riskLevel">The risk level.</param>
-        public string actionId, RemediationRiskLevel riskLevel { ArgumentNullException.ThrowIfNull(string actionId, RemediationRiskLevel riskLevel); }
+        public void RecordRiskLevel(string actionId, RemediationRiskLevel riskLevel)
         {
             RecordMetric($"RiskLevel_{actionId}", (double)riskLevel);
         }
@@ -153,7 +152,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <param name="severity">The severity level.</param>
-        public string actionId, RemediationActionSeverity severity { ArgumentNullException.ThrowIfNull(string actionId, RemediationActionSeverity severity); }
+        public void RecordSeverity(string actionId, RemediationActionSeverity severity)
         {
             RecordMetric($"Severity_{actionId}", (double)severity);
         }
@@ -163,7 +162,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <param name="status">The status.</param>
-        public string actionId, RemediationStatusEnum status { ArgumentNullException.ThrowIfNull(string actionId, RemediationStatusEnum status); }
+        public void RecordStatus(string actionId, RemediationStatusEnum status)
         {
             RecordMetric($"Status_{actionId}", (double)status);
         }
@@ -228,7 +227,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Clears all metrics for a specific action.
         /// </summary>
         /// <param name="actionId">The action ID.</param>
-        public string actionId { ArgumentNullException.ThrowIfNull(string actionId); }
+        public void ClearActionMetrics(string actionId)
         {
             var keysToRemove = _metrics.Keys.Where(k => k.StartsWith($"{actionId}_")).ToList();
             foreach (var key in keysToRemove)
@@ -250,12 +249,6 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 }
-
-
-
-
-
-
 
 
 

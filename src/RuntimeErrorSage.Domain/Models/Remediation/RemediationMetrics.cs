@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Metrics;
@@ -13,62 +12,62 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the unique identifier for the execution.
         /// </summary>
-        public string ExecutionId { get; } = Guid.NewGuid().ToString();
+        public string ExecutionId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the timestamp of the metrics.
         /// </summary>
-        public DateTime Timestamp { get; }
+        public DateTime Timestamp { get; set; }
         
         /// <summary>
         /// Gets or sets the success rate of the remediation.
         /// </summary>
-        public double SuccessRate { get; }
+        public double SuccessRate { get; set; }
         
         /// <summary>
         /// Gets or sets the error rate of the remediation.
         /// </summary>
-        public double ErrorRate { get; }
+        public double ErrorRate { get; set; }
         
         /// <summary>
         /// Gets or sets the average execution time in milliseconds.
         /// </summary>
-        public long AverageExecutionTimeMs { get; }
+        public long AverageExecutionTimeMs { get; set; }
         
         /// <summary>
         /// Gets or sets the total number of remediations.
         /// </summary>
-        public int TotalRemediations { get; }
+        public int TotalRemediations { get; set; }
         
         /// <summary>
         /// Gets or sets the number of successful remediations.
         /// </summary>
-        public int SuccessfulRemediations { get; }
+        public int SuccessfulRemediations { get; set; }
         
         /// <summary>
         /// Gets or sets the number of failed remediations.
         /// </summary>
-        public int FailedRemediations { get; }
+        public int FailedRemediations { get; set; }
         
         /// <summary>
         /// Gets or sets the number of cancelled remediations.
         /// </summary>
-        public int CancelledRemediations { get; }
+        public int CancelledRemediations { get; set; }
         
         /// <summary>
         /// Gets or sets the number of timed out remediations.
         /// </summary>
-        public int TimedOutRemediations { get; }
+        public int TimedOutRemediations { get; set; }
         
         /// <summary>
         /// Gets or sets the number of validation failed remediations.
         /// </summary>
-        public int ValidationFailedRemediations { get; }
+        public int ValidationFailedRemediations { get; set; }
         
         /// <summary>
         /// Gets or sets the retry count.
         /// </summary>
-        public int RetryCount { get; }
+        public int RetryCount { get; set; }
         
         /// <summary>
         /// Gets or sets the metric values.
@@ -83,7 +82,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the success flag.
         /// </summary>
-        public bool Success { get; }
+        public bool Success { get; set; }
         
         /// <summary>
         /// Gets or sets the error message.
@@ -91,9 +90,3 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         public string? Error { get; set; }
     }
 } 
-
-
-
-
-
-

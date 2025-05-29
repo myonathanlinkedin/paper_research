@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Application.Models.Common;
@@ -154,7 +153,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             return new ValidationResult
             {
                 IsValid = false,
-                Messages = new Collection<string> { $"Error validating plan: {ex.Message}" },
+                Messages = new List<string> { $"Error validating plan: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
@@ -205,7 +204,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             return new ValidationResult
             {
                 IsValid = false,
-                Messages = new Collection<string> { $"Error validating strategy: {ex.Message}" },
+                Messages = new List<string> { $"Error validating strategy: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
@@ -270,7 +269,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             return new ValidationResult
             {
                 IsValid = false,
-                Messages = new Collection<string> { $"Error validating action: {ex.Message}" },
+                Messages = new List<string> { $"Error validating action: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
@@ -316,7 +315,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             return new ValidationResult
             {
                 IsValid = false,
-                Messages = new Collection<string> { $"Error validating step: {ex.Message}" },
+                Messages = new List<string> { $"Error validating step: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
@@ -413,7 +412,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             return new ValidationResult
             {
                 IsValid = false,
-                Messages = new Collection<string> { $"Error validating remediation: {ex.Message}" },
+                Messages = new List<string> { $"Error validating remediation: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
@@ -519,7 +518,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
 
     private RemediationRiskLevel CalculateRiskLevel(RemediationAction action)
     {
-        var riskFactors = new Collection<int>();
+        var riskFactors = new List<int>();
 
         // Analyze error type severity
         if (action.ErrorType?.Contains("Critical", StringComparison.OrdinalIgnoreCase) == true)
@@ -552,16 +551,16 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         };
     }
 
-    private Collection<string> GeneratePotentialIssues(RemediationAction action)
+    private List<string> GeneratePotentialIssues(RemediationAction action)
     {
         // Implement potential issues generation logic
-        return new Collection<string>();
+        return new List<string>();
     }
 
-    private Collection<string> GenerateMitigationSteps(RemediationAction action)
+    private List<string> GenerateMitigationSteps(RemediationAction action)
     {
         // Implement mitigation steps generation logic
-        return new Collection<string>();
+        return new List<string>();
     }
 
     private void AddValidationWarning(ValidationResult result, string message, SeverityLevel severity)
@@ -625,6 +624,3 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         return result;
     }
 }
-
-
-

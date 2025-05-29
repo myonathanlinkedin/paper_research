@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Enums;
@@ -40,7 +39,7 @@ public interface IErrorContextAnalyzer
     /// </summary>
     /// <param name="context">The error context.</param>
     /// <returns>The list of related errors.</returns>
-    Task<Collection<RelatedError>> GetRelatedErrorsAsync(ErrorContext context);
+    Task<List<RelatedError>> GetRelatedErrorsAsync(ErrorContext context);
 
     /// <summary>
     /// Gets a dependency graph for an error context.
@@ -83,7 +82,7 @@ public interface IErrorContextAnalyzer
     /// <param name="sourceId">The source node ID.</param>
     /// <param name="targetId">The target node ID.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the shortest path as a list of DependencyNode.</returns>
-    Task<Collection<DependencyNode>> CalculateShortestPathAsync(string sourceId, string targetId);
+    Task<List<DependencyNode>> CalculateShortestPathAsync(string sourceId, string targetId);
 
     /// <summary>
     /// Updates the graph metrics for the given error context.
@@ -92,8 +91,3 @@ public interface IErrorContextAnalyzer
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task UpdateGraphMetricsAsync(ErrorContext context);
 } 
-
-
-
-
-

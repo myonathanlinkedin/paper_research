@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Application.Models.Graph;
@@ -53,8 +52,3 @@ public interface IErrorClassifier
     /// <returns>The error probability between 0 and 1.</returns>
     Task<double> CalculateErrorProbabilityAsync(DependencyNode node);
 } 
-
-
-
-
-

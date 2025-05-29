@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,7 +19,7 @@ namespace RuntimeErrorSage.Application.Remediation
 
         public RemediationStrategyAdapter(Models.Remediation.Interfaces.IRemediationStrategy strategy)
         {
-            _strategy = strategy ?? ArgumentNullException.ThrowIfNull(nameof(strategy));
+            _strategy = strategy ?? throw new ArgumentNullException(nameof(strategy));
         }
 
         public string Id 
@@ -86,9 +85,3 @@ namespace RuntimeErrorSage.Application.Remediation
         }
     }
 } 
-
-
-
-
-
-

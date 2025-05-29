@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 
@@ -35,9 +34,3 @@ public static class SeverityDetermination
         return ErrorSeverity.Unknown;
     }
 } 
-
-
-
-
-
-

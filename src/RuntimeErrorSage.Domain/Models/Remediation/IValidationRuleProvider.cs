@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Validation;
 using System.Collections.Generic;
 
@@ -11,7 +10,3 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         void RemoveRule(ValidationRule rule);
     }
 } 
-
-
-
-

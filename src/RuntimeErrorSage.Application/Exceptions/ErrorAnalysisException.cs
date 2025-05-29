@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Runtime.Serialization;
 
@@ -49,9 +48,3 @@ namespace RuntimeErrorSage.Application.Analysis.Exceptions
         }
     }
 } 
-
-
-
-
-
-

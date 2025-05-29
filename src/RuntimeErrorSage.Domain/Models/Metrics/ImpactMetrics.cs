@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -14,27 +13,27 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the total number of remediations.
         /// </summary>
-        public int TotalRemediations { get; }
+        public int TotalRemediations { get; set; }
 
         /// <summary>
         /// Gets or sets the number of successful remediations.
         /// </summary>
-        public int SuccessfulRemediations { get; }
+        public int SuccessfulRemediations { get; set; }
 
         /// <summary>
         /// Gets or sets the number of failed remediations.
         /// </summary>
-        public int FailedRemediations { get; }
+        public int FailedRemediations { get; set; }
 
         /// <summary>
         /// Gets or sets the average time to remediation in milliseconds.
         /// </summary>
-        public double AverageTimeToRemediationMs { get; }
+        public double AverageTimeToRemediationMs { get; set; }
 
         /// <summary>
         /// Gets or sets the average time to recovery in milliseconds.
         /// </summary>
-        public double AverageTimeToRecoveryMs { get; }
+        public double AverageTimeToRecoveryMs { get; set; }
 
         /// <summary>
         /// Gets or sets the success rate of remediations (0-1).
@@ -64,12 +63,12 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the average number of affected users per remediation.
         /// </summary>
-        public double AverageAffectedUsers { get; }
+        public double AverageAffectedUsers { get; set; }
 
         /// <summary>
         /// Gets or sets the average estimated recovery time in minutes.
         /// </summary>
-        public double AverageEstimatedRecoveryTimeMinutes { get; }
+        public double AverageEstimatedRecoveryTimeMinutes { get; set; }
 
         /// <summary>
         /// Gets or sets the distribution of business impacts.
@@ -201,7 +200,3 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         }
     }
 } 
-
-
-
-

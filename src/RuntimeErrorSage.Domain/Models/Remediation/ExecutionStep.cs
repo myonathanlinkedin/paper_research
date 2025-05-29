@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Domain.Enums;
 
@@ -12,32 +11,32 @@ public class ExecutionStep
     /// <summary>
     /// Gets or sets the step identifier.
     /// </summary>
-    public string Id { get; } = Guid.NewGuid().ToString();
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the step name.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; set; }
 
     /// <summary>
     /// Gets or sets the step description.
     /// </summary>
-    public string Description { get; }
+    public string Description { get; set; }
 
     /// <summary>
     /// Gets or sets the step order.
     /// </summary>
-    public int Order { get; }
+    public int Order { get; set; }
 
     /// <summary>
     /// Gets or sets whether the step is required.
     /// </summary>
-    public bool IsRequired { get; }
+    public bool IsRequired { get; set; }
 
     /// <summary>
     /// Gets or sets the step status.
     /// </summary>
-    public ActionStatus Status { get; }
+    public ActionStatus Status { get; set; }
 
     /// <summary>
     /// Gets or sets the step start time.
@@ -52,15 +51,10 @@ public class ExecutionStep
     /// <summary>
     /// Gets or sets the step error message.
     /// </summary>
-    public string ErrorMessage { get; }
+    public string ErrorMessage { get; set; }
 
     /// <summary>
     /// Gets or sets the step metadata.
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
 } 
-
-
-
-
-

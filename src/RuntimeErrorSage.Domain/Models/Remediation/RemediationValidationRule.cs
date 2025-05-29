@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,52 +16,52 @@ public class RemediationValidationRule
     /// <summary>
     /// Gets or sets the unique identifier of the rule.
     /// </summary>
-    public string RuleId { get; }
+    public string RuleId { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the rule.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; set; }
 
     /// <summary>
     /// Gets or sets the description of the rule.
     /// </summary>
-    public string Description { get; }
+    public string Description { get; set; }
 
     /// <summary>
     /// Gets or sets the validation priority.
     /// </summary>
-    public int Priority { get; }
+    public int Priority { get; set; }
 
     /// <summary>
     /// Gets or sets the validation scope.
     /// </summary>
-    public ValidationScope Scope { get; }
+    public ValidationScope Scope { get; set; }
 
     /// <summary>
     /// Gets or sets whether the rule is enabled.
     /// </summary>
-    public bool IsEnabled { get; } = true;
+    public bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Gets or sets whether the rule is required.
     /// </summary>
-    public bool IsRequired { get; }
+    public bool IsRequired { get; set; }
 
     /// <summary>
     /// Gets or sets the error message template.
     /// </summary>
-    public string ErrorMessageTemplate { get; } = string.Empty;
+    public string ErrorMessageTemplate { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the warning message template.
     /// </summary>
-    public string WarningMessageTemplate { get; } = string.Empty;
+    public string WarningMessageTemplate { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the validation condition.
     /// </summary>
-    public string ValidationCondition { get; } = string.Empty;
+    public string ValidationCondition { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the validation parameters.
@@ -77,22 +76,22 @@ public class RemediationValidationRule
     /// <summary>
     /// Gets or sets when the rule was created.
     /// </summary>
-    public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets when the rule was last updated.
     /// </summary>
-    public DateTimeOffset ModifiedAt { get; }
+    public DateTimeOffset ModifiedAt { get; set; }
 
     /// <summary>
     /// Gets or sets whether the rule is active.
     /// </summary>
-    public bool IsActive { get; }
+    public bool IsActive { get; set; }
 
     /// <summary>
     /// Gets or sets the severity level of the rule.
     /// </summary>
-    public ErrorSeverity Severity { get; }
+    public ErrorSeverity Severity { get; set; }
 
     /// <summary>
     /// Gets or sets the validation function that determines if the rule is satisfied.
@@ -102,17 +101,17 @@ public class RemediationValidationRule
     /// <summary>
     /// Gets or sets the error message to display if the rule is not satisfied.
     /// </summary>
-    public string ErrorMessage { get; }
+    public string ErrorMessage { get; set; }
 
     /// <summary>
     /// Gets or sets whether the validation result can be cached.
     /// </summary>
-    public bool IsCacheable { get; }
+    public bool IsCacheable { get; set; }
 
     /// <summary>
     /// Gets or sets the duration for which the validation result can be cached.
     /// </summary>
-    public TimeSpan CacheDuration { get; } = TimeSpan.FromMinutes(5);
+    public TimeSpan CacheDuration { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// Gets or sets the validation function for async validation.
@@ -176,14 +175,8 @@ public class RemediationValidationRule
     /// <param name="plan">The remediation plan.</param>
     /// <param name="context">The error context.</param>
     /// <returns>A cache key string.</returns>
-    public RemediationPlan plan, ErrorContext context { ArgumentNullException.ThrowIfNull(RemediationPlan plan, ErrorContext context); }
+    public string GetCacheKey(RemediationPlan plan, ErrorContext context)
     {
         return $"ValidationRule:{RuleId}:{plan?.PlanId ?? "null"}:{context?.ContextId ?? "null"}";
     }
 } 
-
-
-
-
-
-

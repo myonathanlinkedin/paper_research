@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -225,10 +224,4 @@ public class OperationSimulatorTests
         Assert.Null(response.Error);
     }
 } 
-
-
-
-
-
-
 

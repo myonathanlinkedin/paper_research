@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Remediation
@@ -11,16 +10,11 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the timestamp of the usage record.
         /// </summary>
-        public DateTime Timestamp { get; }
+        public DateTime Timestamp { get; set; }
 
         /// <summary>
         /// Gets or sets the usage value.
         /// </summary>
-        public double Usage { get; }
+        public double Usage { get; set; }
     }
 } 
-
-
-
-
-

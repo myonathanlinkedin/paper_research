@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Application.Models.Remediation;
 
@@ -60,7 +59,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// </summary>
         /// <param name="action">A remediation action to execute</param>
         /// <returns>The action execution result</returns>
-        public RemediationAction action { ArgumentNullException.ThrowIfNull(RemediationAction action); }
+        public RemediationActionResult ExecuteAction(RemediationAction action)
         {
             try
             {
@@ -95,9 +94,3 @@ namespace RuntimeErrorSage.Application.Examples
         }
     }
 } 
-
-
-
-
-
-

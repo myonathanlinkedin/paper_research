@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -23,8 +22,8 @@ public class RiskAssessmentService : IRiskAssessmentService
 
     public RiskAssessmentService(ILogger<RiskAssessmentService> logger, IRemediationRiskAssessment riskAssessment)
     {
-        _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
-        _riskAssessment = riskAssessment ?? ArgumentNullException.ThrowIfNull(nameof(riskAssessment));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _riskAssessment = riskAssessment ?? throw new ArgumentNullException(nameof(riskAssessment));
     }
 
     /// <summary>
@@ -36,7 +35,7 @@ public class RiskAssessmentService : IRiskAssessmentService
     {
         if (action == null)
         {
-            ArgumentNullException.ThrowIfNull(nameof(action));
+            throw new ArgumentNullException(nameof(action));
         }
 
         var assessment = new RiskAssessment
@@ -93,7 +92,7 @@ public class RiskAssessmentService : IRiskAssessmentService
 
     private double CalculateConfidence(RemediationAction action)
     {
-        var confidenceFactors = new Collection<double>();
+        var confidenceFactors = new List<double>();
 
         // Factor 1: Error type clarity
         if (!string.IsNullOrEmpty(action.ErrorType))
@@ -123,7 +122,7 @@ public class RiskAssessmentService : IRiskAssessmentService
         return confidenceFactors.Any() ? confidenceFactors.Average() * 100 : 50.0;
     }
 
-    private Collection<string> GetAffectedComponents(RemediationAction action)
+    private List<string> GetAffectedComponents(RemediationAction action)
     {
         var components = new HashSet<string>();
 
@@ -175,9 +174,3 @@ public class RiskAssessmentService : IRiskAssessmentService
         return TimeSpan.FromTicks((long)(baseDuration.Ticks * riskMultiplier * contextMultiplier));
     }
 } 
-
-
-
-
-
-

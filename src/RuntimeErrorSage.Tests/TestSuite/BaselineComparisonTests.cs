@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,7 +20,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
         private readonly StandardizedErrorScenarios _standardizedScenarios;
         private readonly RealWorldErrorCases _realWorldScenarios;
         private readonly IErrorAnalyzer _errorAnalyzer;
-        private readonly Collection<ComparisonResults> _results;
+        private readonly List<ComparisonResults> _results;
 
         public BaselineComparisonTests(
             IRuntimeErrorSageService RuntimeErrorSageService,
@@ -33,7 +32,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
             _standardizedScenarios = standardizedScenarios;
             _realWorldScenarios = realWorldScenarios;
             _errorAnalyzer = errorAnalyzer;
-            _results = new Collection<ComparisonResults>();
+            _results = new List<ComparisonResults>();
         }
 
         /// <summary>
@@ -45,7 +44,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
             var results = new ComparisonResults
             {
                 Method = "Traditional Error Handling",
-                Scenarios = new Collection<ComparisonScenario>()
+                Scenarios = new List<ComparisonScenario>()
             };
 
             // Test standardized scenarios
@@ -78,7 +77,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
             var results = new ComparisonResults
             {
                 Method = "Static Analysis",
-                Scenarios = new Collection<ComparisonScenario>()
+                Scenarios = new List<ComparisonScenario>()
             };
 
             // Test standardized scenarios
@@ -111,7 +110,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
             var results = new ComparisonResults
             {
                 Method = "Manual Debugging",
-                Scenarios = new Collection<ComparisonScenario>()
+                Scenarios = new List<ComparisonScenario>()
             };
 
             // Test standardized scenarios
@@ -364,7 +363,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
         /// <summary>
         /// Gets all comparison results
         /// </summary>
-        public IReadOnlyCollection<ComparisonResults> GetResults() => _results;
+        public IReadOnlyList<ComparisonResults> GetResults() => _results;
 
         private bool IsSignificantlyBetter(BaselineResult baseline, BaselineResult experimental)
         {
@@ -379,13 +378,13 @@ namespace RuntimeErrorSage.Tests.TestSuite
     /// </summary>
     public class ComparisonResults
     {
-        public string Method { get; }
-        public IReadOnlyCollection<Scenarios> Scenarios { get; }
-        public string Name { get; }
-        public BaselineResult Baseline { get; }
-        public BaselineResult Experimental { get; }
-        public double StatisticalSignificance { get; }
-        public bool IsSignificantlyBetter { get; }
+        public string Method { get; set; }
+        public List<ComparisonScenario> Scenarios { get; set; }
+        public string Name { get; set; }
+        public BaselineResult Baseline { get; set; }
+        public BaselineResult Experimental { get; set; }
+        public double StatisticalSignificance { get; set; }
+        public bool IsSignificantlyBetter { get; set; }
     }
 
     /// <summary>
@@ -393,10 +392,10 @@ namespace RuntimeErrorSage.Tests.TestSuite
     /// </summary>
     public class ComparisonScenario
     {
-        public string ScenarioId { get; }
-        public string ErrorType { get; }
-        public BaselineMetrics TraditionalHandling { get; }
-        public BaselineMetrics RuntimeErrorSageMetrics { get; }
+        public string ScenarioId { get; set; }
+        public string ErrorType { get; set; }
+        public BaselineMetrics TraditionalHandling { get; set; }
+        public BaselineMetrics RuntimeErrorSageMetrics { get; set; }
     }
 
     /// <summary>
@@ -404,15 +403,11 @@ namespace RuntimeErrorSage.Tests.TestSuite
     /// </summary>
     public class BaselineMetrics
     {
-        public double TimeToAnalyze { get; }
-        public double RootCauseAccuracy { get; }
-        public double RemediationAccuracy { get; }
-        public double FalsePositiveRate { get; }
-        public double FalseNegativeRate { get; }
+        public double TimeToAnalyze { get; set; }
+        public double RootCauseAccuracy { get; set; }
+        public double RemediationAccuracy { get; set; }
+        public double FalsePositiveRate { get; set; }
+        public double FalseNegativeRate { get; set; }
     }
 } 
-
-
-
-
 

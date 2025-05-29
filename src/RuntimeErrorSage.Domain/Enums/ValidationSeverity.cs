@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Domain.Enums
 {
     /// <summary>
@@ -27,10 +26,4 @@ namespace RuntimeErrorSage.Domain.Enums
         Critical
     }
 } 
-
-
-
-
-
-
 

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -13,37 +12,31 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <summary>
         /// Gets or sets whether the validation was successful.
         /// </summary>
-        public bool IsValid { get; }
+        public bool IsValid { get; set; }
         
         /// <summary>
         /// Gets or sets the error context associated with the validation.
         /// </summary>
-        public ErrorContext ErrorContext { get; }
+        public ErrorContext ErrorContext { get; set; }
         
         /// <summary>
         /// Gets or sets the timestamp of the validation.
         /// </summary>
-        public DateTime Timestamp { get; }
+        public DateTime Timestamp { get; set; }
         
         /// <summary>
         /// Gets or sets the validation messages, typically error messages if IsValid is false.
         /// </summary>
-        public IReadOnlyCollection<Messages> Messages { get; } = new Collection<string>();
+        public List<string> Messages { get; set; } = new List<string>();
         
         /// <summary>
         /// Gets or sets additional validation results.
         /// </summary>
-        public IReadOnlyCollection<ValidationResults> ValidationResults { get; } = new Collection<ValidationResult>();
+        public List<ValidationResult> ValidationResults { get; set; } = new List<ValidationResult>();
         
         /// <summary>
         /// Gets or sets any errors that occurred during validation.
         /// </summary>
-        public IReadOnlyCollection<Errors> Errors { get; } = new Collection<string>();
+        public List<string> Errors { get; set; } = new List<string>();
     }
 } 
-
-
-
-
-
-

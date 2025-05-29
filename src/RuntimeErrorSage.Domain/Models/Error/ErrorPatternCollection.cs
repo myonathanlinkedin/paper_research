@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 using System.Collections.Generic;
 
@@ -12,21 +11,15 @@ public class ErrorPatternCollection
     /// <summary>
     /// Gets or sets the collection of error patterns.
     /// </summary>
-    public IReadOnlyCollection<Patterns> Patterns { get; } = new();
+    public List<ErrorPattern> Patterns { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the total count.
     /// </summary>
-    public int TotalCount { get; }
+    public int TotalCount { get; set; }
 
     /// <summary>
     /// Gets or sets the match scores.
     /// </summary>
     public Dictionary<string, double> MatchScores { get; set; } = new();
 } 
-
-
-
-
-
-

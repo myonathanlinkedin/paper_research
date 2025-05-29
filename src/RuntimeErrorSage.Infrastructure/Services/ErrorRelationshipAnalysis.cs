@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +15,7 @@ public class ErrorRelationshipAnalysis
 
     public ErrorRelationshipAnalysis(ErrorPatternMatcher patternMatcher)
     {
-        _patternMatcher = patternMatcher ?? ArgumentNullException.ThrowIfNull(nameof(patternMatcher));
+        _patternMatcher = patternMatcher ?? throw new ArgumentNullException(nameof(patternMatcher));
     }
 
     /// <summary>
@@ -115,8 +114,3 @@ public class ErrorRelationshipAnalysis
         return d[s1.Length, s2.Length];
     }
 } 
-
-
-
-
-

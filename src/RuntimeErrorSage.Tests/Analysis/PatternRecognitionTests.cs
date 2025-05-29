@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -51,7 +50,7 @@ namespace RuntimeErrorSage.Tests.Analysis
         public async Task InitializeAsync_Success()
         {
             // Arrange
-            var patterns = new Collection<ErrorPattern>();
+            var patterns = new List<ErrorPattern>();
             _storageMock.Setup(x => x.LoadPatternsAsync())
                 .ReturnsAsync(patterns);
             _modelMock.Setup(x => x.InitializeAsync())
@@ -83,7 +82,7 @@ namespace RuntimeErrorSage.Tests.Analysis
         public async Task DetectPatternsAsync_ReturnsMatchingPatterns()
         {
             // Arrange
-            var contexts = new Collection<ErrorContext>
+            var contexts = new List<ErrorContext>
             {
                 CreateTestContext("Error1", new Dictionary<string, object>
                 {
@@ -97,7 +96,7 @@ namespace RuntimeErrorSage.Tests.Analysis
                 })
             };
 
-            var patterns = new Collection<ErrorPattern>
+            var patterns = new List<ErrorPattern>
             {
                 CreateTestPattern("Error1", new Dictionary<string, object>
                 {
@@ -129,7 +128,7 @@ namespace RuntimeErrorSage.Tests.Analysis
                 { "FilePath", "test.txt" }
             });
 
-            var patterns = new Collection<ErrorPattern>
+            var patterns = new List<ErrorPattern>
             {
                 CreateTestPattern("Error1", new Dictionary<string, object>
                 {
@@ -161,7 +160,7 @@ namespace RuntimeErrorSage.Tests.Analysis
                 { "FilePath", "test.txt" }
             });
 
-            var patterns = new Collection<ErrorPattern>
+            var patterns = new List<ErrorPattern>
             {
                 CreateTestPattern("Error2", new Dictionary<string, object>
                 {
@@ -184,8 +183,8 @@ namespace RuntimeErrorSage.Tests.Analysis
         public async Task DetectPatternsAsync_HandlesEmptyContextList()
         {
             // Arrange
-            var contexts = new Collection<ErrorContext>();
-            var patterns = new Collection<ErrorPattern>();
+            var contexts = new List<ErrorContext>();
+            var patterns = new List<ErrorPattern>();
 
             _mcpClientMock.Setup(x => x.GetErrorPatternsAsync(_options.ServiceName))
                 .ReturnsAsync(patterns);
@@ -201,7 +200,7 @@ namespace RuntimeErrorSage.Tests.Analysis
         public async Task DetectPatternsAsync_ThrowsOnError()
         {
             // Arrange
-            var contexts = new Collection<ErrorContext>
+            var contexts = new List<ErrorContext>
             {
                 CreateTestContext("Error1", new Dictionary<string, object>())
             };
@@ -238,7 +237,4 @@ namespace RuntimeErrorSage.Tests.Analysis
         }
     }
 } 
-
-
-
 

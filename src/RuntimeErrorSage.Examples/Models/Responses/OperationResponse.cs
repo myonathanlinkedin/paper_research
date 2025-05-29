@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Examples.Models.Responses.Enums;
 
@@ -12,22 +11,22 @@ public class OperationResponse
     /// <summary>
     /// Unique identifier for the operation
     /// </summary>
-    public Guid OperationId { get; } = Guid.NewGuid();
+    public Guid OperationId { get; set; } = Guid.NewGuid();
 
     /// <summary>
     /// Status of the operation
     /// </summary>
-    public OperationStatus Status { get; }
+    public OperationStatus Status { get; set; }
 
     /// <summary>
     /// Timestamp when the operation completed
     /// </summary>
-    public DateTime CompletedAt { get; } = DateTime.UtcNow;
+    public DateTime CompletedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Duration of the operation in milliseconds
     /// </summary>
-    public long DurationMs { get; }
+    public long DurationMs { get; set; }
 
     /// <summary>
     /// Optional error details if the operation failed
@@ -52,10 +51,4 @@ public class OperationResponse
         Error = error;
     }
 }
-
-
-
-
-
-
 

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,7 +14,7 @@ public class TestSuiteExecutor
 {
     private readonly IErrorAnalyzer _errorAnalyzer;
     private readonly TestSuiteConfiguration _configuration;
-    private readonly Collection<TestSuiteResult> _results;
+    private readonly List<TestSuiteResult> _results;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestSuiteExecutor"/> class.
@@ -24,9 +23,9 @@ public class TestSuiteExecutor
     /// <param name="configuration">The configuration.</param>
     public TestSuiteExecutor(IErrorAnalyzer errorAnalyzer, TestSuiteConfiguration configuration)
     {
-        _errorAnalyzer = errorAnalyzer ?? ArgumentNullException.ThrowIfNull(nameof(errorAnalyzer));
-        _configuration = configuration ?? ArgumentNullException.ThrowIfNull(nameof(configuration));
-        _results = new Collection<TestSuiteResult>();
+        _errorAnalyzer = errorAnalyzer ?? throw new ArgumentNullException(nameof(errorAnalyzer));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _results = new List<TestSuiteResult>();
     }
 
     /// <summary>
@@ -42,7 +41,7 @@ public class TestSuiteExecutor
     /// <summary>
     /// Gets the results.
     /// </summary>
-    public IReadOnlyCollection<TestSuiteResult> Results => _results;
+    public IReadOnlyList<TestSuiteResult> Results => _results;
 
     /// <summary>
     /// Executes the test suite.
@@ -88,7 +87,7 @@ public class TestSuiteExecutor
     private async Task<ErrorScenario> ExecuteScenarioAsync(ErrorScenario scenario)
     {
         if (scenario == null)
-            ArgumentNullException.ThrowIfNull(nameof(scenario));
+            throw new ArgumentNullException(nameof(scenario));
 
         var context = new ErrorContext
         {
@@ -113,7 +112,7 @@ public class TestSuiteExecutor
     private async Task<PerformanceMetric> ExecuteMetricAsync(PerformanceMetric metric)
     {
         if (metric == null)
-            ArgumentNullException.ThrowIfNull(nameof(metric));
+            throw new ArgumentNullException(nameof(metric));
 
         var startTime = DateTime.UtcNow;
         var startMemory = GC.GetTotalMemory(false);
@@ -146,7 +145,7 @@ public class TestSuiteExecutor
     /// </summary>
     /// <param name="index">The index.</param>
     /// <returns>The result.</returns>
-    public int index { ArgumentNullException.ThrowIfNull(int index); }
+    public TestSuiteResult GetResult(int index)
     {
         if (index < 0 || index >= _results.Count)
             throw new ArgumentOutOfRangeException(nameof(index));
@@ -162,9 +161,3 @@ public class TestSuiteExecutor
         _results.Clear();
     }
 } 
-
-
-
-
-
-

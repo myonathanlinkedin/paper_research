@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Application.Models.Enums;
 
 /// <summary>
@@ -41,9 +40,3 @@ public enum RemediationImpactLevel
     /// </summary>
     Unknown = 6
 } 
-
-
-
-
-
-

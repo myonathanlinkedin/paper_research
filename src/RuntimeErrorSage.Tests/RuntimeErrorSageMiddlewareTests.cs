@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -47,7 +46,7 @@ namespace RuntimeErrorSage.Tests
                 IsAnalyzed = true,
                 RemediationPlan = new RemediationPlan
                 {
-                    Strategies = new Collection<RemediationStrategy>
+                    Strategies = new List<RemediationStrategy>
                     {
                         new() { Name = "TestStrategy", Status = RemediationStrategyStatus.Created }
                     }
@@ -93,10 +92,4 @@ namespace RuntimeErrorSage.Tests
         }
     }
 } 
-
-
-
-
-
-
 

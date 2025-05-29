@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,8 +23,8 @@ public class TestSuiteReporter
     /// <param name="outputPath">The output path.</param>
     public TestSuiteReporter(TestSuiteResult result, string outputPath)
     {
-        _result = result ?? ArgumentNullException.ThrowIfNull(nameof(result));
-        _outputPath = outputPath ?? ArgumentNullException.ThrowIfNull(nameof(outputPath));
+        _result = result ?? throw new ArgumentNullException(nameof(result));
+        _outputPath = outputPath ?? throw new ArgumentNullException(nameof(outputPath));
     }
 
     /// <summary>
@@ -174,8 +173,3 @@ public class TestSuiteReporter
         return summary.ToString();
     }
 } 
-
-
-
-
-

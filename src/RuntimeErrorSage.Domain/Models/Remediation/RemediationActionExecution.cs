@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Remediation;
 using System;
@@ -16,37 +15,37 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     public class RemediationActionExecution
     {
         private readonly Dictionary<string, ExecutionResult> _executionResults = new();
-        private readonly Collection<Action<ExecutionResult>> _executionHandlers = new();
+        private readonly List<Action<ExecutionResult>> _executionHandlers = new();
 
         /// <summary>
         /// Gets or sets the unique identifier of the action execution.
         /// </summary>
-        public string ExecutionId { get; } = Guid.NewGuid().ToString();
+        public string ExecutionId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the ID of the action that was executed.
         /// </summary>
-        public string ActionId { get; } = string.Empty;
+        public string ActionId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the name of the action.
         /// </summary>
-        public string ActionName { get; } = string.Empty;
+        public string ActionName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the type of the action.
         /// </summary>
-        public string ActionType { get; } = string.Empty;
+        public string ActionType { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the status of the execution.
         /// </summary>
-        public ExecutionStatus Status { get; } = ExecutionStatus.Pending;
+        public ExecutionStatus Status { get; set; } = ExecutionStatus.Pending;
 
         /// <summary>
         /// Gets or sets the timestamp when the action started.
         /// </summary>
-        public DateTime StartTime { get; } = DateTime.UtcNow;
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the timestamp when the action ended.
@@ -81,7 +80,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the validation results for this action execution.
         /// </summary>
-        public IReadOnlyCollection<ValidationResults> ValidationResults { get; } = new();
+        public List<ValidationResult> ValidationResults { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the metrics collected during this action execution.
@@ -96,12 +95,12 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets any warnings that occurred during action execution.
         /// </summary>
-        public IReadOnlyCollection<Warnings> Warnings { get; } = new();
+        public List<string> Warnings { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the severity of this action execution.
         /// </summary>
-        public string Severity { get; } = string.Empty;
+        public string Severity { get; set; } = string.Empty;
 
         /// <summary>
         /// Executes a remediation action.
@@ -161,7 +160,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <returns>The execution result, or null if not found.</returns>
-        public string actionId { ArgumentNullException.ThrowIfNull(string actionId); }
+        public ExecutionResult GetExecutionResult(string actionId)
         {
             ArgumentNullException.ThrowIfNull(actionId);
             return _executionResults.TryGetValue(actionId, out var result) ? result : null;
@@ -171,7 +170,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Registers a handler for execution results.
         /// </summary>
         /// <param name="handler">The handler to register.</param>
-        public Action<ExecutionResult> handler { ArgumentNullException.ThrowIfNull(Action<ExecutionResult> handler); }
+        public void RegisterExecutionHandler(Action<ExecutionResult> handler)
         {
             ArgumentNullException.ThrowIfNull(handler);
             _executionHandlers.Add(handler);
@@ -181,7 +180,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Unregisters a handler for execution results.
         /// </summary>
         /// <param name="handler">The handler to unregister.</param>
-        public Action<ExecutionResult> handler { ArgumentNullException.ThrowIfNull(Action<ExecutionResult> handler); }
+        public void UnregisterExecutionHandler(Action<ExecutionResult> handler)
         {
             ArgumentNullException.ThrowIfNull(handler);
             _executionHandlers.Remove(handler);
@@ -220,11 +219,6 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
-
-
-
-
-
 
 
 

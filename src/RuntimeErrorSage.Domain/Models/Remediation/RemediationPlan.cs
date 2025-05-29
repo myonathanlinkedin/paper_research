@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Common;
@@ -16,57 +15,57 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the unique identifier for the plan.
         /// </summary>
-        public string PlanId { get; } = Guid.NewGuid().ToString();
+        public string PlanId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the name of the plan.
         /// </summary>
-        public string Name { get; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the description of the plan.
         /// </summary>
-        public string Description { get; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the list of actions in the plan.
         /// </summary>
-        public IReadOnlyCollection<Actions> Actions { get; } = new();
+        public List<RemediationAction> Actions { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the priority of the plan.
         /// </summary>
-        public RemediationPriority Priority { get; }
+        public RemediationPriority Priority { get; set; }
 
         /// <summary>
         /// Gets or sets the severity of the plan.
         /// </summary>
-        public RemediationActionSeverity Severity { get; } = RemediationActionSeverity.Medium;
+        public RemediationActionSeverity Severity { get; set; } = RemediationActionSeverity.Medium;
 
         /// <summary>
         /// Gets or sets the estimated duration of the plan.
         /// </summary>
-        public TimeSpan EstimatedDuration { get; }
+        public TimeSpan EstimatedDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the validation rules for the plan.
         /// </summary>
-        public IReadOnlyCollection<ValidationRules> ValidationRules { get; } = new();
+        public List<string> ValidationRules { get; set; } = new();
 
         /// <summary>
         /// Gets or sets whether validation is required before execution.
         /// </summary>
-        public bool RequiresValidation { get; }
+        public bool RequiresValidation { get; set; }
 
         /// <summary>
         /// Gets or sets whether the plan can be rolled back.
         /// </summary>
-        public bool CanRollback { get; }
+        public bool CanRollback { get; set; }
 
         /// <summary>
         /// Gets or sets the rollback plan if available.
         /// </summary>
-        public RemediationPlan RollbackPlan { get; }
+        public RemediationPlan RollbackPlan { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata associated with the plan.
@@ -76,22 +75,22 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the timestamp when the plan was created.
         /// </summary>
-        public DateTime CreatedAt { get; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the correlation ID.
         /// </summary>
-        public string CorrelationId { get; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error ID this plan is associated with.
         /// </summary>
-        public string ErrorId { get; } = string.Empty;
+        public string ErrorId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the status of the plan.
         /// </summary>
-        public RemediationStatusEnum Status { get; }
+        public RemediationStatusEnum Status { get; set; }
 
         /// <summary>
         /// Gets or sets the parameters for the plan.
@@ -106,22 +105,22 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the error analysis result.
         /// </summary>
-        public ErrorAnalysisResult Analysis { get; }
+        public ErrorAnalysisResult Analysis { get; set; }
 
         /// <summary>
         /// Gets or sets the error context.
         /// </summary>
-        public ErrorContext Context { get; }
+        public ErrorContext Context { get; set; }
 
         /// <summary>
         /// Gets or sets the remediation strategies.
         /// </summary>
-        public IReadOnlyCollection<Strategies> Strategies { get; } = new();
+        public List<Models.Remediation.Interfaces.IRemediationStrategy> Strategies { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the remediation status information.
         /// </summary>
-        public string StatusInfo { get; } = string.Empty;
+        public string StatusInfo { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets the steps (alias for Actions).
@@ -131,47 +130,47 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the category of the plan.
         /// </summary>
-        public RemediationPlanCategory Category { get; }
+        public RemediationPlanCategory Category { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the plan.
         /// </summary>
-        public RemediationPlanType Type { get; }
+        public RemediationPlanType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the scope of the plan.
         /// </summary>
-        public RemediationPlanScope Scope { get; }
+        public RemediationPlanScope Scope { get; set; }
 
         /// <summary>
         /// Gets or sets the list of remediation steps.
         /// </summary>
-        public IReadOnlyCollection<RemediationSteps> RemediationSteps { get; } = new();
+        public List<RemediationStep> RemediationSteps { get; set; } = new();
 
         /// <summary>
         /// Gets or sets whether the plan requires approval.
         /// </summary>
-        public bool RequiresApproval { get; }
+        public bool RequiresApproval { get; set; }
 
         /// <summary>
         /// Gets or sets whether the plan requires manual intervention.
         /// </summary>
-        public bool RequiresManualIntervention { get; }
+        public bool RequiresManualIntervention { get; set; }
 
         /// <summary>
         /// Gets or sets the estimated impact of the plan.
         /// </summary>
-        public string EstimatedImpact { get; } = string.Empty;
+        public string EstimatedImpact { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the risk level of the plan.
         /// </summary>
-        public RemediationRiskLevel RiskLevel { get; }
+        public RemediationRiskLevel RiskLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the tags associated with the plan.
         /// </summary>
-        public IReadOnlyCollection<Tags> Tags { get; } = new();
+        public List<string> Tags { get; set; } = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RemediationPlan"/> class.
@@ -184,7 +183,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         public RemediationPlan(
             string name,
             string description,
-            Collection<RemediationAction> actions,
+            List<RemediationAction> actions,
             Dictionary<string, object> parameters,
             TimeSpan estimatedDuration)
         {
@@ -205,7 +204,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Adds an action to the plan.
         /// </summary>
         /// <param name="action">The action to add.</param>
-        public RemediationAction action { ArgumentNullException.ThrowIfNull(RemediationAction action); }
+        public void AddAction(RemediationAction action)
         {
             ArgumentNullException.ThrowIfNull(action);
             Actions.Add(action);
@@ -216,10 +215,10 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="action">The action to remove.</param>
         /// <returns>True if the action was removed, false otherwise.</returns>
-        public RemediationAction action { ArgumentNullException.ThrowIfNull(RemediationAction action); }
+        public bool RemoveAction(RemediationAction action)
         {
             if (action == null)
-                ArgumentNullException.ThrowIfNull(nameof(action));
+                throw new ArgumentNullException(nameof(action));
 
             return Actions.Remove(action);
         }
@@ -230,8 +229,3 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         public int ActionCount => Actions.Count;
     }
 }
-
-
-
-
-

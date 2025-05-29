@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
@@ -27,7 +26,7 @@ public class MCPClient : IMCPClient, IDisposable
     private readonly string _clientId;
     private readonly MCPConnectionStatus _connectionStatus;
     private readonly Dictionary<string, ErrorContext> _contextCache;
-    private readonly Dictionary<string, Collection<ContextHistory>> _contextHistory;
+    private readonly Dictionary<string, List<ContextHistory>> _contextHistory;
     private readonly Dictionary<string, Func<ErrorContext, Task>> _contextSubscribers;
     private readonly MCPClientOptions _options;
     private readonly RuntimeErrorSage.Application.Storage.Interfaces.IPatternStorage _storage;
@@ -43,15 +42,15 @@ public class MCPClient : IMCPClient, IDisposable
         RuntimeErrorSage.Application.Storage.Interfaces.IPatternStorage storage,
         IErrorAnalyzer errorAnalyzer)
     {
-        _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
-        _options = options?.Value ?? ArgumentNullException.ThrowIfNull(nameof(options));
-        _storage = storage ?? ArgumentNullException.ThrowIfNull(nameof(storage));
-        _errorAnalyzer = errorAnalyzer ?? ArgumentNullException.ThrowIfNull(nameof(errorAnalyzer));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        _errorAnalyzer = errorAnalyzer ?? throw new ArgumentNullException(nameof(errorAnalyzer));
         
         _clientId = Guid.NewGuid().ToString();
         _connectionStatus = new MCPConnectionStatus { State = ConnectionState.Disconnected };
         _contextCache = new Dictionary<string, ErrorContext>();
-        _contextHistory = new Dictionary<string, Collection<ContextHistory>>();
+        _contextHistory = new Dictionary<string, List<ContextHistory>>();
         _contextSubscribers = new Dictionary<string, Func<ErrorContext, Task>>();
     }
 
@@ -156,7 +155,7 @@ public class MCPClient : IMCPClient, IDisposable
     /// </summary>
     /// <param name="contextId">The context identifier.</param>
     /// <returns>The complete context history.</returns>
-    public async Task<Collection<ContextHistory>> GetContextHistoryAsync(string contextId, TimeRange range)
+    public async Task<List<ContextHistory>> GetContextHistoryAsync(string contextId, TimeRange range)
     {
         if (!IsConnected)
         {
@@ -165,7 +164,7 @@ public class MCPClient : IMCPClient, IDisposable
 
         if (!_contextHistory.ContainsKey(contextId))
         {
-            return new Collection<ContextHistory>();
+            return new List<ContextHistory>();
         }
 
         return _contextHistory[contextId]
@@ -222,7 +221,7 @@ public class MCPClient : IMCPClient, IDisposable
     /// Gets the available models.
     /// </summary>
     /// <returns>The available models.</returns>
-    public async Task<Collection<string>> GetAvailableModelsAsync()
+    public async Task<List<string>> GetAvailableModelsAsync()
     {
         if (!IsConnected)
         {
@@ -230,7 +229,7 @@ public class MCPClient : IMCPClient, IDisposable
         }
 
         // TODO: Implement actual model retrieval
-        return new Collection<string> { "Qwen2.5-7B-Instruct-1M" };
+        return new List<string> { "Qwen2.5-7B-Instruct-1M" };
     }
 
     /// <summary>
@@ -310,7 +309,7 @@ public class MCPClient : IMCPClient, IDisposable
         _contextCache[context.ErrorId] = context;
 
         // Record context history
-        var history = _contextHistory.GetOrAdd(context.ErrorId, _ => new Collection<ContextHistory>());
+        var history = _contextHistory.GetOrAdd(context.ErrorId, _ => new List<ContextHistory>());
         history.Add(new ContextHistory
         {
             Id = Guid.NewGuid().ToString(),
@@ -375,7 +374,7 @@ public class MCPClient : IMCPClient, IDisposable
     {
         if (!_contextHistory.ContainsKey(context.ErrorId))
         {
-            _contextHistory[context.ErrorId] = new Collection<ContextHistory>();
+            _contextHistory[context.ErrorId] = new List<ContextHistory>();
         }
 
         _contextHistory[context.ErrorId].Add(new ContextHistory
@@ -415,13 +414,13 @@ public class MCPClient : IMCPClient, IDisposable
         }
     }
 
-    public async Task UpdateErrorPatternsAsync(Collection<ErrorPattern> patterns)
+    public async Task UpdateErrorPatternsAsync(List<ErrorPattern> patterns)
     {
-        if (patterns == null) ArgumentNullException.ThrowIfNull(nameof(patterns));
+        if (patterns == null) throw new ArgumentNullException(nameof(patterns));
         await _storage.SavePatternsAsync(patterns);
     }
 
-    public async Task<Collection<ErrorPattern>> GetErrorPatternsAsync(string serviceName)
+    public async Task<List<ErrorPattern>> GetErrorPatternsAsync(string serviceName)
     {
         var allPatterns = await _storage.GetPatternsAsync();
         if (string.IsNullOrEmpty(serviceName))
@@ -429,9 +428,4 @@ public class MCPClient : IMCPClient, IDisposable
         return allPatterns.FindAll(p => p.ServiceName == serviceName);
     }
 } 
-
-
-
-
-
 

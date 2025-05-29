@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
@@ -14,8 +13,8 @@ public class TestSuiteConfiguration
 {
     private readonly IErrorAnalyzer _errorAnalyzer;
     private readonly Dictionary<string, object> _settings;
-    private readonly Collection<ErrorScenario> _scenarios;
-    private readonly Collection<PerformanceMetric> _metrics;
+    private readonly List<ErrorScenario> _scenarios;
+    private readonly List<PerformanceMetric> _metrics;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestSuiteConfiguration"/> class.
@@ -26,8 +25,8 @@ public class TestSuiteConfiguration
         ArgumentNullException.ThrowIfNull(errorAnalyzer);
         _errorAnalyzer = errorAnalyzer;
         _settings = new Dictionary<string, object>();
-        _scenarios = new Collection<ErrorScenario>();
-        _metrics = new Collection<PerformanceMetric>();
+        _scenarios = new List<ErrorScenario>();
+        _metrics = new List<PerformanceMetric>();
     }
 
     /// <summary>
@@ -43,19 +42,19 @@ public class TestSuiteConfiguration
     /// <summary>
     /// Gets the scenarios.
     /// </summary>
-    public IReadOnlyCollection<ErrorScenario> Scenarios => _scenarios;
+    public IReadOnlyList<ErrorScenario> Scenarios => _scenarios;
 
     /// <summary>
     /// Gets the metrics.
     /// </summary>
-    public IReadOnlyCollection<PerformanceMetric> Metrics => _metrics;
+    public IReadOnlyList<PerformanceMetric> Metrics => _metrics;
 
     /// <summary>
     /// Adds a setting.
     /// </summary>
     /// <param name="key">The key.</param>
     /// <param name="value">The value.</param>
-    public string key, object value { ArgumentNullException.ThrowIfNull(string key, object value); }
+    public void AddSetting(string key, object value)
     {
         if (string.IsNullOrEmpty(key))
             throw new ArgumentException("Key cannot be null or empty.", nameof(key));
@@ -67,10 +66,10 @@ public class TestSuiteConfiguration
     /// Adds a scenario.
     /// </summary>
     /// <param name="scenario">The scenario.</param>
-    public ErrorScenario scenario { ArgumentNullException.ThrowIfNull(ErrorScenario scenario); }
+    public void AddScenario(ErrorScenario scenario)
     {
         if (scenario == null)
-            ArgumentNullException.ThrowIfNull(nameof(scenario));
+            throw new ArgumentNullException(nameof(scenario));
 
         _scenarios.Add(scenario);
     }
@@ -79,10 +78,10 @@ public class TestSuiteConfiguration
     /// Adds a metric.
     /// </summary>
     /// <param name="metric">The metric.</param>
-    public PerformanceMetric metric { ArgumentNullException.ThrowIfNull(PerformanceMetric metric); }
+    public void AddMetric(PerformanceMetric metric)
     {
         if (metric == null)
-            ArgumentNullException.ThrowIfNull(nameof(metric));
+            throw new ArgumentNullException(nameof(metric));
 
         _metrics.Add(metric);
     }
@@ -110,7 +109,7 @@ public class TestSuiteConfiguration
     /// </summary>
     /// <param name="name">The name.</param>
     /// <returns>The scenario.</returns>
-    public string name { ArgumentNullException.ThrowIfNull(string name); }
+    public ErrorScenario GetScenario(string name)
     {
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("Name cannot be null or empty.", nameof(name));
@@ -124,7 +123,7 @@ public class TestSuiteConfiguration
     /// </summary>
     /// <param name="name">The name.</param>
     /// <returns>The metric.</returns>
-    public string name { ArgumentNullException.ThrowIfNull(string name); }
+    public PerformanceMetric GetMetric(string name)
     {
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("Name cannot be null or empty.", nameof(name));
@@ -160,8 +159,3 @@ public class TestSuiteConfiguration
         return true;
     }
 } 
-
-
-
-
-

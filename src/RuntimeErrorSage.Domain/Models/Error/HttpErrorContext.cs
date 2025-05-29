@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -13,17 +12,17 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the HTTP status code.
         /// </summary>
-        public int StatusCode { get; }
+        public int StatusCode { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP method.
         /// </summary>
-        public string Method { get; } = string.Empty;
+        public string Method { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the request URL.
         /// </summary>
-        public string Url { get; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the request headers.
@@ -33,26 +32,21 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the request body.
         /// </summary>
-        public string RequestBody { get; } = string.Empty;
+        public string RequestBody { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the response body.
         /// </summary>
-        public string ResponseBody { get; } = string.Empty;
+        public string ResponseBody { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the client IP address.
         /// </summary>
-        public string ClientIp { get; } = string.Empty;
+        public string ClientIp { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the user agent.
         /// </summary>
-        public string UserAgent { get; } = string.Empty;
+        public string UserAgent { get; set; } = string.Empty;
     }
 } 
-
-
-
-
-

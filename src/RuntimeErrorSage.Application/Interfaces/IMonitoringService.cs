@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Metrics;
 using RuntimeErrorSage.Application.Models.Monitoring;
@@ -50,10 +49,4 @@ namespace RuntimeErrorSage.Application.Interfaces
         Task<MonitoringResult> MonitorAsync(string applicationId);
     }
 } 
-
-
-
-
-
-
 

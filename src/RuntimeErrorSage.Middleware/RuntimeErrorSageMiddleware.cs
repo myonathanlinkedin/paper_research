@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Core.Models.Error;
@@ -70,10 +69,4 @@ namespace RuntimeErrorSage.Middleware
         }
     }
 } 
-
-
-
-
-
-
 

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -13,61 +12,55 @@ public class ValidationSuggestion
     /// <summary>
     /// Gets or sets the unique identifier of the suggestion.
     /// </summary>
-    public string SuggestionId { get; } = Guid.NewGuid().ToString();
+    public string SuggestionId { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the suggestion message.
     /// </summary>
-    public string Message { get; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the suggestion code.
     /// </summary>
-    public string Code { get; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the suggestion source.
     /// </summary>
-    public string Source { get; } = string.Empty;
+    public string Source { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the suggestion priority.
     /// </summary>
-    public ValidationPriority Priority { get; }
+    public ValidationPriority Priority { get; set; }
 
     /// <summary>
     /// Gets or sets the suggestion impact.
     /// </summary>
-    public ValidationImpact Impact { get; }
+    public ValidationImpact Impact { get; set; }
 
     /// <summary>
     /// Gets or sets the suggestion category.
     /// </summary>
-    public ValidationCategory Category { get; }
+    public ValidationCategory Category { get; set; }
 
     /// <summary>
     /// Gets or sets the suggestion scope.
     /// </summary>
-    public ValidationScope Scope { get; }
+    public ValidationScope Scope { get; set; }
 
     /// <summary>
     /// Gets or sets when the suggestion was created.
     /// </summary>
-    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets when the suggestion was last updated.
     /// </summary>
-    public DateTime UpdatedAt { get; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets any additional metadata.
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
 } 
-
-
-
-
-
-

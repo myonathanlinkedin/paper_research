@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -12,17 +11,17 @@ public class RequestContext
     /// <summary>
     /// Gets or sets the request path.
     /// </summary>
-    public string Path { get; } = string.Empty;
+    public string Path { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the request method.
     /// </summary>
-    public string Method { get; } = string.Empty;
+    public string Method { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the query string.
     /// </summary>
-    public string QueryString { get; } = string.Empty;
+    public string QueryString { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the request headers.
@@ -32,11 +31,5 @@ public class RequestContext
     /// <summary>
     /// Gets or sets the request timestamp.
     /// </summary>
-    public DateTime Timestamp { get; }
+    public DateTime Timestamp { get; set; }
 } 
-
-
-
-
-
-

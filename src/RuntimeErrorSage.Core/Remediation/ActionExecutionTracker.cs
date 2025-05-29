@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Concurrent;
 using RuntimeErrorSage.Application.Models.Execution;
@@ -10,7 +9,7 @@ namespace RuntimeErrorSage.Application.Remediation
     {
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, RemediationActionExecution>> _actionExecutions = new();
 
-        public string planId, string actionId { ArgumentNullException.ThrowIfNull(string planId, string actionId); }
+        public void TrackActionStart(string planId, string actionId)
         {
             var actionExecutions = _actionExecutions.GetOrAdd(planId, _ => new ConcurrentDictionary<string, RemediationActionExecution>());
             var actionExecution = new RemediationActionExecution
@@ -22,7 +21,7 @@ namespace RuntimeErrorSage.Application.Remediation
             actionExecutions.AddOrUpdate(actionId, actionExecution, (_, _) => actionExecution);
         }
 
-        public string planId, string actionId, bool success, string? errorMessage = null { ArgumentNullException.ThrowIfNull(string planId, string actionId, bool success, string? errorMessage = null); }
+        public void TrackActionCompletion(string planId, string actionId, bool success, string? errorMessage = null)
         {
             if (_actionExecutions.TryGetValue(planId, out var actionExecutions) &&
                 actionExecutions.TryGetValue(actionId, out var actionExecution))
@@ -37,9 +36,3 @@ namespace RuntimeErrorSage.Application.Remediation
         }
     }
 } 
-
-
-
-
-
-

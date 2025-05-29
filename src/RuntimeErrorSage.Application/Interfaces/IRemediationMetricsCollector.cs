@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -50,7 +49,7 @@ namespace RuntimeErrorSage.Application.Interfaces
     /// </summary>
     /// <param name="remediationId">The remediation ID</param>
     /// <returns>A dictionary of metric histories</returns>
-    Task<Dictionary<string, Collection<Models.Remediation.MetricValue>>> GetMetricsHistoryAsync(string remediationId);
+    Task<Dictionary<string, List<Models.Remediation.MetricValue>>> GetMetricsHistoryAsync(string remediationId);
 
         /// <summary>
         /// Records the execution of a remediation operation.
@@ -121,10 +120,4 @@ namespace RuntimeErrorSage.Application.Interfaces
         Task<ValidationResult> ValidateMetricsAsync(RemediationMetrics metrics);
     }
 } 
-
-
-
-
-
-
 

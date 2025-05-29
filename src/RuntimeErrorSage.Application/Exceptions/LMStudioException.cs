@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.LMStudio.Exceptions
@@ -13,10 +12,4 @@ namespace RuntimeErrorSage.Application.LMStudio.Exceptions
         }
     }
 } 
-
-
-
-
-
-
 

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Models.Health;
@@ -11,26 +10,20 @@ public class HealthIssue
     /// <summary>
     /// Gets or sets the issue code.
     /// </summary>
-    public string Code { get; }
+    public string Code { get; set; }
 
     /// <summary>
     /// Gets or sets the issue message.
     /// </summary>
-    public string Message { get; }
+    public string Message { get; set; }
 
     /// <summary>
     /// Gets or sets the issue severity.
     /// </summary>
-    public SeverityLevel Severity { get; }
+    public SeverityLevel Severity { get; set; }
 
     /// <summary>
     /// Gets or sets additional details about the issue.
     /// </summary>
     public Dictionary<string, object> Details { get; set; } = new();
 } 
-
-
-
-
-
-

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace RuntimeErrorSage.Application.LLM.Interfaces
@@ -9,9 +8,4 @@ namespace RuntimeErrorSage.Application.LLM.Interfaces
         Task<string> GenerateRemediationAsync(object analysis);
     }
 } 
-
-
-
-
-
 

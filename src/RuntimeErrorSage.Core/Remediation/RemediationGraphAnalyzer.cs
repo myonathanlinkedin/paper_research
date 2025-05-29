@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Models.Error;
@@ -92,9 +91,9 @@ namespace RuntimeErrorSage.Application.Remediation
             return health;
         }
 
-        private async Task<Collection<ComponentRelationship>> AnalyzeComponentRelationshipsAsync(ErrorContext context)
+        private async Task<List<ComponentRelationship>> AnalyzeComponentRelationshipsAsync(ErrorContext context)
         {
-            var relationships = new Collection<ComponentRelationship>();
+            var relationships = new List<ComponentRelationship>();
 
             foreach (var (source, targets) in context.ComponentGraph)
             {
@@ -121,7 +120,7 @@ namespace RuntimeErrorSage.Application.Remediation
         private async Task<Models.Error.ErrorPropagation> AnalyzeErrorPropagationAsync(ErrorContext context)
         {
             var affectedComponents = new HashSet<string>();
-            var propagationPaths = new Collection<List<string>>();
+            var propagationPaths = new List<List<string>>();
             var severity = new Dictionary<string, double>();
 
             // Start from the error source
@@ -130,8 +129,8 @@ namespace RuntimeErrorSage.Application.Remediation
             {
                 // Find all affected components through graph traversal
                 var visited = new HashSet<string>();
-                var queue = new Queue<(string Component, Collection<string> Path)>();
-                queue.Enqueue((source, new Collection<string> { source }));
+                var queue = new Queue<(string Component, List<string> Path)>();
+                queue.Enqueue((source, new List<string> { source }));
 
                 while (queue.Count > 0)
                 {
@@ -160,7 +159,7 @@ namespace RuntimeErrorSage.Application.Remediation
                         {
                             if (!visited.Contains(neighbor))
                             {
-                                var newPath = new Collection<string>(path) { neighbor };
+                                var newPath = new List<string>(path) { neighbor };
                                 queue.Enqueue((neighbor, newPath));
                             }
                         }
@@ -269,7 +268,7 @@ namespace RuntimeErrorSage.Application.Remediation
 
         private double CalculateComponentSeverity(
             string component,
-            Collection<string> path,
+            List<string> path,
             ErrorContext context)
         {
             var severity = 0.0;
@@ -301,8 +300,3 @@ namespace RuntimeErrorSage.Application.Remediation
         }
     }
 } 
-
-
-
-
-

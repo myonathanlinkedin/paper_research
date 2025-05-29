@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -18,57 +17,57 @@ public class RemediationAnalysis
     /// <summary>
     /// Gets or sets the analysis identifier.
     /// </summary>
-    public string AnalysisId { get; } = Guid.NewGuid().ToString();
+    public string AnalysisId { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the error context.
     /// </summary>
-    public ErrorContext ErrorContext { get; }
+    public ErrorContext ErrorContext { get; set; }
 
     /// <summary>
     /// Gets or sets the analysis timestamp.
     /// </summary>
-    public DateTime Timestamp { get; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the analysis confidence score.
     /// </summary>
-    public double Confidence { get; }
+    public double Confidence { get; set; }
 
     /// <summary>
     /// Gets or sets the analysis severity.
     /// </summary>
-    public RemediationActionSeverity Severity { get; } = RemediationActionSeverity.Medium;
+    public RemediationActionSeverity Severity { get; set; } = RemediationActionSeverity.Medium;
 
     /// <summary>
     /// Gets or sets the analysis priority.
     /// </summary>
-    public RemediationPriority Priority { get; }
+    public RemediationPriority Priority { get; set; }
 
     /// <summary>
     /// Gets or sets the analysis impact.
     /// </summary>
-    public RemediationImpact Impact { get; }
+    public RemediationImpact Impact { get; set; }
 
     /// <summary>
     /// Gets or sets the applicable strategies for this analysis.
     /// </summary>
-    public IReadOnlyCollection<ApplicableStrategies> ApplicableStrategies { get; } = new();
+    public List<StrategyRecommendation> ApplicableStrategies { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the graph analysis result.
     /// </summary>
-    public GraphAnalysis GraphAnalysis { get; }
+    public GraphAnalysis GraphAnalysis { get; set; }
 
     /// <summary>
     /// Gets or sets the LLM analysis result.
     /// </summary>
-    public LLMAnalysis LLMAnalysis { get; }
+    public LLMAnalysis LLMAnalysis { get; set; }
 
     /// <summary>
     /// Gets or sets whether the analysis is valid.
     /// </summary>
-    public bool IsValid { get; }
+    public bool IsValid { get; set; }
 
     /// <summary>
     /// Gets or sets the analysis metrics.
@@ -83,34 +82,30 @@ public class RemediationAnalysis
     /// <summary>
     /// Gets or sets the suggested actions.
     /// </summary>
-    public IReadOnlyCollection<SuggestedActions> SuggestedActions { get; } = new();
+    public List<RemediationAction> SuggestedActions { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the analysis status.
     /// </summary>
-    public RemediationStatusInfo Status { get; }
+    public RemediationStatusInfo Status { get; set; }
 
     /// <summary>
     /// Gets or sets the error message if analysis failed.
     /// </summary>
-    public string ErrorMessage { get; }
+    public string ErrorMessage { get; set; }
 
     /// <summary>
     /// Gets or sets the runtime context.
     /// </summary>
-    public RuntimeContext RuntimeContext { get; }
+    public RuntimeContext RuntimeContext { get; set; }
 
     /// <summary>
     /// Gets or sets the remediation steps.
     /// </summary>
-    public IReadOnlyCollection<RemediationSteps> RemediationSteps { get; } = new Collection<string>();
+    public List<string> RemediationSteps { get; set; } = new List<string>();
 
     /// <summary>
     /// Gets or sets the remediation result.
     /// </summary>
-    public RemediationResult Result { get; }
+    public RemediationResult Result { get; set; }
 } 
-
-
-
-

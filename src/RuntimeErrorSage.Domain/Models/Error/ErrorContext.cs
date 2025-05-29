@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Metrics;
@@ -17,22 +16,22 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the unique identifier for this error context.
         /// </summary>
-        public string Id { get; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the error identifier.
         /// </summary>
-        public string ErrorId { get; } = Guid.NewGuid().ToString();
+        public string ErrorId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the correlation identifier for tracking related errors.
         /// </summary>
-        public string CorrelationId { get; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the component identifier where the error occurred.
         /// </summary>
-        public string ComponentId { get; } = string.Empty;
+        public string ComponentId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the exception that caused the error.
@@ -42,12 +41,12 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the stack trace of the error.
         /// </summary>
-        public string StackTrace { get; } = string.Empty;
+        public string StackTrace { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the timestamp when the error occurred.
         /// </summary>
-        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets additional context information.
@@ -79,7 +78,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the affected components in the dependency graph.
         /// </summary>
-        public Collection<GraphNode>? AffectedComponents { get; set; }
+        public List<GraphNode>? AffectedComponents { get; set; }
 
         /// <summary>
         /// Gets or sets the metrics collected at the time of the error.
@@ -89,7 +88,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the list of previous errors that may have contributed to this error.
         /// </summary>
-        public Collection<ErrorContext>? PreviousErrors { get; set; }
+        public List<ErrorContext>? PreviousErrors { get; set; }
 
         /// <summary>
         /// Gets or sets the analysis result of the error.
@@ -99,97 +98,97 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the context identifier.
         /// </summary>
-        public string ContextId { get; } = Guid.NewGuid().ToString();
+        public string ContextId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the component name.
         /// </summary>
-        public string ComponentName { get; } = string.Empty;
+        public string ComponentName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error message.
         /// </summary>
-        public string Message { get; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error type.
         /// </summary>
-        public string ErrorType { get; } = string.Empty;
+        public string ErrorType { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the severity level of the error.
         /// </summary>
-        public SeverityLevel Severity { get; }
+        public SeverityLevel Severity { get; set; }
 
         /// <summary>
         /// Gets or sets the environment where the error occurred.
         /// </summary>
-        public string Environment { get; } = string.Empty;
+        public string Environment { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the source of the error.
         /// </summary>
-        public string Source { get; } = string.Empty;
+        public string Source { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error category.
         /// </summary>
-        public ErrorCategory Category { get; }
+        public ErrorCategory Category { get; set; }
 
         /// <summary>
         /// Gets or sets the error tags.
         /// </summary>
-        public IReadOnlyCollection<Tags> Tags { get; } = new();
+        public List<string> Tags { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the operation name.
         /// </summary>
-        public string OperationName { get; } = string.Empty;
+        public string OperationName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the operation ID.
         /// </summary>
-        public string OperationId { get; } = string.Empty;
+        public string OperationId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the parent operation ID.
         /// </summary>
-        public string ParentOperationId { get; } = string.Empty;
+        public string ParentOperationId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the operation start time.
         /// </summary>
-        public DateTime OperationStartTime { get; } = DateTime.UtcNow;
+        public DateTime OperationStartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the operation duration.
         /// </summary>
-        public TimeSpan OperationDuration { get; }
+        public TimeSpan OperationDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the operation status.
         /// </summary>
-        public string OperationStatus { get; } = string.Empty;
+        public string OperationStatus { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the operation type.
         /// </summary>
-        public string OperationType { get; } = string.Empty;
+        public string OperationType { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the operation version.
         /// </summary>
-        public string OperationVersion { get; } = string.Empty;
+        public string OperationVersion { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the operation result.
         /// </summary>
-        public string OperationResult { get; } = string.Empty;
+        public string OperationResult { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the operation target.
         /// </summary>
-        public string OperationTarget { get; } = string.Empty;
+        public string OperationTarget { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the operation metrics.
@@ -199,7 +198,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the operation dependencies.
         /// </summary>
-        public IReadOnlyCollection<OperationDependencies> OperationDependencies { get; } = new();
+        public List<string> OperationDependencies { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the operation tags.
@@ -209,12 +208,12 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the service calls related to this error context.
         /// </summary>
-        public IReadOnlyCollection<ServiceCalls> ServiceCalls { get; } = new();
+        public List<ServiceCall> ServiceCalls { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the data flows related to this error context.
         /// </summary>
-        public IReadOnlyCollection<DataFlows> DataFlows { get; } = new();
+        public List<ErrorDataFlow> DataFlows { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the component metrics for this error context.
@@ -224,7 +223,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the component dependencies for this error context.
         /// </summary>
-        public IReadOnlyCollection<ComponentDependencies> ComponentDependencies { get; } = new();
+        public List<ComponentDependency> ComponentDependencies { get; set; } = new();
 
         /// <summary>
         /// Gets or sets additional error context data.
@@ -239,27 +238,27 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the name of the service where the error occurred.
         /// </summary>
-        public string ServiceName { get; } = string.Empty;
+        public string ServiceName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error context information.
         /// </summary>
-        public string Context { get; } = string.Empty;
+        public string Context { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets whether the error is actionable.
         /// </summary>
-        public bool IsActionable { get; }
+        public bool IsActionable { get; set; }
 
         /// <summary>
         /// Gets or sets whether the error is transient.
         /// </summary>
-        public bool IsTransient { get; }
+        public bool IsTransient { get; set; }
 
         /// <summary>
         /// Gets or sets whether the error has been resolved.
         /// </summary>
-        public bool IsResolved { get; }
+        public bool IsResolved { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorContext"/> class.
@@ -292,7 +291,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// </summary>
         /// <param name="key">The metadata key.</param>
         /// <param name="value">The metadata value.</param>
-        public string key, object value { ArgumentNullException.ThrowIfNull(string key, object value); }
+        public void AddMetadata(string key, object value)
         {
             ArgumentNullException.ThrowIfNull(key);
             _metadata[key] = value;
@@ -303,7 +302,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// </summary>
         /// <param name="key">The metadata key.</param>
         /// <returns>The metadata value.</returns>
-        public string key { ArgumentNullException.ThrowIfNull(string key); }
+        public object GetMetadata(string key)
         {
             ArgumentNullException.ThrowIfNull(key);
             return _metadata.TryGetValue(key, out var value) ? value : null;
@@ -437,12 +436,12 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Adds an affected component to the error context.
         /// </summary>
         /// <param name="component">The affected component.</param>
-        public GraphNode component { ArgumentNullException.ThrowIfNull(GraphNode component); }
+        public void AddAffectedComponent(GraphNode component)
         {
             ArgumentNullException.ThrowIfNull(component);
 
             if (AffectedComponents == null)
-                AffectedComponents = new Collection<GraphNode>();
+                AffectedComponents = new List<GraphNode>();
 
             if (!AffectedComponents.Contains(component))
                 AffectedComponents.Add(component);
@@ -452,12 +451,12 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Adds a previous error to the error context.
         /// </summary>
         /// <param name="error">The previous error.</param>
-        public ErrorContext error { ArgumentNullException.ThrowIfNull(ErrorContext error); }
+        public void AddPreviousError(ErrorContext error)
         {
             ArgumentNullException.ThrowIfNull(error);
 
             if (PreviousErrors == null)
-                PreviousErrors = new Collection<ErrorContext>();
+                PreviousErrors = new List<ErrorContext>();
 
             if (!PreviousErrors.Contains(error))
                 PreviousErrors.Add(error);
@@ -468,7 +467,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// </summary>
         /// <param name="name">The metric name.</param>
         /// <param name="value">The metric value.</param>
-        public string name, double value { ArgumentNullException.ThrowIfNull(string name, double value); }
+        public void AddMetric(string name, double value)
         {
             ArgumentNullException.ThrowIfNull(name);
 
@@ -482,7 +481,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Marks the error as resolved and updates related metadata.
         /// </summary>
         /// <param name="resolutionDetails">Optional details about the resolution.</param>
-        public string resolutionDetails = null { ArgumentNullException.ThrowIfNull(string resolutionDetails = null); }
+        public void MarkAsResolved(string resolutionDetails = null)
         {
             IsResolved = true;
             IsActionable = false;
@@ -498,7 +497,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Marks the error as actionable and updates related metadata.
         /// </summary>
         /// <param name="actionDetails">Optional details about the required action.</param>
-        public string actionDetails = null { ArgumentNullException.ThrowIfNull(string actionDetails = null); }
+        public void MarkAsActionable(string actionDetails = null)
         {
             IsActionable = true;
             
@@ -513,7 +512,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Marks the error as transient and updates related metadata.
         /// </summary>
         /// <param name="transientDetails">Optional details about the transient nature.</param>
-        public string transientDetails = null { ArgumentNullException.ThrowIfNull(string transientDetails = null); }
+        public void MarkAsTransient(string transientDetails = null)
         {
             IsTransient = true;
             
@@ -530,7 +529,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <param name="relatedError">The related error context.</param>
         /// <param name="correlationType">The type of correlation.</param>
         /// <param name="correlationDetails">Optional details about the correlation.</param>
-        public ErrorContext relatedError, string correlationType, string correlationDetails = null { ArgumentNullException.ThrowIfNull(ErrorContext relatedError, string correlationType, string correlationDetails = null); }
+        public void AddCorrelation(ErrorContext relatedError, string correlationType, string correlationDetails = null)
         {
             ArgumentNullException.ThrowIfNull(relatedError);
             ArgumentNullException.ThrowIfNull(correlationType);
@@ -547,7 +546,7 @@ namespace RuntimeErrorSage.Application.Models.Error
                 correlation["Details"] = correlationDetails;
             }
 
-            var correlations = GetMetadata<Collection<Dictionary<string, object>>>("Correlations") ?? new Collection<Dictionary<string, object>>();
+            var correlations = GetMetadata<List<Dictionary<string, object>>>("Correlations") ?? new List<Dictionary<string, object>>();
             correlations.Add(correlation);
             AddMetadata("Correlations", correlations);
         }
@@ -556,9 +555,9 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Gets all correlations for this error.
         /// </summary>
         /// <returns>A list of correlation dictionaries.</returns>
-        public Collection<Dictionary<string, object>> GetCorrelations()
+        public List<Dictionary<string, object>> GetCorrelations()
         {
-            return GetMetadata<Collection<Dictionary<string, object>>>("Correlations") ?? new Collection<Dictionary<string, object>>();
+            return GetMetadata<List<Dictionary<string, object>>>("Correlations") ?? new List<Dictionary<string, object>>();
         }
 
         /// <summary>
@@ -567,7 +566,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <param name="relatedError">The related error context.</param>
         /// <param name="relationshipType">The type of relationship.</param>
         /// <param name="relationshipDetails">Optional details about the relationship.</param>
-        public ErrorContext relatedError, string relationshipType, string relationshipDetails = null { ArgumentNullException.ThrowIfNull(ErrorContext relatedError, string relationshipType, string relationshipDetails = null); }
+        public void AddRelationship(ErrorContext relatedError, string relationshipType, string relationshipDetails = null)
         {
             ArgumentNullException.ThrowIfNull(relatedError);
             ArgumentNullException.ThrowIfNull(relationshipType);
@@ -584,7 +583,7 @@ namespace RuntimeErrorSage.Application.Models.Error
                 relationship["Details"] = relationshipDetails;
             }
 
-            var relationships = GetMetadata<Collection<Dictionary<string, object>>>("Relationships") ?? new Collection<Dictionary<string, object>>();
+            var relationships = GetMetadata<List<Dictionary<string, object>>>("Relationships") ?? new List<Dictionary<string, object>>();
             relationships.Add(relationship);
             AddMetadata("Relationships", relationships);
         }
@@ -593,9 +592,9 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Gets all relationships for this error.
         /// </summary>
         /// <returns>A list of relationship dictionaries.</returns>
-        public Collection<Dictionary<string, object>> GetRelationships()
+        public List<Dictionary<string, object>> GetRelationships()
         {
-            return GetMetadata<Collection<Dictionary<string, object>>>("Relationships") ?? new Collection<Dictionary<string, object>>();
+            return GetMetadata<List<Dictionary<string, object>>>("Relationships") ?? new List<Dictionary<string, object>>();
         }
 
         /// <summary>
@@ -604,7 +603,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <param name="dependentError">The dependent error context.</param>
         /// <param name="dependencyType">The type of dependency.</param>
         /// <param name="dependencyDetails">Optional details about the dependency.</param>
-        public ErrorContext dependentError, string dependencyType, string dependencyDetails = null { ArgumentNullException.ThrowIfNull(ErrorContext dependentError, string dependencyType, string dependencyDetails = null); }
+        public void AddDependency(ErrorContext dependentError, string dependencyType, string dependencyDetails = null)
         {
             ArgumentNullException.ThrowIfNull(dependentError);
             ArgumentNullException.ThrowIfNull(dependencyType);
@@ -621,7 +620,7 @@ namespace RuntimeErrorSage.Application.Models.Error
                 dependency["Details"] = dependencyDetails;
             }
 
-            var dependencies = GetMetadata<Collection<Dictionary<string, object>>>("Dependencies") ?? new Collection<Dictionary<string, object>>();
+            var dependencies = GetMetadata<List<Dictionary<string, object>>>("Dependencies") ?? new List<Dictionary<string, object>>();
             dependencies.Add(dependency);
             AddMetadata("Dependencies", dependencies);
         }
@@ -630,9 +629,9 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Gets all dependencies for this error.
         /// </summary>
         /// <returns>A list of dependency dictionaries.</returns>
-        public Collection<Dictionary<string, object>> GetDependencies()
+        public List<Dictionary<string, object>> GetDependencies()
         {
-            return GetMetadata<Collection<Dictionary<string, object>>>("Dependencies") ?? new Collection<Dictionary<string, object>>();
+            return GetMetadata<List<Dictionary<string, object>>>("Dependencies") ?? new List<Dictionary<string, object>>();
         }
 
         /// <summary>
@@ -641,7 +640,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <param name="analysisType">The type of analysis.</param>
         /// <param name="analysisResult">The analysis result.</param>
         /// <param name="confidence">The confidence level of the analysis (0-1).</param>
-        public string analysisType, object analysisResult, double confidence { ArgumentNullException.ThrowIfNull(string analysisType, object analysisResult, double confidence); }
+        public void AddAnalysisResult(string analysisType, object analysisResult, double confidence)
         {
             ArgumentNullException.ThrowIfNull(analysisType);
             ArgumentNullException.ThrowIfNull(analysisResult);
@@ -657,7 +656,7 @@ namespace RuntimeErrorSage.Application.Models.Error
                 ["Timestamp"] = DateTime.UtcNow
             };
 
-            var analyses = GetMetadata<Collection<Dictionary<string, object>>>("Analyses") ?? new Collection<Dictionary<string, object>>();
+            var analyses = GetMetadata<List<Dictionary<string, object>>>("Analyses") ?? new List<Dictionary<string, object>>();
             analyses.Add(analysis);
             AddMetadata("Analyses", analyses);
         }
@@ -666,9 +665,9 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Gets all analysis results for this error.
         /// </summary>
         /// <returns>A list of analysis result dictionaries.</returns>
-        public Collection<Dictionary<string, object>> GetAnalysisResults()
+        public List<Dictionary<string, object>> GetAnalysisResults()
         {
-            return GetMetadata<Collection<Dictionary<string, object>>>("Analyses") ?? new Collection<Dictionary<string, object>>();
+            return GetMetadata<List<Dictionary<string, object>>>("Analyses") ?? new List<Dictionary<string, object>>();
         }
 
         /// <summary>
@@ -678,13 +677,13 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <param name="value">The metric value.</param>
         /// <param name="unit">The unit of measurement.</param>
         /// <param name="timestamp">Optional timestamp for the metric.</param>
-        public string metricName, double value, string unit, DateTime? timestamp = null { ArgumentNullException.ThrowIfNull(string metricName, double value, string unit, DateTime? timestamp = null); }
+        public void AddPerformanceMetric(string metricName, double value, string unit, DateTime? timestamp = null)
         {
             if (string.IsNullOrEmpty(metricName))
-                ArgumentNullException.ThrowIfNull(nameof(metricName));
+                throw new ArgumentNullException(nameof(metricName));
 
             if (string.IsNullOrEmpty(unit))
-                ArgumentNullException.ThrowIfNull(nameof(unit));
+                throw new ArgumentNullException(nameof(unit));
 
             var metric = new Dictionary<string, object>
             {
@@ -694,7 +693,7 @@ namespace RuntimeErrorSage.Application.Models.Error
                 ["Timestamp"] = timestamp ?? DateTime.UtcNow
             };
 
-            var metrics = GetMetadata<Collection<Dictionary<string, object>>>("PerformanceMetrics") ?? new Collection<Dictionary<string, object>>();
+            var metrics = GetMetadata<List<Dictionary<string, object>>>("PerformanceMetrics") ?? new List<Dictionary<string, object>>();
             metrics.Add(metric);
             AddMetadata("PerformanceMetrics", metrics);
         }
@@ -703,9 +702,9 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Gets all performance metrics for this error.
         /// </summary>
         /// <returns>A list of performance metric dictionaries.</returns>
-        public Collection<Dictionary<string, object>> GetPerformanceMetrics()
+        public List<Dictionary<string, object>> GetPerformanceMetrics()
         {
-            return GetMetadata<Collection<Dictionary<string, object>>>("PerformanceMetrics") ?? new Collection<Dictionary<string, object>>();
+            return GetMetadata<List<Dictionary<string, object>>>("PerformanceMetrics") ?? new List<Dictionary<string, object>>();
         }
 
         /// <summary>
@@ -713,10 +712,10 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// </summary>
         /// <param name="stateData">The system state data.</param>
         /// <param name="timestamp">Optional timestamp for the snapshot.</param>
-        public Dictionary<string, object> stateData, DateTime? timestamp = null { ArgumentNullException.ThrowIfNull(Dictionary<string, object> stateData, DateTime? timestamp = null); }
+        public void AddSystemStateSnapshot(Dictionary<string, object> stateData, DateTime? timestamp = null)
         {
             if (stateData == null)
-                ArgumentNullException.ThrowIfNull(nameof(stateData));
+                throw new ArgumentNullException(nameof(stateData));
 
             var snapshot = new Dictionary<string, object>
             {
@@ -724,7 +723,7 @@ namespace RuntimeErrorSage.Application.Models.Error
                 ["Timestamp"] = timestamp ?? DateTime.UtcNow
             };
 
-            var snapshots = GetMetadata<Collection<Dictionary<string, object>>>("SystemStateSnapshots") ?? new Collection<Dictionary<string, object>>();
+            var snapshots = GetMetadata<List<Dictionary<string, object>>>("SystemStateSnapshots") ?? new List<Dictionary<string, object>>();
             snapshots.Add(snapshot);
             AddMetadata("SystemStateSnapshots", snapshots);
         }
@@ -733,9 +732,9 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// Gets all system state snapshots for this error.
         /// </summary>
         /// <returns>A list of system state snapshot dictionaries.</returns>
-        public Collection<Dictionary<string, object>> GetSystemStateSnapshots()
+        public List<Dictionary<string, object>> GetSystemStateSnapshots()
         {
-            return GetMetadata<Collection<Dictionary<string, object>>>("SystemStateSnapshots") ?? new Collection<Dictionary<string, object>>();
+            return GetMetadata<List<Dictionary<string, object>>>("SystemStateSnapshots") ?? new List<Dictionary<string, object>>();
         }
 
         /// <summary>
@@ -775,15 +774,11 @@ namespace RuntimeErrorSage.Application.Models.Error
             return Math.Min(score / 4.0, 1.0);
         }
 
-        public Dictionary<string, object> stateData { ArgumentNullException.ThrowIfNull(Dictionary<string, object> stateData); }
+        public void UpdateState(Dictionary<string, object> stateData)
         {
             ArgumentNullException.ThrowIfNull(stateData);
             AddMetadata("State", stateData);
         }
     }
 } 
-
-
-
-
 

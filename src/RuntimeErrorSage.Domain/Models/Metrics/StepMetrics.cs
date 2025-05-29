@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -13,32 +12,32 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the step ID.
         /// </summary>
-        public string StepId { get; } = Guid.NewGuid().ToString();
+        public string StepId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the execution ID.
         /// </summary>
-        public string ExecutionId { get; } = string.Empty;
+        public string ExecutionId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the step name.
         /// </summary>
-        public string StepName { get; } = string.Empty;
+        public string StepName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the step type.
         /// </summary>
-        public string StepType { get; } = string.Empty;
+        public string StepType { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the step status.
         /// </summary>
-        public ActionStatus Status { get; } = ActionStatus.Unknown;
+        public ActionStatus Status { get; set; } = ActionStatus.Unknown;
 
         /// <summary>
         /// Gets or sets the step start time.
         /// </summary>
-        public DateTime StartTime { get; } = DateTime.UtcNow;
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the step end time.
@@ -48,22 +47,22 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the step duration in milliseconds.
         /// </summary>
-        public double DurationMs { get; }
+        public double DurationMs { get; set; }
 
         /// <summary>
         /// Gets or sets the error message if the step failed.
         /// </summary>
-        public string ErrorMessage { get; } = string.Empty;
+        public string ErrorMessage { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the resource usage at the start of the step.
         /// </summary>
-        public MetricsResourceUsage StartResourceUsage { get; } = new MetricsResourceUsage();
+        public MetricsResourceUsage StartResourceUsage { get; set; } = new MetricsResourceUsage();
 
         /// <summary>
         /// Gets or sets the resource usage at the end of the step.
         /// </summary>
-        public MetricsResourceUsage EndResourceUsage { get; } = new MetricsResourceUsage();
+        public MetricsResourceUsage EndResourceUsage { get; set; } = new MetricsResourceUsage();
 
         /// <summary>
         /// Gets or sets additional metadata.
@@ -113,7 +112,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// </summary>
         /// <param name="status">The step status.</param>
         /// <param name="errorMessage">The error message if the step failed.</param>
-        public ActionStatus status, string errorMessage = "" { ArgumentNullException.ThrowIfNull(ActionStatus status, string errorMessage = ""); }
+        public void Complete(ActionStatus status, string errorMessage = "")
         {
             Status = status;
             ErrorMessage = errorMessage;
@@ -122,9 +121,3 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         }
     }
 } 
-
-
-
-
-
-

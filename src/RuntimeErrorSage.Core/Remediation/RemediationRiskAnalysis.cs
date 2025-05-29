@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Models.Remediation
@@ -13,11 +12,11 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="action">The remediation action to analyze.</param>
         /// <returns>The calculated risk level.</returns>
-        public RemediationAction action { ArgumentNullException.ThrowIfNull(RemediationAction action); }
+        public RemediationRiskLevel CalculateRiskLevel(RemediationAction action)
         {
             if (action == null)
             {
-                ArgumentNullException.ThrowIfNull(nameof(action));
+                throw new ArgumentNullException(nameof(action));
             }
 
             // Use the helper to calculate risk level
@@ -32,14 +31,14 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="action">The remediation action to analyze.</param>
         /// <returns>A list of potential issues.</returns>
-        public Collection<string> GeneratePotentialIssues(RemediationAction action)
+        public List<string> GeneratePotentialIssues(RemediationAction action)
         {
             if (action == null)
             {
-                ArgumentNullException.ThrowIfNull(nameof(action));
+                throw new ArgumentNullException(nameof(action));
             }
 
-            var issues = new Collection<string>();
+            var issues = new List<string>();
 
             // Add issues based on error type
             if (!string.IsNullOrEmpty(action.ErrorType))
@@ -88,14 +87,14 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="action">The remediation action to analyze.</param>
         /// <returns>A list of mitigation steps.</returns>
-        public Collection<string> GenerateMitigationSteps(RemediationAction action)
+        public List<string> GenerateMitigationSteps(RemediationAction action)
         {
             if (action == null)
             {
-                ArgumentNullException.ThrowIfNull(nameof(action));
+                throw new ArgumentNullException(nameof(action));
             }
 
-            var steps = new Collection<string>();
+            var steps = new List<string>();
 
             // Add basic validation steps
             steps.Add("Validate all input parameters");
@@ -136,9 +135,3 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
-
-
-
-
-
-

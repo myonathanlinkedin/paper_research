@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -22,8 +21,8 @@ public class OperationSimulator : IOperationSimulator
         IContextDataFactory contextFactory,
         IKeyValueDataFactory keyValueFactory)
     {
-        _contextFactory = contextFactory ?? ArgumentNullException.ThrowIfNull(nameof(contextFactory));
-        _keyValueFactory = keyValueFactory ?? ArgumentNullException.ThrowIfNull(nameof(keyValueFactory));
+        _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
+        _keyValueFactory = keyValueFactory ?? throw new ArgumentNullException(nameof(keyValueFactory));
     }
 
     public async Task<OperationResponse> SimulateDatabaseOperationAsync(ProcessRequest request)
@@ -231,11 +230,5 @@ public class OperationSimulator : IOperationSimulator
         }
     }
 } 
-
-
-
-
-
-
 
 

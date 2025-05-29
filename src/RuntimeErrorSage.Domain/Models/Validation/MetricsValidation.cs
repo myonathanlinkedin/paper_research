@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Application.Models.Validation
@@ -11,7 +10,7 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <summary>
         /// Gets or sets whether the metrics are within defined thresholds.
         /// </summary>
-        public bool IsWithinThresholds { get; }
+        public bool IsWithinThresholds { get; set; }
 
         /// <summary>
         /// Gets or sets additional validation details.
@@ -19,10 +18,4 @@ namespace RuntimeErrorSage.Application.Models.Validation
         public Dictionary<string, object> Details { get; set; } = new();
     }
 } 
-
-
-
-
-
-
 

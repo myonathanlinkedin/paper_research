@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace RuntimeErrorSage.Application.Health.Interfaces
@@ -19,10 +18,4 @@ namespace RuntimeErrorSage.Application.Health.Interfaces
         Task<bool> CheckHealthAsync();
     }
 } 
-
-
-
-
-
-
 

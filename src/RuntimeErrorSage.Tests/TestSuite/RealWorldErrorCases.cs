@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -29,7 +28,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
     public class RealWorldErrorCases
     {
         private readonly IRuntimeErrorSageService _RuntimeErrorSageService;
-        private readonly Collection<RealWorldScenario> _scenarios;
+        private readonly List<RealWorldScenario> _scenarios;
 
         public RealWorldErrorCases(IRuntimeErrorSageService RuntimeErrorSageService)
         {
@@ -40,9 +39,9 @@ namespace RuntimeErrorSage.Tests.TestSuite
         /// <summary>
         /// Initializes all 20 real-world error scenarios as required by the research paper.
         /// </summary>
-        private Collection<RealWorldScenario> InitializeScenarios()
+        private List<RealWorldScenario> InitializeScenarios()
         {
-            return new Collection<RealWorldScenario>
+            return new List<RealWorldScenario>
             {
                 // Database real-world scenarios (5 cases)
                 new RealWorldScenario("RW_DB_001", "Connection pool exhaustion in high-traffic API",
@@ -296,8 +295,8 @@ namespace RuntimeErrorSage.Tests.TestSuite
         [Fact]
         public async Task ExecuteAllScenarios()
         {
-            var results = new Collection<ErrorAnalysisResult>();
-            var performanceMetrics = new Collection<PerformanceMetrics>();
+            var results = new List<ErrorAnalysisResult>();
+            var performanceMetrics = new List<PerformanceMetrics>();
 
             foreach (var scenario in _scenarios)
             {
@@ -391,7 +390,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
         /// <summary>
         /// Validates overall results against research requirements.
         /// </summary>
-        private void ValidateOverallResults(Collection<ErrorAnalysisResult> results, Collection<PerformanceMetrics> metrics)
+        private void ValidateOverallResults(List<ErrorAnalysisResult> results, List<PerformanceMetrics> metrics)
         {
             // Validate accuracy requirements (80% root cause, 70% remediation)
             var rootCauseAccuracy = results.Average(r => r.RootCauseConfidence);
@@ -464,8 +463,4 @@ namespace RuntimeErrorSage.Tests.TestSuite
         public void Execute() => _execute();
     }
 } 
-
-
-
-
 

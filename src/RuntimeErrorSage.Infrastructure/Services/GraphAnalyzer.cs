@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -58,7 +57,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<Collection<PotentialErrorSource>> AnalyzeGraphAsync(DependencyGraph graph, ErrorContext errorContext)
+    public async Task<List<PotentialErrorSource>> AnalyzeGraphAsync(DependencyGraph graph, ErrorContext errorContext)
     {
         ArgumentNullException.ThrowIfNull(errorContext);
         ArgumentNullException.ThrowIfNull(graph);
@@ -66,7 +65,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         try
         {
             _logger.LogInformation("Analyzing graph for error {ErrorId}", errorContext.ErrorId);
-            var result = new Collection<PotentialErrorSource>();
+            var result = new List<PotentialErrorSource>();
             
             // Find potential error sources
             // Implementation would use graph analysis algorithms to identify nodes
@@ -82,7 +81,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<Collection<GraphNode>> AnalyzeErrorPropagationAsync(DependencyGraph graph, GraphNode errorNode)
+    public async Task<List<GraphNode>> AnalyzeErrorPropagationAsync(DependencyGraph graph, GraphNode errorNode)
     {
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentNullException.ThrowIfNull(errorNode);
@@ -90,7 +89,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         try
         {
             _logger.LogInformation("Analyzing error propagation for node {NodeId}", errorNode.Id);
-            var affectedNodes = new Collection<GraphNode>();
+            var affectedNodes = new List<GraphNode>();
             
             // Implement error propagation analysis
             // Find nodes affected by the error based on dependency relationships
@@ -105,14 +104,14 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<Collection<GraphPath>> IdentifyCriticalPathsAsync(DependencyGraph graph)
+    public async Task<List<GraphPath>> IdentifyCriticalPathsAsync(DependencyGraph graph)
     {
         ArgumentNullException.ThrowIfNull(graph);
 
         try
         {
             _logger.LogInformation("Identifying critical paths in graph");
-            var criticalPaths = new Collection<GraphPath>();
+            var criticalPaths = new List<GraphPath>();
             
             // Implement critical path identification
             // Find paths that are most important for system functionality
@@ -127,7 +126,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     }
 
     /// <inheritdoc />
-    public DependencyGraph graph, GraphNode node { ArgumentNullException.ThrowIfNull(DependencyGraph graph, GraphNode node); }
+    public double CalculateImpactScore(DependencyGraph graph, GraphNode node)
     {
         ArgumentNullException.ThrowIfNull(graph);
         ArgumentNullException.ThrowIfNull(node);
@@ -159,7 +158,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         IEnumerable<RuntimeError> relatedErrors)
     {
         // ... existing code ...
-        return new Collection<RelatedError>(); // Placeholder return, actual implementation needed
+        return new List<RelatedError>(); // Placeholder return, actual implementation needed
     }
 
     /// <inheritdoc />
@@ -195,7 +194,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     }
 
     /// <inheritdoc />
-    public Collection<GraphNode> IdentifyAffectedComponents(DependencyGraph dependencyGraph, string sourceComponentId)
+    public List<GraphNode> IdentifyAffectedComponents(DependencyGraph dependencyGraph, string sourceComponentId)
     {
         ArgumentNullException.ThrowIfNull(dependencyGraph);
         ArgumentNullException.ThrowIfNull(sourceComponentId);
@@ -203,7 +202,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         try
         {
             _logger.LogInformation("Identifying affected components from source {SourceId}", sourceComponentId);
-            var affectedNodes = new Collection<GraphNode>();
+            var affectedNodes = new List<GraphNode>();
             
             // Find the source node
             var sourceNode = dependencyGraph.Nodes.FirstOrDefault(n => n.Id == sourceComponentId);
@@ -248,7 +247,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     }
 
     /// <inheritdoc />
-    public DependencyGraph dependencyGraph, string componentId { ArgumentNullException.ThrowIfNull(DependencyGraph dependencyGraph, string componentId); }
+    public double CalculateImpactScore(DependencyGraph dependencyGraph, string componentId)
     {
         ArgumentNullException.ThrowIfNull(dependencyGraph);
         ArgumentNullException.ThrowIfNull(componentId);
@@ -277,7 +276,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     public async Task<GraphAnalysisResult> AnalyzeContextAsync(ErrorContext context)
     {
         if (context == null)
-            ArgumentNullException.ThrowIfNull(nameof(context));
+            throw new ArgumentNullException(nameof(context));
 
         var graph = new DependencyGraph();
         // Add nodes and edges based on context
@@ -311,8 +310,8 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         //    Metadata = context.Metadata.ToDictionary(kv => kv.Key, kv => kv.Value.ToString())
         //};
 
-        //// Convert Dictionary<string, object> to Collection<ImpactAnalysisResult>
-        //var impactResults = new Collection<ImpactAnalysisResult>();
+        //// Convert Dictionary<string, object> to List<ImpactAnalysisResult>
+        //var impactResults = new List<ImpactAnalysisResult>();
         //foreach (var kvp in analysis)
         //{
         //    impactResults.Add(new ImpactAnalysisResult
@@ -322,7 +321,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         //    });
         //}
 
-        //// Convert Collection<GraphNode> to Collection<RelatedError>
+        //// Convert List<GraphNode> to List<RelatedError>
         //var relatedErrors = affectedComponents.Select(node => new RelatedError
         //{
         //    Id = node.Id,
@@ -362,9 +361,3 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         return true; // For now, always return true
     }
 } 
-
-
-
-
-
-

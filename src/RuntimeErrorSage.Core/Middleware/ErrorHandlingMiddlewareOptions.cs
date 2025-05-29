@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -12,32 +11,32 @@ public class ErrorHandlingMiddlewareOptions
     /// <summary>
     /// Gets or sets whether error analysis is enabled.
     /// </summary>
-    public bool EnableErrorAnalysis { get; } = true;
+    public bool EnableErrorAnalysis { get; set; } = true;
 
     /// <summary>
     /// Gets or sets whether automated remediation is enabled.
     /// </summary>
-    public bool EnableAutomatedRemediation { get; } = true;
+    public bool EnableAutomatedRemediation { get; set; } = true;
 
     /// <summary>
     /// Gets or sets whether request correlation is enabled.
     /// </summary>
-    public bool EnableRequestCorrelation { get; } = true;
+    public bool EnableRequestCorrelation { get; set; } = true;
 
     /// <summary>
     /// Gets or sets whether performance monitoring is enabled.
     /// </summary>
-    public bool EnablePerformanceMonitoring { get; } = true;
+    public bool EnablePerformanceMonitoring { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the analysis timeout.
     /// </summary>
-    public TimeSpan AnalysisTimeout { get; } = TimeSpan.FromSeconds(30);
+    public TimeSpan AnalysisTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Gets or sets the remediation timeout.
     /// </summary>
-    public TimeSpan RemediationTimeout { get; } = TimeSpan.FromMinutes(5);
+    public TimeSpan RemediationTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// Gets or sets the excluded paths.
@@ -49,8 +48,3 @@ public class ErrorHandlingMiddlewareOptions
         ["/swagger"] = new[] { "GET" }
     };
 } 
-
-
-
-
-

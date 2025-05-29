@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Common;
@@ -76,9 +75,3 @@ public interface IRemediationValidator
     /// <returns>The health validation result</returns>
     Task<RemediationHealthStatus> ValidateSystemHealthAsync(ErrorContext context);
 } 
-
-
-
-
-
-

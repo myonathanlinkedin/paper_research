@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Classifier.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
@@ -15,8 +14,8 @@ public class ErrorClassifier : IErrorClassifier
 
     public ErrorClassifier(ILogger<ErrorClassifier> logger, IModel model)
     {
-        _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
-        _model = model ?? ArgumentNullException.ThrowIfNull(nameof(model));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _model = model ?? throw new ArgumentNullException(nameof(model));
     }
 
     public bool IsEnabled => true;
@@ -28,7 +27,7 @@ public class ErrorClassifier : IErrorClassifier
         return await ExecuteWithErrorHandlingAsync(async () =>
         {
             if (context == null)
-                ArgumentNullException.ThrowIfNull(nameof(context));
+                throw new ArgumentNullException(nameof(context));
 
             var analysisResult = await _model.AnalyzeErrorAsync(context);
             double confidence = 0.0;
@@ -50,7 +49,7 @@ public class ErrorClassifier : IErrorClassifier
         return await ExecuteWithErrorHandlingAsync(async () =>
         {
             if (context == null)
-                ArgumentNullException.ThrowIfNull(nameof(context));
+                throw new ArgumentNullException(nameof(context));
 
             var analysisResult = await _model.AnalyzeErrorAsync(context);
             if (analysisResult.Details != null && analysisResult.Details.TryGetValue("Confidence", out var confObj) && confObj is double confVal)
@@ -64,12 +63,12 @@ public class ErrorClassifier : IErrorClassifier
         return await ExecuteWithErrorHandlingAsync(async () =>
         {
             if (context == null)
-                ArgumentNullException.ThrowIfNull(nameof(context));
+                throw new ArgumentNullException(nameof(context));
 
             var analysisResult = await _model.AnalyzeErrorAsync(context);
             var patterns = new ErrorPatternCollection
             {
-                Patterns = new Collection<ErrorPattern>(),
+                Patterns = new List<ErrorPattern>(),
                 TotalCount = 0,
                 MatchScores = new Dictionary<string, double>()
             };
@@ -86,7 +85,7 @@ public class ErrorClassifier : IErrorClassifier
         return await ExecuteWithErrorHandlingAsync(async () =>
         {
             if (node == null)
-                ArgumentNullException.ThrowIfNull(nameof(node));
+                throw new ArgumentNullException(nameof(node));
 
             // Only use ErrorProbability if Health and Reliability do not exist
             var probability = node.ErrorProbability;
@@ -107,9 +106,3 @@ public class ErrorClassifier : IErrorClassifier
         }
     }
 } 
-
-
-
-
-
-

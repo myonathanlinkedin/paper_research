@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Concurrent;
 using RuntimeErrorSage.Application.Models.Remediation;
@@ -9,7 +8,7 @@ namespace RuntimeErrorSage.Application.Remediation
     {
         private readonly ConcurrentDictionary<string, RemediationMetrics> _metrics = new();
 
-        public string remediationId { ArgumentNullException.ThrowIfNull(string remediationId); }
+        public RemediationMetrics GetOrAddMetrics(string remediationId)
         {
             return _metrics.GetOrAdd(remediationId, _ => new RemediationMetrics
             {
@@ -21,7 +20,7 @@ namespace RuntimeErrorSage.Application.Remediation
             });
         }
 
-        public string planId, RemediationMetrics metrics { ArgumentNullException.ThrowIfNull(string planId, RemediationMetrics metrics); }
+        public void AddOrUpdateMetrics(string planId, RemediationMetrics metrics)
         {
             _metrics.AddOrUpdate(
                 planId,
@@ -35,9 +34,3 @@ namespace RuntimeErrorSage.Application.Remediation
         }
     }
 } 
-
-
-
-
-
-

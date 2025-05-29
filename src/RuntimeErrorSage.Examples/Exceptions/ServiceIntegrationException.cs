@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Examples.Exceptions;
 
 /// <summary>
@@ -34,10 +33,4 @@ public class ServiceIntegrationException : Exception
         Context = context;
     }
 } 
-
-
-
-
-
-
 

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.Classifier.Interfaces;
@@ -42,12 +41,12 @@ public class QwenModelIntegration : ILLMClient
         RuntimeErrorSage.Application.Analysis.Interfaces.IErrorRelationshipAnalyzer errorRelationshipAnalyzer,
         IRuntimeErrorFactory runtimeErrorFactory)
     {
-        _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
-        _contextAnalyzer = contextAnalyzer ?? ArgumentNullException.ThrowIfNull(nameof(contextAnalyzer));
-        _remediationSystem = remediationSystem ?? ArgumentNullException.ThrowIfNull(nameof(remediationSystem));
-        _errorClassifier = errorClassifier ?? ArgumentNullException.ThrowIfNull(nameof(errorClassifier));
-        _errorRelationshipAnalyzer = errorRelationshipAnalyzer ?? ArgumentNullException.ThrowIfNull(nameof(errorRelationshipAnalyzer));
-        _runtimeErrorFactory = runtimeErrorFactory ?? ArgumentNullException.ThrowIfNull(nameof(runtimeErrorFactory));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _contextAnalyzer = contextAnalyzer ?? throw new ArgumentNullException(nameof(contextAnalyzer));
+        _remediationSystem = remediationSystem ?? throw new ArgumentNullException(nameof(remediationSystem));
+        _errorClassifier = errorClassifier ?? throw new ArgumentNullException(nameof(errorClassifier));
+        _errorRelationshipAnalyzer = errorRelationshipAnalyzer ?? throw new ArgumentNullException(nameof(errorRelationshipAnalyzer));
+        _runtimeErrorFactory = runtimeErrorFactory ?? throw new ArgumentNullException(nameof(runtimeErrorFactory));
         IsEnabled = true;
         IsConnected = true;
     }
@@ -323,7 +322,4 @@ public class QwenModelIntegration : ILLMClient
         };
     }
 } 
-
-
-
 

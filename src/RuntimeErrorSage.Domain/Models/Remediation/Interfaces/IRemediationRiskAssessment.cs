@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
@@ -21,19 +20,13 @@ namespace RuntimeErrorSage.Application.Models.Remediation.Interfaces
         /// </summary>
         /// <param name="action">The remediation action to analyze.</param>
         /// <returns>A list of potential issues.</returns>
-        Collection<string> GeneratePotentialIssues(RemediationAction action);
+        List<string> GeneratePotentialIssues(RemediationAction action);
 
         /// <summary>
         /// Generates a list of mitigation steps based on the remediation action.
         /// </summary>
         /// <param name="action">The remediation action to analyze.</param>
         /// <returns>A list of mitigation steps.</returns>
-        Collection<string> GenerateMitigationSteps(RemediationAction action);
+        List<string> GenerateMitigationSteps(RemediationAction action);
     }
 } 
-
-
-
-
-
-

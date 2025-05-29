@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +23,7 @@ namespace RuntimeErrorSage.Application.Remediation
         private readonly IErrorContextAnalyzer _errorContextAnalyzer;
         private readonly ILLMClient _llmClient;
         private readonly Dictionary<string, IRemediationStrategy> _strategies;
-        private readonly Dictionary<string, Collection<string>> _errorTypeStrategies;
+        private readonly Dictionary<string, List<string>> _errorTypeStrategies;
 
         public bool IsEnabled { get; } = true;
         public string Name { get; } = "RemediationRegistry";
@@ -35,11 +34,11 @@ namespace RuntimeErrorSage.Application.Remediation
             IErrorContextAnalyzer errorContextAnalyzer,
             ILLMClient llmClient)
         {
-            _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
-            _errorContextAnalyzer = errorContextAnalyzer ?? ArgumentNullException.ThrowIfNull(nameof(errorContextAnalyzer));
-            _llmClient = llmClient ?? ArgumentNullException.ThrowIfNull(nameof(llmClient));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
+            _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
             _strategies = new Dictionary<string, IRemediationStrategy>(StringComparer.OrdinalIgnoreCase);
-            _errorTypeStrategies = new Dictionary<string, Collection<string>>(StringComparer.OrdinalIgnoreCase);
+            _errorTypeStrategies = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -66,7 +65,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 {
                     if (!_errorTypeStrategies.ContainsKey(errorType))
                     {
-                        _errorTypeStrategies[errorType] = new Collection<string>();
+                        _errorTypeStrategies[errorType] = new List<string>();
                     }
                     _errorTypeStrategies[errorType].Add(strategy.Name);
                 }
@@ -134,7 +133,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 var strategies = _strategies.Values.ToList();
                 // Order by priority - need to call GetPriorityAsync for each strategy
                 // This is a temporary workaround until we have proper synchronous Priority property
-                var orderedStrategies = new Collection<IRemediationStrategy>();
+                var orderedStrategies = new List<IRemediationStrategy>();
                 foreach (var strategy in strategies)
                 {
                     orderedStrategies.Add(strategy);
@@ -389,8 +388,3 @@ namespace RuntimeErrorSage.Application.Remediation
         }
     }
 } 
-
-
-
-
-

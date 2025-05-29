@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,7 +14,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
     public class StandardizedErrorScenarios
     {
         private readonly IRuntimeErrorSageService _RuntimeErrorSageService;
-        private readonly Dictionary<string, Collection<ErrorScenario>> _scenarios;
+        private readonly Dictionary<string, List<ErrorScenario>> _scenarios;
 
         public StandardizedErrorScenarios(IRuntimeErrorSageService RuntimeErrorSageService)
         {
@@ -26,11 +25,11 @@ namespace RuntimeErrorSage.Tests.TestSuite
         /// <summary>
         /// Initializes all 100 standardized error scenarios as required by the research paper.
         /// </summary>
-        private Dictionary<string, Collection<ErrorScenario>> InitializeScenarios()
+        private Dictionary<string, List<ErrorScenario>> InitializeScenarios()
         {
-            return new Dictionary<string, Collection<ErrorScenario>>
+            return new Dictionary<string, List<ErrorScenario>>
             {
-                ["Database"] = new Collection<ErrorScenario>
+                ["Database"] = new List<ErrorScenario>
                 {
                     // Connection failures (6 scenarios)
                     new ErrorScenario("DB_CONN_001", "Connection string invalid", 
@@ -91,7 +90,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
                         () => throw new System.Data.SqlClient.SqlException("Violation of DEFAULT constraint"))
                 },
 
-                ["FileSystem"] = new Collection<ErrorScenario>
+                ["FileSystem"] = new List<ErrorScenario>
                 {
                     // Permission issues (7 scenarios)
                     new ErrorScenario("FS_PERM_001", "Access denied", 
@@ -152,7 +151,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
                         () => throw new System.IO.IOException("Path format not supported"))
                 },
 
-                ["HttpClient"] = new Collection<ErrorScenario>
+                ["HttpClient"] = new List<ErrorScenario>
                 {
                     // Connection timeouts (7 scenarios)
                     new ErrorScenario("HTTP_CONN_001", "Connection timeout", 
@@ -213,7 +212,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
                         () => throw new System.Net.WebException("Service maintenance"))
                 },
 
-                ["Resource"] = new Collection<ErrorScenario>
+                ["Resource"] = new List<ErrorScenario>
                 {
                     // Memory allocation (7 scenarios)
                     new ErrorScenario("RES_MEM_001", "Out of memory", 
@@ -282,8 +281,8 @@ namespace RuntimeErrorSage.Tests.TestSuite
         [Fact]
         public async Task ExecuteAllScenarios()
         {
-            var results = new Collection<ErrorAnalysisResult>();
-            var performanceMetrics = new Collection<PerformanceMetrics>();
+            var results = new List<ErrorAnalysisResult>();
+            var performanceMetrics = new List<PerformanceMetrics>();
 
             foreach (var errorType in _scenarios.Keys)
             {
@@ -346,7 +345,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
         /// <summary>
         /// Validates overall results against research requirements.
         /// </summary>
-        private void ValidateOverallResults(Collection<ErrorAnalysisResult> results, Collection<PerformanceMetrics> metrics)
+        private void ValidateOverallResults(List<ErrorAnalysisResult> results, List<PerformanceMetrics> metrics)
         {
             // Validate accuracy requirements (80% root cause, 70% remediation)
             var rootCauseAccuracy = results.Average(r => r.RootCauseConfidence);
@@ -397,9 +396,4 @@ namespace RuntimeErrorSage.Tests.TestSuite
         public void Execute() => _execute();
     }
 } 
-
-
-
-
-
 

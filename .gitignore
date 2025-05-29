@@ -213,8 +213,60 @@ solid_report.txt
 *.ps1
 !analyze_code.ps1
 
-# Unwanted JSON files
-fix_plan.json
-*_plan.json
-*_output.json
-*_result.json 
+# Temporary and generated files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+*.cache
+*.log
+*.out
+*.pid
+*.seed
+*.pid.lock
+
+# Generated content
+*_generated.*
+*_output.*
+*_result.*
+*_plan.*
+*_report.*
+*_summary.*
+*_analysis.*
+*_debug.*
+*_trace.*
+
+# IDE specific
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+.project
+.classpath
+.settings/
+*.iml
+*.ipr
+*.iws
+*.code-workspace
+
+# Build and package files
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.exe
+*.dll
+*.so
+*.dylib
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z 

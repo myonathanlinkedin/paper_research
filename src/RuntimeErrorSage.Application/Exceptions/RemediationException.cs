@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Exceptions
@@ -15,10 +14,4 @@ namespace RuntimeErrorSage.Application.Exceptions
         }
     }
 } 
-
-
-
-
-
-
 

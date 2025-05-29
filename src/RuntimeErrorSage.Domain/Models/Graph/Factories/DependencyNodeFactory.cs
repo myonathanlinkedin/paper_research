@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Application.Models.Graph;
 
@@ -17,7 +16,7 @@ namespace RuntimeErrorSage.Application.Models.Graph.Factories
         /// <param name="componentName">The component name.</param>
         /// <param name="isErrorSource">Whether this node is an error source.</param>
         /// <returns>A new DependencyNode instance.</returns>
-        public string label, string componentId, string componentName, bool isErrorSource = false { ArgumentNullException.ThrowIfNull(string label, string componentId, string componentName, bool isErrorSource = false); }
+        public DependencyNode Create(string label, string componentId, string componentName, bool isErrorSource = false)
         {
             return new DependencyNode
             {
@@ -30,8 +29,3 @@ namespace RuntimeErrorSage.Application.Models.Graph.Factories
         }
     }
 } 
-
-
-
-
-

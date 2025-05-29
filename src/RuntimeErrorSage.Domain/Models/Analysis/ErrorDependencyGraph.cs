@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -14,48 +13,48 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         /// <summary>
         /// Gets or sets the unique identifier of the graph.
         /// </summary>
-        public string GraphId { get; } = Guid.NewGuid().ToString();
+        public string GraphId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the nodes in the graph.
         /// </summary>
-        public IReadOnlyCollection<Nodes> Nodes { get; } = new Collection<DependencyNode>();
+        public List<DependencyNode> Nodes { get; set; } = new List<DependencyNode>();
 
         /// <summary>
         /// Gets or sets the edges in the graph.
         /// </summary>
-        public IReadOnlyCollection<Edges> Edges { get; } = new Collection<DependencyEdge>();
+        public List<DependencyEdge> Edges { get; set; } = new List<DependencyEdge>();
 
         /// <summary>
         /// Gets or sets the root error node.
         /// </summary>
-        public DependencyNode RootNode { get; }
+        public DependencyNode RootNode { get; set; }
 
         /// <summary>
         /// Gets or sets the related errors.
         /// </summary>
-        public IReadOnlyCollection<RelatedErrors> RelatedErrors { get; } = new Collection<RelatedError>();
+        public List<RelatedError> RelatedErrors { get; set; } = new List<RelatedError>();
 
         /// <summary>
         /// Gets or sets the error relationships.
         /// </summary>
-        public IReadOnlyCollection<Relationships> Relationships { get; } = new Collection<ErrorRelationship>();
+        public List<ErrorRelationship> Relationships { get; set; } = new List<ErrorRelationship>();
 
         /// <summary>
         /// Gets or sets the timestamp of the graph creation.
         /// </summary>
-        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the correlation ID.
         /// </summary>
-        public string CorrelationId { get; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
         /// Adds a node to the graph.
         /// </summary>
         /// <param name="node">The node to add.</param>
-        public DependencyNode node { ArgumentNullException.ThrowIfNull(DependencyNode node); }
+        public void AddNode(DependencyNode node)
         {
             ArgumentNullException.ThrowIfNull(node);
             Nodes.Add(node);
@@ -65,7 +64,7 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         /// Adds an edge to the graph.
         /// </summary>
         /// <param name="edge">The edge to add.</param>
-        public DependencyEdge edge { ArgumentNullException.ThrowIfNull(DependencyEdge edge); }
+        public void AddEdge(DependencyEdge edge)
         {
             ArgumentNullException.ThrowIfNull(edge);
             Edges.Add(edge);
@@ -76,10 +75,10 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         /// </summary>
         /// <param name="nodeId">The node ID.</param>
         /// <returns>The dependencies.</returns>
-        public Collection<DependencyNode> GetDependencies(string nodeId)
+        public List<DependencyNode> GetDependencies(string nodeId)
         {
             ArgumentNullException.ThrowIfNull(nodeId);
-            var dependencies = new Collection<DependencyNode>();
+            var dependencies = new List<DependencyNode>();
             foreach (var edge in Edges)
             {
                 if (edge.SourceId == nodeId)
@@ -99,9 +98,9 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         /// </summary>
         /// <param name="nodeId">The node ID.</param>
         /// <returns>The dependents.</returns>
-        public Collection<DependencyNode> GetDependents(string nodeId)
+        public List<DependencyNode> GetDependents(string nodeId)
         {
-            var dependents = new Collection<DependencyNode>();
+            var dependents = new List<DependencyNode>();
             foreach (var edge in Edges)
             {
                 if (edge.TargetId == nodeId)
@@ -117,9 +116,3 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         }
     }
 } 
-
-
-
-
-
-

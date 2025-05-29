@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -14,17 +13,17 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         /// <summary>
         /// Gets or sets the unique identifier of the analysis.
         /// </summary>
-        public string AnalysisId { get; } = Guid.NewGuid().ToString();
+        public string AnalysisId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the error context.
         /// </summary>
-        public ErrorContext Context { get; }
+        public ErrorContext Context { get; set; }
 
         /// <summary>
         /// Gets or sets the primary root cause.
         /// </summary>
-        public string PrimaryRootCause { get; } = string.Empty;
+        public string PrimaryRootCause { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the possible root causes with confidence levels.
@@ -34,32 +33,32 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         /// <summary>
         /// Gets or sets the root cause confidence level (0-1).
         /// </summary>
-        public double ConfidenceLevel { get; }
+        public double ConfidenceLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the severity of the root cause.
         /// </summary>
-        public SeverityLevel Severity { get; } = SeverityLevel.Medium;
+        public SeverityLevel Severity { get; set; } = SeverityLevel.Medium;
 
         /// <summary>
         /// Gets or sets the causal chain of events.
         /// </summary>
-        public IReadOnlyCollection<CausalChain> CausalChain { get; } = new Collection<string>();
+        public List<string> CausalChain { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the contributing factors.
         /// </summary>
-        public IReadOnlyCollection<ContributingFactors> ContributingFactors { get; } = new Collection<string>();
+        public List<string> ContributingFactors { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the timestamp of the analysis.
         /// </summary>
-        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the correlation ID.
         /// </summary>
-        public string CorrelationId { get; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the additional context.
@@ -67,9 +66,3 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         public Dictionary<string, object> AdditionalContext { get; set; } = new Dictionary<string, object>();
     }
 } 
-
-
-
-
-
-

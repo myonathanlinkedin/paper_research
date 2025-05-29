@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -12,22 +11,22 @@ namespace RuntimeErrorSage.Application.Models.Classification
         /// <summary>
         /// Gets or sets whether the classification was successful.
         /// </summary>
-        public bool Success { get; }
+        public bool Success { get; set; }
 
         /// <summary>
         /// Gets or sets the category of the classification.
         /// </summary>
-        public string Category { get; }
+        public string Category { get; set; }
 
         /// <summary>
         /// Gets or sets the confidence level of the classification.
         /// </summary>
-        public double Confidence { get; }
+        public double Confidence { get; set; }
 
         /// <summary>
         /// Gets or sets the error message if the classification failed.
         /// </summary>
-        public string ErrorMessage { get; }
+        public string ErrorMessage { get; set; }
 
         /// <summary>
         /// Gets or sets additional metadata about the classification.
@@ -43,8 +42,3 @@ namespace RuntimeErrorSage.Application.Models.Classification
         }
     }
 } 
-
-
-
-
-

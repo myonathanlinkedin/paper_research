@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -15,27 +14,27 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the unique identifier for this result.
         /// </summary>
-        public string Id { get; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the step that was executed.
         /// </summary>
-        public RemediationStep Step { get; } = new();
+        public RemediationStep Step { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the status of the step execution.
         /// </summary>
-        public RemediationStepStatus Status { get; }
+        public RemediationStepStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets whether the step was successful.
         /// </summary>
-        public bool IsSuccessful { get; }
+        public bool IsSuccessful { get; set; }
 
         /// <summary>
         /// Gets or sets the start time of the step execution.
         /// </summary>
-        public DateTime StartTime { get; } = DateTime.UtcNow;
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the end time of the step execution.
@@ -45,7 +44,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the duration in seconds.
         /// </summary>
-        public double Duration { get; }
+        public double Duration { get; set; }
 
         /// <summary>
         /// Gets or sets any error message if the step failed.
@@ -55,12 +54,12 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets any warnings generated during execution.
         /// </summary>
-        public IReadOnlyCollection<Warnings> Warnings { get; } = new();
+        public List<string> Warnings { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the execution logs.
         /// </summary>
-        public IReadOnlyCollection<Logs> Logs { get; } = new();
+        public List<string> Logs { get; set; } = new();
 
         /// <summary>
         /// Gets or sets any output produced by the step.
@@ -70,27 +69,21 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets any validation results.
         /// </summary>
-        public IReadOnlyCollection<ValidationResults> ValidationResults { get; } = new();
+        public List<ValidationResult> ValidationResults { get; set; } = new();
 
         /// <summary>
         /// Gets or sets whether rollback is available for this step.
         /// </summary>
-        public bool CanRollback { get; }
+        public bool CanRollback { get; set; }
 
         /// <summary>
         /// Gets or sets whether manual intervention is required.
         /// </summary>
-        public bool RequiresManualIntervention { get; }
+        public bool RequiresManualIntervention { get; set; }
 
         /// <summary>
         /// Gets or sets any retry attempts made.
         /// </summary>
-        public int RetryAttempts { get; }
+        public int RetryAttempts { get; set; }
     }
 } 
-
-
-
-
-
-

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -16,9 +15,9 @@ namespace RuntimeErrorSage.Application.Models.Common.Factories
         /// </summary>
         /// <typeparam name="T">The type of elements in the list.</typeparam>
         /// <returns>A new List instance.</returns>
-        public Collection<T> CreateCollection<T>()
+        public List<T> CreateList<T>()
         {
-            return new Collection<T>();
+            return new List<T>();
         }
 
         /// <summary>
@@ -79,9 +78,9 @@ namespace RuntimeErrorSage.Application.Models.Common.Factories
         /// <typeparam name="TKey">The type of keys in the sorted list.</typeparam>
         /// <typeparam name="TValue">The type of values in the sorted list.</typeparam>
         /// <returns>A new SortedList instance.</returns>
-        public SortedCollection<TKey, TValue> CreateSortedCollection<TKey, TValue>()
+        public SortedList<TKey, TValue> CreateSortedList<TKey, TValue>()
         {
-            return new SortedCollection<TKey, TValue>();
+            return new SortedList<TKey, TValue>();
         }
 
         /// <summary>
@@ -99,9 +98,9 @@ namespace RuntimeErrorSage.Application.Models.Common.Factories
         /// </summary>
         /// <typeparam name="T">The type of elements in the linked list.</typeparam>
         /// <returns>A new LinkedList instance.</returns>
-        public LinkedCollection<T> CreateLinkedCollection<T>()
+        public LinkedList<T> CreateLinkedList<T>()
         {
-            return new LinkedCollection<T>();
+            return new LinkedList<T>();
         }
 
         /// <summary>
@@ -156,8 +155,3 @@ namespace RuntimeErrorSage.Application.Models.Common.Factories
         }
     }
 } 
-
-
-
-
-

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Xunit;
 using FluentAssertions;
 using RuntimeErrorSage.Application.Analysis;
@@ -48,7 +47,7 @@ public class ValidationRegistryTests
         var validationResult = new ValidationResult
         {
             IsValid = true,
-            Messages = new Collection<string> { "Context validation successful" },
+            Messages = new List<string> { "Context validation successful" },
             Metadata = new Dictionary<string, object>
             {
                 { "ValidationTime", 100 },
@@ -90,7 +89,7 @@ public class ValidationRegistryTests
         var validationResult = new ValidationResult
         {
             IsValid = false,
-            Messages = new Collection<string> { "Context validation failed: Missing required fields" },
+            Messages = new List<string> { "Context validation failed: Missing required fields" },
             Metadata = new Dictionary<string, object>
             {
                 { "MissingFields", new[] { "Timestamp", "Source" } },
@@ -198,7 +197,7 @@ public class ValidationRegistryTests
         var validationResult = new ValidationResult
         {
             IsValid = false,
-            Messages = new Collection<string> { "Custom validation rule violation: Password policy not met" },
+            Messages = new List<string> { "Custom validation rule violation: Password policy not met" },
             Metadata = new Dictionary<string, object>
             {
                 { "Rule", "PasswordPolicy" },
@@ -244,7 +243,7 @@ public class ValidationRegistryTests
         var validationResult = new ValidationResult
         {
             IsValid = true,
-            Messages = new Collection<string> { "Using cached validation result" },
+            Messages = new List<string> { "Using cached validation result" },
             Metadata = new Dictionary<string, object>
             {
                 { "CacheKey", "ctx-123456" },
@@ -271,8 +270,3 @@ public class ValidationRegistryTests
         _validationRegistryMock.Verify(x => x.ValidateContextAsync(It.IsAny<ErrorContext>()), Times.Once);
     }
 } 
-
-
-
-
-

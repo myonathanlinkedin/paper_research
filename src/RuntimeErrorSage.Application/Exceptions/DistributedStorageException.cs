@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Application.MCP.Exceptions;
 
 public class DistributedStorageException : Exception
@@ -9,9 +8,3 @@ public class DistributedStorageException : Exception
 
     public DistributedStorageException(string message, Exception inner) : base(message, inner) { }
 } 
-
-
-
-
-
-

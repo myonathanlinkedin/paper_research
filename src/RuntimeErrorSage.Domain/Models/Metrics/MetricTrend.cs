@@ -1,18 +1,11 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Application.Health.Models
 {
     public class MetricTrend
     {
-        public double Slope { get; }
-        public double Intercept { get; }
-        public double CurrentValue { get; }
-        public double ChangeRate { get; }
+        public double Slope { get; set; }
+        public double Intercept { get; set; }
+        public double CurrentValue { get; set; }
+        public double ChangeRate { get; set; }
     }
 } 
-
-
-
-
-
-
 

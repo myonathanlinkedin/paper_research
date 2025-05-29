@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -30,7 +29,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets the remediation history.
         /// </summary>
-        public Collection<RemediationResult> History { get; }
+        public List<RemediationResult> History { get; }
 
         /// <summary>
         /// Gets the context data.
@@ -40,7 +39,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets a value indicating whether the remediation is in rollback mode.
         /// </summary>
-        public bool IsRollbackMode { get; }
+        public bool IsRollbackMode { get; set; }
 
         /// <summary>
         /// Gets the current remediation state.
@@ -59,7 +58,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
 
             AnalysisResult = analysisResult;
             Plan = plan;
-            History = new Collection<RemediationResult>();
+            History = new List<RemediationResult>();
             ContextData = new Dictionary<string, object>();
             State = RemediationState.NotStarted;
         }
@@ -68,7 +67,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Updates the context with a new remediation result.
         /// </summary>
         /// <param name="result">The remediation result.</param>
-        public RemediationResult result { ArgumentNullException.ThrowIfNull(RemediationResult result); }
+        public void UpdateContext(RemediationResult result)
         {
             ArgumentNullException.ThrowIfNull(result);
 
@@ -90,7 +89,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Sets the current action.
         /// </summary>
         /// <param name="action">The remediation action.</param>
-        public IRemediationAction action { ArgumentNullException.ThrowIfNull(IRemediationAction action); }
+        public void SetCurrentAction(IRemediationAction action)
         {
             ArgumentNullException.ThrowIfNull(action);
             
@@ -99,7 +98,3 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
-
-
-
-

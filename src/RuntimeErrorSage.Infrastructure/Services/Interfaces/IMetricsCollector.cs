@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Graph;
 using RuntimeErrorSage.Application.Services.Models;
@@ -31,9 +30,3 @@ namespace RuntimeErrorSage.Application.Services.Interfaces
         Task<Dictionary<string, MetricValue>> CollectMetricsAsync();
     }
 } 
-
-
-
-
-
-

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Examples.Models;
 
 /// <summary>
@@ -24,11 +23,6 @@ public class IntegrationRequest
     /// <summary>
     /// The timeout for the service call in seconds
     /// </summary>
-    public int TimeoutSeconds { get; }
+    public int TimeoutSeconds { get; set; }
 } 
-
-
-
-
-
 

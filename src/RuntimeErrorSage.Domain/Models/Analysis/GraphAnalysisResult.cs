@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -15,71 +14,66 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         /// <summary>
         /// Gets or sets the unique identifier of the analysis.
         /// </summary>
-        public string AnalysisId { get; } = Guid.NewGuid().ToString();
+        public string AnalysisId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the error context.
         /// </summary>
-        public ErrorContext Context { get; }
+        public ErrorContext Context { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the analysis.
         /// </summary>
-        public AnalysisStatus Status { get; } = AnalysisStatus.NotStarted;
+        public AnalysisStatus Status { get; set; } = AnalysisStatus.NotStarted;
 
         /// <summary>
         /// Gets or sets the root node of the dependency graph.
         /// </summary>
-        public DependencyNode RootNode { get; }
+        public DependencyNode RootNode { get; set; }
 
         /// <summary>
         /// Gets or sets the related errors.
         /// </summary>
-        public IReadOnlyCollection<RelatedErrors> RelatedErrors { get; } = new Collection<RelatedError>();
+        public List<RelatedError> RelatedErrors { get; set; } = new List<RelatedError>();
 
         /// <summary>
         /// Gets or sets the timestamp of the analysis.
         /// </summary>
-        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the start time of the analysis.
         /// </summary>
-        public DateTime StartTime { get; } = DateTime.UtcNow;
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the end time of the analysis.
         /// </summary>
-        public DateTime EndTime { get; } = DateTime.UtcNow;
+        public DateTime EndTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the correlation ID.
         /// </summary>
-        public string CorrelationId { get; } = string.Empty;
+        public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the component ID.
         /// </summary>
-        public string ComponentId { get; } = string.Empty;
+        public string ComponentId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the component name.
         /// </summary>
-        public string ComponentName { get; } = string.Empty;
+        public string ComponentName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets whether the analysis is valid.
         /// </summary>
-        public bool IsValid { get; } = true;
+        public bool IsValid { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the error message if the analysis is invalid.
         /// </summary>
-        public string ErrorMessage { get; } = string.Empty;
+        public string ErrorMessage { get; set; } = string.Empty;
     }
 } 
-
-
-
-
-

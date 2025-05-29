@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
 
@@ -17,10 +16,4 @@ namespace RuntimeErrorSage.Application.Context.Interfaces
         Task HandleContextUpdateAsync(ErrorContext context, ErrorAnalysisResult analysis);
     }
 } 
-
-
-
-
-
-
 

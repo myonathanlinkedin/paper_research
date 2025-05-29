@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Validation;
 using RuntimeErrorSage.Application.Models.Error;
@@ -18,17 +17,17 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         private readonly IValidationRuleProvider _ruleProvider;
         private readonly IValidationResultStorage _resultStorage;
         private readonly IValidationStateChecker _stateChecker;
-        private readonly Collection<IValidationResultHandler> _resultHandlers;
+        private readonly List<IValidationResultHandler> _resultHandlers;
 
         public RemediationActionValidation(
             IValidationRuleProvider ruleProvider,
             IValidationResultStorage resultStorage,
             IValidationStateChecker stateChecker)
         {
-            _ruleProvider = ruleProvider ?? ArgumentNullException.ThrowIfNull(nameof(ruleProvider));
-            _resultStorage = resultStorage ?? ArgumentNullException.ThrowIfNull(nameof(resultStorage));
-            _stateChecker = stateChecker ?? ArgumentNullException.ThrowIfNull(nameof(stateChecker));
-            _resultHandlers = new Collection<IValidationResultHandler>();
+            _ruleProvider = ruleProvider ?? throw new ArgumentNullException(nameof(ruleProvider));
+            _resultStorage = resultStorage ?? throw new ArgumentNullException(nameof(resultStorage));
+            _stateChecker = stateChecker ?? throw new ArgumentNullException(nameof(stateChecker));
+            _resultHandlers = new List<IValidationResultHandler>();
         }
 
         /// <summary>
@@ -47,9 +46,9 @@ namespace RuntimeErrorSage.Application.Models.Remediation
                 ActionId = action.ActionId,
                 Timestamp = DateTime.UtcNow,
                 IsValid = true,
-                Errors = new Collection<string>(),
-                Warnings = new Collection<string>(),
-                ValidationRules = new Collection<string>()
+                Errors = new List<string>(),
+                Warnings = new List<string>(),
+                ValidationRules = new List<string>()
             };
 
             try
@@ -236,11 +235,6 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
-
-
-
-
-
 
 
 

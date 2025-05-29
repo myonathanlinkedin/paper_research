@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace RuntimeErrorSage.Examples.Models;
@@ -36,8 +35,4 @@ public class ProcessRequest : BaseRequest
     [Range(1, 300, ErrorMessage = "Timeout must be between 1 and 300 seconds")]
     public int? TimeoutSeconds { get; set; }
 } 
-
-
-
-
 

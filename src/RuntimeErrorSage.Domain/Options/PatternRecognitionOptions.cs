@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Options
@@ -11,48 +10,42 @@ namespace RuntimeErrorSage.Application.Options
         /// <summary>
         /// Gets or sets the service name for pattern recognition.
         /// </summary>
-        public string ServiceName { get; } = string.Empty;
+        public string ServiceName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the similarity threshold for pattern matching.
         /// </summary>
-        public float SimilarityThreshold { get; } = 0.8f;
+        public float SimilarityThreshold { get; set; } = 0.8f;
 
         /// <summary>
         /// Gets or sets the minimum number of occurrences for a pattern to be recognized.
         /// </summary>
-        public int MinPatternOccurrences { get; } = 3;
+        public int MinPatternOccurrences { get; set; } = 3;
 
         /// <summary>
         /// Gets or sets the time window for pattern recognition.
         /// </summary>
-        public TimeSpan PatternWindow { get; } = TimeSpan.FromHours(24);
+        public TimeSpan PatternWindow { get; set; } = TimeSpan.FromHours(24);
 
         /// <summary>
         /// Gets or sets the temporal window for burst detection.
         /// </summary>
-        public TimeSpan TemporalWindow { get; } = TimeSpan.FromMinutes(5);
+        public TimeSpan TemporalWindow { get; set; } = TimeSpan.FromMinutes(5);
 
         /// <summary>
         /// Gets or sets the maximum number of features for pattern recognition.
         /// </summary>
-        public int MaxPatternFeatures { get; } = 100;
+        public int MaxPatternFeatures { get; set; } = 100;
 
         /// <summary>
         /// Gets or sets whether temporal analysis is enabled.
         /// </summary>
-        public bool EnableTemporalAnalysis { get; } = true;
+        public bool EnableTemporalAnalysis { get; set; } = true;
 
         /// <summary>
         /// Gets or sets whether cross-service pattern detection is enabled.
         /// </summary>
-        public bool EnableCrossServicePatterns { get; } = true;
+        public bool EnableCrossServicePatterns { get; set; } = true;
     }
 } 
-
-
-
-
-
-
 
