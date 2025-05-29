@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 
@@ -5,7 +6,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
 {
     public class DefaultValidationStateChecker : IValidationStateChecker
     {
-        public bool IsValidState(IRemediationAction action)
+        public IRemediationAction action { ArgumentNullException.ThrowIfNull(IRemediationAction action); }
         {
             if (action.Status == RemediationStatusEnum.Running)
             {
@@ -21,3 +22,8 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
+
+
+
+
+

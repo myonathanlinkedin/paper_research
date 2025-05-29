@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,37 +13,37 @@ public class ErrorPattern
     /// <summary>
     /// Gets or sets the unique identifier for this pattern.
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the name of the service where this pattern occurs.
     /// </summary>
-    public string ServiceName { get; set; }
+    public string ServiceName { get; }
 
     /// <summary>
     /// Gets or sets the type of error this pattern represents.
     /// </summary>
-    public string ErrorType { get; set; }
+    public string ErrorType { get; }
 
     /// <summary>
     /// Gets or sets the name of the operation where this pattern occurs.
     /// </summary>
-    public string OperationName { get; set; }
+    public string OperationName { get; }
 
     /// <summary>
     /// Gets or sets when this pattern was first observed.
     /// </summary>
-    public DateTime FirstOccurrence { get; set; }
+    public DateTime FirstOccurrence { get; }
 
     /// <summary>
     /// Gets or sets when this pattern was last updated.
     /// </summary>
-    public DateTime LastUpdated { get; set; }
+    public DateTime LastUpdated { get; }
 
     /// <summary>
     /// Gets or sets the number of times this pattern has been observed.
     /// </summary>
-    public int OccurrenceCount { get; set; }
+    public int OccurrenceCount { get; }
 
     /// <summary>
     /// Gets or sets the context in which this pattern occurs.
@@ -52,7 +53,7 @@ public class ErrorPattern
     /// <summary>
     /// Gets or sets the remediation strategies for this pattern.
     /// </summary>
-    public List<string> RemediationStrategies { get; set; } = new List<string>();
+    public IReadOnlyCollection<RemediationStrategies> RemediationStrategies { get; } = new Collection<string>();
 
     /// <summary>
     /// Gets or sets additional metadata about this pattern.
@@ -62,15 +63,21 @@ public class ErrorPattern
     /// <summary>
     /// Gets or sets whether this pattern is currently active.
     /// </summary>
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; } = true;
 
     /// <summary>
     /// Gets or sets the analysis result for this pattern.
     /// </summary>
-    public ErrorAnalysisResult Analysis { get; set; }
+    public ErrorAnalysisResult Analysis { get; }
 
     /// <summary>
     /// Gets or sets additional notes about this pattern.
     /// </summary>
-    public string Notes { get; set; }
+    public string Notes { get; }
 } 
+
+
+
+
+
+

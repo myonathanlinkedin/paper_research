@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Graph;
 
 namespace RuntimeErrorSage.Application.Examples
@@ -11,7 +12,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// Shows incorrect vs correct ways to access GraphNode properties through KeyValuePair.
         /// </summary>
         /// <param name="graph">The dependency graph.</param>
-        public void ShowGraphNodeFixExample(DependencyGraph graph)
+        public DependencyGraph graph { ArgumentNullException.ThrowIfNull(DependencyGraph graph); }
         {
             // INCORRECT: This will cause "KeyValuePair<string, GraphNode> does not contain a definition for 'Id'"
             // foreach (var node in graph.Nodes)
@@ -49,7 +50,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// Shows incorrect vs correct ways to access GraphEdge properties through KeyValuePair.
         /// </summary>
         /// <param name="graph">The dependency graph.</param>
-        public void ShowGraphEdgeFixExample(DependencyGraph graph)
+        public DependencyGraph graph { ArgumentNullException.ThrowIfNull(DependencyGraph graph); }
         {
             // INCORRECT: This will cause "KeyValuePair<string, GraphEdge> does not contain a definition for 'SourceId'"
             // foreach (var edge in graph.Edges)
@@ -78,12 +79,12 @@ namespace RuntimeErrorSage.Application.Examples
         /// </summary>
         /// <param name="graph">The dependency graph.</param>
         /// <param name="nodeId">The node ID to get neighbors for.</param>
-        public void ShowGetNeighborsFixExample(DependencyGraph graph, string nodeId)
+        public DependencyGraph graph, string nodeId { ArgumentNullException.ThrowIfNull(DependencyGraph graph, string nodeId); }
         {
             // Get the node's neighbors
             var neighbors = graph.GetNeighbors(nodeId);
             
-            // Process neighbors (already a List<GraphNode>, so no KeyValuePair issues)
+            // Process neighbors (already a Collection<GraphNode>, so no KeyValuePair issues)
             foreach (var neighbor in neighbors)
             {
                 Console.WriteLine($"Neighbor ID: {neighbor.Id}");
@@ -95,9 +96,9 @@ namespace RuntimeErrorSage.Application.Examples
         /// Shows how to fix issues when working with impact analysis results.
         /// </summary>
         /// <param name="result">The impact analysis result.</param>
-        public void ShowImpactAnalysisFixExample(ImpactAnalysisResult result)
+        public ImpactAnalysisResult result { ArgumentNullException.ThrowIfNull(ImpactAnalysisResult result); }
         {
-            // Process direct dependencies (already a List<DependencyNode>, so no KeyValuePair issues)
+            // Process direct dependencies (already a Collection<DependencyNode>, so no KeyValuePair issues)
             foreach (var dependency in result.DirectDependencies)
             {
                 Console.WriteLine($"Dependency ID: {dependency.Id}");
@@ -107,3 +108,9 @@ namespace RuntimeErrorSage.Application.Examples
         }
     }
 } 
+
+
+
+
+
+

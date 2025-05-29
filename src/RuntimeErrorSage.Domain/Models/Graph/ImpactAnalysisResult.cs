@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,82 +13,82 @@ public class ImpactAnalysisResult
     /// <summary>
     /// Gets or sets the unique identifier of the analysis.
     /// </summary>
-    public string AnalysisId { get; set; } = Guid.NewGuid().ToString();
+    public string AnalysisId { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the error ID that triggered the analysis.
     /// </summary>
-    public string ErrorId { get; set; }
+    public string ErrorId { get; }
 
     /// <summary>
     /// Gets or sets the affected component ID.
     /// </summary>
-    public string ComponentId { get; set; }
+    public string ComponentId { get; }
 
     /// <summary>
     /// Gets or sets the component name.
     /// </summary>
-    public string ComponentName { get; set; }
+    public string ComponentName { get; }
 
     /// <summary>
     /// Gets or sets the component type.
     /// </summary>
-    public GraphNodeType ComponentType { get; set; }
+    public GraphNodeType ComponentType { get; }
 
     /// <summary>
     /// Gets or sets the impact severity.
     /// </summary>
-    public ImpactSeverity Severity { get; set; }
+    public ImpactSeverity Severity { get; }
 
     /// <summary>
     /// Gets or sets the impact scope.
     /// </summary>
-    public ImpactScope Scope { get; set; }
+    public ImpactScope Scope { get; }
 
     /// <summary>
     /// Gets or sets the confidence level (0.0 to 1.0).
     /// </summary>
-    public double Confidence { get; set; }
+    public double Confidence { get; }
 
     /// <summary>
     /// Gets or sets the direct dependencies that may be affected.
     /// </summary>
-    public List<DependencyNode> DirectDependencies { get; set; } = new();
+    public IReadOnlyCollection<DirectDependencies> DirectDependencies { get; } = new();
 
     /// <summary>
     /// Gets or sets the indirect dependencies that may be affected.
     /// </summary>
-    public List<DependencyNode> IndirectDependencies { get; set; } = new();
+    public IReadOnlyCollection<IndirectDependencies> IndirectDependencies { get; } = new();
 
     /// <summary>
     /// Gets or sets the potential blast radius (number of affected components).
     /// </summary>
-    public int BlastRadius { get; set; }
+    public int BlastRadius { get; }
 
     /// <summary>
     /// Gets or sets the time to recovery estimate (in seconds).
     /// </summary>
-    public double EstimatedRecoveryTimeSeconds { get; set; }
+    public double EstimatedRecoveryTimeSeconds { get; }
 
     /// <summary>
     /// Gets or sets the mitigation suggestions.
     /// </summary>
-    public List<string> MitigationSuggestions { get; set; } = new();
+    public IReadOnlyCollection<MitigationSuggestions> MitigationSuggestions { get; } = new();
 
     /// <summary>
     /// Gets or sets the service impact percentage (0.0 to 1.0).
     /// </summary>
-    public double ServiceImpactPercentage { get; set; }
+    public double ServiceImpactPercentage { get; }
 
     /// <summary>
     /// Gets or sets the analysis timestamp.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the error propagation paths.
     /// </summary>
-    public List<List<string>> PropagationPaths { get; set; } = new();
+    public Collection<Collection<string>> PropagationPaths { get; } = new();
 
     /// <summary>
     /// Gets or sets the metadata.
@@ -97,7 +98,7 @@ public class ImpactAnalysisResult
     /// <summary>
     /// Gets or sets the affected nodes in the impact analysis.
     /// </summary>
-    public List<DependencyNode> AffectedNodes { get; set; } = new List<DependencyNode>();
+    public IReadOnlyCollection<AffectedNodes> AffectedNodes { get; } = new Collection<DependencyNode>();
 
     /// <summary>
     /// Gets or sets the impact metrics for this analysis.
@@ -109,7 +110,7 @@ public class ImpactAnalysisResult
     /// </summary>
     /// <param name="name">The name of the metric.</param>
     /// <param name="value">The value of the metric.</param>
-    public void AddImpactMetric(string name, double value)
+    public string name, double value { ArgumentNullException.ThrowIfNull(string name, double value); }
     {
         Metadata[name] = value;
     }
@@ -118,7 +119,7 @@ public class ImpactAnalysisResult
     /// Adds a new affected node to the analysis result.
     /// </summary>
     /// <param name="nodeId">The ID of the affected node.</param>
-    public void AddAffectedNode(string nodeId)
+    public string nodeId { ArgumentNullException.ThrowIfNull(string nodeId); }
     {
         Metadata[nodeId] = true;
     }
@@ -128,8 +129,14 @@ public class ImpactAnalysisResult
     /// </summary>
     /// <param name="key">The key of the metadata.</param>
     /// <param name="value">The value of the metadata.</param>
-    public void AddMetadata(string key, object value)
+    public string key, object value { ArgumentNullException.ThrowIfNull(string key, object value); }
     {
         Metadata[key] = value;
     }
 } 
+
+
+
+
+
+

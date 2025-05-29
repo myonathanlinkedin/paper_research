@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
@@ -41,3 +42,9 @@ public class LLMClient : ILLMClient
 
     // ... existing code ...
 } 
+
+
+
+
+
+

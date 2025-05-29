@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -13,92 +14,92 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         /// <summary>
         /// Gets or sets the unique identifier of the analysis.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the context identifier.
         /// </summary>
-        public string ContextId { get; set; } = string.Empty;
+        public string ContextId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error identifier.
         /// </summary>
-        public string ErrorId { get; set; } = string.Empty;
+        public string ErrorId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the component identifier.
         /// </summary>
-        public string ComponentId { get; set; } = string.Empty;
+        public string ComponentId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the component name.
         /// </summary>
-        public string ComponentName { get; set; } = string.Empty;
+        public string ComponentName { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the component type.
         /// </summary>
-        public GraphNodeType ComponentType { get; set; } = GraphNodeType.Unknown;
+        public GraphNodeType ComponentType { get; } = GraphNodeType.Unknown;
 
         /// <summary>
         /// Gets or sets whether the analysis is valid.
         /// </summary>
-        public bool IsValid { get; set; } = true;
+        public bool IsValid { get; } = true;
 
         /// <summary>
         /// Gets or sets the error message if the analysis is invalid.
         /// </summary>
-        public string ErrorMessage { get; set; } = string.Empty;
+        public string ErrorMessage { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the list of affected components.
         /// </summary>
-        public List<string> AffectedComponents { get; set; } = new List<string>();
+        public IReadOnlyCollection<AffectedComponents> AffectedComponents { get; } = new Collection<string>();
 
         /// <summary>
         /// Gets or sets the direct dependencies of the component.
         /// </summary>
-        public List<DependencyNode> DirectDependencies { get; set; } = new List<DependencyNode>();
+        public IReadOnlyCollection<DirectDependencies> DirectDependencies { get; } = new Collection<DependencyNode>();
 
         /// <summary>
         /// Gets or sets the indirect dependencies of the component.
         /// </summary>
-        public List<DependencyNode> IndirectDependencies { get; set; } = new List<DependencyNode>();
+        public IReadOnlyCollection<IndirectDependencies> IndirectDependencies { get; } = new Collection<DependencyNode>();
 
         /// <summary>
         /// Gets or sets the blast radius (number of affected components).
         /// </summary>
-        public int BlastRadius { get; set; }
+        public int BlastRadius { get; }
 
         /// <summary>
         /// Gets or sets the severity of the impact.
         /// </summary>
-        public ImpactSeverity Severity { get; set; } = ImpactSeverity.Low;
+        public ImpactSeverity Severity { get; } = ImpactSeverity.Low;
 
         /// <summary>
         /// Gets or sets the scope of the impact.
         /// </summary>
-        public ImpactScope Scope { get; set; } = ImpactScope.Local;
+        public ImpactScope Scope { get; } = ImpactScope.Local;
 
         /// <summary>
         /// Gets or sets the confidence level of the analysis (0-1).
         /// </summary>
-        public double Confidence { get; set; } = 0.0;
+        public double Confidence { get; } = 0.0;
 
         /// <summary>
         /// Gets or sets the impact score (0-1).
         /// </summary>
-        public double ImpactScore { get; set; } = 0.0;
+        public double ImpactScore { get; } = 0.0;
 
         /// <summary>
         /// Gets or sets the correlation ID.
         /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
+        public string CorrelationId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the timestamp of the analysis.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the additional context.
@@ -106,3 +107,8 @@ namespace RuntimeErrorSage.Application.Models.Analysis
         public Dictionary<string, object> AdditionalContext { get; set; } = new Dictionary<string, object>();
     }
 } 
+
+
+
+
+

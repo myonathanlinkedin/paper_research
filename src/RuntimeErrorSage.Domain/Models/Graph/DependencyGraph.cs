@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,42 +14,42 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets the unique identifier for this graph.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the name of the graph.
         /// </summary>
-        public string Name { get; set; } = "Dependency Graph";
+        public string Name { get; } = "Dependency Graph";
 
         /// <summary>
         /// Gets or sets the description of the graph.
         /// </summary>
-        public string Description { get; set; }
+        public string Description { get; }
 
         /// <summary>
         /// Gets or sets the creation time of the graph.
         /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the last update time of the graph.
         /// </summary>
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the nodes in the graph.
         /// </summary>
-        public List<GraphNode> Nodes { get; set; } = new List<GraphNode>();
+        public IReadOnlyCollection<Nodes> Nodes { get; } = new Collection<GraphNode>();
 
         /// <summary>
         /// Gets or sets the edges in the graph.
         /// </summary>
-        public List<GraphEdge> Edges { get; set; } = new List<GraphEdge>();
+        public IReadOnlyCollection<Edges> Edges { get; } = new Collection<GraphEdge>();
 
         /// <summary>
         /// Gets or sets the root node of the graph.
         /// </summary>
-        public GraphNode RootNode { get; set; }
+        public GraphNode RootNode { get; }
 
         /// <summary>
         /// Gets or sets metadata associated with the graph.
@@ -59,10 +60,10 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// Adds a node to the graph.
         /// </summary>
         /// <param name="node">The node to add.</param>
-        public void AddNode(GraphNode node)
+        public GraphNode node { ArgumentNullException.ThrowIfNull(GraphNode node); }
         {
             if (node == null)
-                throw new ArgumentNullException(nameof(node));
+                ArgumentNullException.ThrowIfNull(nameof(node));
 
             if (!Nodes.Any(n => n.Id == node.Id))
             {
@@ -77,7 +78,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <param name="targetNodeId">The ID of the target node.</param>
         /// <param name="label">The edge label.</param>
         /// <returns>The created edge.</returns>
-        public GraphEdge AddEdge(string sourceNodeId, string targetNodeId, string label = "depends_on")
+        public string sourceNodeId, string targetNodeId, string label = "depends_on" { ArgumentNullException.ThrowIfNull(string sourceNodeId, string targetNodeId, string label = "depends_on"); }
         {
             var sourceNode = Nodes.FirstOrDefault(n => n.Id == sourceNodeId);
             var targetNode = Nodes.FirstOrDefault(n => n.Id == targetNodeId);
@@ -104,9 +105,9 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <param name="nodeId">The ID of the node.</param>
         /// <param name="direction">The direction of the relationships to consider.</param>
         /// <returns>The neighboring nodes.</returns>
-        public List<GraphNode> GetNeighbors(string nodeId, EdgeDirection direction = EdgeDirection.Outgoing)
+        public Collection<GraphNode> GetNeighbors(string nodeId, EdgeDirection direction = EdgeDirection.Outgoing)
         {
-            List<string> neighborIds;
+            Collection<string> neighborIds;
 
             if (direction == EdgeDirection.Incoming)
             {
@@ -132,10 +133,10 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <param name="sourceNodeId">The ID of the source node.</param>
         /// <param name="targetNodeId">The ID of the target node.</param>
         /// <returns>The path as a list of nodes.</returns>
-        public GraphPath FindPath(string sourceNodeId, string targetNodeId)
+        public string sourceNodeId, string targetNodeId { ArgumentNullException.ThrowIfNull(string sourceNodeId, string targetNodeId); }
         {
             var visited = new HashSet<string>();
-            var path = new List<GraphNode>();
+            var path = new Collection<GraphNode>();
             var pathFound = FindPathDFS(sourceNodeId, targetNodeId, visited, path);
 
             return new GraphPath
@@ -147,7 +148,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
             };
         }
 
-        private bool FindPathDFS(string currentNodeId, string targetNodeId, HashSet<string> visited, List<GraphNode> path)
+        private bool FindPathDFS(string currentNodeId, string targetNodeId, HashSet<string> visited, Collection<GraphNode> path)
         {
             visited.Add(currentNodeId);
             var currentNode = Nodes.FirstOrDefault(n => n.Id == currentNodeId);
@@ -179,3 +180,9 @@ namespace RuntimeErrorSage.Application.Models.Graph
         }
     }
 }
+
+
+
+
+
+

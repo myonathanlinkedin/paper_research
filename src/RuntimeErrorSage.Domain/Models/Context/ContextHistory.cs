@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -12,27 +13,27 @@ namespace RuntimeErrorSage.Application.Models.Context
         /// <summary>
         /// Gets or sets the unique identifier of the history.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the context identifier.
         /// </summary>
-        public string ContextId { get; set; } = string.Empty;
+        public string ContextId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the service name.
         /// </summary>
-        public string ServiceName { get; set; } = string.Empty;
+        public string ServiceName { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the operation name.
         /// </summary>
-        public string OperationName { get; set; } = string.Empty;
+        public string OperationName { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the most recent context.
         /// </summary>
-        public ErrorContext MostRecentContext { get; set; } = new();
+        public ErrorContext MostRecentContext { get; } = new();
 
         /// <summary>
         /// Gets or sets the previous state.
@@ -52,21 +53,27 @@ namespace RuntimeErrorSage.Application.Models.Context
         /// <summary>
         /// Gets or sets the type of change.
         /// </summary>
-        public string ChangeType { get; set; } = string.Empty;
+        public string ChangeType { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the timestamp of the change.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the correlation ID.
         /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
+        public string CorrelationId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets who made the change.
         /// </summary>
-        public string ChangedBy { get; set; } = string.Empty;
+        public string ChangedBy { get; } = string.Empty;
     }
 } 
+
+
+
+
+
+

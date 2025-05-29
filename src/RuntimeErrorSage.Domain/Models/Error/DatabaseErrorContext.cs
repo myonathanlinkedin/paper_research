@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,17 +13,17 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the database name.
         /// </summary>
-        public string DatabaseName { get; set; } = string.Empty;
+        public string DatabaseName { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database server.
         /// </summary>
-        public string Server { get; set; } = string.Empty;
+        public string Server { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database command.
         /// </summary>
-        public string Command { get; set; } = string.Empty;
+        public string Command { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database parameters.
@@ -32,21 +33,26 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the database error code.
         /// </summary>
-        public string ErrorCode { get; set; } = string.Empty;
+        public string ErrorCode { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database error message.
         /// </summary>
-        public string ErrorMessage { get; set; } = string.Empty;
+        public string ErrorMessage { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database state.
         /// </summary>
-        public string State { get; set; } = string.Empty;
+        public string State { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database connection string (masked).
         /// </summary>
-        public string ConnectionString { get; set; } = string.Empty;
+        public string ConnectionString { get; } = string.Empty;
     }
 } 
+
+
+
+
+

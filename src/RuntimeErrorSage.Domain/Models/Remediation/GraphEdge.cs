@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Application.Models.Remediation;
 
 /// <summary>
@@ -8,22 +9,22 @@ public class GraphEdge
     /// <summary>
     /// Gets or sets the source node ID.
     /// </summary>
-    public string Source { get; set; } = string.Empty;
+    public string Source { get; } = string.Empty;
     
     /// <summary>
     /// Gets or sets the target node ID.
     /// </summary>
-    public string Target { get; set; } = string.Empty;
+    public string Target { get; } = string.Empty;
     
     /// <summary>
     /// Gets or sets the edge type.
     /// </summary>
-    public string Type { get; set; } = string.Empty;
+    public string Type { get; } = string.Empty;
     
     /// <summary>
     /// Gets or sets the edge weight.
     /// </summary>
-    public double Weight { get; set; }
+    public double Weight { get; }
     
     /// <summary>
     /// Gets or sets the edge metadata.
@@ -33,30 +34,36 @@ public class GraphEdge
     /// <summary>
     /// Gets or sets the edge label.
     /// </summary>
-    public string Label { get; set; } = string.Empty;
+    public string Label { get; } = string.Empty;
     
     /// <summary>
     /// Gets or sets the edge color.
     /// </summary>
-    public string Color { get; set; } = string.Empty;
+    public string Color { get; } = string.Empty;
     
     /// <summary>
     /// Gets or sets the edge style.
     /// </summary>
-    public string Style { get; set; } = string.Empty;
+    public string Style { get; } = string.Empty;
     
     /// <summary>
     /// Gets or sets the edge thickness.
     /// </summary>
-    public double Thickness { get; set; }
+    public double Thickness { get; }
     
     /// <summary>
     /// Gets or sets whether the edge is directed.
     /// </summary>
-    public bool IsDirected { get; set; }
+    public bool IsDirected { get; }
     
     /// <summary>
     /// Gets or sets whether the edge is bidirectional.
     /// </summary>
-    public bool IsBidirectional { get; set; }
+    public bool IsBidirectional { get; }
 } 
+
+
+
+
+
+

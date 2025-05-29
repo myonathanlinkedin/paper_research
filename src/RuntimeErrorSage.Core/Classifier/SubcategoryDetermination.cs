@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Error;
 
 namespace RuntimeErrorSage.Application.Classifier;
@@ -26,3 +27,9 @@ public static class SubcategoryDetermination
         return "Unknown";
     }
 } 
+
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
@@ -30,4 +31,10 @@ public enum ValidationImpact
     /// </summary>
     None
 } 
+
+
+
+
+
+
 

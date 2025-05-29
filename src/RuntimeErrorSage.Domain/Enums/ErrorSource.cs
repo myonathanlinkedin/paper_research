@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
@@ -90,3 +91,7 @@ public enum ErrorSource
     /// </summary>
     Custom = 16
 } 
+
+
+
+

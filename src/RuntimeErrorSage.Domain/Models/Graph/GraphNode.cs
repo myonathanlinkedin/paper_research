@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,27 +13,27 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets the unique identifier for this node.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the name of the node.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; }
 
         /// <summary>
         /// Gets or sets the type of the node.
         /// </summary>
-        public GraphNodeType Type { get; set; } = GraphNodeType.Unknown;
+        public GraphNodeType Type { get; } = GraphNodeType.Unknown;
 
         /// <summary>
         /// Gets or sets the status of the node.
         /// </summary>
-        public string Status { get; set; } = "Active";
+        public string Status { get; } = "Active";
 
         /// <summary>
         /// Gets or sets the description of the node.
         /// </summary>
-        public string Description { get; set; }
+        public string Description { get; }
 
         /// <summary>
         /// Gets or sets the properties of the node.
@@ -42,22 +43,22 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets the importance level of the node.
         /// </summary>
-        public double ImportanceLevel { get; set; } = 1.0;
+        public double ImportanceLevel { get; } = 1.0;
 
         /// <summary>
         /// Gets or sets whether the node is critical.
         /// </summary>
-        public bool IsCritical { get; set; }
+        public bool IsCritical { get; }
 
         /// <summary>
         /// Gets or sets the health status of the node.
         /// </summary>
-        public string HealthStatus { get; set; } = "Healthy";
+        public string HealthStatus { get; } = "Healthy";
 
         /// <summary>
         /// Gets or sets the creation time of the node.
         /// </summary>
-        public DateTime CreationTime { get; set; } = DateTime.UtcNow;
+        public DateTime CreationTime { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets metadata associated with the node.
@@ -67,37 +68,37 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets the incoming dependencies.
         /// </summary>
-        public List<GraphEdge> IncomingEdges { get; set; }
+        public IReadOnlyCollection<IncomingEdges> IncomingEdges { get; }
 
         /// <summary>
         /// Gets or sets the outgoing dependencies.
         /// </summary>
-        public List<GraphEdge> OutgoingEdges { get; set; }
+        public IReadOnlyCollection<OutgoingEdges> OutgoingEdges { get; }
 
         /// <summary>
         /// Gets or sets the timestamp when the node was created.
         /// </summary>
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; }
 
         /// <summary>
         /// Gets or sets the timestamp when the node was last updated.
         /// </summary>
-        public DateTime UpdatedAt { get; set; }
+        public DateTime UpdatedAt { get; }
 
         /// <summary>
         /// Gets or sets the probability of error for this node (0-1).
         /// </summary>
-        public double ErrorProbability { get; set; }
+        public double ErrorProbability { get; }
 
         /// <summary>
         /// Gets or sets the list of dependencies (nodes this node depends on)
         /// </summary>
-        public List<string> Dependencies { get; set; } = new List<string>();
+        public IReadOnlyCollection<Dependencies> Dependencies { get; } = new Collection<string>();
 
         /// <summary>
         /// Gets or sets the list of dependents (nodes that depend on this node)
         /// </summary>
-        public List<string> Dependents { get; set; } = new List<string>();
+        public IReadOnlyCollection<Dependents> Dependents { get; } = new Collection<string>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GraphNode"/> class.
@@ -106,15 +107,15 @@ namespace RuntimeErrorSage.Application.Models.Graph
         {
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
-            IncomingEdges = new List<GraphEdge>();
-            OutgoingEdges = new List<GraphEdge>();
+            IncomingEdges = new Collection<GraphEdge>();
+            OutgoingEdges = new Collection<GraphEdge>();
         }
 
         /// <summary>
         /// Adds an incoming edge to this node.
         /// </summary>
         /// <param name="edge">The edge to add.</param>
-        public void AddIncomingEdge(GraphEdge edge)
+        public GraphEdge edge { ArgumentNullException.ThrowIfNull(GraphEdge edge); }
         {
             if (edge.Target.Id != Id)
             {
@@ -129,7 +130,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// Adds an outgoing edge from this node.
         /// </summary>
         /// <param name="edge">The edge to add.</param>
-        public void AddOutgoingEdge(GraphEdge edge)
+        public GraphEdge edge { ArgumentNullException.ThrowIfNull(GraphEdge edge); }
         {
             if (edge.Source.Id != Id)
             {
@@ -144,7 +145,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// Removes an incoming edge from this node.
         /// </summary>
         /// <param name="edge">The edge to remove.</param>
-        public void RemoveIncomingEdge(GraphEdge edge)
+        public GraphEdge edge { ArgumentNullException.ThrowIfNull(GraphEdge edge); }
         {
             IncomingEdges.Remove(edge);
             UpdatedAt = DateTime.UtcNow;
@@ -154,10 +155,16 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// Removes an outgoing edge from this node.
         /// </summary>
         /// <param name="edge">The edge to remove.</param>
-        public void RemoveOutgoingEdge(GraphEdge edge)
+        public GraphEdge edge { ArgumentNullException.ThrowIfNull(GraphEdge edge); }
         {
             OutgoingEdges.Remove(edge);
             UpdatedAt = DateTime.UtcNow;
         }
     }
 } 
+
+
+
+
+
+

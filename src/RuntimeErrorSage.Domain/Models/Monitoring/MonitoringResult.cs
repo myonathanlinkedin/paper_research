@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Monitoring
@@ -10,11 +11,16 @@ namespace RuntimeErrorSage.Application.Models.Monitoring
         /// <summary>
         /// Gets or sets whether the operation was successful.
         /// </summary>
-        public bool Success { get; set; }
+        public bool Success { get; }
         
         /// <summary>
         /// Gets or sets the error message if the operation failed.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string ErrorMessage { get; }
     }
 } 
+
+
+
+
+

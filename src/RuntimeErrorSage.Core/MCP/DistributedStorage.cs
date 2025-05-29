@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Application.Interfaces;
@@ -35,9 +36,9 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
         ILogger<RedisDistributedStorage> logger,
         IOptions<DistributedStorageOptions> options)
     {
-        _redis = redis ?? throw new ArgumentNullException(nameof(redis));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _redis = redis ?? ArgumentNullException.ThrowIfNull(redis);
+        _logger = logger ?? ArgumentNullException.ThrowIfNull(logger);
+        _options = options?.Value ?? ArgumentNullException.ThrowIfNull(options);
         _semaphore = new SemaphoreSlim(1, 1);
         _cache = new ConcurrentDictionary<string, byte[]>();
         _backupLock = new SemaphoreSlim(1, 1);
@@ -67,10 +68,10 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
         }
     }
 
-    public async Task<List<ErrorPattern>> LoadPatternsAsync()
+    public async Task<Collection<ErrorPattern>> LoadPatternsAsync()
     {
         ThrowIfDisposed();
-        var patterns = new List<ErrorPattern>();
+        var patterns = new Collection<ErrorPattern>();
 
         try
         {
@@ -259,13 +260,13 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
         }
     }
 
-    public async Task<List<ErrorContext>> GetContextsAsync(string serviceName, DateTime startTime, DateTime endTime)
+    public async Task<Collection<ErrorContext>> GetContextsAsync(string serviceName, DateTime startTime, DateTime endTime)
     {
         ArgumentNullException.ThrowIfNull(serviceName);
         ThrowIfDisposed();
 
         var pattern = $"{_options.KeyPrefix}context:{serviceName}:*";
-        var contexts = new List<ErrorContext>();
+        var contexts = new Collection<ErrorContext>();
 
         try
         {
@@ -344,13 +345,13 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
         }
     }
 
-    public async Task<List<ErrorPattern>> GetPatternsAsync(string serviceName)
+    public async Task<Collection<ErrorPattern>> GetPatternsAsync(string serviceName)
     {
         ArgumentNullException.ThrowIfNull(serviceName);
         ThrowIfDisposed();
 
         var pattern = $"{_options.KeyPrefix}pattern:{serviceName}:*";
-        var patterns = new List<ErrorPattern>();
+        var patterns = new Collection<ErrorPattern>();
 
         try
         {
@@ -545,4 +546,8 @@ public class RedisDistributedStorage : IDistributedStorage, IDisposable
         Dispose(false);
     }
 }
+
+
+
+
 

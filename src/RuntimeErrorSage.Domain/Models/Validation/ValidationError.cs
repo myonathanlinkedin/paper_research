@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Common;
@@ -13,22 +14,22 @@ public class ValidationError
     /// <summary>
     /// Gets or sets the error message.
     /// </summary>
-    public string Message { get; set; } = string.Empty;
+    public string Message { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error code.
     /// </summary>
-    public string Code { get; set; } = string.Empty;
+    public string Code { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error severity.
     /// </summary>
-    public ValidationSeverity Severity { get; set; } = ValidationSeverity.Error;
+    public ValidationSeverity Severity { get; } = ValidationSeverity.Error;
 
     /// <summary>
     /// Gets or sets the error source.
     /// </summary>
-    public string Source { get; set; } = string.Empty;
+    public string Source { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error details.
@@ -38,22 +39,22 @@ public class ValidationError
     /// <summary>
     /// Gets or sets the timestamp when the error was generated.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the exception that caused the error.
     /// </summary>
-    public Exception Exception { get; set; }
+    public Exception Exception { get; }
 
     /// <summary>
     /// Gets or sets the property that caused the error.
     /// </summary>
-    public string PropertyName { get; set; } = string.Empty;
+    public string PropertyName { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the value that caused the error.
     /// </summary>
-    public object PropertyValue { get; set; }
+    public object PropertyValue { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ValidationError"/> class.
@@ -101,3 +102,9 @@ public class ValidationError
         PropertyName = propertyName;
     }
 }
+
+
+
+
+
+

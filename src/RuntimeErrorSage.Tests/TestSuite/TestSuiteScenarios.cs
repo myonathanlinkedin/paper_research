@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,8 @@ namespace RuntimeErrorSage.Tests.TestSuite;
 /// </summary>
 public class TestSuiteScenarios
 {
-    private readonly List<ErrorScenario> _scenarios;
-    private readonly Dictionary<string, List<ErrorScenario>> _scenarioGroups;
+    private readonly Collection<ErrorScenario> _scenarios;
+    private readonly Dictionary<string, Collection<ErrorScenario>> _scenarioGroups;
     private readonly Dictionary<string, int> _errorDistribution;
     private readonly Dictionary<string, int> _sourceDistribution;
     private readonly Dictionary<double, int> _confidenceDistribution;
@@ -27,8 +28,8 @@ public class TestSuiteScenarios
     /// <param name="scenarios">The scenarios.</param>
     public TestSuiteScenarios(IEnumerable<ErrorScenario> scenarios)
     {
-        _scenarios = scenarios?.ToList() ?? throw new ArgumentNullException(nameof(scenarios));
-        _scenarioGroups = new Dictionary<string, List<ErrorScenario>>();
+        _scenarios = scenarios?.ToList() ?? ArgumentNullException.ThrowIfNull(nameof(scenarios));
+        _scenarioGroups = new Dictionary<string, Collection<ErrorScenario>>();
         _errorDistribution = new Dictionary<string, int>();
         _sourceDistribution = new Dictionary<string, int>();
         _confidenceDistribution = new Dictionary<double, int>();
@@ -45,22 +46,22 @@ public class TestSuiteScenarios
     /// <summary>
     /// Gets the scenarios.
     /// </summary>
-    public IReadOnlyList<ErrorScenario> Scenarios => _scenarios;
+    public IReadOnlyCollection<ErrorScenario> Scenarios => _scenarios;
 
     /// <summary>
     /// Gets the scenario groups.
     /// </summary>
-    public IReadOnlyDictionary<string, List<ErrorScenario>> ScenarioGroups => _scenarioGroups;
+    public IReadOnlyDictionary<string, Collection<ErrorScenario>> ScenarioGroups => _scenarioGroups;
 
     /// <summary>
     /// Gets the error types.
     /// </summary>
-    public IReadOnlyList<string> ErrorTypes => _scenarios.Select(s => s.ErrorType).Distinct().ToList();
+    public IReadOnlyCollection<string> ErrorTypes => _scenarios.Select(s => s.ErrorType).Distinct().ToList();
 
     /// <summary>
     /// Gets the sources.
     /// </summary>
-    public IReadOnlyList<string> Sources => _scenarios.Select(s => s.Source).Distinct().ToList();
+    public IReadOnlyCollection<string> Sources => _scenarios.Select(s => s.Source).Distinct().ToList();
 
     /// <summary>
     /// Gets the error distribution.
@@ -107,7 +108,7 @@ public class TestSuiteScenarios
             var group = GetScenarioGroup(scenario);
             if (!_scenarioGroups.ContainsKey(group))
             {
-                _scenarioGroups[group] = new List<ErrorScenario>();
+                _scenarioGroups[group] = new Collection<ErrorScenario>();
             }
             _scenarioGroups[group].Add(scenario);
         }
@@ -121,7 +122,7 @@ public class TestSuiteScenarios
     private static string GetScenarioGroup(ErrorScenario scenario)
     {
         if (scenario == null)
-            throw new ArgumentNullException(nameof(scenario));
+            ArgumentNullException.ThrowIfNull(nameof(scenario));
 
         return $"{scenario.ErrorType}_{scenario.Source}";
     }
@@ -131,7 +132,7 @@ public class TestSuiteScenarios
     /// </summary>
     /// <param name="errorType">The error type.</param>
     /// <returns>The scenarios.</returns>
-    public IReadOnlyList<ErrorScenario> GetScenariosByErrorType(string errorType)
+    public IReadOnlyCollection<ErrorScenario> GetScenariosByErrorType(string errorType)
     {
         if (string.IsNullOrEmpty(errorType))
             throw new ArgumentException("Error type cannot be null or empty.", nameof(errorType));
@@ -144,7 +145,7 @@ public class TestSuiteScenarios
     /// </summary>
     /// <param name="source">The source.</param>
     /// <returns>The scenarios.</returns>
-    public IReadOnlyList<ErrorScenario> GetScenariosBySource(string source)
+    public IReadOnlyCollection<ErrorScenario> GetScenariosBySource(string source)
     {
         if (string.IsNullOrEmpty(source))
             throw new ArgumentException("Source cannot be null or empty.", nameof(source));
@@ -157,7 +158,7 @@ public class TestSuiteScenarios
     /// </summary>
     /// <param name="group">The group.</param>
     /// <returns>The scenarios.</returns>
-    public IReadOnlyList<ErrorScenario> GetScenariosByGroup(string group)
+    public IReadOnlyCollection<ErrorScenario> GetScenariosByGroup(string group)
     {
         if (string.IsNullOrEmpty(group))
             throw new ArgumentException("Group cannot be null or empty.", nameof(group));
@@ -188,7 +189,7 @@ public class TestSuiteScenarios
     /// </summary>
     /// <param name="name">The name.</param>
     /// <returns>The scenario.</returns>
-    public ErrorScenario GetScenarioByName(string name)
+    public string name { ArgumentNullException.ThrowIfNull(string name); }
     {
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("Name cannot be null or empty.", nameof(name));
@@ -296,3 +297,9 @@ public class TestSuiteScenarios
         _confidenceDistribution[roundedConfidence]++;
     }
 } 
+
+
+
+
+
+

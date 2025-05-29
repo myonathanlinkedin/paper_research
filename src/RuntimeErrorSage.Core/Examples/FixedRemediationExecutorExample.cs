@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -103,7 +104,7 @@ namespace RuntimeErrorSage.Application.Examples
                     Context = errorContext,
                     Status = RemediationStatusEnum.Failed,
                     Message = $"Execution error: {ex.Message}",
-                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
+                    Validation = new ValidationResult { IsValid = false, Messages = new Collection<string> { ex.Message } }
                 };
             }
         }
@@ -157,7 +158,7 @@ namespace RuntimeErrorSage.Application.Examples
                     Context = plan.Context,
                     Status = RemediationStatusEnum.Failed,
                     Message = $"Plan execution failed: {ex.Message}",
-                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
+                    Validation = new ValidationResult { IsValid = false, Messages = new Collection<string> { ex.Message } }
                 };
             }
         }
@@ -351,7 +352,7 @@ namespace RuntimeErrorSage.Application.Examples
                     ErrorContext = context,
                     Messages = validationResult.Messages,
                     Timestamp = DateTime.UtcNow,
-                    ValidationResults = new List<ValidationResult> { validationResult }
+                    ValidationResults = new Collection<ValidationResult> { validationResult }
                 };
             }
             catch (Exception ex)
@@ -362,7 +363,7 @@ namespace RuntimeErrorSage.Application.Examples
                 {
                     IsValid = false,
                     ErrorContext = context,
-                    Messages = new List<string> { $"Validation error: {ex.Message}" },
+                    Messages = new Collection<string> { $"Validation error: {ex.Message}" },
                     Timestamp = DateTime.UtcNow
                 };
             }
@@ -452,7 +453,7 @@ namespace RuntimeErrorSage.Application.Examples
                 return new ValidationResult 
                 { 
                     IsValid = true,
-                    Messages = new List<string> { "Action validation successful" }
+                    Messages = new Collection<string> { "Action validation successful" }
                 };
             }
             catch (Exception ex)
@@ -463,7 +464,7 @@ namespace RuntimeErrorSage.Application.Examples
                 return new ValidationResult
                 {
                     IsValid = false,
-                    Messages = new List<string> { $"Validation error: {ex.Message}" }
+                    Messages = new Collection<string> { $"Validation error: {ex.Message}" }
                 };
             }
         }
@@ -485,7 +486,7 @@ namespace RuntimeErrorSage.Application.Examples
                 {
                     Severity = ImpactSeverity.Low,
                     Description = "Minimal system impact expected",
-                    AffectedComponents = new List<string> { "Component1", "Component2" }
+                    AffectedComponents = new Collection<string> { "Component1", "Component2" }
                 };
             }
             catch (Exception ex)
@@ -518,8 +519,8 @@ namespace RuntimeErrorSage.Application.Examples
                 {
                     RiskLevel = RiskLevel.Low,
                     Description = "Low risk remediation action",
-                    PotentialIssues = new List<string> { "Temporary performance impact" },
-                    MitigationSteps = new List<string> { "Monitor system performance during remediation" }
+                    PotentialIssues = new Collection<string> { "Temporary performance impact" },
+                    MitigationSteps = new Collection<string> { "Monitor system performance during remediation" }
                 };
             }
             catch (Exception ex)
@@ -623,7 +624,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// <summary>
         /// Example showing fixed KeyValuePair access patterns
         /// </summary>
-        public void FixedKeyValuePairExample(DependencyGraph graph)
+        public DependencyGraph graph { ArgumentNullException.ThrowIfNull(DependencyGraph graph); }
         {
             // INCORRECT: Trying to access node properties directly from KeyValuePair
             // foreach (var node in graph.Nodes)
@@ -655,7 +656,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// <summary>
         /// Example showing fixed TimeSpan nullable handling
         /// </summary>
-        public void FixedTimeSpanNullableExample(List<RemediationExecution> executions)
+        public Collection<RemediationExecution> executions { ArgumentNullException.ThrowIfNull(Collection<RemediationExecution> executions); }
         {
             // INCORRECT: Using nullable TimeSpan's TotalMilliseconds directly
             // var avgDuration = executions.Average(e => e.DurationSeconds);
@@ -720,3 +721,7 @@ namespace RuntimeErrorSage.Application.Examples
         }
     }
 } 
+
+
+
+

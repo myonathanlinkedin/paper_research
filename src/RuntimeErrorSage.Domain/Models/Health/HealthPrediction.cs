@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,42 +13,42 @@ public class HealthPrediction
     /// <summary>
     /// Gets or sets the unique identifier for this prediction.
     /// </summary>
-    public string PredictionId { get; set; } = Guid.NewGuid().ToString();
+    public string PredictionId { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the component ID.
     /// </summary>
-    public string ComponentId { get; set; } = string.Empty;
+    public string ComponentId { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the predicted health status.
     /// </summary>
-    public HealthStatusEnum PredictedStatus { get; set; }
+    public HealthStatusEnum PredictedStatus { get; }
 
     /// <summary>
     /// Gets or sets the confidence score (0-1).
     /// </summary>
-    public double ConfidenceScore { get; set; }
+    public double ConfidenceScore { get; }
 
     /// <summary>
     /// Gets or sets the prediction timestamp.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the prediction window start.
     /// </summary>
-    public DateTime WindowStart { get; set; }
+    public DateTime WindowStart { get; }
 
     /// <summary>
     /// Gets or sets the prediction window end.
     /// </summary>
-    public DateTime WindowEnd { get; set; }
+    public DateTime WindowEnd { get; }
 
     /// <summary>
     /// Gets or sets the prediction factors.
     /// </summary>
-    public List<string> Factors { get; set; } = new();
+    public IReadOnlyCollection<Factors> Factors { get; } = new();
 
     /// <summary>
     /// Gets or sets the prediction metrics.
@@ -57,11 +58,17 @@ public class HealthPrediction
     /// <summary>
     /// Gets or sets whether the prediction is active.
     /// </summary>
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; } = true;
 
     /// <summary>
     /// Gets or sets the prediction metadata.
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
 } 
+
+
+
+
+
+
 

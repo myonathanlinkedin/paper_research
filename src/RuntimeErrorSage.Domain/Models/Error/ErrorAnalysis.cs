@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,72 +14,72 @@ public class ErrorAnalysis
     /// <summary>
     /// Gets or sets the unique identifier of the error analysis.
     /// </summary>
-    public string ErrorId { get; set; } = Guid.NewGuid().ToString();
+    public string ErrorId { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the category of the error.
     /// </summary>
-    public ErrorCategory Category { get; set; }
+    public ErrorCategory Category { get; }
 
     /// <summary>
     /// Gets or sets the severity of the error.
     /// </summary>
-    public ErrorSeverity Severity { get; set; }
+    public ErrorSeverity Severity { get; }
 
     /// <summary>
     /// Gets or sets the error message.
     /// </summary>
-    public string Message { get; set; } = string.Empty;
+    public string Message { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the details of the error.
     /// </summary>
-    public string Details { get; set; } = string.Empty;
+    public string Details { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the timestamp when the error occurred.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the frequency of the error.
     /// </summary>
-    public int Frequency { get; set; }
+    public int Frequency { get; }
 
     /// <summary>
     /// Gets or sets the error scope.
     /// </summary>
-    public ErrorScope Scope { get; set; }
+    public ErrorScope Scope { get; }
 
     /// <summary>
     /// Gets or sets the source of the error.
     /// </summary>
-    public ErrorSource Source { get; set; }
+    public ErrorSource Source { get; }
 
     /// <summary>
     /// Gets or sets the stack trace of the error.
     /// </summary>
-    public string StackTrace { get; set; } = string.Empty;
+    public string StackTrace { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error type.
     /// </summary>
-    public string ErrorType { get; set; } = string.Empty;
+    public string ErrorType { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error code.
     /// </summary>
-    public string ErrorCode { get; set; } = string.Empty;
+    public string ErrorCode { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error location.
     /// </summary>
-    public string Location { get; set; } = string.Empty;
+    public string Location { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the status of the analysis.
     /// </summary>
-    public AnalysisStatus Status { get; set; } = AnalysisStatus.NotStarted;
+    public AnalysisStatus Status { get; } = AnalysisStatus.NotStarted;
 
     /// <summary>
     /// Gets or sets any metadata associated with the error.
@@ -88,32 +89,32 @@ public class ErrorAnalysis
     /// <summary>
     /// Gets or sets whether the error is actionable.
     /// </summary>
-    public bool IsActionable { get; set; }
+    public bool IsActionable { get; }
 
     /// <summary>
     /// Gets or sets whether the error is transient.
     /// </summary>
-    public bool IsTransient { get; set; }
+    public bool IsTransient { get; }
 
     /// <summary>
     /// Gets or sets whether the error has been resolved.
     /// </summary>
-    public bool IsResolved { get; set; }
+    public bool IsResolved { get; }
 
     /// <summary>
     /// Gets or sets the related errors.
     /// </summary>
-    public List<RelatedError> RelatedErrors { get; set; } = new List<RelatedError>();
+    public IReadOnlyCollection<RelatedErrors> RelatedErrors { get; } = new Collection<RelatedError>();
 
     /// <summary>
     /// Gets or sets the timestamp when the analysis was created.
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the timestamp when the analysis was last updated.
     /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets the root cause.
@@ -128,7 +129,7 @@ public class ErrorAnalysis
     /// <summary>
     /// Gets the remediation steps.
     /// </summary>
-    public IReadOnlyList<string> RemediationSteps { get; }
+    public IReadOnlyCollection<string> RemediationSteps { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ErrorAnalysis"/> class.
@@ -179,3 +180,8 @@ public class ErrorAnalysis
         return true;
     }
 } 
+
+
+
+
+

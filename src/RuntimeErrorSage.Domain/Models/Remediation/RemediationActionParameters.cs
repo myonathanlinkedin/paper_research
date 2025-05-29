@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Remediation;
 using System;
@@ -20,137 +21,142 @@ public class RemediationActionParameters
     /// <summary>
     /// Gets or sets the timeout in seconds.
     /// </summary>
-    public int TimeoutSeconds { get; set; }
+    public int TimeoutSeconds { get; }
 
     /// <summary>
     /// Gets or sets the maximum number of retries.
     /// </summary>
-    public int MaxRetries { get; set; }
+    public int MaxRetries { get; }
 
     /// <summary>
     /// Gets or sets the delay in seconds between retries.
     /// </summary>
-    public int RetryDelaySeconds { get; set; }
+    public int RetryDelaySeconds { get; }
 
     /// <summary>
     /// Gets or sets whether manual approval is required.
     /// </summary>
-    public bool RequiresManualApproval { get; set; }
+    public bool RequiresManualApproval { get; }
 
     /// <summary>
     /// Gets or sets the confirmation message for manual approval.
     /// </summary>
-    public string ConfirmationMessage { get; set; }
+    public string ConfirmationMessage { get; }
 
     /// <summary>
     /// Gets or sets the list of dependencies.
     /// </summary>
-    public List<string> Dependencies { get; set; } = new List<string>();
+    public IReadOnlyCollection<Dependencies> Dependencies { get; } = new Collection<string>();
 
     /// <summary>
     /// Gets or sets the list of prerequisites.
     /// </summary>
-    public List<string> Prerequisites { get; set; } = new List<string>();
+    public IReadOnlyCollection<Prerequisites> Prerequisites { get; } = new Collection<string>();
 
     /// <summary>
     /// Gets or sets the severity of the action.
     /// </summary>
-    public RemediationActionSeverity Severity { get; set; } = RemediationActionSeverity.Medium;
+    public RemediationActionSeverity Severity { get; } = RemediationActionSeverity.Medium;
 
     /// <summary>
     /// Gets or sets the risk level of the action.
     /// </summary>
-    public RemediationRiskLevel RiskLevel { get; set; }
+    public RemediationRiskLevel RiskLevel { get; }
 
     /// <summary>
     /// Gets or sets the impact scope of the action.
     /// </summary>
-    public RemediationActionImpactScope ImpactScope { get; set; }
+    public RemediationActionImpactScope ImpactScope { get; }
 
     /// <summary>
     /// Gets or sets the list of warnings.
     /// </summary>
-    public List<string> Warnings { get; set; } = new List<string>();
+    public IReadOnlyCollection<Warnings> Warnings { get; } = new Collection<string>();
 
     /// <summary>
     /// Gets or sets the context of the action.
     /// </summary>
-    public string Context { get; set; }
+    public string Context { get; }
 
     /// <summary>
     /// Gets or sets the strategy name.
     /// </summary>
-    public string StrategyName { get; set; }
+    public string StrategyName { get; }
 
     /// <summary>
     /// Gets or sets the order of the action.
     /// </summary>
-    public int Order { get; set; }
+    public int Order { get; }
 
     /// <summary>
     /// Gets or sets whether the action is enabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsEnabled { get; } = true;
 
     /// <summary>
     /// Gets or sets whether the action is required.
     /// </summary>
-    public bool IsRequired { get; set; }
+    public bool IsRequired { get; }
 
     /// <summary>
     /// Gets or sets whether the action is optional.
     /// </summary>
-    public bool IsOptional { get; set; }
+    public bool IsOptional { get; }
 
     /// <summary>
     /// Gets or sets whether the action is conditional.
     /// </summary>
-    public bool IsConditional { get; set; }
+    public bool IsConditional { get; }
 
     /// <summary>
     /// Gets or sets the condition for the action.
     /// </summary>
-    public string Condition { get; set; }
+    public string Condition { get; }
 
     /// <summary>
     /// Gets or sets whether the action is parallel.
     /// </summary>
-    public bool IsParallel { get; set; }
+    public bool IsParallel { get; }
 
     /// <summary>
     /// Gets or sets whether the action is sequential.
     /// </summary>
-    public bool IsSequential { get; set; }
+    public bool IsSequential { get; }
 
     /// <summary>
     /// Gets or sets whether the action is asynchronous.
     /// </summary>
-    public bool IsAsynchronous { get; set; }
+    public bool IsAsynchronous { get; }
 
     /// <summary>
     /// Gets or sets whether the action is synchronous.
     /// </summary>
-    public bool IsSynchronous { get; set; }
+    public bool IsSynchronous { get; }
 
     /// <summary>
     /// Gets or sets whether the action is idempotent.
     /// </summary>
-    public bool IsIdempotent { get; set; }
+    public bool IsIdempotent { get; }
 
     /// <summary>
     /// Gets or sets whether the action is reversible.
     /// </summary>
-    public bool IsReversible { get; set; }
+    public bool IsReversible { get; }
 
     /// <summary>
     /// Gets or sets whether the action is atomic.
     /// </summary>
-    public bool IsAtomic { get; set; }
+    public bool IsAtomic { get; }
 
     /// <summary>
     /// Gets or sets whether the action is transactional.
     /// </summary>
-    public bool IsTransactional { get; set; }
+    public bool IsTransactional { get; }
 } 
+
+
+
+
+
 
 

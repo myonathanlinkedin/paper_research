@@ -14,42 +14,42 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <summary>
         /// Gets or sets the ID of the action that was validated.
         /// </summary>
-        public string ActionId { get; set; }
+        public string ActionId { get; }
 
         /// <summary>
         /// Gets or sets the timestamp of the validation.
         /// </summary>
-        public DateTime Timestamp { get; set; }
+        public DateTime Timestamp { get; }
 
         /// <summary>
         /// Gets or sets whether the validation was successful.
         /// </summary>
-        public bool IsValid { get; set; }
+        public bool IsValid { get; }
 
         /// <summary>
         /// Gets or sets the list of validation errors.
         /// </summary>
-        public List<string> Errors { get; set; } = new List<string>();
+        public IReadOnlyCollection<Errors> Errors { get; } = new Collection<string>();
 
         /// <summary>
         /// Gets or sets the list of validation warnings.
         /// </summary>
-        public List<string> Warnings { get; set; } = new List<string>();
+        public IReadOnlyCollection<Warnings> Warnings { get; } = new Collection<string>();
 
         /// <summary>
         /// Gets or sets the list of validation rules that were applied.
         /// </summary>
-        public List<string> ValidationRules { get; set; } = new List<string>();
+        public IReadOnlyCollection<ValidationRules> ValidationRules { get; } = new Collection<string>();
 
         /// <summary>
         /// Gets or sets the validation duration in milliseconds.
         /// </summary>
-        public long DurationMs { get; set; }
+        public long DurationMs { get; }
 
         /// <summary>
         /// Gets or sets the validation messages.
         /// </summary>
-        public List<string> Messages { get; set; } = new List<string>();
+        public IReadOnlyCollection<Messages> Messages { get; } = new Collection<string>();
 
         /// <summary>
         /// Gets or sets additional metadata.
@@ -59,32 +59,32 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <summary>
         /// Gets or sets the severity of the validation result.
         /// </summary>
-        public ValidationSeverity Severity { get; set; } = ValidationSeverity.Info;
+        public ValidationSeverity Severity { get; } = ValidationSeverity.Info;
 
         /// <summary>
         /// Gets or sets the validation status.
         /// </summary>
-        public ValidationStatus Status { get; set; } = ValidationStatus.Pending;
+        public ValidationStatus Status { get; } = ValidationStatus.Pending;
 
         /// <summary>
         /// Gets or sets the validation context.
         /// </summary>
-        public ValidationContext Context { get; set; }
+        public ValidationContext Context { get; }
 
         /// <summary>
         /// Gets or sets the validation suggestions.
         /// </summary>
-        public List<ValidationSuggestion> Suggestions { get; set; } = new List<ValidationSuggestion>();
+        public IReadOnlyCollection<Suggestions> Suggestions { get; } = new Collection<ValidationSuggestion>();
 
         /// <summary>
         /// Gets or sets the validation metrics.
         /// </summary>
-        public MetricsValidation Metrics { get; set; }
+        public MetricsValidation Metrics { get; }
 
         /// <summary>
         /// Gets or sets the correlation ID for tracking related validations.
         /// </summary>
-        public string CorrelationId { get; set; }
+        public string CorrelationId { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidationResult"/> class.
@@ -120,7 +120,7 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// Adds an error to the validation result.
         /// </summary>
         /// <param name="error">The error to add.</param>
-        public void AddError(ValidationError error)
+        public ValidationError error { ArgumentNullException.ThrowIfNull(ValidationError error); }
         {
             ArgumentNullException.ThrowIfNull(error);
             Errors.Add(error.Message);
@@ -131,7 +131,7 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// Adds a warning to the validation result.
         /// </summary>
         /// <param name="warning">The warning to add.</param>
-        public void AddWarning(ValidationWarning warning)
+        public ValidationWarning warning { ArgumentNullException.ThrowIfNull(ValidationWarning warning); }
         {
             ArgumentNullException.ThrowIfNull(warning);
             Warnings.Add(warning.Message);
@@ -142,7 +142,7 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// </summary>
         /// <param name="key">The metadata key.</param>
         /// <param name="value">The metadata value.</param>
-        public void AddMetadata(string key, object value)
+        public string key, object value { ArgumentNullException.ThrowIfNull(string key, object value); }
         {
             if (string.IsNullOrWhiteSpace(key))
             {
@@ -156,7 +156,7 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// Merges another validation result into this one.
         /// </summary>
         /// <param name="other">The other validation result.</param>
-        public void Merge(ValidationResult other)
+        public ValidationResult other { ArgumentNullException.ThrowIfNull(ValidationResult other); }
         {
             if (other == null)
             {
@@ -194,7 +194,7 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <returns>A successful validation result.</returns>
         public static ValidationResult Success(string message)
         {
-            return new ValidationResult { IsValid = true, Messages = new List<string> { message } };
+            return new ValidationResult { IsValid = true, Messages = new Collection<string> { message } };
         }
 
         /// <summary>
@@ -248,5 +248,11 @@ namespace RuntimeErrorSage.Application.Models.Validation
         }
     }
 } 
+
+
+
+
+
+
 
 

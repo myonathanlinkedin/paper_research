@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Application.Models.Backup
@@ -10,16 +11,18 @@ namespace RuntimeErrorSage.Application.Models.Backup
         /// <summary>
         /// Gets or sets whether the operation was successful.
         /// </summary>
-        public bool Success { get; set; }
+        public bool Success { get; }
 
         /// <summary>
         /// Gets or sets the list of backup identifiers.
         /// </summary>
-        public List<string> BackupIds { get; set; } = new();
+        public IReadOnlyCollection<BackupIds> BackupIds { get; } = new();
 
         /// <summary>
         /// Gets or sets the error message if the operation failed.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string ErrorMessage { get; }
     }
 } 
+
+

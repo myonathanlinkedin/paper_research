@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Graph;
@@ -22,7 +23,7 @@ namespace RuntimeErrorSage.Application.Graph.Interfaces
         /// </summary>
         /// <param name="graph">The dependency graph.</param>
         /// <returns>The list of critical paths.</returns>
-        Task<List<GraphPath>> AnalyzeCriticalPathsAsync(DependencyGraph graph);
+        Task<Collection<GraphPath>> AnalyzeCriticalPathsAsync(DependencyGraph graph);
 
         /// <summary>
         /// Identifies nodes with high error probability.
@@ -30,7 +31,7 @@ namespace RuntimeErrorSage.Application.Graph.Interfaces
         /// <param name="graph">The dependency graph.</param>
         /// <param name="threshold">The probability threshold.</param>
         /// <returns>The list of high-risk nodes.</returns>
-        Task<List<DependencyNode>> IdentifyHighRiskNodesAsync(DependencyGraph graph, double threshold = 0.7);
+        Task<Collection<DependencyNode>> IdentifyHighRiskNodesAsync(DependencyGraph graph, double threshold = 0.7);
 
         /// <summary>
         /// Calculates error propagation paths in the graph.
@@ -38,7 +39,7 @@ namespace RuntimeErrorSage.Application.Graph.Interfaces
         /// <param name="graph">The dependency graph.</param>
         /// <param name="errorNodeId">The ID of the error node.</param>
         /// <returns>The list of error propagation paths.</returns>
-        Task<List<GraphPath>> CalculateErrorPropagationPathsAsync(DependencyGraph graph, string errorNodeId);
+        Task<Collection<GraphPath>> CalculateErrorPropagationPathsAsync(DependencyGraph graph, string errorNodeId);
 
         /// <summary>
         /// Analyzes the root cause of an error in the graph.
@@ -53,7 +54,7 @@ namespace RuntimeErrorSage.Application.Graph.Interfaces
         /// </summary>
         /// <param name="graph">The dependency graph.</param>
         /// <returns>The list of cycles found in the graph.</returns>
-        Task<List<GraphCycle>> FindCyclesAsync(DependencyGraph graph);
+        Task<Collection<GraphCycle>> FindCyclesAsync(DependencyGraph graph);
 
         /// <summary>
         /// Calculates the centrality of nodes in the graph.
@@ -63,3 +64,9 @@ namespace RuntimeErrorSage.Application.Graph.Interfaces
         Task<Dictionary<string, double>> CalculateCentralityAsync(DependencyGraph graph);
     }
 } 
+
+
+
+
+
+

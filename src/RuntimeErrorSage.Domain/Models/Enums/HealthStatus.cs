@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Application.Models.Enums;
 
 /// <summary>
@@ -10,3 +11,9 @@ public enum HealthStatus
     Unhealthy,
     Unknown
 } 
+
+
+
+
+
+

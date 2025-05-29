@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -31,10 +32,10 @@ public class QwenLLMService : ILLMService
         string baseUrl,
         string apiKey)
     {
-        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _baseUrl = baseUrl ?? throw new ArgumentNullException(nameof(baseUrl));
-        _apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
+        _httpClient = httpClient ?? ArgumentNullException.ThrowIfNull(nameof(httpClient));
+        _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
+        _baseUrl = baseUrl ?? ArgumentNullException.ThrowIfNull(nameof(baseUrl));
+        _apiKey = apiKey ?? ArgumentNullException.ThrowIfNull(nameof(apiKey));
 
         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
     }
@@ -75,3 +76,9 @@ public class QwenLLMService : ILLMService
         }
     }
 } 
+
+
+
+
+
+

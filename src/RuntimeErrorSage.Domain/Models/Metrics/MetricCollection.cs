@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets the metric values in the collection.
         /// </summary>
-        public List<MetricValue> Values { get; }
+        public Collection<MetricValue> Values { get; }
 
         /// <summary>
         /// Gets the timestamp when the collection was created.
@@ -29,7 +30,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// </summary>
         public MetricCollection()
         {
-            Values = new List<MetricValue>();
+            Values = new Collection<MetricValue>();
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }
@@ -42,7 +43,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         {
             if (value == null)
             {
-                throw new ArgumentNullException(nameof(value));
+                ArgumentNullException.ThrowIfNull(nameof(value));
             }
 
             Values.Add(value);
@@ -54,7 +55,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// </summary>
         /// <param name="name">The name of the metrics to get.</param>
         /// <returns>A list of metric values with the specified name.</returns>
-        public List<MetricValue> GetMetricsByName(string name)
+        public Collection<MetricValue> GetMetricsByName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -70,7 +71,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <param name="key">The key of the tag.</param>
         /// <param name="value">The value of the tag.</param>
         /// <returns>A list of metric values with the specified tag.</returns>
-        public List<MetricValue> GetMetricsByTag(string key, string value)
+        public Collection<MetricValue> GetMetricsByTag(string key, string value)
         {
             if (string.IsNullOrEmpty(key))
             {
@@ -86,7 +87,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <param name="startTime">The start time of the range.</param>
         /// <param name="endTime">The end time of the range.</param>
         /// <returns>A list of metric values collected within the specified time range.</returns>
-        public List<MetricValue> GetMetricsByTimeRange(DateTime startTime, DateTime endTime)
+        public Collection<MetricValue> GetMetricsByTimeRange(DateTime startTime, DateTime endTime)
         {
             return Values.Where(v => v.Timestamp >= startTime && v.Timestamp <= endTime).ToList();
         }
@@ -148,3 +149,8 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         }
     }
 } 
+
+
+
+
+

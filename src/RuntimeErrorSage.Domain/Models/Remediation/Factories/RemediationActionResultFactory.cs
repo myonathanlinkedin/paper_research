@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Application.Models.Remediation;
 
@@ -15,7 +16,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation.Factories
         /// <param name="success">Whether the action was successful.</param>
         /// <param name="errorMessage">The error message if the action failed.</param>
         /// <returns>A new RemediationActionResult instance.</returns>
-        public RemediationActionResult Create(string name, bool success, string errorMessage = null)
+        public string name, bool success, string errorMessage = null { ArgumentNullException.ThrowIfNull(string name, bool success, string errorMessage = null); }
         {
             return new RemediationActionResult
             {
@@ -28,3 +29,8 @@ namespace RuntimeErrorSage.Application.Models.Remediation.Factories
         }
     }
 } 
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Graph;
 
 namespace RuntimeErrorSage.Application.Models.Graph.Factories
@@ -18,3 +19,8 @@ namespace RuntimeErrorSage.Application.Models.Graph.Factories
         DependencyNode Create(string label, string componentId, string componentName, bool isErrorSource = false);
     }
 } 
+
+
+
+
+

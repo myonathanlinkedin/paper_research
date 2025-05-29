@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -115,6 +116,12 @@ namespace RuntimeErrorSage.Application.Storage.Interfaces
         /// Loads error patterns from storage.
         /// </summary>
         /// <returns>A list of error patterns.</returns>
-        Task<List<ErrorPattern>> LoadPatternsAsync();
+        Task<Collection<ErrorPattern>> LoadPatternsAsync();
     }
 } 
+
+
+
+
+
+

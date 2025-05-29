@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Xunit;
 using FluentAssertions;
 using RuntimeErrorSage.Application.Analysis;
@@ -287,3 +288,9 @@ public class LLMIntegrationTests
         _llmClientMock.Verify(x => x.AnalyzeErrorAsync(It.IsAny<ErrorContext>()), Times.Once);
     }
 } 
+
+
+
+
+
+

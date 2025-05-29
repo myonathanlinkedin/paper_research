@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.MCP.Exceptions
@@ -12,3 +13,8 @@ namespace RuntimeErrorSage.Application.MCP.Exceptions
         public MCPRetrievalException(string message) : base(message) { }
     }
 } 
+
+
+
+
+

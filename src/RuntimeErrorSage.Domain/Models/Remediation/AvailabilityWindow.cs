@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Linq;
 
@@ -11,52 +12,52 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the start time of the window.
         /// </summary>
-        public string StartTime { get; set; }
+        public string StartTime { get; }
 
         /// <summary>
         /// Gets or sets the end time of the window.
         /// </summary>
-        public string EndTime { get; set; }
+        public string EndTime { get; }
 
         /// <summary>
         /// Gets or sets the time zone for the availability window.
         /// </summary>
-        public string TimeZone { get; set; }
+        public string TimeZone { get; }
 
         /// <summary>
         /// Gets or sets whether the window repeats.
         /// </summary>
-        public bool IsRecurring { get; set; }
+        public bool IsRecurring { get; }
 
         /// <summary>
         /// Gets or sets the recurrence pattern if the window repeats.
         /// </summary>
-        public string RecurrencePattern { get; set; }
+        public string RecurrencePattern { get; }
 
         /// <summary>
         /// Gets or sets the recurrence interval if the window repeats.
         /// </summary>
-        public int RecurrenceInterval { get; set; }
+        public int RecurrenceInterval { get; }
 
         /// <summary>
         /// Gets or sets the recurrence frequency if the window repeats.
         /// </summary>
-        public string RecurrenceFrequency { get; set; }
+        public string RecurrenceFrequency { get; }
 
         /// <summary>
         /// Gets or sets the recurrence days of week if the window repeats.
         /// </summary>
-        public string RecurrenceDaysOfWeek { get; set; }
+        public string RecurrenceDaysOfWeek { get; }
 
         /// <summary>
         /// Gets or sets the recurrence days of month if the window repeats.
         /// </summary>
-        public string RecurrenceDaysOfMonth { get; set; }
+        public string RecurrenceDaysOfMonth { get; }
 
         /// <summary>
         /// Gets or sets the recurrence months of year if the window repeats.
         /// </summary>
-        public string RecurrenceMonthsOfYear { get; set; }
+        public string RecurrenceMonthsOfYear { get; }
 
         /// <summary>
         /// Gets or sets the recurrence end date if the window repeats.
@@ -71,7 +72,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets whether the recurrence never ends.
         /// </summary>
-        public bool RecurrenceNeverEnds { get; set; }
+        public bool RecurrenceNeverEnds { get; }
 
         /// <summary>
         /// Gets or sets the recurrence start date if the window repeats.
@@ -81,12 +82,12 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the recurrence time zone if the window repeats.
         /// </summary>
-        public string RecurrenceTimeZone { get; set; }
+        public string RecurrenceTimeZone { get; }
 
         /// <summary>
         /// Gets or sets the recurrence week of month if the window repeats.
         /// </summary>
-        public string RecurrenceWeekOfMonth { get; set; }
+        public string RecurrenceWeekOfMonth { get; }
 
         /// <summary>
         /// Gets or sets the recurrence year if the window repeats.
@@ -303,10 +304,14 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="time">The time to check.</param>
         /// <returns>True if the time is within the window, false otherwise.</returns>
-        public bool IsInWindow(DateTime time)
+        public DateTime time { ArgumentNullException.ThrowIfNull(DateTime time); }
         {
             var localTime = TimeZoneInfo.ConvertTimeFromUtc(time, TimeZone);
             return localTime >= StartTime && localTime <= EndTime && DaysOfWeek.Contains(localTime.DayOfWeek);
         }
     }
 } 
+
+
+
+

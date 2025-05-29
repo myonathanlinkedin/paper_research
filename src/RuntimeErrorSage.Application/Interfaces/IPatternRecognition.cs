@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
@@ -20,7 +21,7 @@ namespace RuntimeErrorSage.Application.Pattern.Interfaces
         /// <param name="contexts">The list of error contexts to analyze.</param>
         /// <param name="serviceName">The name of the service being analyzed.</param>
         /// <returns>A list of detected error patterns.</returns>
-        Task<List<ErrorPattern>> DetectPatternsAsync(List<ErrorContext> contexts, string serviceName);
+        Task<Collection<ErrorPattern>> DetectPatternsAsync(Collection<ErrorContext> contexts, string serviceName);
 
         /// <summary>
         /// Finds a matching pattern for a given error context.
@@ -31,4 +32,10 @@ namespace RuntimeErrorSage.Application.Pattern.Interfaces
         Task<ErrorPattern?> FindMatchingPatternAsync(ErrorContext context, string serviceName);
     }
 } 
+
+
+
+
+
+
 

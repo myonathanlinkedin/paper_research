@@ -67,3 +67,8 @@ public sealed class ValidationException : Exception
         Errors = Array.Empty<ValidationError>();
     }
 } 
+
+
+
+
+

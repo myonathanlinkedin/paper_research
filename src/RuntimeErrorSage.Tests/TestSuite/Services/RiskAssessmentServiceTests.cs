@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -46,7 +47,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
                 ConfirmationMessage = "Please confirm this action",
                 MaxRetries = 3,
                 RetryDelaySeconds = 30,
-                Warnings = new List<string> { "This is a test warning" },
+                Warnings = new Collection<string> { "This is a test warning" },
                 Context = new ErrorContext
                 {
                     ServiceName = "TestService",
@@ -109,10 +110,13 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
         [InlineData(SeverityLevel.Medium, RemediationActionImpactScope.Module, RemediationRiskLevel.Medium)]
         [InlineData(SeverityLevel.Low, RemediationActionImpactScope.Local, RemediationRiskLevel.Low)]
         [InlineData(SeverityLevel.Info, RemediationActionImpactScope.None, RemediationRiskLevel.None)]
-        public void CalculateRiskLevel_ReturnsExpectedRiskLevel(
+        public 
             SeverityLevel severity,
             RemediationActionImpactScope impactScope,
-            RemediationRiskLevel expectedRiskLevel)
+            RemediationRiskLevel expectedRiskLevel { ArgumentNullException.ThrowIfNull(
+            SeverityLevel severity,
+            RemediationActionImpactScope impactScope,
+            RemediationRiskLevel expectedRiskLevel); }
         {
             // Arrange
             var action = new RemediationAction
@@ -385,3 +389,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
         }
     }
 } 
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Error;
@@ -10,25 +11,30 @@ public class ErrorDataFlow
     /// <summary>
     /// Gets or sets the source of the data flow.
     /// </summary>
-    public string Source { get; set; } = string.Empty;
+    public string Source { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the target of the data flow.
     /// </summary>
-    public string Target { get; set; } = string.Empty;
+    public string Target { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the type of data being flowed.
     /// </summary>
-    public string DataType { get; set; } = string.Empty;
+    public string DataType { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the volume of data.
     /// </summary>
-    public double Volume { get; set; }
+    public double Volume { get; }
 
     /// <summary>
     /// Gets or sets the timestamp of the data flow.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
 } 
+
+
+
+
+

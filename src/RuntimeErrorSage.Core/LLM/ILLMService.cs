@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace RuntimeErrorSage.Application.LLM;
@@ -14,3 +15,8 @@ public interface ILLMService
     /// <returns>The response.</returns>
     Task<string> GenerateAsync(string prompt);
 } 
+
+
+
+
+

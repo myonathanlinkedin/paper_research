@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
 
@@ -28,3 +29,9 @@ public interface IContextEnrichmentService
     /// <returns>A dictionary containing runtime context information</returns>
     Task<Dictionary<string, object>> GetRuntimeContextAsync();
 } 
+
+
+
+
+
+

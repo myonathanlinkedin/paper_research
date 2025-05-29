@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Options;
 
 namespace RuntimeErrorSage.Application.Interfaces;
@@ -13,3 +14,8 @@ public interface IConfigurable
     /// <param name="options">The configuration options</param>
     void Configure(RuntimeErrorSageOptions options);
 } 
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Application.Services.Models
@@ -10,12 +11,12 @@ namespace RuntimeErrorSage.Application.Services.Models
         /// <summary>
         /// Gets or sets the metric value.
         /// </summary>
-        public double Value { get; set; }
+        public double Value { get; }
 
         /// <summary>
         /// Gets or sets the metric unit.
         /// </summary>
-        public string Unit { get; set; }
+        public string Unit { get; }
 
         /// <summary>
         /// Gets or sets the metric metadata.
@@ -23,3 +24,8 @@ namespace RuntimeErrorSage.Application.Services.Models
         public Dictionary<string, object> Metadata { get; set; } = new();
     }
 } 
+
+
+
+
+

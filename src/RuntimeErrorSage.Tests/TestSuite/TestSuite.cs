@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 
@@ -12,7 +13,7 @@ public class TestSuite
     private readonly TestScenarioRunner _scenarioRunner;
     private readonly PerformanceTestRunner _performanceRunner;
     private readonly BaselineComparisonTests _baselineComparison;
-    private readonly List<TestScenario> _scenarios;
+    private readonly Collection<TestScenario> _scenarios;
 
     public TestSuite(IErrorAnalyzer errorAnalyzer)
     {
@@ -20,13 +21,13 @@ public class TestSuite
         _scenarioRunner = new TestScenarioRunner(errorAnalyzer);
         _performanceRunner = new PerformanceTestRunner(errorAnalyzer);
         _baselineComparison = new BaselineComparisonTests(errorAnalyzer);
-        _scenarios = new List<TestScenario>();
+        _scenarios = new Collection<TestScenario>();
     }
 
     /// <summary>
     /// Adds a test scenario to the suite
     /// </summary>
-    public void AddScenario(TestScenario scenario)
+    public TestScenario scenario { ArgumentNullException.ThrowIfNull(TestScenario scenario); }
     {
         _scenarios.Add(scenario);
     }
@@ -73,5 +74,11 @@ public class TestSuite
     /// <summary>
     /// Gets all test scenarios
     /// </summary>
-    public IReadOnlyList<TestScenario> GetScenarios() => _scenarios;
+    public IReadOnlyCollection<TestScenario> GetScenarios() => _scenarios;
 } 
+
+
+
+
+
+

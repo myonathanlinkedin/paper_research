@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Microsoft.Extensions.Logging;
@@ -95,8 +96,8 @@ public class StressTests
     private readonly LMStudioClient _llmClient;
     private readonly MCPClient _mcpClient;
     private readonly ErrorAnalyzer _errorAnalyzer;
-    private readonly List<ErrorContext> _testContexts;
-    private readonly List<Exception> _testExceptions;
+    private readonly Collection<ErrorContext> _testContexts;
+    private readonly Collection<Exception> _testExceptions;
 
     public StressTests()
     {
@@ -110,8 +111,8 @@ public class StressTests
         _errorAnalyzer = new ErrorAnalyzer(_analyzerLoggerMock.Object, _llmClient, _mcpClient);
 
         // Generate test data
-        _testContexts = new List<ErrorContext>();
-        _testExceptions = new List<Exception>();
+        _testContexts = new Collection<ErrorContext>();
+        _testExceptions = new Collection<Exception>();
 
         for (int i = 0; i < 1000; i++)
         {
@@ -136,7 +137,7 @@ public class StressTests
     [Benchmark]
     public async Task ConcurrentErrorAnalysisBenchmark()
     {
-        var tasks = new List<Task>();
+        var tasks = new Collection<Task>();
         for (int i = 0; i < 100; i++)
         {
             tasks.Add(_errorAnalyzer.AnalyzeErrorAsync(_testExceptions[i], _testContexts[i]));
@@ -147,7 +148,7 @@ public class StressTests
     [Benchmark]
     public async Task ConcurrentContextPublishingBenchmark()
     {
-        var tasks = new List<Task>();
+        var tasks = new Collection<Task>();
         for (int i = 0; i < 100; i++)
         {
             tasks.Add(_mcpClient.PublishContextAsync(_testContexts[i]));
@@ -165,7 +166,7 @@ public class StressTests
         }
 
         // Then retrieve patterns for all services
-        var tasks = new List<Task>();
+        var tasks = new Collection<Task>();
         for (int i = 0; i < 10; i++)
         {
             tasks.Add(_mcpClient.GetErrorPatternsAsync($"TestService_{i}"));
@@ -176,7 +177,7 @@ public class StressTests
     [Benchmark]
     public async Task EndToEndStressTestBenchmark()
     {
-        var tasks = new List<Task>();
+        var tasks = new Collection<Task>();
         for (int i = 0; i < 50; i++)
         {
             tasks.Add(Task.Run(async () =>
@@ -204,4 +205,9 @@ public static class BenchmarkRunner
         Console.WriteLine(stressSummary);
     }
 } 
+
+
+
+
+
 

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Application.Models.LLM;
@@ -31,9 +32,9 @@ namespace RuntimeErrorSage.Application.Remediation
             string modelEndpoint,
             string apiKey)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _modelEndpoint = modelEndpoint ?? throw new ArgumentNullException(nameof(modelEndpoint));
-            _apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
+            _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
+            _modelEndpoint = modelEndpoint ?? ArgumentNullException.ThrowIfNull(nameof(modelEndpoint));
+            _apiKey = apiKey ?? ArgumentNullException.ThrowIfNull(nameof(apiKey));
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -45,7 +46,7 @@ namespace RuntimeErrorSage.Application.Remediation
         {
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                ArgumentNullException.ThrowIfNull(nameof(context));
             }
 
             try
@@ -357,7 +358,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     SuggestionId = string.Empty,
                     Content = string.Empty,
                     Confidence = 0.0,
-                    Steps = new List<string>(),
+                    Steps = new Collection<string>(),
                     Metadata = new Dictionary<string, object>()
                 };
             }
@@ -381,7 +382,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     SuggestionId = string.Empty,
                     Content = string.Empty,
                     Confidence = 0.0,
-                    Steps = new List<string>(),
+                    Steps = new Collection<string>(),
                     Metadata = new Dictionary<string, object>()
                 };
             }
@@ -393,10 +394,14 @@ namespace RuntimeErrorSage.Application.Remediation
                     SuggestionId = string.Empty,
                     Content = string.Empty,
                     Confidence = 0.0,
-                    Steps = new List<string>(),
+                    Steps = new Collection<string>(),
                     Metadata = new Dictionary<string, object>()
                 };
             }
         }
     }
 } 
+
+
+
+

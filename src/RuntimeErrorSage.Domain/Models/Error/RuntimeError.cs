@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,32 +13,32 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the unique identifier of the error.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the error message.
         /// </summary>
-        public string Message { get; set; }
+        public string Message { get; }
 
         /// <summary>
         /// Gets or sets the error type.
         /// </summary>
-        public string ErrorType { get; set; }
+        public string ErrorType { get; }
 
         /// <summary>
         /// Gets or sets the component ID where the error occurred.
         /// </summary>
-        public string ComponentId { get; set; }
+        public string ComponentId { get; }
 
         /// <summary>
         /// Gets or sets the timestamp when the error occurred.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the stack trace of the error.
         /// </summary>
-        public string StackTrace { get; set; }
+        public string StackTrace { get; }
 
         /// <summary>
         /// Gets or sets additional metadata about the error.
@@ -99,3 +100,9 @@ namespace RuntimeErrorSage.Application.Models.Error
         }
     }
 } 
+
+
+
+
+
+

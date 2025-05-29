@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
@@ -35,3 +36,9 @@ public enum ImplementationCost
     /// </summary>
     VeryHigh = 5
 } 
+
+
+
+
+
+

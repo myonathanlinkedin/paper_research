@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Remediation;
 using System;
@@ -21,7 +22,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <param name="resourceType">The type of resource.</param>
         /// <param name="usage">The resource usage value.</param>
         /// <param name="unit">The unit of measurement.</param>
-        public void RecordUsage(string actionId, string resourceType, double usage, string unit)
+        public string actionId, string resourceType, double usage, string unit { ArgumentNullException.ThrowIfNull(string actionId, string resourceType, double usage, string unit); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             ArgumentNullException.ThrowIfNull(resourceType);
@@ -40,7 +41,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
                     Unit = unit,
                     CurrentUsage = 0,
                     PeakUsage = 0,
-                    UsageHistory = new List<UsageRecord>()
+                    UsageHistory = new Collection<UsageRecord>()
                 };
             }
 
@@ -60,7 +61,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <param name="actionId">The action ID.</param>
         /// <param name="resourceType">The type of resource.</param>
         /// <returns>The current resource usage.</returns>
-        public ResourceMetrics GetUsage(string actionId, string resourceType)
+        public string actionId, string resourceType { ArgumentNullException.ThrowIfNull(string actionId, string resourceType); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             ArgumentNullException.ThrowIfNull(resourceType);
@@ -79,7 +80,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="resourceType">The type of resource.</param>
         /// <param name="limits">The resource limits.</param>
-        public void SetResourceLimits(string resourceType, ResourceLimits limits)
+        public string resourceType, ResourceLimits limits { ArgumentNullException.ThrowIfNull(string resourceType, ResourceLimits limits); }
         {
             ArgumentNullException.ThrowIfNull(resourceType);
             ArgumentNullException.ThrowIfNull(limits);
@@ -91,7 +92,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="resourceType">The type of resource.</param>
         /// <returns>The resource limits.</returns>
-        public ResourceLimits GetResourceLimits(string resourceType)
+        public string resourceType { ArgumentNullException.ThrowIfNull(string resourceType); }
         {
             ArgumentNullException.ThrowIfNull(resourceType);
             return _resourceLimits.TryGetValue(resourceType, out var limits) ? limits : null;
@@ -102,7 +103,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <returns>True if usage is within limits, false otherwise.</returns>
-        public bool IsWithinLimits(string actionId)
+        public string actionId { ArgumentNullException.ThrowIfNull(string actionId); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
 
@@ -127,7 +128,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Clears resource usage data for an action.
         /// </summary>
         /// <param name="actionId">The action ID.</param>
-        public void ClearActionData(string actionId)
+        public string actionId { ArgumentNullException.ThrowIfNull(string actionId); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             _actionResources.Remove(actionId);
@@ -143,3 +144,9 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
+
+
+
+
+
+

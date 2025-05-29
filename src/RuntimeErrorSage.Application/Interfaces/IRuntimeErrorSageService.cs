@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
@@ -90,4 +91,10 @@ namespace RuntimeErrorSage.Application.Runtime.Interfaces
         Task<LLMAnalysisResult> AnalyzeWithLLMAsync(ErrorContext context);
     }
 } 
+
+
+
+
+
+
 

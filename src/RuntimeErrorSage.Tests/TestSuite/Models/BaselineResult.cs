@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Tests.TestSuite.Models;
 
 /// <summary>
@@ -8,32 +9,32 @@ public class BaselineResult
     /// <summary>
     /// Unique identifier for the result
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Name of the baseline test
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; } = string.Empty;
 
     /// <summary>
     /// Duration of the test in milliseconds
     /// </summary>
-    public long DurationMs { get; set; }
+    public long DurationMs { get; }
 
     /// <summary>
     /// Memory usage in bytes
     /// </summary>
-    public long MemoryUsage { get; set; }
+    public long MemoryUsage { get; }
 
     /// <summary>
     /// CPU usage percentage
     /// </summary>
-    public double CpuUsage { get; set; }
+    public double CpuUsage { get; }
 
     /// <summary>
     /// Whether the test passed
     /// </summary>
-    public bool Passed { get; set; }
+    public bool Passed { get; }
 
     /// <summary>
     /// Error message if the test failed
@@ -45,3 +46,8 @@ public class BaselineResult
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
 } 
+
+
+
+
+

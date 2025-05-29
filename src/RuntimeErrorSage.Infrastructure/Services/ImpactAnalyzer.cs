@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,7 @@ public class ImpactAnalyzer : IImpactAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<List<RuntimeErrorSage.Application.Models.Graph.ImpactAnalysisResult>> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph)
+    public async Task<Collection<RuntimeErrorSage.Application.Models.Graph.ImpactAnalysisResult>> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(graph);
@@ -33,7 +34,7 @@ public class ImpactAnalyzer : IImpactAnalyzer
         {
             _logger.LogInformation("Analyzing impact for error {ErrorId}", context.ErrorId);
 
-            var results = new List<RuntimeErrorSage.Application.Models.Graph.ImpactAnalysisResult>();
+            var results = new Collection<RuntimeErrorSage.Application.Models.Graph.ImpactAnalysisResult>();
 
             // Start from the error source node
             var startNodeId = context.ErrorSource;
@@ -108,7 +109,7 @@ public class ImpactAnalyzer : IImpactAnalyzer
             result.DirectDependencies = directDependencies;
 
             // Calculate indirect dependencies
-            var indirectDependencies = new List<DependencyNode>();
+            var indirectDependencies = new Collection<DependencyNode>();
             var visited = new HashSet<string> { node.Id };
             var queue = new Queue<string>();
             foreach (var dep in directDependencies)
@@ -214,3 +215,9 @@ public class ImpactAnalyzer : IImpactAnalyzer
         return Math.Min(confidence, 1.0);
     }
 } 
+
+
+
+
+
+

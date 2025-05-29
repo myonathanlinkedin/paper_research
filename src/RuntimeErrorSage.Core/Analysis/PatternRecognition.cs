@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Core.Storage.Utilities;
@@ -20,8 +21,8 @@ namespace RuntimeErrorSage.Application.Analysis
         private readonly ILogger<PatternRecognition> _logger;
         private readonly IMCPClient _mcpClient;
         private readonly RuntimeErrorSageOptions _options;
-        private readonly ConcurrentDictionary<string, List<ErrorPattern>> _patternCache;
-        private List<ErrorPattern> _patterns;
+        private readonly ConcurrentDictionary<string, Collection<ErrorPattern>> _patternCache;
+        private Collection<ErrorPattern> _patterns;
         private readonly IModel _model;
         private readonly IStorage _storage;
 
@@ -41,8 +42,8 @@ namespace RuntimeErrorSage.Application.Analysis
             _logger = logger;
             _mcpClient = mcpClient;
             _options = options.Value;
-            _patternCache = new ConcurrentDictionary<string, List<ErrorPattern>>();
-            _patterns = new List<ErrorPattern>();
+            _patternCache = new ConcurrentDictionary<string, Collection<ErrorPattern>>();
+            _patterns = new Collection<ErrorPattern>();
             _model = model;
             _storage = storage;
         }
@@ -63,11 +64,11 @@ namespace RuntimeErrorSage.Application.Analysis
             }
         }
 
-        public async Task<List<ErrorPattern>> DetectPatternsAsync(List<ErrorContext> contexts, string serviceName)
+        public async Task<Collection<ErrorPattern>> DetectPatternsAsync(Collection<ErrorContext> contexts, string serviceName)
         {
             try
             {
-                var patterns = new List<ErrorPattern>();
+                var patterns = new Collection<ErrorPattern>();
                 foreach (var context in contexts)
                 {
                     var pattern = await FindMatchingPatternAsync(context, serviceName);
@@ -104,7 +105,7 @@ namespace RuntimeErrorSage.Application.Analysis
             }
         }
 
-        private async Task<List<ErrorPattern>> GetPatternsAsync(string serviceName)
+        private async Task<Collection<ErrorPattern>> GetPatternsAsync(string serviceName)
         {
             if (!_patternCache.TryGetValue(serviceName, out var patterns))
             {
@@ -152,4 +153,10 @@ namespace RuntimeErrorSage.Application.Analysis
         }
     }
 } 
+
+
+
+
+
+
 

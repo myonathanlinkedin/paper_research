@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Remediation
@@ -10,26 +11,29 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the ID of the action.
         /// </summary>
-        public string ActionId { get; set; }
+        public string ActionId { get; }
 
         /// <summary>
         /// Gets or sets the type of event.
         /// </summary>
-        public AuditEventType EventType { get; set; }
+        public AuditEventType EventType { get; }
 
         /// <summary>
         /// Gets or sets additional details about the event.
         /// </summary>
-        public string Details { get; set; }
+        public string Details { get; }
 
         /// <summary>
         /// Gets or sets the ID of the user who performed the action.
         /// </summary>
-        public string UserId { get; set; }
+        public string UserId { get; }
 
         /// <summary>
         /// Gets or sets the timestamp of the event.
         /// </summary>
-        public DateTime Timestamp { get; set; }
+        public DateTime Timestamp { get; }
     }
 } 
+
+
+

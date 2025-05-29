@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,7 @@ public class GraphBuilder : IGraphBuilder
 
     public GraphBuilder(ILogger<GraphBuilder> logger)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger = logger ?? ArgumentNullException.ThrowIfNull(logger);
     }
 
     /// <inheritdoc />
@@ -127,3 +128,6 @@ public class GraphBuilder : IGraphBuilder
         }
     }
 } 
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -54,11 +55,16 @@ namespace RuntimeErrorSage.Application.Options
         /// <summary>
         /// Gets or sets the maximum number of metrics to keep in history.
         /// </summary>
-        public int MaxMetricsHistory { get; set; } = 1000;
+        public int MaxMetricsHistory { get; } = 1000;
 
         /// <summary>
         /// Gets or sets the metrics retention period.
         /// </summary>
-        public TimeSpan MetricsRetentionPeriod { get; set; } = TimeSpan.FromDays(7);
+        public TimeSpan MetricsRetentionPeriod { get; } = TimeSpan.FromDays(7);
     }
 } 
+
+
+
+
+

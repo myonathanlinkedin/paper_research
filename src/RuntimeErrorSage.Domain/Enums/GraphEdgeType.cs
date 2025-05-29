@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
@@ -65,3 +66,9 @@ public enum GraphEdgeType
     /// </summary>
     Follows = 11
 } 
+
+
+
+
+
+

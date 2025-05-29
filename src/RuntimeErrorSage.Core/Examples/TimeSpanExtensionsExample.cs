@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Extensions;
@@ -14,7 +15,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// Shows incorrect vs correct ways to access properties of nullable TimeSpan.
         /// </summary>
         /// <param name="result">The remediation action result.</param>
-        public void ShowTimeSpanExtensionsExample(RemediationActionResult result)
+        public RemediationActionResult result { ArgumentNullException.ThrowIfNull(RemediationActionResult result); }
         {
             // INCORRECT: This might cause null reference exceptions
             // double durationMs = result.Duration?.TotalMilliseconds ?? 0;
@@ -43,7 +44,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// <param name="startTime">The start time.</param>
         /// <param name="endTime">The end time (nullable).</param>
         /// <returns>The duration in milliseconds.</returns>
-        public double CalculateDuration(DateTime startTime, DateTime? endTime)
+        public DateTime startTime, DateTime? endTime { ArgumentNullException.ThrowIfNull(DateTime startTime, DateTime? endTime); }
         {
             // If endTime is null, use current time
             TimeSpan? duration = endTime.HasValue ? endTime.Value - startTime : DateTime.UtcNow - startTime;
@@ -60,7 +61,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// </summary>
         /// <param name="executionTimes">The list of execution times.</param>
         /// <returns>The average execution time in milliseconds.</returns>
-        public double CalculateAverageExecutionTime(List<TimeSpan?> executionTimes)
+        public Collection<TimeSpan?> executionTimes { ArgumentNullException.ThrowIfNull(Collection<TimeSpan?> executionTimes); }
         {
             if (executionTimes == null || executionTimes.Count == 0)
             {
@@ -77,3 +78,9 @@ namespace RuntimeErrorSage.Application.Examples
         }
     }
 } 
+
+
+
+
+
+

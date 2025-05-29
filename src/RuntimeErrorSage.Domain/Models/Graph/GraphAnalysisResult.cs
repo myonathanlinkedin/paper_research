@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -15,27 +16,27 @@ public class GraphAnalysisResult
     /// <summary>
     /// Gets or sets the unique identifier of the analysis.
     /// </summary>
-    public string AnalysisId { get; set; } = Guid.NewGuid().ToString();
+    public string AnalysisId { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the dependency graph used for analysis.
     /// </summary>
-    public DependencyGraph DependencyGraph { get; set; }
+    public DependencyGraph DependencyGraph { get; }
 
     /// <summary>
     /// Gets or sets the impact analysis results.
     /// </summary>
-    public List<ImpactAnalysisResult> ImpactResults { get; set; } = new();
+    public IReadOnlyCollection<ImpactResults> ImpactResults { get; } = new();
 
     /// <summary>
     /// Gets or sets the related errors found during analysis.
     /// </summary>
-    public List<RuntimeErrorSage.Application.Models.Error.RelatedError> RelatedErrors { get; set; } = new();
+    public IReadOnlyCollection<RelatedErrors> RelatedErrors { get; } = new();
 
     /// <summary>
     /// Gets or sets the analysis start time.
     /// </summary>
-    public DateTime StartTime { get; set; }
+    public DateTime StartTime { get; }
 
     /// <summary>
     /// Gets or sets the analysis end time.
@@ -50,17 +51,17 @@ public class GraphAnalysisResult
     /// <summary>
     /// Gets or sets the analysis status.
     /// </summary>
-    public AnalysisStatus Status { get; set; }
+    public AnalysisStatus Status { get; }
 
     /// <summary>
     /// Gets or sets the analysis error message if any.
     /// </summary>
-    public string ErrorMessage { get; set; }
+    public string ErrorMessage { get; }
 
     /// <summary>
     /// Gets or sets whether the analysis is valid.
     /// </summary>
-    public bool IsValid { get; set; } = true;
+    public bool IsValid { get; } = true;
 
     /// <summary>
     /// Gets or sets the analysis metadata.
@@ -70,12 +71,12 @@ public class GraphAnalysisResult
     /// <summary>
     /// Gets or sets the correlation ID.
     /// </summary>
-    public string CorrelationId { get; set; }
+    public string CorrelationId { get; }
 
     /// <summary>
     /// Gets or sets the timestamp of the analysis.
     /// </summary>
-    public DateTime Timestamp { get; set; }
+    public DateTime Timestamp { get; }
 
     /// <summary>
     /// Gets or sets the analysis metrics.
@@ -85,32 +86,32 @@ public class GraphAnalysisResult
     /// <summary>
     /// Gets or sets the list of nodes in the graph.
     /// </summary>
-    public List<DependencyNode> Nodes { get; set; } = new List<DependencyNode>();
+    public IReadOnlyCollection<Nodes> Nodes { get; } = new Collection<DependencyNode>();
 
     /// <summary>
     /// Gets or sets the list of edges in the graph.
     /// </summary>
-    public List<DependencyEdge> Edges { get; set; } = new List<DependencyEdge>();
+    public IReadOnlyCollection<Edges> Edges { get; } = new Collection<DependencyEdge>();
 
     /// <summary>
     /// Gets or sets the root node.
     /// </summary>
-    public DependencyNode RootNode { get; set; }
+    public DependencyNode RootNode { get; }
 
     /// <summary>
     /// Gets or sets the error context.
     /// </summary>
-    public ErrorContext Context { get; set; }
+    public ErrorContext Context { get; }
 
     /// <summary>
     /// Gets or sets the component ID.
     /// </summary>
-    public string ComponentId { get; set; } = string.Empty;
+    public string ComponentId { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the component name.
     /// </summary>
-    public string ComponentName { get; set; } = string.Empty;
+    public string ComponentName { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets additional context.
@@ -120,5 +121,11 @@ public class GraphAnalysisResult
     /// <summary>
     /// Gets or sets the analysis insights.
     /// </summary>
-    public GraphInsights Insights { get; set; }
+    public GraphInsights Insights { get; }
 }
+
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ namespace RuntimeErrorSage.Application.Services.Graph
                 ErrorId = errorId,
                 Timestamp = DateTime.UtcNow,
                 ComponentHealth = new Dictionary<string, Models.Graph.ComponentHealth>(),
-                ComponentRelationships = new List<ComponentRelationship>(),
+                ComponentRelationships = new Collection<ComponentRelationship>(),
                 Metadata = new Dictionary<string, object>()
             };
 
@@ -157,4 +158,10 @@ namespace RuntimeErrorSage.Application.Services.Graph
         }
     }
 } 
+
+
+
+
+
+
 

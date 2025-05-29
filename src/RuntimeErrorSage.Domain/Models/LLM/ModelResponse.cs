@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,12 +12,12 @@ namespace RuntimeErrorSage.Application.Models.LLM
         /// <summary>
         /// Gets or sets the response text.
         /// </summary>
-        public string Text { get; set; }
+        public string Text { get; }
 
         /// <summary>
         /// Gets or sets the confidence score (0-1).
         /// </summary>
-        public double Confidence { get; set; }
+        public double Confidence { get; }
 
         /// <summary>
         /// Gets or sets the response metadata.
@@ -26,21 +27,27 @@ namespace RuntimeErrorSage.Application.Models.LLM
         /// <summary>
         /// Gets or sets the response tokens.
         /// </summary>
-        public List<string> Tokens { get; set; } = new();
+        public IReadOnlyCollection<Tokens> Tokens { get; } = new();
 
         /// <summary>
         /// Gets or sets the response latency in milliseconds.
         /// </summary>
-        public double Latency { get; set; }
+        public double Latency { get; }
 
         /// <summary>
         /// Gets or sets whether the response was successful.
         /// </summary>
-        public bool Success { get; set; }
+        public bool Success { get; }
 
         /// <summary>
         /// Gets or sets the error message if any.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string ErrorMessage { get; }
     }
 } 
+
+
+
+
+
+

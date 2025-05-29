@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -41,7 +42,7 @@ namespace RuntimeErrorSage.Application.Remediation
             try
             {
                 var analysis = await _errorContextAnalyzer.AnalyzeContextAsync(errorContext);
-                var suggestions = new List<RemediationAction>();
+                var suggestions = new Collection<RemediationAction>();
 
                 // Implementation details...
                 return new RemediationSuggestion
@@ -71,7 +72,7 @@ namespace RuntimeErrorSage.Application.Remediation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error validating suggestion for error {ErrorType}", errorContext.ErrorType);
-                return new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } };
+                return new ValidationResult { IsValid = false, Messages = new Collection<string> { ex.Message } };
             }
         }
 
@@ -104,7 +105,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     ActionId = suggestion.SuggestionId,
                     Severity = RemediationSeverity.Medium,
                     Scope = ImpactScope.Global,
-                    AffectedComponents = new List<string>(),
+                    AffectedComponents = new Collection<string>(),
                     EstimatedDuration = TimeSpan.FromMinutes(5)
                 };
                 return impact;
@@ -117,3 +118,8 @@ namespace RuntimeErrorSage.Application.Remediation
         }
     }
 } 
+
+
+
+
+

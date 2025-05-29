@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Models.Graph;
 using System;
@@ -13,32 +14,32 @@ namespace RuntimeErrorSage.Application.Models.Dependency
         /// <summary>
         /// Gets or sets the unique identifier for this potential error source.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the node in the dependency graph that is the potential source of the error.
         /// </summary>
-        public GraphNode Node { get; set; }
+        public GraphNode Node { get; }
 
         /// <summary>
         /// Gets or sets the confidence level that this is the actual error source.
         /// </summary>
-        public double Confidence { get; set; }
+        public double Confidence { get; }
 
         /// <summary>
         /// Gets or sets the impact severity of this error source.
         /// </summary>
-        public ImpactSeverity Severity { get; set; }
+        public ImpactSeverity Severity { get; }
 
         /// <summary>
         /// Gets or sets the impact scope of this error source.
         /// </summary>
-        public ImpactScope Scope { get; set; }
+        public ImpactScope Scope { get; }
 
         /// <summary>
         /// Gets or sets the reasons why this node is considered a potential error source.
         /// </summary>
-        public List<string> Reasons { get; set; } = new List<string>();
+        public IReadOnlyCollection<Reasons> Reasons { get; } = new Collection<string>();
 
         /// <summary>
         /// Gets or sets additional evidence supporting this node as a potential error source.
@@ -48,17 +49,17 @@ namespace RuntimeErrorSage.Application.Models.Dependency
         /// <summary>
         /// Gets or sets the error type if known.
         /// </summary>
-        public string ErrorType { get; set; }
+        public string ErrorType { get; }
 
         /// <summary>
         /// Gets or sets the error message if known.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string ErrorMessage { get; }
 
         /// <summary>
         /// Gets or sets the timestamp when the error was detected.
         /// </summary>
-        public DateTime DetectionTime { get; set; } = DateTime.UtcNow;
+        public DateTime DetectionTime { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the estimated time when the error occurred.
@@ -68,11 +69,16 @@ namespace RuntimeErrorSage.Application.Models.Dependency
         /// <summary>
         /// Gets or sets the potentially affected downstream nodes.
         /// </summary>
-        public List<GraphNode> AffectedNodes { get; set; } = new List<GraphNode>();
+        public IReadOnlyCollection<AffectedNodes> AffectedNodes { get; } = new Collection<GraphNode>();
 
         /// <summary>
         /// Gets or sets the potential remediation actions.
         /// </summary>
-        public List<string> PotentialRemediations { get; set; } = new List<string>();
+        public IReadOnlyCollection<PotentialRemediations> PotentialRemediations { get; } = new Collection<string>();
     }
 } 
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Linq;
 using Xunit;
@@ -39,10 +40,13 @@ namespace RuntimeErrorSage.Tests.TestSuite.Utilities
         [InlineData(SeverityLevel.Info, RemediationActionImpactScope.Module, RemediationRiskLevel.None)]
         [InlineData(SeverityLevel.Info, RemediationActionImpactScope.Local, RemediationRiskLevel.None)]
         [InlineData(SeverityLevel.Info, RemediationActionImpactScope.None, RemediationRiskLevel.None)]
-        public void CalculateRiskLevel_ReturnsExpectedRiskLevel(
+        public 
             SeverityLevel severity,
             RemediationActionImpactScope impactScope,
-            RemediationRiskLevel expectedRiskLevel)
+            RemediationRiskLevel expectedRiskLevel { ArgumentNullException.ThrowIfNull(
+            SeverityLevel severity,
+            RemediationActionImpactScope impactScope,
+            RemediationRiskLevel expectedRiskLevel); }
         {
             // Arrange
             var helper = new RiskAssessmentHelper();
@@ -61,7 +65,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Utilities
         [InlineData(RemediationRiskLevel.Low)]
         [InlineData(RemediationRiskLevel.None)]
         [InlineData(RemediationRiskLevel.Unknown)]
-        public void GeneratePotentialIssues_WithRiskLevel_ReturnsNonEmptyList(RemediationRiskLevel riskLevel)
+        public RemediationRiskLevel riskLevel { ArgumentNullException.ThrowIfNull(RemediationRiskLevel riskLevel); }
         {
             // Act
             var result = RiskAssessmentHelper.GeneratePotentialIssues(riskLevel);
@@ -136,7 +140,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Utilities
         [InlineData(RemediationRiskLevel.Low)]
         [InlineData(RemediationRiskLevel.None)]
         [InlineData(RemediationRiskLevel.Unknown)]
-        public void GenerateMitigationSteps_WithRiskLevel_ReturnsNonEmptyList(RemediationRiskLevel riskLevel)
+        public RemediationRiskLevel riskLevel { ArgumentNullException.ThrowIfNull(RemediationRiskLevel riskLevel); }
         {
             // Act
             var result = RiskAssessmentHelper.GenerateMitigationSteps(riskLevel);
@@ -227,3 +231,8 @@ namespace RuntimeErrorSage.Tests.TestSuite.Utilities
         }
     }
 } 
+
+
+
+
+

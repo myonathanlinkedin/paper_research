@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,8 @@ namespace RuntimeErrorSage.Tests.TestSuite;
 /// </summary>
 public class TestSuiteResult
 {
-    private readonly List<ErrorScenario> _scenarios;
-    private readonly List<PerformanceMetric> _metrics;
+    private readonly Collection<ErrorScenario> _scenarios;
+    private readonly Collection<PerformanceMetric> _metrics;
     private readonly Dictionary<string, object> _metadata;
 
     /// <summary>
@@ -20,20 +21,20 @@ public class TestSuiteResult
     /// </summary>
     public TestSuiteResult()
     {
-        _scenarios = new List<ErrorScenario>();
-        _metrics = new List<PerformanceMetric>();
+        _scenarios = new Collection<ErrorScenario>();
+        _metrics = new Collection<PerformanceMetric>();
         _metadata = new Dictionary<string, object>();
     }
 
     /// <summary>
     /// Gets the scenarios.
     /// </summary>
-    public IReadOnlyList<ErrorScenario> Scenarios => _scenarios;
+    public IReadOnlyCollection<ErrorScenario> Scenarios => _scenarios;
 
     /// <summary>
     /// Gets the metrics.
     /// </summary>
-    public IReadOnlyList<PerformanceMetric> Metrics => _metrics;
+    public IReadOnlyCollection<PerformanceMetric> Metrics => _metrics;
 
     /// <summary>
     /// Gets the metadata.
@@ -124,10 +125,10 @@ public class TestSuiteResult
     /// Adds a scenario.
     /// </summary>
     /// <param name="scenario">The scenario.</param>
-    public void AddScenario(ErrorScenario scenario)
+    public ErrorScenario scenario { ArgumentNullException.ThrowIfNull(ErrorScenario scenario); }
     {
         if (scenario == null)
-            throw new ArgumentNullException(nameof(scenario));
+            ArgumentNullException.ThrowIfNull(nameof(scenario));
 
         _scenarios.Add(scenario);
     }
@@ -136,10 +137,10 @@ public class TestSuiteResult
     /// Adds a metric.
     /// </summary>
     /// <param name="metric">The metric.</param>
-    public void AddMetric(PerformanceMetric metric)
+    public PerformanceMetric metric { ArgumentNullException.ThrowIfNull(PerformanceMetric metric); }
     {
         if (metric == null)
-            throw new ArgumentNullException(nameof(metric));
+            ArgumentNullException.ThrowIfNull(nameof(metric));
 
         _metrics.Add(metric);
     }
@@ -149,7 +150,7 @@ public class TestSuiteResult
     /// </summary>
     /// <param name="key">The key.</param>
     /// <param name="value">The value.</param>
-    public void AddMetadata(string key, object value)
+    public string key, object value { ArgumentNullException.ThrowIfNull(string key, object value); }
     {
         if (string.IsNullOrEmpty(key))
             throw new ArgumentException("Key cannot be null or empty.", nameof(key));
@@ -162,7 +163,7 @@ public class TestSuiteResult
     /// </summary>
     /// <param name="key">The key.</param>
     /// <returns>The metadata value.</returns>
-    public object GetMetadata(string key)
+    public string key { ArgumentNullException.ThrowIfNull(string key); }
     {
         if (string.IsNullOrEmpty(key))
             throw new ArgumentException("Key cannot be null or empty.", nameof(key));
@@ -187,3 +188,9 @@ public class TestSuiteResult
         return value is T typedValue ? typedValue : default;
     }
 } 
+
+
+
+
+
+

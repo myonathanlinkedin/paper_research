@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Tests.TestSuite.Models;
 
 /// <summary>
@@ -8,37 +9,37 @@ public class TestScenario
     /// <summary>
     /// Unique identifier for the scenario
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Name of the scenario
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; } = string.Empty;
 
     /// <summary>
     /// Description of the scenario
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    public string Description { get; } = string.Empty;
 
     /// <summary>
     /// Category of the scenario (e.g., "Database", "HTTP", "Memory")
     /// </summary>
-    public string Category { get; set; } = string.Empty;
+    public string Category { get; } = string.Empty;
 
     /// <summary>
     /// Expected error type
     /// </summary>
-    public string ExpectedErrorType { get; set; } = string.Empty;
+    public string ExpectedErrorType { get; } = string.Empty;
 
     /// <summary>
     /// Expected error message
     /// </summary>
-    public string ExpectedErrorMessage { get; set; } = string.Empty;
+    public string ExpectedErrorMessage { get; } = string.Empty;
 
     /// <summary>
     /// Expected remediation action
     /// </summary>
-    public string ExpectedRemediation { get; set; } = string.Empty;
+    public string ExpectedRemediation { get; } = string.Empty;
 
     /// <summary>
     /// Setup action to prepare the scenario
@@ -60,3 +61,9 @@ public class TestScenario
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
 } 
+
+
+
+
+
+

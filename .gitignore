@@ -211,4 +211,10 @@ solid_report.txt
 
 # PowerShell files
 *.ps1
-!analyze_code.ps1 
+!analyze_code.ps1
+
+# Unwanted JSON files
+fix_plan.json
+*_plan.json
+*_output.json
+*_result.json 

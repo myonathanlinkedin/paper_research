@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -39,18 +40,18 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
         IRemediationMetricsCollector metricsCollector,
         ILLMClient llmClient)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
-        _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-        _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-        _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+        _logger = logger ?? ArgumentNullException.ThrowIfNull(logger);
+        _errorContextAnalyzer = errorContextAnalyzer ?? ArgumentNullException.ThrowIfNull(errorContextAnalyzer);
+        _registry = registry ?? ArgumentNullException.ThrowIfNull(registry);
+        _validator = validator ?? ArgumentNullException.ThrowIfNull(validator);
+        _metricsCollector = metricsCollector ?? ArgumentNullException.ThrowIfNull(metricsCollector);
+        _llmClient = llmClient ?? ArgumentNullException.ThrowIfNull(llmClient);
     }
 
     /// <summary>
     /// Returns applicable remediation strategies for the given error context using graph-based and LLM analysis.
     /// </summary>
-    public async Task<List<IRemediationStrategy>> GetApplicableStrategiesAsync(ErrorContext context)
+    public async Task<Collection<IRemediationStrategy>> GetApplicableStrategiesAsync(ErrorContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -61,7 +62,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
 
             // Get strategies from the registry for the error type
             var strategies = await _registry.GetStrategiesForErrorAsync(context);
-            var applicable = new List<IRemediationStrategy>();
+            var applicable = new Collection<IRemediationStrategy>();
 
             foreach (var strategy in strategies)
             {
@@ -86,7 +87,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting applicable strategies for error type {ErrorType}", context.ErrorType);
-            return new List<IRemediationStrategy>();
+            return new Collection<IRemediationStrategy>();
         }
     }
 
@@ -122,7 +123,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
                 return new RemediationPlan
                 {
                     PlanId = Guid.NewGuid().ToString(),
-                    Steps = new List<RemediationStep>(),
+                    Steps = new Collection<RemediationStep>(),
                     Status = RemediationPlanStatus.NoStrategiesAvailable,
                     Message = $"No applicable strategies found for error type '{context.ErrorType}'"
                 };
@@ -131,7 +132,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             var plan = new RemediationPlan
             {
                 PlanId = Guid.NewGuid().ToString(),
-                Steps = new List<RemediationStep>(),
+                Steps = new Collection<RemediationStep>(),
                 Status = RemediationPlanStatus.Created,
                 Message = "Remediation plan created"
             };
@@ -166,7 +167,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             return new RemediationPlan
             {
                 PlanId = Guid.NewGuid().ToString(),
-                Steps = new List<RemediationStep>(),
+                Steps = new Collection<RemediationStep>(),
                 Status = RemediationPlanStatus.Failed,
                 Message = $"Failed to create remediation plan: {ex.Message}"
             };
@@ -186,7 +187,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
                 {
                     Severity = SeverityLevel.Low.ToImpactSeverity(),
                     Scope = ImpactScope.Component,
-                    AffectedComponents = new List<string> { context.ComponentId },
+                    AffectedComponents = new Collection<string> { context.ComponentId },
                     EstimatedRecoveryTime = TimeSpan.Zero,
                     RiskLevel = RiskLevel.Low,
                     Confidence = ConfidenceLevel.Low
@@ -197,7 +198,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             {
                 Severity = SeverityLevel.Low.ToImpactSeverity(),
                 Scope = ImpactScope.Component,
-                AffectedComponents = new List<string> { context.ComponentId },
+                AffectedComponents = new Collection<string> { context.ComponentId },
                 EstimatedRecoveryTime = TimeSpan.Zero,
                 RiskLevel = RiskLevel.Low,
                 Confidence = ConfidenceLevel.Low
@@ -229,7 +230,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             {
                 Severity = SeverityLevel.Unknown.ToImpactSeverity(),
                 Scope = ImpactScope.Component,
-                AffectedComponents = new List<string> { context.ComponentId },
+                AffectedComponents = new Collection<string> { context.ComponentId },
                 EstimatedRecoveryTime = TimeSpan.Zero,
                 RiskLevel = RiskLevel.Unknown,
                 Confidence = ConfidenceLevel.Low
@@ -243,7 +244,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
         {
             Severity = SeverityLevel.Low.ToImpactSeverity(),
             Scope = ImpactScope.Component,
-            AffectedComponents = new List<string>(),
+            AffectedComponents = new Collection<string>(),
             EstimatedRecoveryTime = TimeSpan.FromMinutes(5)
         };
     }
@@ -254,7 +255,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
         {
             Severity = SeverityLevel.Unknown.ToImpactSeverity(),
             Scope = ImpactScope.Component,
-            AffectedComponents = new List<string>(),
+            AffectedComponents = new Collection<string>(),
             EstimatedRecoveryTime = TimeSpan.Zero
         };
     }
@@ -281,3 +282,6 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
         return plan;
     }
 } 
+
+
+

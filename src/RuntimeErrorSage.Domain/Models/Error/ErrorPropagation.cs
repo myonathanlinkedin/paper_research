@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,47 +13,47 @@ public class ErrorPropagation
     /// <summary>
     /// Gets or sets the unique identifier for this propagation.
     /// </summary>
-    public string PropagationId { get; set; } = Guid.NewGuid().ToString();
+    public string PropagationId { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the source error ID.
     /// </summary>
-    public string SourceErrorId { get; set; } = string.Empty;
+    public string SourceErrorId { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the source component ID.
     /// </summary>
-    public string SourceComponentId { get; set; } = string.Empty;
+    public string SourceComponentId { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the target component ID.
     /// </summary>
-    public string TargetComponentId { get; set; } = string.Empty;
+    public string TargetComponentId { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the propagation path.
     /// </summary>
-    public List<string> PropagationPath { get; set; } = new();
+    public IReadOnlyCollection<PropagationPath> PropagationPath { get; } = new();
 
     /// <summary>
     /// Gets or sets the relationship type.
     /// </summary>
-    public RelationshipType RelationType { get; set; }
+    public RelationshipType RelationType { get; }
 
     /// <summary>
     /// Gets or sets the error severity.
     /// </summary>
-    public ErrorSeverity Severity { get; set; }
+    public ErrorSeverity Severity { get; }
 
     /// <summary>
     /// Gets or sets the timestamp of propagation.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets whether the propagation is active.
     /// </summary>
-    public bool IsActive { get; set; }
+    public bool IsActive { get; }
 
     /// <summary>
     /// Gets or sets the propagation metadata.
@@ -62,7 +63,7 @@ public class ErrorPropagation
     /// <summary>
     /// Gets or sets the affected components.
     /// </summary>
-    public List<string> AffectedComponents { get; set; } = new();
+    public IReadOnlyCollection<AffectedComponents> AffectedComponents { get; } = new();
 
     /// <summary>
     /// Gets or sets the propagation impact.
@@ -72,7 +73,7 @@ public class ErrorPropagation
     /// <summary>
     /// Gets or sets the propagation paths through the system.
     /// </summary>
-    public List<List<string>> PropagationPaths { get; set; } = new List<List<string>>();
+    public Collection<Collection<string>> PropagationPaths { get; } = new Collection<Collection<string>>();
 
     /// <summary>
     /// Gets or sets the severity of the error in each component (component id -> severity).
@@ -82,10 +83,16 @@ public class ErrorPropagation
     /// <summary>
     /// Gets or sets the impact score of the error propagation (0-1).
     /// </summary>
-    public double ImpactScore { get; set; }
+    public double ImpactScore { get; }
 
     /// <summary>
     /// Gets or sets the source component where the error originated.
     /// </summary>
-    public string SourceComponent { get; set; } = string.Empty;
+    public string SourceComponent { get; } = string.Empty;
 } 
+
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,17 +13,17 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the unique identifier for the remediation.
         /// </summary>
-        public string RemediationId { get; set; } = string.Empty;
+        public string RemediationId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the current status of the remediation.
         /// </summary>
-        public RemediationStatusEnum Status { get; set; }
+        public RemediationStatusEnum Status { get; }
 
         /// <summary>
         /// Gets or sets the start time of the remediation.
         /// </summary>
-        public DateTime StartTime { get; set; }
+        public DateTime StartTime { get; }
 
         /// <summary>
         /// Gets or sets the end time of the remediation.
@@ -37,22 +38,22 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the progress percentage of the remediation.
         /// </summary>
-        public double Progress { get; set; }
+        public double Progress { get; }
 
         /// <summary>
         /// Gets or sets the list of completed steps.
         /// </summary>
-        public List<string> CompletedSteps { get; set; } = new();
+        public IReadOnlyCollection<CompletedSteps> CompletedSteps { get; } = new();
 
         /// <summary>
         /// Gets or sets the list of pending steps.
         /// </summary>
-        public List<string> PendingSteps { get; set; } = new();
+        public IReadOnlyCollection<PendingSteps> PendingSteps { get; } = new();
 
         /// <summary>
         /// Gets or sets the list of failed steps.
         /// </summary>
-        public List<string> FailedSteps { get; set; } = new();
+        public IReadOnlyCollection<FailedSteps> FailedSteps { get; } = new();
 
         /// <summary>
         /// Gets or sets the current step being executed.
@@ -67,12 +68,12 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the last update time of the status.
         /// </summary>
-        public DateTime LastUpdated { get; set; }
+        public DateTime LastUpdated { get; }
 
         /// <summary>
         /// Gets or sets whether the remediation can be rolled back.
         /// </summary>
-        public bool CanRollback { get; set; }
+        public bool CanRollback { get; }
 
         /// <summary>
         /// Gets or sets the rollback status if applicable.
@@ -80,3 +81,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         public RollbackStatus? RollbackStatus { get; set; }
     }
 } 
+
+
+
+

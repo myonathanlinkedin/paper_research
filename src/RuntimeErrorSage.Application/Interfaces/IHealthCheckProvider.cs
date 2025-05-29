@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,4 +10,10 @@ namespace RuntimeErrorSage.Application.Health.Interfaces
         Task<Dictionary<string, double>> GetMetricsAsync();
     }
 } 
+
+
+
+
+
+
 

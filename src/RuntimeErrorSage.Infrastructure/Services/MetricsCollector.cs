@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace RuntimeErrorSage.Application.Services
     public class MetricsCollector : RuntimeErrorSage.Application.Metrics.Interfaces.IMetricsCollector
     {
         private readonly ILogger<MetricsCollector> _logger;
-        private readonly Dictionary<string, List<MetricEntry>> _metrics = new Dictionary<string, List<MetricEntry>>();
+        private readonly Dictionary<string, Collection<MetricEntry>> _metrics = new Dictionary<string, Collection<MetricEntry>>();
 
         /// <summary>
         /// Gets whether the collector is enabled.
@@ -39,7 +40,7 @@ namespace RuntimeErrorSage.Application.Services
         /// <param name="logger">The logger.</param>
         public MetricsCollector(ILogger<MetricsCollector> logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
         }
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace RuntimeErrorSage.Application.Services
 
                 if (!_metrics.ContainsKey(name))
                 {
-                    _metrics[name] = new List<MetricEntry>();
+                    _metrics[name] = new Collection<MetricEntry>();
                 }
 
                 _metrics[name].Add(metric);
@@ -95,7 +96,7 @@ namespace RuntimeErrorSage.Application.Services
 
             if (range == null)
             {
-                throw new ArgumentNullException(nameof(range));
+                ArgumentNullException.ThrowIfNull(nameof(range));
             }
 
             try
@@ -136,7 +137,7 @@ namespace RuntimeErrorSage.Application.Services
 
             if (range == null)
             {
-                throw new ArgumentNullException(nameof(range));
+                ArgumentNullException.ThrowIfNull(nameof(range));
             }
 
             try
@@ -180,7 +181,7 @@ namespace RuntimeErrorSage.Application.Services
         {
             if (node == null)
             {
-                throw new ArgumentNullException(nameof(node));
+                ArgumentNullException.ThrowIfNull(nameof(node));
             }
 
             try
@@ -209,7 +210,7 @@ namespace RuntimeErrorSage.Application.Services
         {
             if (node == null)
             {
-                throw new ArgumentNullException(nameof(node));
+                ArgumentNullException.ThrowIfNull(nameof(node));
             }
 
             try
@@ -237,17 +238,22 @@ namespace RuntimeErrorSage.Application.Services
             /// <summary>
             /// Gets or sets the metric name.
             /// </summary>
-            public string Name { get; set; }
+            public string Name { get; }
 
             /// <summary>
             /// Gets or sets the metric value.
             /// </summary>
-            public double Value { get; set; }
+            public double Value { get; }
 
             /// <summary>
             /// Gets or sets the timestamp when the metric was recorded.
             /// </summary>
-            public DateTime Timestamp { get; set; }
+            public DateTime Timestamp { get; }
         }
     }
 } 
+
+
+
+
+

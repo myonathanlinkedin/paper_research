@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,27 +16,27 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the total number of executions.
         /// </summary>
-        public int TotalExecutions { get; set; }
+        public int TotalExecutions { get; }
 
         /// <summary>
         /// Gets or sets the number of successful executions.
         /// </summary>
-        public int SuccessfulExecutions { get; set; }
+        public int SuccessfulExecutions { get; }
 
         /// <summary>
         /// Gets or sets the number of failed executions.
         /// </summary>
-        public int FailedExecutions { get; set; }
+        public int FailedExecutions { get; }
 
         /// <summary>
         /// Gets or sets the average execution time in milliseconds.
         /// </summary>
-        public double AverageExecutionTimeMs { get; set; }
+        public double AverageExecutionTimeMs { get; }
 
         /// <summary>
         /// Gets or sets the execution history by strategy.
         /// </summary>
-        public Dictionary<string, List<RemediationExecution>> ExecutionHistory { get; set; } = new();
+        public Dictionary<string, Collection<RemediationExecution>> ExecutionHistory { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the success rate of executions (0-1).
@@ -50,27 +51,27 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the average resource usage during executions.
         /// </summary>
-        public MetricsResourceUsage AverageResourceUsage { get; set; } = new();
+        public MetricsResourceUsage AverageResourceUsage { get; } = new();
 
         /// <summary>
         /// Gets or sets the peak resource usage during executions.
         /// </summary>
-        public MetricsResourceUsage PeakResourceUsage { get; set; } = new();
+        public MetricsResourceUsage PeakResourceUsage { get; } = new();
 
         /// <summary>
         /// Gets or sets the number of timeouts encountered.
         /// </summary>
-        public int TimeoutCount { get; set; }
+        public int TimeoutCount { get; }
 
         /// <summary>
         /// Gets or sets the number of validation failures.
         /// </summary>
-        public int ValidationFailureCount { get; set; }
+        public int ValidationFailureCount { get; }
 
         /// <summary>
         /// Gets or sets the number of retries attempted.
         /// </summary>
-        public int RetryCount { get; set; }
+        public int RetryCount { get; }
 
         /// <summary>
         /// Gets or sets the average number of retries per execution.
@@ -100,22 +101,22 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the timestamp of the metrics.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the CPU usage.
         /// </summary>
-        public double CpuUsage { get; set; }
+        public double CpuUsage { get; }
 
         /// <summary>
         /// Gets or sets the memory usage.
         /// </summary>
-        public double MemoryUsage { get; set; }
+        public double MemoryUsage { get; }
 
         /// <summary>
         /// Gets or sets the latency.
         /// </summary>
-        public double Latency { get; set; }
+        public double Latency { get; }
 
         /// <summary>
         /// Gets or sets custom metrics.
@@ -125,13 +126,13 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets step metrics.
         /// </summary>
-        public List<StepMetrics> StepMetrics { get; set; } = new();
+        public IReadOnlyCollection<StepMetrics> StepMetrics { get; } = new();
 
         /// <summary>
         /// Updates the metrics with a new execution result.
         /// </summary>
         /// <param name="execution">The remediation execution to record.</param>
-        public void UpdateMetrics(RemediationExecution execution)
+        public RemediationExecution execution { ArgumentNullException.ThrowIfNull(RemediationExecution execution); }
         {
             TotalExecutions++;
             if (execution.IsSuccessful)
@@ -142,7 +143,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
             // Update execution history
             var strategyName = execution.StrategyName ?? "Unknown";
             if (!ExecutionHistory.ContainsKey(strategyName))
-                ExecutionHistory[strategyName] = new List<RemediationExecution>();
+                ExecutionHistory[strategyName] = new Collection<RemediationExecution>();
             ExecutionHistory[strategyName].Add(execution);
 
             // Update status distribution
@@ -217,7 +218,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// </summary>
         /// <param name="name">The name of the metric.</param>
         /// <param name="value">The value of the metric.</param>
-        public void AddCustomMetric(string name, double value)
+        public string name, double value { ArgumentNullException.ThrowIfNull(string name, double value); }
         {
             CustomMetrics[name] = value;
         }
@@ -226,7 +227,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// Adds step metrics.
         /// </summary>
         /// <param name="metrics">The step metrics to add.</param>
-        public void AddStepMetrics(StepMetrics metrics)
+        public StepMetrics metrics { ArgumentNullException.ThrowIfNull(StepMetrics metrics); }
         {
             StepMetrics.Add(metrics);
         }
@@ -262,3 +263,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         }
     }
 } 
+
+
+
+

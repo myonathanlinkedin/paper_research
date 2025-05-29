@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,52 +13,52 @@ public class LLMAnalysisResult
     /// <summary>
     /// Gets or sets the start time of the analysis.
     /// </summary>
-    public DateTime StartTime { get; set; }
+    public DateTime StartTime { get; }
 
     /// <summary>
     /// Gets or sets the end time of the analysis.
     /// </summary>
-    public DateTime EndTime { get; set; }
+    public DateTime EndTime { get; }
 
     /// <summary>
     /// Gets or sets the correlation identifier for tracking the analysis.
     /// </summary>
-    public string CorrelationId { get; set; } = string.Empty;
+    public string CorrelationId { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the status of the analysis.
     /// </summary>
-    public AnalysisStatus Status { get; set; }
+    public AnalysisStatus Status { get; }
 
     /// <summary>
     /// Gets or sets the root cause of the error.
     /// </summary>
-    public string RootCause { get; set; } = string.Empty;
+    public string RootCause { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the confidence score of the analysis.
     /// </summary>
-    public double Confidence { get; set; }
+    public double Confidence { get; }
 
     /// <summary>
     /// Gets or sets the severity of the error.
     /// </summary>
-    public ErrorSeverity Severity { get; set; }
+    public ErrorSeverity Severity { get; }
 
     /// <summary>
     /// Gets or sets the list of suggestions for remediation.
     /// </summary>
-    public List<LLMSuggestion> Suggestions { get; set; } = new();
+    public IReadOnlyCollection<Suggestions> Suggestions { get; } = new();
 
     /// <summary>
     /// Gets or sets the analysis insights
     /// </summary>
-    public string Insights { get; set; }
+    public string Insights { get; }
 
     /// <summary>
     /// Gets or sets the graph analysis insights
     /// </summary>
-    public GraphInsights GraphInsights { get; set; }
+    public GraphInsights GraphInsights { get; }
 
     /// <summary>
     /// Gets or sets the analysis metadata
@@ -67,5 +68,11 @@ public class LLMAnalysisResult
     /// <summary>
     /// Gets or sets the timestamp when the analysis result was created.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
 } 
+
+
+
+
+
+

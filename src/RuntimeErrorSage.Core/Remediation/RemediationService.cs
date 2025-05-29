@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -146,7 +147,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     Context = context,
                     Status = RemediationStatusEnum.Failed,
                     Message = $"Remediation failed: {ex.Message}",
-                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
+                    Validation = new ValidationResult { IsValid = false, Messages = new Collection<string> { ex.Message } }
                 };
             }
         }
@@ -169,7 +170,7 @@ namespace RuntimeErrorSage.Application.Remediation
                         Context = context,
                         Status = plan.Status,
                         Message = "Failed to create remediation plan",
-                        Validation = new ValidationResult { IsValid = false, Messages = new List<string> { "Failed to create remediation plan" } }
+                        Validation = new ValidationResult { IsValid = false, Messages = new Collection<string> { "Failed to create remediation plan" } }
                     };
                 }
 
@@ -182,7 +183,7 @@ namespace RuntimeErrorSage.Application.Remediation
                         Context = context,
                         Status = RemediationStatusEnum.Failed,
                         Message = "Plan validation failed",
-                        Validation = new ValidationResult { IsValid = false, Messages = new List<string> { "Plan validation failed" } }
+                        Validation = new ValidationResult { IsValid = false, Messages = new Collection<string> { "Plan validation failed" } }
                     };
                 }
 
@@ -195,7 +196,7 @@ namespace RuntimeErrorSage.Application.Remediation
                         Context = context,
                         Status = RemediationStatusEnum.Failed,
                         Message = "No strategy found in plan",
-                        Validation = new ValidationResult { IsValid = false, Messages = new List<string> { "No strategy found in plan" } }
+                        Validation = new ValidationResult { IsValid = false, Messages = new Collection<string> { "No strategy found in plan" } }
                     };
                 }
 
@@ -213,7 +214,7 @@ namespace RuntimeErrorSage.Application.Remediation
                         CompletedSteps = result.CompletedSteps,
                         FailedSteps = result.FailedSteps,
                         Metrics = result.Metrics,
-                        Validation = new ValidationResult { IsValid = false, Messages = new List<string> { result.Message } }
+                        Validation = new ValidationResult { IsValid = false, Messages = new Collection<string> { result.Message } }
                     };
                 }
 
@@ -225,7 +226,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     CompletedSteps = result.CompletedSteps,
                     FailedSteps = result.FailedSteps,
                     Metrics = result.Metrics,
-                    Validation = new ValidationResult { IsValid = true, Messages = new List<string> { "Remediation completed successfully" } }
+                    Validation = new ValidationResult { IsValid = true, Messages = new Collection<string> { "Remediation completed successfully" } }
                 };
             }
             catch (Exception ex)
@@ -236,7 +237,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     Context = context,
                     Status = RemediationStatusEnum.Failed,
                     Message = $"Remediation failed: {ex.Message}",
-                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
+                    Validation = new ValidationResult { IsValid = false, Messages = new Collection<string> { ex.Message } }
                 };
             }
         }
@@ -253,7 +254,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 var plan = new RemediationPlan(
                     "Default Plan",
                     "Default remediation plan",
-                    new List<RemediationAction>(),
+                    new Collection<RemediationAction>(),
                     new Dictionary<string, object>(),
                     TimeSpan.FromMinutes(5)
                 );
@@ -341,7 +342,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     {
                         ErrorContext = errorContext,
                         Status = SuggestionStatus.Failed,
-                        Strategies = new List<string>(),
+                        Strategies = new Collection<string>(),
                         Message = "No applicable strategies found"
                     };
                 }
@@ -350,7 +351,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 {
                     ErrorContext = errorContext,
                     Status = SuggestionStatus.Available,
-                    Strategies = new List<string> { strategy.Name },
+                    Strategies = new Collection<string> { strategy.Name },
                     ConfidenceScore = 0.8, // TODO: Get actual confidence score
                     Message = $"Suggested strategy: {strategy.Name}"
                 };
@@ -381,7 +382,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     return new ValidationResult
                     {
                         IsValid = false,
-                        Messages = new List<string> { "No strategy found in suggestion" }
+                        Messages = new Collection<string> { "No strategy found in suggestion" }
                     };
                 }
 
@@ -398,7 +399,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     return new ValidationResult
                     {
                         IsValid = false,
-                        Messages = new List<string> { "Strategy not found" }
+                        Messages = new Collection<string> { "Strategy not found" }
                     };
                 }
 
@@ -412,7 +413,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 return new ValidationResult
                 {
                     IsValid = false,
-                    Messages = new List<string> { $"Error validating suggestion: {ex.Message}" }
+                    Messages = new Collection<string> { $"Error validating suggestion: {ex.Message}" }
                 };
             }
         }
@@ -480,7 +481,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     Context = errorContext,
                     Status = RemediationStatusEnum.Failed,
                     Message = $"Error executing remediation suggestion: {ex.Message}",
-                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
+                    Validation = new ValidationResult { IsValid = false, Messages = new Collection<string> { ex.Message } }
                 };
             }
         }
@@ -506,7 +507,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     {
                         Severity = SeverityLevel.Unknown.ToImpactSeverity(),
                         Scope = ImpactScope.Component,
-                        AffectedComponents = new List<string>(),
+                        AffectedComponents = new Collection<string>(),
                         EstimatedRecoveryTime = TimeSpan.Zero
                     };
                 }
@@ -527,7 +528,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     {
                         Severity = SeverityLevel.Unknown.ToImpactSeverity(),
                         Scope = ImpactScope.Component,
-                        AffectedComponents = new List<string>(),
+                        AffectedComponents = new Collection<string>(),
                         EstimatedRecoveryTime = TimeSpan.Zero
                     };
                 }
@@ -538,7 +539,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 {
                     Severity = SeverityLevel.Unknown.ToImpactSeverity(),
                     Scope = ImpactScope.Component,
-                    AffectedComponents = new List<string>(),
+                    AffectedComponents = new Collection<string>(),
                     EstimatedRecoveryTime = TimeSpan.Zero
                 };
             }
@@ -549,7 +550,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 {
                     Severity = SeverityLevel.Unknown.ToImpactSeverity(),
                     Scope = ImpactScope.Component,
-                    AffectedComponents = new List<string>(),
+                    AffectedComponents = new Collection<string>(),
                     EstimatedRecoveryTime = TimeSpan.Zero
                 };
             }
@@ -610,7 +611,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     return new ValidationResult
                     {
                         IsValid = false,
-                        Messages = new List<string> { "No context provided for action validation" }
+                        Messages = new Collection<string> { "No context provided for action validation" }
                     };
                 }
                 
@@ -623,7 +624,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 return new ValidationResult
                 {
                     IsValid = false,
-                    Messages = new List<string> { $"Error validating action: {ex.Message}" }
+                    Messages = new Collection<string> { $"Error validating action: {ex.Message}" }
                 };
             }
         }
@@ -696,7 +697,7 @@ namespace RuntimeErrorSage.Application.Remediation
             {
                 Severity = SeverityLevel.Unknown.ToImpactSeverity(),
                 Scope = ImpactScope.Component,
-                AffectedComponents = new List<string>(),
+                AffectedComponents = new Collection<string>(),
                 EstimatedRecoveryTime = TimeSpan.Zero
             };
         }
@@ -707,7 +708,7 @@ namespace RuntimeErrorSage.Application.Remediation
             {
                 Severity = SeverityLevel.Unknown.ToImpactSeverity(),
                 Scope = ImpactScope.Component,
-                AffectedComponents = new List<string>(),
+                AffectedComponents = new Collection<string>(),
                 EstimatedRecoveryTime = TimeSpan.Zero,
                 Description = errorMessage
             };
@@ -719,7 +720,7 @@ namespace RuntimeErrorSage.Application.Remediation
             {
                 Severity = SeverityLevel.Unknown.ToImpactSeverity(),
                 Scope = ImpactScope.Unknown,
-                AffectedComponents = new List<string>(),
+                AffectedComponents = new Collection<string>(),
                 EstimatedRecoveryTime = TimeSpan.Zero,
                 Description = "Operation timed out"
             };
@@ -731,7 +732,7 @@ namespace RuntimeErrorSage.Application.Remediation
             {
                 Severity = SeverityLevel.Unknown.ToImpactSeverity(),
                 Scope = ImpactScope.Unknown,
-                AffectedComponents = new List<string>(),
+                AffectedComponents = new Collection<string>(),
                 EstimatedRecoveryTime = TimeSpan.Zero,
                 Description = "Operation was cancelled"
             };
@@ -837,3 +838,7 @@ namespace RuntimeErrorSage.Application.Remediation
         }
     }
 } 
+
+
+
+

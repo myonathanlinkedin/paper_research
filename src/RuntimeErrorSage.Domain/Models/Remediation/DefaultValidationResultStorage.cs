@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Validation;
 using System;
 using System.Collections.Generic;
@@ -8,14 +9,14 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     {
         private readonly Dictionary<string, ValidationResult> _results = new();
 
-        public void StoreResult(string actionId, ValidationResult result)
+        public string actionId, ValidationResult result { ArgumentNullException.ThrowIfNull(string actionId, ValidationResult result); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             ArgumentNullException.ThrowIfNull(result);
             _results[actionId] = result;
         }
 
-        public ValidationResult GetResult(string actionId)
+        public string actionId { ArgumentNullException.ThrowIfNull(string actionId); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             return _results.TryGetValue(actionId, out var result) ? result : null;
@@ -27,3 +28,8 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Examples.Models;
 
 /// <summary>
@@ -13,7 +14,7 @@ public class ResourceRequest
     /// <summary>
     /// The quantity of resources to allocate
     /// </summary>
-    public int RequestedAmount { get; set; }
+    public int RequestedAmount { get; }
 
     /// <summary>
     /// Optional priority level for the resource allocation (1 = lowest, 5 = highest)
@@ -21,4 +22,8 @@ public class ResourceRequest
     [System.ComponentModel.DataAnnotations.Range(1, 5, ErrorMessage = "Priority must be between 1 and 5")]
     public int? Priority { get; set; }
 } 
+
+
+
+
 

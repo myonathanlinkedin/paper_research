@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Error;
 using System;
@@ -16,14 +17,14 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     public class RemediationActionResult
     {
         private readonly Dictionary<string, ActionResult> _results = new();
-        private readonly List<Action<ActionResult>> _resultHandlers = new();
+        private readonly Collection<Action<ActionResult>> _resultHandlers = new();
 
         /// <summary>
         /// Records a result for a remediation action.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="result">The result to record.</param>
-        public void RecordResult(IRemediationAction action, ActionResult result)
+        public IRemediationAction action, ActionResult result { ArgumentNullException.ThrowIfNull(IRemediationAction action, ActionResult result); }
         {
             ArgumentNullException.ThrowIfNull(action);
             ArgumentNullException.ThrowIfNull(result);
@@ -37,7 +38,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <returns>The result, or null if not found.</returns>
-        public ActionResult GetResult(string actionId)
+        public string actionId { ArgumentNullException.ThrowIfNull(string actionId); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             return _results.TryGetValue(actionId, out var result) ? result : null;
@@ -47,7 +48,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Registers a handler for action results.
         /// </summary>
         /// <param name="handler">The handler to register.</param>
-        public void RegisterResultHandler(Action<ActionResult> handler)
+        public Action<ActionResult> handler { ArgumentNullException.ThrowIfNull(Action<ActionResult> handler); }
         {
             ArgumentNullException.ThrowIfNull(handler);
             _resultHandlers.Add(handler);
@@ -57,7 +58,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Unregisters a handler for action results.
         /// </summary>
         /// <param name="handler">The handler to unregister.</param>
-        public void UnregisterResultHandler(Action<ActionResult> handler)
+        public Action<ActionResult> handler { ArgumentNullException.ThrowIfNull(Action<ActionResult> handler); }
         {
             ArgumentNullException.ThrowIfNull(handler);
             _resultHandlers.Remove(handler);
@@ -87,6 +88,12 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
+
+
+
+
+
+
 
 
 

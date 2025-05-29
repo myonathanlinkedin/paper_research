@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ public class RemediationTracker : IRemediationTracker, IDisposable
 
     public RemediationTracker(ILogger<RemediationTracker> logger)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
     }
 
     public Task<RemediationStatusEnum> GetStatusAsync(string planId)
@@ -49,7 +50,7 @@ public class RemediationTracker : IRemediationTracker, IDisposable
         return Task.FromResult(RemediationStatusEnum.NotStarted);
     }
 
-    public Task UpdateStatusAsync(string planId, RemediationStatusEnum status, string? details = null)
+    public string planId, RemediationStatusEnum status, string? details = null { ArgumentNullException.ThrowIfNull(string planId, RemediationStatusEnum status, string? details = null); }
     {
         if (_executionTracker.TryGetValue(planId, out var execution))
         {
@@ -107,12 +108,12 @@ public class RemediationTracker : IRemediationTracker, IDisposable
         return _metricsTracker.GetMetricsAsync(planId);
     }
 
-    public Task RecordMetricsAsync(string planId, RemediationMetrics metrics)
+    public string planId, RemediationMetrics metrics { ArgumentNullException.ThrowIfNull(string planId, RemediationMetrics metrics); }
     {
         return _metricsTracker.RecordMetricsAsync(planId, metrics);
     }
 
-    public Task TrackRemediationAsync(RemediationExecution execution)
+    public RemediationExecution execution { ArgumentNullException.ThrowIfNull(RemediationExecution execution); }
     {
         return _executionTracker.TrackExecutionAsync(execution);
     }
@@ -127,12 +128,12 @@ public class RemediationTracker : IRemediationTracker, IDisposable
         return _executionTracker.GetExecutionHistoryAsync();
     }
 
-    public Task TrackActionStartAsync(string planId, string actionId)
+    public string planId, string actionId { ArgumentNullException.ThrowIfNull(string planId, string actionId); }
     {
         return _actionExecutionTracker.TrackActionStartAsync(planId, actionId);
     }
 
-    public Task TrackActionCompletionAsync(string planId, string actionId, bool success, string? errorMessage = null)
+    public string planId, string actionId, bool success, string? errorMessage = null { ArgumentNullException.ThrowIfNull(string planId, string actionId, bool success, string? errorMessage = null); }
     {
         return _actionExecutionTracker.TrackActionCompletionAsync(planId, actionId, success, errorMessage);
     }
@@ -176,3 +177,8 @@ public class RemediationTracker : IRemediationTracker, IDisposable
         GC.SuppressFinalize(this);
     }
 } 
+
+
+
+
+

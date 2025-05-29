@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Application.LLM.Options;
 using RuntimeErrorSage.Application.Models.Error;
@@ -15,85 +16,85 @@ namespace RuntimeErrorSage.Application.Options
         /// Gets or sets the LM Studio configuration options.
         /// Required for core research scope.
         /// </summary>
-        public LMStudioOptions LMStudio { get; set; } = new LMStudioOptions();
+        public LMStudioOptions LMStudio { get; } = new LMStudioOptions();
 
         /// <summary>
         /// Gets or sets whether error analysis is enabled.
         /// Required for core research scope.
         /// </summary>
-        public bool EnableErrorAnalysis { get; set; } = true;
+        public bool EnableErrorAnalysis { get; } = true;
 
         /// <summary>
         /// Gets or sets whether pattern recognition is enabled.
         /// Additional feature beyond research scope.
         /// </summary>
-        public bool EnablePatternRecognition { get; set; } = true;
+        public bool EnablePatternRecognition { get; } = true;
 
         /// <summary>
         /// Gets or sets whether automated remediation is enabled.
         /// Required for core research scope (simple remediation).
         /// </summary>
-        public bool EnableRemediation { get; set; } = true;
+        public bool EnableRemediation { get; } = true;
 
         /// <summary>
         /// Gets or sets the maximum number of concurrent error analyses.
         /// Additional feature for performance optimization.
         /// </summary>
-        public int MaxConcurrentAnalysis { get; set; } = 10;
+        public int MaxConcurrentAnalysis { get; } = 10;
 
         /// <summary>
         /// Gets or sets the timeout for error analysis operations.
         /// Required for research performance criteria (500ms for 95% of requests).
         /// </summary>
-        public TimeSpan AnalysisTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
+        public TimeSpan AnalysisTimeout { get; } = TimeSpan.FromMilliseconds(500);
 
         /// <summary>
         /// Gets or sets whether context enrichment is enabled.
         /// Required for basic error context collection in research scope.
         /// </summary>
-        public bool EnableContextEnrichment { get; set; } = true;
+        public bool EnableContextEnrichment { get; } = true;
 
         /// <summary>
         /// Gets or sets whether audit logging is enabled.
         /// Required for research validation and metrics collection.
         /// </summary>
-        public bool EnableAuditLogging { get; set; } = true;
+        public bool EnableAuditLogging { get; } = true;
 
         /// <summary>
         /// Gets or sets whether performance monitoring is enabled.
         /// Required for research success criteria validation.
         /// </summary>
-        public bool EnablePerformanceMonitoring { get; set; } = true;
+        public bool EnablePerformanceMonitoring { get; } = true;
 
         /// <summary>
         /// Gets or sets the maximum memory usage for the LLM component in megabytes.
         /// Required for research success criteria (under 100MB).
         /// </summary>
-        public int MaxLLMMemoryMB { get; set; } = 100;
+        public int MaxLLMMemoryMB { get; } = 100;
 
         /// <summary>
         /// Gets or sets the maximum CPU usage percentage during error analysis.
         /// Required for research success criteria (under 10%).
         /// </summary>
-        public double MaxCPUUsagePercent { get; set; } = 10.0;
+        public double MaxCPUUsagePercent { get; } = 10.0;
 
         /// <summary>
         /// Gets or sets the minimum accuracy threshold for error root cause identification.
         /// Required for research success criteria (at least 80%).
         /// </summary>
-        public double MinRootCauseAccuracy { get; set; } = 0.8;
+        public double MinRootCauseAccuracy { get; } = 0.8;
 
         /// <summary>
         /// Gets or sets the minimum accuracy threshold for remediation suggestions.
         /// Required for research success criteria (at least 70%).
         /// </summary>
-        public double MinRemediationAccuracy { get; set; } = 0.7;
+        public double MinRemediationAccuracy { get; } = 0.7;
 
         /// <summary>
         /// Gets or sets the minimum severity level required for automatic remediation.
         /// Additional feature for remediation control.
         /// </summary>
-        public ErrorSeverity AutoRemediationThreshold { get; set; } = ErrorSeverity.Medium;
+        public ErrorSeverity AutoRemediationThreshold { get; } = ErrorSeverity.Medium;
 
         /// <summary>
         /// Gets or sets the MCP endpoint URL for pattern sharing and collaboration.
@@ -124,7 +125,7 @@ namespace RuntimeErrorSage.Application.Options
         /// Gets or sets the test suite configuration.
         /// Required by research for validation.
         /// </summary>
-        public TestSuiteOptions TestSuite { get; set; } = new()
+        public TestSuiteOptions TestSuite { get; } = new()
         {
             // Required by research: 100 standardized scenarios
             StandardizedScenariosCount = 100,
@@ -142,7 +143,7 @@ namespace RuntimeErrorSage.Application.Options
         /// Gets or sets the baseline comparison configuration.
         /// Required by research for evaluation.
         /// </summary>
-        public BaselineComparisonOptions BaselineComparison { get; set; } = new()
+        public BaselineComparisonOptions BaselineComparison { get; } = new()
         {
             // Required by research: Compare with traditional error handling
             CompareWithTraditionalHandling = true,
@@ -158,7 +159,7 @@ namespace RuntimeErrorSage.Application.Options
         /// Gets or sets the API documentation configuration.
         /// Required by research for implementation completeness.
         /// </summary>
-        public ApiDocumentationOptions ApiDocumentation { get; set; } = new()
+        public ApiDocumentationOptions ApiDocumentation { get; } = new()
         {
             // Required by research: Documented API and integration patterns
             GenerateApiDocs = true,
@@ -170,49 +171,55 @@ namespace RuntimeErrorSage.Application.Options
         /// <summary>
         /// Gets or sets the severity level threshold for remediation.
         /// </summary>
-        public ErrorSeverity RemediationSeverityThreshold { get; set; } = ErrorSeverity.Medium;
+        public ErrorSeverity RemediationSeverityThreshold { get; } = ErrorSeverity.Medium;
 
-        public bool EnableLLMAnalysis { get; set; } = true;
-        public bool EnableGraphAnalysis { get; set; } = true;
-        public bool EnableValidation { get; set; } = true;
-        public bool EnableMetrics { get; set; } = true;
-        public bool EnableCaching { get; set; } = true;
-        public int CacheExpirationMinutes { get; set; } = 30;
-        public int LLMTimeoutSeconds { get; set; } = 30;
-        public int ValidationTimeoutSeconds { get; set; } = 10;
-        public int GraphAnalysisTimeoutSeconds { get; set; } = 30;
-        public string LLMModel { get; set; } = "Qwen-2.5-7B-Instruct-1M";
-        public string LLMEndpoint { get; set; } = "https://api.example.com/llm";
-        public string ValidationEndpoint { get; set; } = "https://api.example.com/validation";
-        public string GraphAnalysisEndpoint { get; set; } = "https://api.example.com/graph";
-        public string RemediationEndpoint { get; set; } = "https://api.example.com/remediation";
-        public string MetricsEndpoint { get; set; } = "https://api.example.com/metrics";
+        public bool EnableLLMAnalysis { get; } = true;
+        public bool EnableGraphAnalysis { get; } = true;
+        public bool EnableValidation { get; } = true;
+        public bool EnableMetrics { get; } = true;
+        public bool EnableCaching { get; } = true;
+        public int CacheExpirationMinutes { get; } = 30;
+        public int LLMTimeoutSeconds { get; } = 30;
+        public int ValidationTimeoutSeconds { get; } = 10;
+        public int GraphAnalysisTimeoutSeconds { get; } = 30;
+        public string LLMModel { get; } = "Qwen-2.5-7B-Instruct-1M";
+        public string LLMEndpoint { get; } = "https://api.example.com/llm";
+        public string ValidationEndpoint { get; } = "https://api.example.com/validation";
+        public string GraphAnalysisEndpoint { get; } = "https://api.example.com/graph";
+        public string RemediationEndpoint { get; } = "https://api.example.com/remediation";
+        public string MetricsEndpoint { get; } = "https://api.example.com/metrics";
         public Dictionary<string, string> AdditionalSettings { get; set; } = new();
 
         /// <summary>
         /// Gets or sets whether auto-remediation is enabled.
         /// </summary>
-        public bool EnableAutoRemediation { get; set; }
+        public bool EnableAutoRemediation { get; }
 
         /// <summary>
         /// Gets or sets the maximum number of remediation attempts.
         /// </summary>
-        public int MaxRemediationAttempts { get; set; } = 3;
+        public int MaxRemediationAttempts { get; } = 3;
 
         /// <summary>
         /// Gets or sets whether to enable verbose logging.
         /// </summary>
-        public bool EnableVerboseLogging { get; set; }
+        public bool EnableVerboseLogging { get; }
 
         /// <summary>
         /// Gets or sets whether to enable telemetry.
         /// </summary>
-        public bool EnableTelemetry { get; set; } = true;
+        public bool EnableTelemetry { get; } = true;
 
         /// <summary>
         /// Gets or sets the timeout for remediation operations in seconds.
         /// </summary>
-        public int RemediationTimeoutSeconds { get; set; } = 300;
+        public int RemediationTimeoutSeconds { get; } = 300;
     }
 } 
+
+
+
+
+
+
 

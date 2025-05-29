@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Validation;
 
@@ -39,3 +40,9 @@ namespace RuntimeErrorSage.Application.Interfaces
         Task<IValidator> GetValidatorAsync(string validationType);
     }
 } 
+
+
+
+
+
+

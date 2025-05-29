@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,32 +13,32 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets the unique identifier of the node.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the node label.
         /// </summary>
-        public string Label { get; set; } = string.Empty;
+        public string Label { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the component ID.
         /// </summary>
-        public string ComponentId { get; set; } = string.Empty;
+        public string ComponentId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the component name.
         /// </summary>
-        public string ComponentName { get; set; } = string.Empty;
+        public string ComponentName { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the node type.
         /// </summary>
-        public string NodeType { get; set; } = string.Empty;
+        public string NodeType { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the health score of the node (0-1).
         /// </summary>
-        public double HealthScore { get; set; } = 1.0;
+        public double HealthScore { get; } = 1.0;
 
         /// <summary>
         /// Gets or sets the node metadata.
@@ -47,21 +48,27 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets whether the node is critical.
         /// </summary>
-        public bool IsCritical { get; set; }
+        public bool IsCritical { get; }
 
         /// <summary>
         /// Gets or sets whether the node is an error source.
         /// </summary>
-        public bool IsErrorSource { get; set; }
+        public bool IsErrorSource { get; }
 
         /// <summary>
         /// Gets or sets the dependencies.
         /// </summary>
-        public List<DependencyNode> Dependencies { get; set; } = new();
+        public IReadOnlyCollection<Dependencies> Dependencies { get; } = new();
 
         /// <summary>
         /// Gets or sets the dependents.
         /// </summary>
-        public List<DependencyNode> Dependents { get; set; } = new();
+        public IReadOnlyCollection<Dependents> Dependents { get; } = new();
     }
 } 
+
+
+
+
+
+

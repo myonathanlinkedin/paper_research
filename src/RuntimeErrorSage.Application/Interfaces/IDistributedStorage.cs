@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Application.Models.Storage;
@@ -49,7 +50,7 @@ namespace RuntimeErrorSage.Application.Interfaces
         /// Loads error patterns.
         /// </summary>
         /// <returns>The list of error patterns.</returns>
-        Task<List<ErrorPattern>> LoadPatternsAsync();
+        Task<Collection<ErrorPattern>> LoadPatternsAsync();
 
         /// <summary>
         /// Gets an error pattern by ID.
@@ -77,4 +78,10 @@ namespace RuntimeErrorSage.Application.Interfaces
         Task<StorageMetrics> GetMetricsAsync();
     }
 } 
+
+
+
+
+
+
 

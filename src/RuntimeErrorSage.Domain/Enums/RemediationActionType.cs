@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Remediation;
 namespace RuntimeErrorSage.Domain.Enums
@@ -63,5 +64,10 @@ namespace RuntimeErrorSage.Domain.Enums
         Custom = 10
     }
 } 
+
+
+
+
+
 
 

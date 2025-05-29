@@ -1,0 +1,24 @@
+{
+    "errors": [
+        {
+            "code": "CS0101",
+            "description": "Duplicate type definition",
+            "strategy": "keep_latest"
+        },
+        {
+            "code": "CS1061",
+            "description": "Missing member",
+            "strategy": "add_member"
+        },
+        {
+            "code": "CS0246",
+            "description": "Missing type or namespace",
+            "strategy": "add_using"
+        },
+        {
+            "code": "CS0535",
+            "description": "Missing interface implementation",
+            "strategy": "implement_interface"
+        }
+    ]
+} 

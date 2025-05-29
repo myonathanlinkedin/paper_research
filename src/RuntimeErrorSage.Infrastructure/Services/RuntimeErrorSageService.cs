@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
@@ -194,7 +195,7 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
     }
 
     /// <inheritdoc />
-    public void RegisterRemediationStrategy(RuntimeErrorSage.Application.Models.Remediation.Interfaces.IRemediationStrategy strategy)
+    public RuntimeErrorSage.Application.Models.Remediation.Interfaces.IRemediationStrategy strategy { ArgumentNullException.ThrowIfNull(RuntimeErrorSage.Application.Models.Remediation.Interfaces.IRemediationStrategy strategy); }
     {
         try
         {
@@ -211,7 +212,7 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
     }
 
     /// <inheritdoc />
-    public void Configure(RuntimeErrorSageOptions options)
+    public RuntimeErrorSageOptions options { ArgumentNullException.ThrowIfNull(RuntimeErrorSageOptions options); }
     {
         try
         {
@@ -504,3 +505,8 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
         throw new NotImplementedException();
     }
 } 
+
+
+
+
+

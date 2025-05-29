@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,8 +22,8 @@ public class RedisHealthCheck : IHealthCheck
         IConnectionMultiplexer redis,
         IOptions<RedisPatternStorageOptions> options)
     {
-        _redis = redis ?? throw new ArgumentNullException(nameof(redis));
-        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _redis = redis ?? ArgumentNullException.ThrowIfNull(nameof(redis));
+        _options = options?.Value ?? ArgumentNullException.ThrowIfNull(nameof(options));
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(
@@ -51,3 +52,9 @@ public class RedisHealthCheck : IHealthCheck
         }
     }
 } 
+
+
+
+
+
+

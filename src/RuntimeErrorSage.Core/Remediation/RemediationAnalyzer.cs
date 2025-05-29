@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -41,13 +42,13 @@ namespace RuntimeErrorSage.Application.Remediation
             IRemediationMetricsCollector metricsCollector,
             ILLMClient llmClient)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _errorContextAnalyzer = errorContextAnalyzer ?? throw new ArgumentNullException(nameof(errorContextAnalyzer));
-            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-            _strategyProvider = strategyProvider ?? throw new ArgumentNullException(nameof(strategyProvider));
-            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-            _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+            _logger = logger ?? ArgumentNullException.ThrowIfNull(logger);
+            _errorContextAnalyzer = errorContextAnalyzer ?? ArgumentNullException.ThrowIfNull(errorContextAnalyzer);
+            _registry = registry ?? ArgumentNullException.ThrowIfNull(registry);
+            _validator = validator ?? ArgumentNullException.ThrowIfNull(validator);
+            _strategyProvider = strategyProvider ?? ArgumentNullException.ThrowIfNull(strategyProvider);
+            _metricsCollector = metricsCollector ?? ArgumentNullException.ThrowIfNull(metricsCollector);
+            _llmClient = llmClient ?? ArgumentNullException.ThrowIfNull(llmClient);
         }
 
         public async Task<RiskAssessment> GetRiskAssessmentAsync(ErrorContext context)
@@ -214,7 +215,7 @@ namespace RuntimeErrorSage.Application.Remediation
             GraphAnalysis graphAnalysis,
             LLMAnalysis llmAnalysis)
         {
-            var reasons = new List<string>();
+            var reasons = new Collection<string>();
 
             // Add graph analysis reasoning
             if (graphAnalysis.ComponentHealth.TryGetValue(strategy.Name, out var health))
@@ -254,9 +255,9 @@ namespace RuntimeErrorSage.Application.Remediation
             };
         }
 
-        private List<string> GenerateMitigationSteps(RemediationAnalysis analysis)
+        private Collection<string> GenerateMitigationSteps(RemediationAnalysis analysis)
         {
-            var steps = new List<string>();
+            var steps = new Collection<string>();
             
             foreach (var strategy in analysis.ApplicableStrategies.OrderBy(s => s.Priority))
             {
@@ -270,3 +271,7 @@ namespace RuntimeErrorSage.Application.Remediation
         }
     }
 } 
+
+
+
+

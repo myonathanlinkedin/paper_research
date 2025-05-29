@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Examples.Models;
 
 /// <summary>
@@ -8,12 +9,12 @@ public class KeyValueData
     /// <summary>
     /// Gets or sets the key.
     /// </summary>
-    public string Key { get; set; }
+    public string Key { get; }
 
     /// <summary>
     /// Gets or sets the value.
     /// </summary>
-    public object Value { get; set; }
+    public object Value { get; }
 
     /// <summary>
     /// Gets or sets the metadata associated with this key-value pair.
@@ -38,3 +39,9 @@ public class KeyValueData
         Metadata = new Dictionary<string, object>();
     }
 } 
+
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,10 +22,10 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         private readonly ILLMClient _llmClient;
         private readonly IRemediationMetricsCollector _metricsCollector;
         
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string Name { get; set; } = "Alert";
-        public RemediationPriority Priority { get; set; } = RemediationPriority.High;
-        public string Description { get; set; } = "Sends alerts for error conditions";
+        public string Id { get; } = Guid.NewGuid().ToString();
+        public string Name { get; } = "Alert";
+        public RemediationPriority Priority { get; } = RemediationPriority.High;
+        public string Description { get; } = "Sends alerts for error conditions";
         public Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();
         public ISet<string> SupportedErrorTypes { get; } = new HashSet<string> 
         { 
@@ -38,9 +39,9 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
             IRemediationMetricsCollector metricsCollector,
             ILLMClient llmClient)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
-            _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
+            _logger = logger ?? ArgumentNullException.ThrowIfNull(nameof(logger));
+            _metricsCollector = metricsCollector ?? ArgumentNullException.ThrowIfNull(nameof(metricsCollector));
+            _llmClient = llmClient ?? ArgumentNullException.ThrowIfNull(nameof(llmClient));
             
             // Add required parameters with default values
             Parameters["channel"] = "default";
@@ -51,7 +52,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         {
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                ArgumentNullException.ThrowIfNull(nameof(context));
             }
 
             try
@@ -150,7 +151,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         {
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                ArgumentNullException.ThrowIfNull(nameof(context));
             }
 
             return SupportedErrorTypes.Contains(context.ErrorType) || SupportedErrorTypes.Count == 0;
@@ -175,8 +176,8 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
             {
                 RiskLevel = RemediationRiskLevel.Low,
                 Description = "Low risk - alert notification only",
-                PotentialIssues = new List<string> { "Alert might not reach intended recipients" },
-                MitigationStrategies = new List<string> { "Verify alert channel configuration" },
+                PotentialIssues = new Collection<string> { "Alert might not reach intended recipients" },
+                MitigationStrategies = new Collection<string> { "Verify alert channel configuration" },
                 ConfidenceLevel = 0.95,
                 IsRollbackable = false
             };
@@ -200,7 +201,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         {
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                ArgumentNullException.ThrowIfNull(nameof(context));
             }
 
             var result = new ValidationResult
@@ -244,7 +245,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
             {
                 Severity = SeverityLevel.Low.ToImpactSeverity(),
                 Scope = RemediationActionImpactScope.Local,
-                AffectedComponents = new List<string>(),
+                AffectedComponents = new Collection<string>(),
                 EstimatedDuration = TimeSpan.FromMinutes(5)
             };
         }
@@ -260,3 +261,9 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         }
     }
 } 
+
+
+
+
+
+

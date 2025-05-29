@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Application.Models.Enums;
 
 /// <summary>
@@ -35,3 +36,9 @@ public enum MCPConnectionStatus
     /// </summary>
     Unknown = 5
 } 
+
+
+
+
+
+

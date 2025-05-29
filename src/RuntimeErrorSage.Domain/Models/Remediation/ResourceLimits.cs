@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Remediation
@@ -10,16 +11,20 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the maximum allowed usage.
         /// </summary>
-        public double Maximum { get; set; }
+        public double Maximum { get; }
 
         /// <summary>
         /// Gets or sets the warning threshold.
         /// </summary>
-        public double WarningThreshold { get; set; }
+        public double WarningThreshold { get; }
 
         /// <summary>
         /// Gets or sets the critical threshold.
         /// </summary>
-        public double CriticalThreshold { get; set; }
+        public double CriticalThreshold { get; }
     }
 } 
+
+
+
+

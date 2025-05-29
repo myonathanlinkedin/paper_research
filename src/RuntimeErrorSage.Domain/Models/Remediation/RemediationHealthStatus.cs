@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,17 +12,17 @@ public class RemediationHealthStatus
     /// <summary>
     /// Gets or sets whether the system is considered healthy.
     /// </summary>
-    public bool IsHealthy { get; set; }
+    public bool IsHealthy { get; }
 
     /// <summary>
     /// Gets or sets the health score as a percentage (0-100).
     /// </summary>
-    public double HealthScore { get; set; }
+    public double HealthScore { get; }
 
     /// <summary>
     /// Gets or sets the timestamp when the health status was determined.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the metrics used to determine the health status.
@@ -31,12 +32,12 @@ public class RemediationHealthStatus
     /// <summary>
     /// Gets or sets the ID of the component being evaluated.
     /// </summary>
-    public string ComponentId { get; set; } = string.Empty;
+    public string ComponentId { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the name of the component being evaluated.
     /// </summary>
-    public string ComponentName { get; set; } = string.Empty;
+    public string ComponentName { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error message if health check failed.
@@ -51,5 +52,10 @@ public class RemediationHealthStatus
     /// <summary>
     /// Gets or sets the recommendations for improving health.
     /// </summary>
-    public List<string> Recommendations { get; set; } = new List<string>();
+    public IReadOnlyCollection<Recommendations> Recommendations { get; } = new Collection<string>();
 } 
+
+
+
+
+

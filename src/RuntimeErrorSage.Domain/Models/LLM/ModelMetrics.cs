@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,27 +12,27 @@ public class ModelMetrics
     /// <summary>
     /// Gets or sets the timestamp of the metrics.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
     
     /// <summary>
     /// Gets or sets the name of the model.
     /// </summary>
-    public string ModelName { get; set; } = string.Empty;
+    public string ModelName { get; } = string.Empty;
     
     /// <summary>
     /// Gets or sets the version of the model.
     /// </summary>
-    public string ModelVersion { get; set; } = string.Empty;
+    public string ModelVersion { get; } = string.Empty;
     
     /// <summary>
     /// Gets or sets the response time in milliseconds.
     /// </summary>
-    public double ResponseTime { get; set; }
+    public double ResponseTime { get; }
     
     /// <summary>
     /// Gets or sets the token count.
     /// </summary>
-    public int TokenCount { get; set; }
+    public int TokenCount { get; }
     
     /// <summary>
     /// Gets or sets additional properties.
@@ -43,8 +44,13 @@ public class ModelMetrics
     /// </summary>
     /// <param name="key">The property key.</param>
     /// <param name="value">The property value.</param>
-    public void AddProperty(string key, object value)
+    public string key, object value { ArgumentNullException.ThrowIfNull(string key, object value); }
     {
         Properties[key] = value;
     }
 } 
+
+
+
+
+

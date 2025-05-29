@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Runtime.Serialization;
 
@@ -46,3 +47,9 @@ public class PatternStorageException : Exception
     {
     }
 } 
+
+
+
+
+
+

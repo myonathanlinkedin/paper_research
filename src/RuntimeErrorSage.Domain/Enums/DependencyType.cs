@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
@@ -25,3 +26,7 @@ public enum DependencyType
     /// </summary>
     Test
 } 
+
+
+
+

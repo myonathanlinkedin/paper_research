@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -16,7 +17,7 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
     /// </summary>
     /// <param name="action">The remediation action to assess.</param>
     /// <returns>The calculated risk level.</returns>
-    public RemediationRiskLevel CalculateRiskLevel(RemediationAction action)
+    public RemediationAction action { ArgumentNullException.ThrowIfNull(RemediationAction action); }
     {
         if (action == null)
         {
@@ -35,14 +36,14 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
     /// </summary>
     /// <param name="action">The remediation action to analyze.</param>
     /// <returns>A list of potential issues.</returns>
-    public List<string> GeneratePotentialIssues(RemediationAction action)
+    public Collection<string> GeneratePotentialIssues(RemediationAction action)
     {
         if (action == null)
         {
-            return new List<string> { "Unable to assess action - no action provided" };
+            return new Collection<string> { "Unable to assess action - no action provided" };
         }
 
-        var issues = new List<string>();
+        var issues = new Collection<string>();
 
         // Add issues based on error type
         if (!string.IsNullOrEmpty(action.ErrorType))
@@ -91,14 +92,14 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
     /// </summary>
     /// <param name="action">The remediation action to generate mitigation steps for.</param>
     /// <returns>A list of mitigation steps.</returns>
-    public List<string> GenerateMitigationSteps(RemediationAction action)
+    public Collection<string> GenerateMitigationSteps(RemediationAction action)
     {
         if (action == null)
         {
-            return new List<string> { "Unable to generate mitigation steps - no action provided" };
+            return new Collection<string> { "Unable to generate mitigation steps - no action provided" };
         }
 
-        var steps = new List<string>();
+        var steps = new Collection<string>();
 
         // Add basic validation steps
         steps.Add("Validate all input parameters");
@@ -138,3 +139,9 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
         return steps;
     }
 } 
+
+
+
+
+
+

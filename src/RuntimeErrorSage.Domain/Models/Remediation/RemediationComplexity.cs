@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,42 +12,42 @@ public class RemediationComplexity
     /// <summary>
     /// Gets or sets the complexity score (0-100).
     /// </summary>
-    public int ComplexityScore { get; set; }
+    public int ComplexityScore { get; }
 
     /// <summary>
     /// Gets or sets the factors contributing to complexity.
     /// </summary>
-    public List<string> ComplexityFactors { get; set; } = new();
+    public IReadOnlyCollection<ComplexityFactors> ComplexityFactors { get; } = new();
 
     /// <summary>
     /// Gets or sets the estimated time to implement in minutes.
     /// </summary>
-    public int EstimatedTimeToImplement { get; set; }
+    public int EstimatedTimeToImplement { get; }
 
     /// <summary>
     /// Gets or sets the required skill level (1-5).
     /// </summary>
-    public int RequiredSkillLevel { get; set; }
+    public int RequiredSkillLevel { get; }
 
     /// <summary>
     /// Gets or sets the number of steps involved.
     /// </summary>
-    public int StepCount { get; set; }
+    public int StepCount { get; }
 
     /// <summary>
     /// Gets or sets the number of dependencies.
     /// </summary>
-    public int DependencyCount { get; set; }
+    public int DependencyCount { get; }
 
     /// <summary>
     /// Gets or sets the risk level associated with complexity.
     /// </summary>
-    public int RiskLevel { get; set; }
+    public int RiskLevel { get; }
 
     /// <summary>
     /// Gets or sets the timestamp of the assessment.
     /// </summary>
-    public DateTime AssessmentTimestamp { get; set; } = DateTime.UtcNow;
+    public DateTime AssessmentTimestamp { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets additional complexity metrics.
@@ -56,5 +57,8 @@ public class RemediationComplexity
     /// <summary>
     /// Gets or sets notes about the complexity assessment.
     /// </summary>
-    public string AssessmentNotes { get; set; } = string.Empty;
+    public string AssessmentNotes { get; } = string.Empty;
 } 
+
+
+

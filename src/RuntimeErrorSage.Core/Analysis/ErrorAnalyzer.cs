@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Analysis.Exceptions;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
@@ -24,11 +25,11 @@ public class ErrorAnalyzer : IErrorAnalyzer
     private readonly ILogger<ErrorAnalyzer> _logger;
     private readonly ILMStudioClient _llmClient;
     private readonly IMCPClient _mcpClient;
-    private readonly ConcurrentDictionary<string, List<ErrorPattern>> _localPatternCache;
+    private readonly ConcurrentDictionary<string, Collection<ErrorPattern>> _localPatternCache;
     private readonly Dictionary<string, string> _promptTemplates;
     private readonly ILLMService _llmService;
     private readonly Dictionary<string, double> _errorTypeConfidence;
-    private readonly Dictionary<string, List<string>> _remediationSteps;
+    private readonly Dictionary<string, Collection<string>> _remediationSteps;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ErrorAnalyzer"/> class.
@@ -48,9 +49,9 @@ public class ErrorAnalyzer : IErrorAnalyzer
         _mcpClient = mcpClient;
         _localPatternCache = new();
         _promptTemplates = InitializePromptTemplates();
-        _llmService = llmService ?? throw new ArgumentNullException(nameof(llmService));
+        _llmService = llmService ?? ArgumentNullException.ThrowIfNull(llmService);
         _errorTypeConfidence = new Dictionary<string, double>();
-        _remediationSteps = new Dictionary<string, List<string>>();
+        _remediationSteps = new Dictionary<string, Collection<string>>();
     }
 
     /// <summary>
@@ -61,7 +62,7 @@ public class ErrorAnalyzer : IErrorAnalyzer
     public async Task<ErrorAnalysis> AnalyzeAsync(RuntimeError error)
     {
         if (error == null)
-            throw new ArgumentNullException(nameof(error));
+            ArgumentNullException.ThrowIfNull(error);
 
         var context = new ErrorContext(error, null, DateTime.UtcNow);
 
@@ -83,7 +84,7 @@ public class ErrorAnalyzer : IErrorAnalyzer
     public async Task<ErrorAnalysis> AnalyzeContextAsync(ErrorContext context)
     {
         if (context == null)
-            throw new ArgumentNullException(nameof(context));
+            ArgumentNullException.ThrowIfNull(context);
 
         if (!context.Validate())
             throw new ArgumentException("Invalid context.", nameof(context));
@@ -179,7 +180,7 @@ public class ErrorAnalyzer : IErrorAnalyzer
         var errorType = string.Empty;
         var rootCause = string.Empty;
         var confidence = 0.0;
-        var remediationSteps = new List<string>();
+        var remediationSteps = new Collection<string>();
 
         foreach (var line in lines)
         {
@@ -266,7 +267,7 @@ public class ErrorAnalyzer : IErrorAnalyzer
             if (matchingPattern == null && IsNewPattern(analysisResult))
             {
                 var newPattern = CreateErrorPattern(exception, context, analysisResult);
-                await _mcpClient.UpdateErrorPatternsAsync(new List<ErrorPattern> { newPattern });
+                await _mcpClient.UpdateErrorPatternsAsync(new Collection<ErrorPattern> { newPattern });
                 _logger.LogInformation("New error pattern created and stored: {PatternId}", newPattern.Id);
             }
 
@@ -306,9 +307,9 @@ public class ErrorAnalyzer : IErrorAnalyzer
         ErrorContext context)
     {
         var explanation = "Analysis incomplete.";
-        var rootCauses = new List<string>();
-        var remediationSteps = new List<string>();
-        var preventionStrategies = new List<string>();
+        var rootCauses = new Collection<string>();
+        var remediationSteps = new Collection<string>();
+        var preventionStrategies = new Collection<string>();
         var confidence = 0.0;
 
         // Split the response into sections based on expected headings
@@ -376,7 +377,7 @@ public class ErrorAnalyzer : IErrorAnalyzer
         };
     }
 
-    private async Task<List<ErrorPattern>> GetKnownPatternsAsync(string serviceName)
+    private async Task<Collection<ErrorPattern>> GetKnownPatternsAsync(string serviceName)
     {
         // This would typically load patterns from distributed storage via MCP
         // For now, using a local cache
@@ -394,14 +395,14 @@ public class ErrorAnalyzer : IErrorAnalyzer
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving known patterns for service {Service}", serviceName);
-            return new List<ErrorPattern>();
+            return new Collection<ErrorPattern>();
         }
     }
 
     private ErrorPattern? FindMatchingPattern(
         Exception exception,
         ErrorContext context,
-        List<ErrorPattern> patterns)
+        Collection<ErrorPattern> patterns)
     {
         return patterns.FirstOrDefault(p =>
             p.ErrorType == exception.GetType().Name &&
@@ -433,9 +434,9 @@ public class ErrorAnalyzer : IErrorAnalyzer
         if (analysisResult.Details != null && analysisResult.Details.TryGetValue("LLM_Explanation", out var explanationObj) && explanationObj is string explanationStr)
             llmExplanation = explanationStr;
 
-        var remediationActions = analysisResult.Details != null && analysisResult.Details.TryGetValue("RemediationActions", out var actionsObj) && actionsObj is List<RemediationAction> actions
+        var remediationActions = analysisResult.Details != null && analysisResult.Details.TryGetValue("RemediationActions", out var actionsObj) && actionsObj is Collection<RemediationAction> actions
             ? actions.Select(a => a.Description).ToList()
-            : new List<string>();
+            : new Collection<string>();
 
         var rootCause = analysisResult.Details != null && analysisResult.Details.TryGetValue("RootCause", out var rootCauseObj) ? rootCauseObj?.ToString() : "";
 
@@ -496,7 +497,7 @@ public class ErrorAnalyzer : IErrorAnalyzer
     public async Task<LLMAnalysisResult> EnrichLLMAnalysisAsync(LLMAnalysisResult llmAnalysis)
     {
         if (llmAnalysis == null)
-            throw new ArgumentNullException(nameof(llmAnalysis));
+            ArgumentNullException.ThrowIfNull(llmAnalysis);
 
         // Add additional insights and enrich the analysis
         llmAnalysis.Confidence = Math.Min(llmAnalysis.Confidence + 0.1, 1.0); // Boost confidence slightly
@@ -506,5 +507,8 @@ public class ErrorAnalyzer : IErrorAnalyzer
         return llmAnalysis;
     }
 } 
+
+
+
 
 

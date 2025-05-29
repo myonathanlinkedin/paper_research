@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,57 +13,57 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the unique identifier.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the error ID.
         /// </summary>
-        public string ErrorId { get; set; } = string.Empty;
+        public string ErrorId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error type.
         /// </summary>
-        public string ErrorType { get; set; } = string.Empty;
+        public string ErrorType { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error message.
         /// </summary>
-        public string ErrorMessage { get; set; } = string.Empty;
+        public string ErrorMessage { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the relationship type.
         /// </summary>
-        public ErrorRelationshipType RelationshipType { get; set; }
+        public ErrorRelationshipType RelationshipType { get; }
 
         /// <summary>
         /// Gets or sets the confidence level of the relationship (0-1).
         /// </summary>
-        public double ConfidenceLevel { get; set; }
+        public double ConfidenceLevel { get; }
 
         /// <summary>
         /// Gets or sets the component ID.
         /// </summary>
-        public string ComponentId { get; set; } = string.Empty;
+        public string ComponentId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the component name.
         /// </summary>
-        public string ComponentName { get; set; } = string.Empty;
+        public string ComponentName { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error severity.
         /// </summary>
-        public SeverityLevel Severity { get; set; }
+        public SeverityLevel Severity { get; }
 
         /// <summary>
         /// Gets or sets the timestamp of the error.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the correlation ID.
         /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
+        public string CorrelationId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets additional context.
@@ -72,22 +73,22 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the relationship description.
         /// </summary>
-        public string RelationshipDescription { get; set; } = string.Empty;
+        public string RelationshipDescription { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets whether this is a root cause.
         /// </summary>
-        public bool IsRootCause { get; set; }
+        public bool IsRootCause { get; }
 
         /// <summary>
         /// Gets or sets whether this is a symptom.
         /// </summary>
-        public bool IsSymptom { get; set; }
+        public bool IsSymptom { get; }
 
         /// <summary>
         /// Gets or sets whether this is the primary error.
         /// </summary>
-        public bool IsPrimary { get; set; }
+        public bool IsPrimary { get; }
 
         /// <summary>
         /// Returns a hash code for this instance.
@@ -113,4 +114,10 @@ namespace RuntimeErrorSage.Application.Models.Error
         }
     }
 }
+
+
+
+
+
+
 

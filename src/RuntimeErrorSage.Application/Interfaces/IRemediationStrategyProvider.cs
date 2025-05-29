@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
@@ -15,7 +16,7 @@ namespace RuntimeErrorSage.Application.Remediation.Interfaces
         /// <summary>
         /// Returns applicable remediation strategies for the given error context.
         /// </summary>
-        Task<List<IRemediationStrategy>> GetApplicableStrategiesAsync(ErrorContext context);
+        Task<Collection<IRemediationStrategy>> GetApplicableStrategiesAsync(ErrorContext context);
 
         /// <summary>
         /// Gets a specific remediation strategy by name.
@@ -25,3 +26,9 @@ namespace RuntimeErrorSage.Application.Remediation.Interfaces
         Task<IRemediationStrategy> GetStrategyAsync(string strategyName);
     }
 } 
+
+
+
+
+
+

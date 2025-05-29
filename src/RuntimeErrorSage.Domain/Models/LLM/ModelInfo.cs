@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,47 +12,47 @@ public class ModelInfo
     /// <summary>
     /// Gets or sets the unique identifier of the model.
     /// </summary>
-    public string ModelId { get; set; } = string.Empty;
+    public string ModelId { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the name of the model.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the version of the model.
     /// </summary>
-    public string Version { get; set; } = string.Empty;
+    public string Version { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the provider of the model (e.g., OpenAI, Anthropic).
     /// </summary>
-    public string Provider { get; set; } = string.Empty;
+    public string Provider { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the model's capabilities.
     /// </summary>
-    public List<string> Capabilities { get; set; } = new();
+    public IReadOnlyCollection<Capabilities> Capabilities { get; } = new();
 
     /// <summary>
     /// Gets or sets the model's limitations.
     /// </summary>
-    public List<string> Limitations { get; set; } = new();
+    public IReadOnlyCollection<Limitations> Limitations { get; } = new();
 
     /// <summary>
     /// Gets or sets the maximum context length the model can handle.
     /// </summary>
-    public int MaxContextLength { get; set; }
+    public int MaxContextLength { get; }
 
     /// <summary>
     /// Gets or sets the model's parameters count.
     /// </summary>
-    public long ParameterCount { get; set; }
+    public long ParameterCount { get; }
 
     /// <summary>
     /// Gets or sets when the model was last updated.
     /// </summary>
-    public DateTime LastUpdated { get; set; }
+    public DateTime LastUpdated { get; }
 
     /// <summary>
     /// Gets or sets the model's configuration settings.
@@ -66,15 +67,21 @@ public class ModelInfo
     /// <summary>
     /// Gets or sets whether the model is currently available.
     /// </summary>
-    public bool IsAvailable { get; set; }
+    public bool IsAvailable { get; }
 
     /// <summary>
     /// Gets or sets the model's license information.
     /// </summary>
-    public string License { get; set; } = string.Empty;
+    public string License { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets any additional metadata about the model.
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
 } 
+
+
+
+
+
+

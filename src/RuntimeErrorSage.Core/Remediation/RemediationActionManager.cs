@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using System;
 using System.Threading.Tasks;
@@ -57,7 +58,7 @@ namespace RuntimeErrorSage.Application.Remediation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error validating action {ActionName}", action.Name);
-                return new ValidationResult { IsValid = false, Errors = new List<string> { ex.Message } };
+                return new ValidationResult { IsValid = false, Errors = new Collection<string> { ex.Message } };
             }
         }
 
@@ -98,5 +99,11 @@ namespace RuntimeErrorSage.Application.Remediation
         }
     }
 } 
+
+
+
+
+
+
 
 

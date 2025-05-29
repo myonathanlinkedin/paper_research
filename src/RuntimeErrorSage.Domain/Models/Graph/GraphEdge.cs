@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,22 +12,22 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets the source node.
         /// </summary>
-        public GraphNode Source { get; set; } = null!;
+        public GraphNode Source { get; } = null!;
 
         /// <summary>
         /// Gets or sets the target node.
         /// </summary>
-        public GraphNode Target { get; set; } = null!;
+        public GraphNode Target { get; } = null!;
 
         /// <summary>
         /// Gets or sets the edge type.
         /// </summary>
-        public string Type { get; set; } = string.Empty;
+        public string Type { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the edge weight.
         /// </summary>
-        public double Weight { get; set; }
+        public double Weight { get; }
 
         /// <summary>
         /// Gets or sets the edge metadata.
@@ -36,42 +37,42 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets the edge label.
         /// </summary>
-        public string Label { get; set; } = string.Empty;
+        public string Label { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the edge color.
         /// </summary>
-        public string Color { get; set; } = string.Empty;
+        public string Color { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the edge style.
         /// </summary>
-        public string Style { get; set; } = string.Empty;
+        public string Style { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the edge thickness.
         /// </summary>
-        public double Thickness { get; set; }
+        public double Thickness { get; }
 
         /// <summary>
         /// Gets or sets whether the edge is directed.
         /// </summary>
-        public bool IsDirected { get; set; }
+        public bool IsDirected { get; }
 
         /// <summary>
         /// Gets or sets whether the edge is bidirectional.
         /// </summary>
-        public bool IsBidirectional { get; set; }
+        public bool IsBidirectional { get; }
 
         /// <summary>
         /// Gets or sets the creation time of the edge.
         /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the last update time of the edge.
         /// </summary>
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GraphEdge"/> class.
@@ -113,3 +114,9 @@ namespace RuntimeErrorSage.Application.Models.Graph
         public string TargetId => Target?.Id;
     }
 } 
+
+
+
+
+
+

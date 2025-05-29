@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -49,16 +50,16 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         }
 
         /// <inheritdoc/>
-        public string Id { get; set; }
+        public string Id { get; }
 
         /// <inheritdoc/>
-        public string Name { get; set; }
+        public string Name { get; }
 
         /// <inheritdoc/>
-        public RemediationPriority Priority { get; set; }
+        public RemediationPriority Priority { get; }
 
         /// <inheritdoc/>
-        public string Description { get; set; }
+        public string Description { get; }
 
         /// <inheritdoc/>
         public Dictionary<string, object> Parameters { get; set; }
@@ -71,7 +72,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         {
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                ArgumentNullException.ThrowIfNull(nameof(context));
             }
 
             _logger.LogInformation("Executing backup strategy for error context {ErrorId}", context.Id);
@@ -84,7 +85,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
                 {
                     Success = backupResult.Success,
                     ErrorMessage = backupResult.Success ? null : backupResult.ErrorMessage,
-                    Actions = new List<RemediationActionResult>
+                    Actions = new Collection<RemediationActionResult>
                     {
                         _resultFactory.Create(
                             "Create Backup",
@@ -105,7 +106,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
                 {
                     Success = false,
                     ErrorMessage = ex.Message,
-                    Actions = new List<RemediationActionResult>(),
+                    Actions = new Collection<RemediationActionResult>(),
                     StrategyId = Id,
                     StrategyName = Name,
                     StartTime = DateTime.UtcNow,
@@ -190,4 +191,9 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         }
     }
 } 
+
+
+
+
+
 

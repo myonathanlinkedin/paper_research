@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Application.Models.Error;
 
@@ -70,3 +71,7 @@ public class ErrorPatternMatcher
         return d[s1.Length, s2.Length];
     }
 } 
+
+
+
+

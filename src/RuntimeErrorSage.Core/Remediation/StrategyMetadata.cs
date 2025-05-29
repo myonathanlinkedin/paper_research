@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,27 +12,27 @@ namespace RuntimeErrorSage.Application.Remediation
         /// <summary>
         /// Gets or sets the version of the strategy.
         /// </summary>
-        public string Version { get; set; } = string.Empty;
+        public string Version { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the description of the strategy.
         /// </summary>
-        public string Description { get; set; } = string.Empty;
+        public string Description { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the author of the strategy.
         /// </summary>
-        public string Author { get; set; } = string.Empty;
+        public string Author { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the creation date of the strategy.
         /// </summary>
-        public DateTime CreationDate { get; set; }
+        public DateTime CreationDate { get; }
 
         /// <summary>
         /// Gets or sets the last modified date of the strategy.
         /// </summary>
-        public DateTime LastModifiedDate { get; set; }
+        public DateTime LastModifiedDate { get; }
 
         /// <summary>
         /// Gets or sets the dependencies of the strategy.
@@ -46,7 +47,7 @@ namespace RuntimeErrorSage.Application.Remediation
         /// <summary>
         /// Gets or sets whether the strategy is deprecated.
         /// </summary>
-        public bool IsDeprecated { get; set; }
+        public bool IsDeprecated { get; }
 
         /// <summary>
         /// Gets or sets the reason for deprecation, if applicable.
@@ -59,3 +60,9 @@ namespace RuntimeErrorSage.Application.Remediation
         public string? ReplacementStrategy { get; set; }
     }
 } 
+
+
+
+
+
+

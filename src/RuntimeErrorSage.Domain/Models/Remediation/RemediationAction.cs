@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Error;
@@ -123,7 +124,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the prerequisites for the action.
         /// </summary>
-        public List<string> Prerequisites
+        public Collection<string> Prerequisites
         {
             get => _core.Prerequisites;
             set => _core.Prerequisites = value;
@@ -132,7 +133,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the dependencies for the action.
         /// </summary>
-        public List<string> Dependencies
+        public Collection<string> Dependencies
         {
             get => _core.Dependencies;
             set => _core.Dependencies = value;
@@ -159,7 +160,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the tags for the action.
         /// </summary>
-        public List<string> Tags
+        public Collection<string> Tags
         {
             get => _core.Tags;
             set => _core.Tags = value;
@@ -348,7 +349,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the validation results.
         /// </summary>
-        public List<ValidationResult> ValidationResults
+        public Collection<ValidationResult> ValidationResults
         {
             get => _core.ValidationResults;
             set => _core.ValidationResults = value;
@@ -432,7 +433,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Registers a result handler.
         /// </summary>
         /// <param name="handler">The result handler.</param>
-        public void RegisterResultHandler(Action<ActionResult> handler)
+        public Action<ActionResult> handler { ArgumentNullException.ThrowIfNull(Action<ActionResult> handler); }
         {
             _result.RegisterHandler(handler);
         }
@@ -441,7 +442,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Unregisters a result handler.
         /// </summary>
         /// <param name="handler">The result handler.</param>
-        public void UnregisterResultHandler(Action<ActionResult> handler)
+        public Action<ActionResult> handler { ArgumentNullException.ThrowIfNull(Action<ActionResult> handler); }
         {
             _result.UnregisterHandler(handler);
         }
@@ -450,7 +451,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Registers an execution handler.
         /// </summary>
         /// <param name="handler">The execution handler.</param>
-        public void RegisterExecutionHandler(Action<ExecutionResult> handler)
+        public Action<ExecutionResult> handler { ArgumentNullException.ThrowIfNull(Action<ExecutionResult> handler); }
         {
             _execution.RegisterHandler(handler);
         }
@@ -459,7 +460,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Unregisters an execution handler.
         /// </summary>
         /// <param name="handler">The execution handler.</param>
-        public void UnregisterExecutionHandler(Action<ExecutionResult> handler)
+        public Action<ExecutionResult> handler { ArgumentNullException.ThrowIfNull(Action<ExecutionResult> handler); }
         {
             _execution.UnregisterHandler(handler);
         }
@@ -468,7 +469,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Adds a validation rule.
         /// </summary>
         /// <param name="rule">The validation rule.</param>
-        public void AddValidationRule(ValidationRule rule)
+        public ValidationRule rule { ArgumentNullException.ThrowIfNull(ValidationRule rule); }
         {
             _validation.AddRule(rule);
         }
@@ -477,7 +478,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Removes a validation rule.
         /// </summary>
         /// <param name="rule">The validation rule.</param>
-        public void RemoveValidationRule(ValidationRule rule)
+        public ValidationRule rule { ArgumentNullException.ThrowIfNull(ValidationRule rule); }
         {
             _validation.RemoveRule(rule);
         }
@@ -486,7 +487,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Gets the validation rules.
         /// </summary>
         /// <returns>The validation rules.</returns>
-        public IReadOnlyList<ValidationRule> GetValidationRules()
+        public IReadOnlyCollection<ValidationRule> GetValidationRules()
         {
             return _validation.GetRules();
         }
@@ -500,6 +501,10 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
+
+
+
+
 
 
 

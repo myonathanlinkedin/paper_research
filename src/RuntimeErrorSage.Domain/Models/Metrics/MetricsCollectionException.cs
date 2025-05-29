@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Metrics
@@ -21,3 +22,9 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         public MetricsCollectionException(string message) : base(message) { }
     }
 } 
+
+
+
+
+
+

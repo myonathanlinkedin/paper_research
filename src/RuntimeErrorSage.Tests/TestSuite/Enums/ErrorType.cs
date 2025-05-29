@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Tests.TestSuite.Enums;
 
 /// <summary>
@@ -35,3 +36,9 @@ public enum ErrorType
     /// </summary>
     Unknown
 } 
+
+
+
+
+
+

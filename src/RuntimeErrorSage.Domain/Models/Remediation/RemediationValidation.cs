@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,16 +12,22 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the validation rules.
         /// </summary>
-        public List<string> Rules { get; set; } = new();
+        public IReadOnlyCollection<Rules> Rules { get; } = new();
 
         /// <summary>
         /// Gets or sets the validation timeout.
         /// </summary>
-        public TimeSpan Timeout { get; set; }
+        public TimeSpan Timeout { get; }
 
         /// <summary>
         /// Gets or sets whether the validation is required.
         /// </summary>
-        public bool IsRequired { get; set; }
+        public bool IsRequired { get; }
     }
 } 
+
+
+
+
+
+

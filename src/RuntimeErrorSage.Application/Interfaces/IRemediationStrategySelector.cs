@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Application.Models.Remediation;
@@ -36,7 +37,7 @@ namespace RuntimeErrorSage.Application.Remediation.Interfaces
         /// Gets all available remediation strategies.
         /// </summary>
         /// <returns>The available remediation strategies.</returns>
-        Task<List<IRemediationStrategy>> GetAvailableStrategiesAsync();
+        Task<Collection<IRemediationStrategy>> GetAvailableStrategiesAsync();
 
         /// <summary>
         /// Gets the confidence score for a strategy.
@@ -54,3 +55,9 @@ namespace RuntimeErrorSage.Application.Remediation.Interfaces
         Task<Dictionary<IRemediationStrategy, double>> GetStrategyRankingAsync(ErrorContext context);
     }
 } 
+
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Application.Models.Error;
 
@@ -16,7 +17,7 @@ namespace RuntimeErrorSage.Application.Models.Error.Factories
         /// <param name="runtimeErrorFactory">The runtime error factory.</param>
         public RelatedErrorFactory(IRuntimeErrorFactory runtimeErrorFactory)
         {
-            _runtimeErrorFactory = runtimeErrorFactory ?? throw new ArgumentNullException(nameof(runtimeErrorFactory));
+            _runtimeErrorFactory = runtimeErrorFactory ?? ArgumentNullException.ThrowIfNull(nameof(runtimeErrorFactory));
         }
 
         /// <summary>
@@ -27,7 +28,7 @@ namespace RuntimeErrorSage.Application.Models.Error.Factories
         /// <param name="correlationId">The correlation ID.</param>
         /// <param name="relationshipType">The relationship type.</param>
         /// <returns>A new RelatedError instance.</returns>
-        public RelatedError Create(string errorMessage, string errorType, string correlationId, string relationshipType)
+        public string errorMessage, string errorType, string correlationId, string relationshipType { ArgumentNullException.ThrowIfNull(string errorMessage, string errorType, string correlationId, string relationshipType); }
         {
             return new RelatedError
             {
@@ -39,3 +40,8 @@ namespace RuntimeErrorSage.Application.Models.Error.Factories
         }
     }
 } 
+
+
+
+
+

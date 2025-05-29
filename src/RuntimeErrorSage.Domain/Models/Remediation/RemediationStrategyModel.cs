@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Common;
@@ -14,62 +15,62 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the unique identifier for this strategy.
         /// </summary>
-        public string StrategyId { get; set; } = Guid.NewGuid().ToString();
+        public string StrategyId { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the strategy name.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the strategy description.
         /// </summary>
-        public string Description { get; set; } = string.Empty;
+        public string Description { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the strategy version.
         /// </summary>
-        public string Version { get; set; } = "1.0.0";
+        public string Version { get; } = "1.0.0";
 
         /// <summary>
         /// Gets or sets whether the strategy is enabled.
         /// </summary>
-        public bool IsEnabled { get; set; } = true;
+        public bool IsEnabled { get; } = true;
 
         /// <summary>
         /// Gets or sets the strategy priority (lower is higher priority).
         /// </summary>
-        public int Priority { get; set; }
+        public int Priority { get; }
 
         /// <summary>
         /// Gets or sets the error patterns this strategy can handle.
         /// </summary>
-        public List<ErrorPattern> HandledPatterns { get; set; } = new();
+        public IReadOnlyCollection<HandledPatterns> HandledPatterns { get; } = new();
 
         /// <summary>
         /// Gets or sets the remediation steps.
         /// </summary>
-        public List<RemediationStep> Steps { get; set; } = new();
+        public IReadOnlyCollection<Steps> Steps { get; } = new();
 
         /// <summary>
         /// Gets or sets the validation rules.
         /// </summary>
-        public List<ValidationRule> ValidationRules { get; set; } = new();
+        public IReadOnlyCollection<ValidationRules> ValidationRules { get; } = new();
 
         /// <summary>
         /// Gets or sets the rollback steps.
         /// </summary>
-        public List<RemediationStep> RollbackSteps { get; set; } = new();
+        public IReadOnlyCollection<RollbackSteps> RollbackSteps { get; } = new();
 
         /// <summary>
         /// Gets or sets when the strategy was created.
         /// </summary>
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; }
 
         /// <summary>
         /// Gets or sets when the strategy was last updated.
         /// </summary>
-        public DateTime LastUpdatedAt { get; set; }
+        public DateTime LastUpdatedAt { get; }
 
         /// <summary>
         /// Gets or sets the strategy metadata.
@@ -79,11 +80,16 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the success rate (0-1).
         /// </summary>
-        public double SuccessRate { get; set; }
+        public double SuccessRate { get; }
 
         /// <summary>
         /// Gets or sets the average execution time in seconds.
         /// </summary>
-        public double AverageExecutionTimeSeconds { get; set; }
+        public double AverageExecutionTimeSeconds { get; }
     }
 } 
+
+
+
+
+

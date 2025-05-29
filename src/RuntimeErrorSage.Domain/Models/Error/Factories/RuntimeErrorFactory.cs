@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Application.Models.Error;
 
@@ -15,7 +16,7 @@ namespace RuntimeErrorSage.Application.Models.Error.Factories
         /// <param name="errorType">The error type.</param>
         /// <param name="stackTrace">The stack trace.</param>
         /// <returns>A new RuntimeError instance.</returns>
-        public RuntimeError Create(string message, string errorType = null, string stackTrace = null)
+        public string message, string errorType = null, string stackTrace = null { ArgumentNullException.ThrowIfNull(string message, string errorType = null, string stackTrace = null); }
         {
             return new RuntimeError
             {
@@ -28,3 +29,8 @@ namespace RuntimeErrorSage.Application.Models.Error.Factories
         }
     }
 } 
+
+
+
+
+

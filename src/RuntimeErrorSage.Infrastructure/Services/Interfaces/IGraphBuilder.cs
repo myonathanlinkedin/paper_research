@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Application.Models.Graph;
@@ -22,3 +23,9 @@ public interface IGraphBuilder
     /// <returns>True if the configuration is valid, false otherwise</returns>
     Task<bool> ValidateConfigurationAsync();
 } 
+
+
+
+
+
+

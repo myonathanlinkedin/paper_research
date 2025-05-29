@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -41,10 +42,10 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
     /// Registers a validation rule.
     /// </summary>
     /// <param name="rule">The rule to register.</param>
-    public void RegisterRule(Models.Remediation.RemediationValidationRule rule)
+    public Models.Remediation.RemediationValidationRule rule { ArgumentNullException.ThrowIfNull(Models.Remediation.RemediationValidationRule rule); }
     {
         if (rule == null)
-            throw new ArgumentNullException(nameof(rule));
+            ArgumentNullException.ThrowIfNull(nameof(rule));
 
         _rules[rule.Name] = rule;
     }
@@ -71,7 +72,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
         return _rules.TryGetValue(name, out var rule) ? rule : null;
     }
 
-    public void UnregisterRule(string ruleId)
+    public string ruleId { ArgumentNullException.ThrowIfNull(string ruleId); }
     {
         if (_rules.TryGetValue(ruleId, out var rule))
         {
@@ -84,7 +85,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
 
     public async Task<DataAnnotationsValidationResult> ValidateAsync(RemediationPlan plan, ErrorContext context)
     {
-        var results = new List<CoreValidationResult>();
+        var results = new Collection<CoreValidationResult>();
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
         try
@@ -162,3 +163,9 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
         _logger.LogInformation("Validation rule cache cleared");
     }
 } 
+
+
+
+
+
+

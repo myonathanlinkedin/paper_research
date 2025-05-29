@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Storage;
@@ -10,57 +11,57 @@ public class RedisPatternStorageOptions
     /// <summary>
     /// Gets or sets the connection string for Redis
     /// </summary>
-    public string ConnectionString { get; set; }
+    public string ConnectionString { get; }
 
     /// <summary>
     /// Gets or sets the instance name for Redis
     /// </summary>
-    public string InstanceName { get; set; }
+    public string InstanceName { get; }
 
     /// <summary>
     /// Gets or sets the database number to use
     /// </summary>
-    public int Database { get; set; }
+    public int Database { get; }
 
     /// <summary>
     /// Gets or sets the key prefix for all stored patterns
     /// </summary>
-    public string KeyPrefix { get; set; }
+    public string KeyPrefix { get; }
 
     /// <summary>
     /// Gets or sets the default expiration time for cached patterns
     /// </summary>
-    public TimeSpan DefaultExpiration { get; set; }
+    public TimeSpan DefaultExpiration { get; }
 
     /// <summary>
     /// Gets or sets whether to use SSL for Redis connection
     /// </summary>
-    public bool UseSsl { get; set; }
+    public bool UseSsl { get; }
 
     /// <summary>
     /// Gets or sets the connection timeout in milliseconds
     /// </summary>
-    public int ConnectionTimeout { get; set; }
+    public int ConnectionTimeout { get; }
 
     /// <summary>
     /// Gets or sets the sync timeout in milliseconds
     /// </summary>
-    public int SyncTimeout { get; set; }
+    public int SyncTimeout { get; }
 
     /// <summary>
     /// Gets or sets whether to abort on connection failure
     /// </summary>
-    public bool AbortOnConnectFail { get; set; }
+    public bool AbortOnConnectFail { get; }
 
     /// <summary>
     /// Gets or sets the retry count for failed operations
     /// </summary>
-    public int RetryCount { get; set; }
+    public int RetryCount { get; }
 
     /// <summary>
     /// Gets or sets the retry interval in milliseconds
     /// </summary>
-    public int RetryInterval { get; set; }
+    public int RetryInterval { get; }
 
     /// <summary>
     /// Initializes a new instance of the RedisPatternStorageOptions class
@@ -80,3 +81,9 @@ public class RedisPatternStorageOptions
         RetryInterval = 1000;
     }
 } 
+
+
+
+
+
+

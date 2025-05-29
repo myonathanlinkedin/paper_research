@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Analysis;
 using RuntimeErrorSage.Application.Remediation;
 using RuntimeErrorSage.Application.MCP;
@@ -58,7 +59,7 @@ public static class TestHelper
         return new RemediationPlan(
             name: "Test plan",
             description: "Test description",
-            actions: new List<RemediationAction>(),
+            actions: new Collection<RemediationAction>(),
             parameters: new Dictionary<string, object>(),
             estimatedDuration: TimeSpan.FromMinutes(5))
         {
@@ -118,3 +119,9 @@ public static class TestHelper
         return result;
     }
 } 
+
+
+
+
+
+

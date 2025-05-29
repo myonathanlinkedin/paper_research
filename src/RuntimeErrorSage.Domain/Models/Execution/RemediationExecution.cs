@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,34 +13,34 @@ namespace RuntimeErrorSage.Application.Models.Execution
     /// </summary>
     public class RemediationExecution
     {
-        private readonly List<RemediationActionExecution> _executedActions = new();
-        private readonly List<ValidationResult> _validationResults = new();
+        private readonly Collection<RemediationActionExecution> _executedActions = new();
+        private readonly Collection<ValidationResult> _validationResults = new();
         private readonly Dictionary<string, object> _metadata = new();
 
         /// <summary>
         /// Gets or sets the unique identifier for this execution.
         /// </summary>
-        public string ExecutionId { get; set; } = Guid.NewGuid().ToString();
+        public string ExecutionId { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the remediation ID.
         /// </summary>
-        public string RemediationId { get; set; } = string.Empty;
+        public string RemediationId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error ID.
         /// </summary>
-        public string ErrorId { get; set; } = string.Empty;
+        public string ErrorId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the correlation ID.
         /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
+        public string CorrelationId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the timestamp when the remediation was started.
         /// </summary>
-        public DateTime StartTime { get; set; } = DateTime.UtcNow;
+        public DateTime StartTime { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the timestamp when the remediation was completed.
@@ -49,27 +50,27 @@ namespace RuntimeErrorSage.Application.Models.Execution
         /// <summary>
         /// Gets or sets the current status of the remediation execution.
         /// </summary>
-        public RemediationStatusEnum Status { get; set; } = RemediationStatusEnum.NotStarted;
+        public RemediationStatusEnum Status { get; } = RemediationStatusEnum.NotStarted;
 
         /// <summary>
         /// Gets or sets whether the execution was successful.
         /// </summary>
-        public bool Success { get; set; }
+        public bool Success { get; }
 
         /// <summary>
         /// Gets or sets any error message if execution failed.
         /// </summary>
-        public string ErrorMessage { get; set; } = string.Empty;
+        public string ErrorMessage { get; } = string.Empty;
 
         /// <summary>
         /// Gets the list of actions that were executed.
         /// </summary>
-        public IReadOnlyList<RemediationActionExecution> ExecutedActions => _executedActions;
+        public IReadOnlyCollection<RemediationActionExecution> ExecutedActions => _executedActions;
 
         /// <summary>
         /// Gets or sets any error that occurred during remediation.
         /// </summary>
-        public string Error { get; set; }
+        public string Error { get; }
 
         /// <summary>
         /// Gets the additional execution metadata.
@@ -89,12 +90,12 @@ namespace RuntimeErrorSage.Application.Models.Execution
         /// <summary>
         /// Gets or sets the metrics for this remediation execution.
         /// </summary>
-        public RemediationMetrics Metrics { get; set; }
+        public RemediationMetrics Metrics { get; }
 
         /// <summary>
         /// Gets the validation results for this remediation execution.
         /// </summary>
-        public IReadOnlyList<ValidationResult> ValidationResults => _validationResults;
+        public IReadOnlyCollection<ValidationResult> ValidationResults => _validationResults;
 
         /// <summary>
         /// Gets or sets the rollback status if the execution was rolled back.
@@ -109,31 +110,31 @@ namespace RuntimeErrorSage.Application.Models.Execution
         /// <summary>
         /// Gets or sets the validation result.
         /// </summary>
-        public ValidationResult Validation { get; set; }
+        public ValidationResult Validation { get; }
 
         /// <summary>
         /// Gets or sets the list of executed steps.
         /// </summary>
-        public List<string> ExecutedSteps { get; set; } = new();
+        public IReadOnlyCollection<ExecutedSteps> ExecutedSteps { get; } = new();
 
         /// <summary>
         /// Gets or sets the list of failed steps.
         /// </summary>
-        public List<string> FailedSteps { get; set; } = new();
+        public IReadOnlyCollection<FailedSteps> FailedSteps { get; } = new();
 
         /// <summary>
         /// Gets or sets the list of actions executed during remediation.
         /// </summary>
-        public List<RemediationActionExecution> Actions { get; set; } = new List<RemediationActionExecution>();
+        public IReadOnlyCollection<Actions> Actions { get; } = new Collection<RemediationActionExecution>();
 
         /// <summary>
         /// Adds an executed action to the collection.
         /// </summary>
-        public void AddExecutedAction(RemediationActionExecution action)
+        public RemediationActionExecution action { ArgumentNullException.ThrowIfNull(RemediationActionExecution action); }
         {
             if (action == null)
             {
-                throw new ArgumentNullException(nameof(action));
+                ArgumentNullException.ThrowIfNull(nameof(action));
             }
 
             _executedActions.Add(action);
@@ -142,12 +143,18 @@ namespace RuntimeErrorSage.Application.Models.Execution
         /// <summary>
         /// Adds a validation result to the collection.
         /// </summary>
-        public void AddValidationResult(ValidationResult result) => _validationResults.Add(result);
+        public ValidationResult result { ArgumentNullException.ThrowIfNull(ValidationResult result); } => _validationResults.Add(result);
 
         /// <summary>
         /// Adds metadata to the collection.
         /// </summary>
-        public void AddMetadata(string key, object value) => _metadata[key] = value;
+        public string key, object value { ArgumentNullException.ThrowIfNull(string key, object value); } => _metadata[key] = value;
     }
 }
+
+
+
+
+
+
 

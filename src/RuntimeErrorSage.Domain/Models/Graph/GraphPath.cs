@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,27 +12,27 @@ public class GraphPath
     /// <summary>
     /// Gets or sets the unique identifier for this path.
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the nodes in the path.
     /// </summary>
-    public List<GraphNode> Nodes { get; set; } = new List<GraphNode>();
+    public IReadOnlyCollection<Nodes> Nodes { get; } = new Collection<GraphNode>();
 
     /// <summary>
     /// Gets or sets the ID of the source node.
     /// </summary>
-    public string SourceNodeId { get; set; }
+    public string SourceNodeId { get; }
 
     /// <summary>
     /// Gets or sets the ID of the target node.
     /// </summary>
-    public string TargetNodeId { get; set; }
+    public string TargetNodeId { get; }
 
     /// <summary>
     /// Gets or sets whether the path is complete (connects source to target).
     /// </summary>
-    public bool IsComplete { get; set; }
+    public bool IsComplete { get; }
 
     /// <summary>
     /// Gets the length of the path (number of nodes - 1).
@@ -41,15 +42,21 @@ public class GraphPath
     /// <summary>
     /// Gets or sets the creation time of the path.
     /// </summary>
-    public DateTime CreationTime { get; set; } = DateTime.UtcNow;
+    public DateTime CreationTime { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the path weight (sum of edge weights).
     /// </summary>
-    public double Weight { get; set; }
+    public double Weight { get; }
 
     /// <summary>
     /// Gets or sets metadata associated with the path.
     /// </summary>
     public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
 } 
+
+
+
+
+
+

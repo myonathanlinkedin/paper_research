@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.LLM.Options
@@ -7,48 +8,48 @@ namespace RuntimeErrorSage.Application.LLM.Options
         /// <summary>
         /// Gets or sets the base URL for LM Studio.
         /// </summary>
-        public string BaseUrl { get; set; } = string.Empty;
+        public string BaseUrl { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the model identifier.
         /// Must be set to "Qwen-2.5-7B-Instruct-1M" for research compliance.
         /// </summary>
-        public string ModelId { get; set; } = string.Empty;
+        public string ModelId { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the model version.
         /// </summary>
-        public string ModelVersion { get; set; } = string.Empty;
+        public string ModelVersion { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the timeout for LM Studio operations in seconds.
         /// </summary>
-        public int TimeoutSeconds { get; set; }
+        public int TimeoutSeconds { get; }
 
         /// <summary>
         /// Gets or sets the maximum number of tokens for generation.
         /// </summary>
-        public int MaxTokens { get; set; }
+        public int MaxTokens { get; }
 
         /// <summary>
         /// Gets or sets the temperature for generation.
         /// </summary>
-        public float Temperature { get; set; }
+        public float Temperature { get; }
 
         /// <summary>
         /// Gets or sets the top-p sampling parameter.
         /// </summary>
-        public float TopP { get; set; }
+        public float TopP { get; }
 
         /// <summary>
         /// Gets or sets the frequency penalty.
         /// </summary>
-        public float FrequencyPenalty { get; set; }
+        public float FrequencyPenalty { get; }
 
         /// <summary>
         /// Gets or sets the presence penalty.
         /// </summary>
-        public float PresencePenalty { get; set; }
+        public float PresencePenalty { get; }
 
         /// <summary>
         /// Gets or sets the stop sequences for generation.
@@ -58,27 +59,33 @@ namespace RuntimeErrorSage.Application.LLM.Options
         /// <summary>
         /// Gets or sets whether to use system prompts.
         /// </summary>
-        public bool UseSystemPrompt { get; set; }
+        public bool UseSystemPrompt { get; }
 
         /// <summary>
         /// Gets or sets the system prompt template.
         /// </summary>
-        public string SystemPromptTemplate { get; set; } = string.Empty;
+        public string SystemPromptTemplate { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the context window size.
         /// </summary>
-        public int ContextWindowSize { get; set; }
+        public int ContextWindowSize { get; }
 
         /// <summary>
         /// Gets or sets whether to enable streaming responses.
         /// </summary>
-        public bool EnableStreaming { get; set; }
+        public bool EnableStreaming { get; }
 
         /// <summary>
         /// Gets or sets the streaming chunk size.
         /// </summary>
-        public int StreamingChunkSize { get; set; }
+        public int StreamingChunkSize { get; }
     }
 } 
+
+
+
+
+
+
 

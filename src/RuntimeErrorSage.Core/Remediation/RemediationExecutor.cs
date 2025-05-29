@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Models.Remediation
@@ -8,14 +9,14 @@ namespace RuntimeErrorSage.Application.Models.Remediation
 
         public RemediationExecutor(IRemediationRiskAssessment riskAssessment)
         {
-            _riskAssessment = riskAssessment ?? throw new ArgumentNullException(nameof(riskAssessment));
+            _riskAssessment = riskAssessment ?? ArgumentNullException.ThrowIfNull(nameof(riskAssessment));
         }
 
         public async Task<RiskAssessment> CreateRiskAssessment(RemediationAction action)
         {
             if (action == null)
             {
-                throw new ArgumentNullException(nameof(action));
+                ArgumentNullException.ThrowIfNull(nameof(action));
             }
 
             var assessment = new RiskAssessment
@@ -72,7 +73,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
 
         private double CalculateConfidence(RemediationAction action)
         {
-            var confidenceFactors = new List<double>();
+            var confidenceFactors = new Collection<double>();
 
             // Factor 1: Error type clarity
             if (!string.IsNullOrEmpty(action.ErrorType))
@@ -102,7 +103,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
             return confidenceFactors.Any() ? confidenceFactors.Average() * 100 : 50.0;
         }
 
-        private List<string> GetAffectedComponents(RemediationAction action)
+        private Collection<string> GetAffectedComponents(RemediationAction action)
         {
             var components = new HashSet<string>();
 
@@ -155,3 +156,9 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
+
+
+
+
+
+

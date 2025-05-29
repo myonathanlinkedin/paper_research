@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
@@ -80,7 +81,7 @@ public class ErrorScenario
     /// </summary>
     /// <param name="key">The key.</param>
     /// <param name="value">The value.</param>
-    public void AddMetadata(string key, object value)
+    public string key, object value { ArgumentNullException.ThrowIfNull(string key, object value); }
     {
         if (string.IsNullOrEmpty(key))
             throw new ArgumentException("Key cannot be null or empty.", nameof(key));
@@ -93,7 +94,7 @@ public class ErrorScenario
     /// </summary>
     /// <param name="key">The key.</param>
     /// <returns>The metadata value.</returns>
-    public object GetMetadata(string key)
+    public string key { ArgumentNullException.ThrowIfNull(string key); }
     {
         if (string.IsNullOrEmpty(key))
             throw new ArgumentException("Key cannot be null or empty.", nameof(key));
@@ -139,3 +140,9 @@ public class ErrorScenario
         return true;
     }
 } 
+
+
+
+
+
+

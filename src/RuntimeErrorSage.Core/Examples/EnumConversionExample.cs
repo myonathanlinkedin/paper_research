@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Examples;
@@ -38,3 +39,9 @@ public static class EnumConversionExample
         Console.WriteLine($"Custom category: {customCategoryStr}");
     }
 } 
+
+
+
+
+
+

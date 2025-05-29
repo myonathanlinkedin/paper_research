@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Application.Models.Health
@@ -10,7 +11,7 @@ namespace RuntimeErrorSage.Application.Models.Health
         /// <summary>
         /// Gets or sets whether the system is healthy.
         /// </summary>
-        public bool IsHealthy { get; set; }
+        public bool IsHealthy { get; }
 
         /// <summary>
         /// Gets or sets additional health status details.
@@ -18,3 +19,9 @@ namespace RuntimeErrorSage.Application.Models.Health
         public Dictionary<string, object> Details { get; set; } = new();
     }
 } 
+
+
+
+
+
+

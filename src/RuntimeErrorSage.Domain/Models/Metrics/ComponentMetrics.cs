@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,42 +12,42 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the component name.
         /// </summary>
-        public string ComponentName { get; set; }
+        public string ComponentName { get; }
         
         /// <summary>
         /// Gets or sets the timestamp when the metrics were collected.
         /// </summary>
-        public DateTime Timestamp { get; set; }
+        public DateTime Timestamp { get; }
         
         /// <summary>
         /// Gets or sets the CPU usage percentage.
         /// </summary>
-        public double CpuUsagePercent { get; set; }
+        public double CpuUsagePercent { get; }
         
         /// <summary>
         /// Gets or sets the memory usage in bytes.
         /// </summary>
-        public long MemoryUsageBytes { get; set; }
+        public long MemoryUsageBytes { get; }
         
         /// <summary>
         /// Gets or sets the number of requests processed.
         /// </summary>
-        public long RequestCount { get; set; }
+        public long RequestCount { get; }
         
         /// <summary>
         /// Gets or sets the average request duration in milliseconds.
         /// </summary>
-        public double AverageRequestDurationMs { get; set; }
+        public double AverageRequestDurationMs { get; }
         
         /// <summary>
         /// Gets or sets the error count.
         /// </summary>
-        public long ErrorCount { get; set; }
+        public long ErrorCount { get; }
         
         /// <summary>
         /// Gets or sets the error rate as a percentage.
         /// </summary>
-        public double ErrorRatePercent { get; set; }
+        public double ErrorRatePercent { get; }
         
         /// <summary>
         /// Gets or sets additional custom metrics.
@@ -54,3 +55,9 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         public Dictionary<string, object> CustomMetrics { get; set; } = new();
     }
 } 
+
+
+
+
+
+

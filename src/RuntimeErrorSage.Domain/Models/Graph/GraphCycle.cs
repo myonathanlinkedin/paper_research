@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,17 +12,17 @@ public class GraphCycle
     /// <summary>
     /// Gets or sets the unique identifier of the cycle.
     /// </summary>
-    public string CycleId { get; set; } = Guid.NewGuid().ToString();
+    public string CycleId { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the nodes in the cycle.
     /// </summary>
-    public List<GraphNode> Nodes { get; set; } = new();
+    public IReadOnlyCollection<Nodes> Nodes { get; } = new();
 
     /// <summary>
     /// Gets or sets the edges in the cycle.
     /// </summary>
-    public List<GraphEdge> Edges { get; set; } = new();
+    public IReadOnlyCollection<Edges> Edges { get; } = new();
 
     /// <summary>
     /// Gets or sets the length of the cycle.
@@ -31,27 +32,27 @@ public class GraphCycle
     /// <summary>
     /// Gets or sets the description of the cycle.
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    public string Description { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the timestamp when the cycle was identified.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the severity of the cycle.
     /// </summary>
-    public int Severity { get; set; }
+    public int Severity { get; }
 
     /// <summary>
     /// Gets or sets whether the cycle is critical.
     /// </summary>
-    public bool IsCritical { get; set; }
+    public bool IsCritical { get; }
 
     /// <summary>
     /// Gets or sets the weight of the cycle.
     /// </summary>
-    public double Weight { get; set; }
+    public double Weight { get; }
 
     /// <summary>
     /// Gets or sets the metadata of the cycle.
@@ -61,5 +62,11 @@ public class GraphCycle
     /// <summary>
     /// Gets or sets the risk level of the cycle.
     /// </summary>
-    public double RiskLevel { get; set; }
+    public double RiskLevel { get; }
 } 
+
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,32 +12,32 @@ namespace RuntimeErrorSage.Application.Models.Classification
         /// <summary>
         /// Gets or sets the unique identifier of the classification.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the error type.
         /// </summary>
-        public string ErrorType { get; set; }
+        public string ErrorType { get; }
 
         /// <summary>
         /// Gets or sets the error category.
         /// </summary>
-        public string Category { get; set; }
+        public string Category { get; }
 
         /// <summary>
         /// Gets or sets the confidence level of the classification.
         /// </summary>
-        public double Confidence { get; set; }
+        public double Confidence { get; }
 
         /// <summary>
         /// Gets or sets the severity level.
         /// </summary>
-        public int Severity { get; set; }
+        public int Severity { get; }
 
         /// <summary>
         /// Gets or sets the timestamp of the classification.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets additional metadata about the classification.
@@ -44,3 +45,8 @@ namespace RuntimeErrorSage.Application.Models.Classification
         public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
     }
 } 
+
+
+
+
+

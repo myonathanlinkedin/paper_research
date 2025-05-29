@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 
@@ -9,12 +10,12 @@ namespace RuntimeErrorSage.Tests.TestSuite;
 public class PerformanceTestRunner
 {
     private readonly IErrorAnalyzer _errorAnalyzer;
-    private readonly List<PerformanceMetrics> _metrics;
+    private readonly Collection<PerformanceMetrics> _metrics;
 
     public PerformanceTestRunner(IErrorAnalyzer errorAnalyzer)
     {
         _errorAnalyzer = errorAnalyzer;
-        _metrics = new List<PerformanceMetrics>();
+        _metrics = new Collection<PerformanceMetrics>();
     }
 
     /// <summary>
@@ -56,7 +57,7 @@ public class PerformanceTestRunner
     /// <summary>
     /// Gets all collected metrics
     /// </summary>
-    public IReadOnlyList<PerformanceMetrics> GetMetrics() => _metrics;
+    public IReadOnlyCollection<PerformanceMetrics> GetMetrics() => _metrics;
 
     private double GetCpuUsage()
     {
@@ -75,3 +76,9 @@ public class PerformanceTestRunner
         return (workerUtilization + ioUtilization) / 2.0;
     }
 } 
+
+
+
+
+
+

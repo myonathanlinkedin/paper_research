@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Models.Error;
@@ -17,7 +18,7 @@ public interface IImpactAnalyzer
     /// <param name="context">The error context</param>
     /// <param name="graph">The dependency graph</param>
     /// <returns>A list of impact analysis results</returns>
-    Task<List<RuntimeErrorSage.Application.Models.Graph.ImpactAnalysisResult>> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph);
+    Task<Collection<RuntimeErrorSage.Application.Models.Graph.ImpactAnalysisResult>> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph);
 
     /// <summary>
     /// Validates the impact analyzer configuration.
@@ -25,3 +26,9 @@ public interface IImpactAnalyzer
     /// <returns>True if the configuration is valid, false otherwise</returns>
     Task<bool> ValidateConfigurationAsync();
 } 
+
+
+
+
+
+

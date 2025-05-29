@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +9,13 @@ namespace RuntimeErrorSage.Application.Remediation
 {
     public class StepHistoryTracker
     {
-        private readonly Dictionary<string, List<RemediationStep>> _stepHistory = new();
+        private readonly Dictionary<string, Collection<RemediationStep>> _stepHistory = new();
 
         public async Task RecordStepAsync(string remediationId, RemediationStep step)
         {
             if (!_stepHistory.ContainsKey(remediationId))
             {
-                _stepHistory[remediationId] = new List<RemediationStep>();
+                _stepHistory[remediationId] = new Collection<RemediationStep>();
             }
             _stepHistory[remediationId].Add(step);
             await Task.CompletedTask;
@@ -30,3 +31,8 @@ namespace RuntimeErrorSage.Application.Remediation
         }
     }
 } 
+
+
+
+
+

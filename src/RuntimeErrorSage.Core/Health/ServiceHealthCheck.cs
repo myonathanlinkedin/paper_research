@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -84,7 +85,7 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
         }
     }
 
-    public async Task<List<string>> GetHealthyServicesAsync()
+    public async Task<Collection<string>> GetHealthyServicesAsync()
     {
         return _serviceStatus
             .Where(s => s.Value.IsHealthy)
@@ -209,7 +210,7 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
     private async Task<Dictionary<string, double>> CollectMetricsAsync(string serviceName)
     {
         var metrics = new Dictionary<string, double>();
-        var tasks = new List<Task>();
+        var tasks = new Collection<Task>();
 
         // Collect system metrics
         tasks.Add(CollectSystemMetricsAsync(metrics));
@@ -548,4 +549,9 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
             report.Entries.ToDictionary(e => e.Key, e => e.Value as object)); // Use the component results
     }
 } 
+
+
+
+
+
 

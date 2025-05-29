@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Remediation
@@ -10,12 +11,12 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the ID of the action that was executed.
         /// </summary>
-        public string ActionId { get; set; }
+        public string ActionId { get; }
 
         /// <summary>
         /// Gets or sets the start time of the execution.
         /// </summary>
-        public DateTime StartTime { get; set; }
+        public DateTime StartTime { get; }
 
         /// <summary>
         /// Gets or sets the end time of the execution.
@@ -25,16 +26,21 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the status of the execution.
         /// </summary>
-        public ExecutionStatus Status { get; set; }
+        public ExecutionStatus Status { get; }
 
         /// <summary>
         /// Gets or sets whether the execution was successful.
         /// </summary>
-        public bool Success { get; set; }
+        public bool Success { get; }
 
         /// <summary>
         /// Gets or sets the error that occurred during execution, if any.
         /// </summary>
-        public Exception Error { get; set; }
+        public Exception Error { get; }
     }
 } 
+
+
+
+
+

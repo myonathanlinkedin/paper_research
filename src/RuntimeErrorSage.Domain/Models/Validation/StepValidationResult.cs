@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 
 namespace RuntimeErrorSage.Application.Models.Validation
@@ -10,17 +11,17 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <summary>
         /// Gets or sets whether the step is valid.
         /// </summary>
-        public bool IsValid { get; set; }
+        public bool IsValid { get; }
 
         /// <summary>
         /// Gets or sets the reason for validation failure.
         /// </summary>
-        public string Reason { get; set; }
+        public string Reason { get; }
 
         /// <summary>
         /// Gets or sets the confidence score for the validation (0-1).
         /// </summary>
-        public double ConfidenceScore { get; set; }
+        public double ConfidenceScore { get; }
 
         /// <summary>
         /// Gets or sets additional validation details.
@@ -28,4 +29,10 @@ namespace RuntimeErrorSage.Application.Models.Validation
         public Dictionary<string, object> ValidationDetails { get; set; } = new();
     }
 } 
+
+
+
+
+
+
 

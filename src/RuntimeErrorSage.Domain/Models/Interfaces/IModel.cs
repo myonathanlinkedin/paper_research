@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -101,3 +102,9 @@ namespace RuntimeErrorSage.Application.Models.Interfaces
         Task<bool> ValidatePatternAsync(ErrorPattern pattern);
     }
 } 
+
+
+
+
+
+

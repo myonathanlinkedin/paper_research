@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
@@ -12,17 +13,17 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the severity of the impact.
         /// </summary>
-        public ImpactSeverity Severity { get; set; }
+        public ImpactSeverity Severity { get; }
 
         /// <summary>
         /// Gets or sets the scope of the impact.
         /// </summary>
-        public ImpactScope Scope { get; set; }
+        public ImpactScope Scope { get; }
 
         /// <summary>
         /// Gets or sets the estimated number of users affected.
         /// </summary>
-        public int AffectedUsers { get; set; }
+        public int AffectedUsers { get; }
 
         /// <summary>
         /// Gets or sets the estimated recovery time.
@@ -32,22 +33,22 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the description of the business impact.
         /// </summary>
-        public string BusinessImpact { get; set; } = string.Empty;
+        public string BusinessImpact { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the description of the impact.
         /// </summary>
-        public string Description { get; set; } = string.Empty;
+        public string Description { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the components affected by the remediation.
         /// </summary>
-        public List<string> AffectedComponents { get; set; } = new List<string>();
+        public IReadOnlyCollection<AffectedComponents> AffectedComponents { get; } = new Collection<string>();
 
         /// <summary>
         /// Gets or sets the services affected by the remediation.
         /// </summary>
-        public List<string> AffectedServices { get; set; } = new List<string>();
+        public IReadOnlyCollection<AffectedServices> AffectedServices { get; } = new Collection<string>();
 
         /// <summary>
         /// Gets or sets additional impact metrics.
@@ -57,11 +58,14 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets whether the impact requires approval.
         /// </summary>
-        public bool RequiresApproval { get; set; }
+        public bool RequiresApproval { get; }
 
         /// <summary>
         /// Gets or sets the confidence level of the impact assessment.
         /// </summary>
-        public double ConfidenceLevel { get; set; }
+        public double ConfidenceLevel { get; }
     }
 } 
+
+
+

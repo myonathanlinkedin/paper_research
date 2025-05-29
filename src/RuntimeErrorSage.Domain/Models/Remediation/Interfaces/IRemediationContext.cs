@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Models.Error;
@@ -9,7 +10,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation.Interfaces
         ErrorAnalysisResult AnalysisResult { get; }
         RemediationPlan Plan { get; }
         IRemediationAction CurrentAction { get; }
-        List<RemediationResult> History { get; }
+        Collection<RemediationResult> History { get; }
         Dictionary<string, object> ContextData { get; }
         bool IsRollbackMode { get; set; }
         RemediationState State { get; }
@@ -19,3 +20,9 @@ namespace RuntimeErrorSage.Application.Models.Remediation.Interfaces
         void SetCurrentAction(IRemediationAction action);
     }
 } 
+
+
+
+
+
+

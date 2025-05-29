@@ -1,27 +1,34 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Models
 {
     public class RiskAssessment
     {
-        public string Id { get; set; }
-        public string ActionId { get; set; }
-        public RemediationRiskLevel RiskLevel { get; set; }
-        public List<string> PotentialIssues { get; set; }
-        public List<string> MitigationSteps { get; set; }
+        public string Id { get; }
+        public string ActionId { get; }
+        public RemediationRiskLevel RiskLevel { get; }
+        public IReadOnlyCollection<PotentialIssues> PotentialIssues { get; }
+        public IReadOnlyCollection<MitigationSteps> MitigationSteps { get; }
         public Dictionary<string, object> Context { get; set; }
-        public DateTime AssessedAt { get; set; }
-        public string AssessedBy { get; set; }
-        public string Notes { get; set; }
+        public DateTime AssessedAt { get; }
+        public string AssessedBy { get; }
+        public string Notes { get; }
 
         public RiskAssessment()
         {
             Id = Guid.NewGuid().ToString();
-            PotentialIssues = new List<string>();
-            MitigationSteps = new List<string>();
+            PotentialIssues = new Collection<string>();
+            MitigationSteps = new Collection<string>();
             Context = new Dictionary<string, object>();
             AssessedAt = DateTime.UtcNow;
             RiskLevel = RemediationRiskLevel.Medium;
         }
     }
 } 
+
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Validation.Interfaces
@@ -23,3 +24,9 @@ namespace RuntimeErrorSage.Application.Validation.Interfaces
         string Code { get; }
     }
 } 
+
+
+
+
+
+

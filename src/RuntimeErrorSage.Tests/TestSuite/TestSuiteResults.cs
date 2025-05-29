@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,17 +14,17 @@ public class TestSuiteResults
     /// <summary>
     /// Unique identifier for the results
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Start time of the test suite
     /// </summary>
-    public DateTime StartTime { get; set; }
+    public DateTime StartTime { get; }
 
     /// <summary>
     /// End time of the test suite
     /// </summary>
-    public DateTime EndTime { get; set; }
+    public DateTime EndTime { get; }
 
     /// <summary>
     /// Duration of the test suite
@@ -33,17 +34,17 @@ public class TestSuiteResults
     /// <summary>
     /// Results from individual test scenarios
     /// </summary>
-    public List<TestResult> TestResults { get; set; } = new();
+    public IReadOnlyCollection<TestResults> TestResults { get; } = new();
 
     /// <summary>
     /// Performance metrics from performance tests
     /// </summary>
-    public List<PerformanceMetrics> PerformanceMetrics { get; set; } = new();
+    public IReadOnlyCollection<PerformanceMetrics> PerformanceMetrics { get; } = new();
 
     /// <summary>
     /// Results from baseline comparisons
     /// </summary>
-    public List<ComparisonResults> BaselineComparisons { get; set; } = new();
+    public IReadOnlyCollection<BaselineComparisons> BaselineComparisons { get; } = new();
 
     /// <summary>
     /// Whether all tests passed
@@ -65,3 +66,9 @@ public class TestSuiteResults
     /// </summary>
     public double PassRate => TestResults.Count == 0 ? 0 : (PassedTests / (double)TestResults.Count) * 100;
 } 
+
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Graph;
@@ -13,7 +14,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// Shows correct vs incorrect ways to access GraphNode properties from a Dictionary KeyValuePair
         /// </summary>
         /// <param name="graph">The dependency graph</param>
-        public void ShowNodeDictionaryAccess(DependencyGraph graph)
+        public DependencyGraph graph { ArgumentNullException.ThrowIfNull(DependencyGraph graph); }
         {
             // INCORRECT: This causes "'KeyValuePair<string, GraphNode>' does not contain a definition for 'Id'"
             // foreach (var node in graph.Nodes)
@@ -46,7 +47,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// Shows correct vs incorrect ways to access GraphEdge properties from a Dictionary KeyValuePair
         /// </summary>
         /// <param name="graph">The dependency graph</param>
-        public void ShowEdgeDictionaryAccess(DependencyGraph graph)
+        public DependencyGraph graph { ArgumentNullException.ThrowIfNull(DependencyGraph graph); }
         {
             // INCORRECT: This causes "'KeyValuePair<string, GraphEdge>' does not contain a definition for 'SourceId'"
             // foreach (var edge in graph.Edges)
@@ -71,7 +72,7 @@ namespace RuntimeErrorSage.Application.Examples
         /// Shows how to properly access DependencyNode properties in impact analysis
         /// </summary>
         /// <param name="result">Impact analysis result</param>
-        public void ShowImpactAnalysisAccess(ImpactAnalysisResult result)
+        public ImpactAnalysisResult result { ArgumentNullException.ThrowIfNull(ImpactAnalysisResult result); }
         {
             // Access DirectDependencies correctly - these are already DependencyNode objects, not KeyValuePairs
             foreach (var dependency in result.DirectDependencies)
@@ -99,3 +100,9 @@ namespace RuntimeErrorSage.Application.Examples
         }
     }
 } 
+
+
+
+
+
+

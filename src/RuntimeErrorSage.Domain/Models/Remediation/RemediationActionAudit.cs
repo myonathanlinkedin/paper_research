@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Remediation;
 using System;
@@ -11,8 +12,8 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     /// </summary>
     public class RemediationActionAudit
     {
-        private readonly List<AuditEntry> _auditLog = new();
-        private readonly Dictionary<string, List<AuditEntry>> _actionAuditLogs = new();
+        private readonly Collection<AuditEntry> _auditLog = new();
+        private readonly Dictionary<string, Collection<AuditEntry>> _actionAuditLogs = new();
 
         /// <summary>
         /// Records an audit entry for a remediation action.
@@ -21,7 +22,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <param name="eventType">The type of event.</param>
         /// <param name="details">Additional details about the event.</param>
         /// <param name="userId">The ID of the user who performed the action.</param>
-        public void RecordAuditEntry(string actionId, AuditEventType eventType, string details, string userId)
+        public string actionId, AuditEventType eventType, string details, string userId { ArgumentNullException.ThrowIfNull(string actionId, AuditEventType eventType, string details, string userId); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             ArgumentNullException.ThrowIfNull(details);
@@ -40,7 +41,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
 
             if (!_actionAuditLogs.ContainsKey(actionId))
             {
-                _actionAuditLogs[actionId] = new List<AuditEntry>();
+                _actionAuditLogs[actionId] = new Collection<AuditEntry>();
             }
             _actionAuditLogs[actionId].Add(entry);
         }
@@ -50,17 +51,17 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <returns>The list of audit entries for the action.</returns>
-        public IReadOnlyList<AuditEntry> GetActionAuditLog(string actionId)
+        public IReadOnlyCollection<AuditEntry> GetActionAuditLog(string actionId)
         {
             ArgumentNullException.ThrowIfNull(actionId);
-            return _actionAuditLogs.TryGetValue(actionId, out var entries) ? entries : new List<AuditEntry>();
+            return _actionAuditLogs.TryGetValue(actionId, out var entries) ? entries : new Collection<AuditEntry>();
         }
 
         /// <summary>
         /// Gets the complete audit log.
         /// </summary>
         /// <returns>The list of all audit entries.</returns>
-        public IReadOnlyList<AuditEntry> GetAuditLog()
+        public IReadOnlyCollection<AuditEntry> GetAuditLog()
         {
             return _auditLog.AsReadOnly();
         }
@@ -71,7 +72,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <param name="startTime">The start time.</param>
         /// <param name="endTime">The end time.</param>
         /// <returns>The list of audit entries within the time range.</returns>
-        public IReadOnlyList<AuditEntry> GetAuditEntriesInTimeRange(DateTime startTime, DateTime endTime)
+        public IReadOnlyCollection<AuditEntry> GetAuditEntriesInTimeRange(DateTime startTime, DateTime endTime)
         {
             return _auditLog.FindAll(e => e.Timestamp >= startTime && e.Timestamp <= endTime);
         }
@@ -81,7 +82,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="eventType">The event type.</param>
         /// <returns>The list of audit entries for the event type.</returns>
-        public IReadOnlyList<AuditEntry> GetAuditEntriesByEventType(AuditEventType eventType)
+        public IReadOnlyCollection<AuditEntry> GetAuditEntriesByEventType(AuditEventType eventType)
         {
             return _auditLog.FindAll(e => e.EventType == eventType);
         }
@@ -91,7 +92,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="userId">The user ID.</param>
         /// <returns>The list of audit entries for the user.</returns>
-        public IReadOnlyList<AuditEntry> GetAuditEntriesByUser(string userId)
+        public IReadOnlyCollection<AuditEntry> GetAuditEntriesByUser(string userId)
         {
             ArgumentNullException.ThrowIfNull(userId);
             return _auditLog.FindAll(e => e.UserId == userId);
@@ -101,7 +102,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Clears the audit log for a specific action.
         /// </summary>
         /// <param name="actionId">The action ID.</param>
-        public void ClearActionAuditLog(string actionId)
+        public string actionId { ArgumentNullException.ThrowIfNull(string actionId); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             if (_actionAuditLogs.ContainsKey(actionId))
@@ -121,6 +122,9 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
     }
 } 
+
+
+
 
 
 

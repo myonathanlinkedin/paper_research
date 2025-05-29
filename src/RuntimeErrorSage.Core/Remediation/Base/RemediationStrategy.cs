@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Models.Error;
@@ -28,14 +29,14 @@ public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemed
         Id = Guid.NewGuid().ToString();
         Parameters = new Dictionary<string, object>();
         SupportedErrorTypes = new HashSet<string>();
-        Actions = new List<RemediationAction>();
+        Actions = new Collection<RemediationAction>();
         CreatedAt = DateTime.UtcNow;
         Status = RemediationStatusEnum.NotStarted;
         Priority = RemediationPriority.Medium;
     }
 
     /// <inheritdoc/>
-    public string Id { get; set; }
+    public string Id { get; }
 
     /// <inheritdoc/>
     public string StrategyId { get; }
@@ -44,7 +45,7 @@ public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemed
     public abstract string Name { get; set; }
 
     /// <inheritdoc/>
-    public RemediationPriority Priority { get; set; }
+    public RemediationPriority Priority { get; }
 
     /// <inheritdoc/>
     public abstract string Description { get; set; }
@@ -56,7 +57,7 @@ public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemed
     public ISet<string> SupportedErrorTypes { get; protected set; }
 
     /// <inheritdoc/>
-    public List<RemediationAction> Actions { get; protected set; }
+    public Collection<RemediationAction> Actions { get; protected set; }
 
     /// <inheritdoc/>
     public DateTime CreatedAt { get; protected set; }
@@ -69,7 +70,7 @@ public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemed
     {
         if (context == null)
         {
-            throw new ArgumentNullException(nameof(context));
+            ArgumentNullException.ThrowIfNull(nameof(context));
         }
 
         try
@@ -227,7 +228,7 @@ public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemed
             StrategyId = StrategyId,
             StrategyName = Name,
             ErrorContext = context,
-            Steps = new List<RemediationStep>()
+            Steps = new Collection<RemediationStep>()
         });
     }
 
@@ -269,3 +270,9 @@ public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemed
         };
     }
 } 
+
+
+
+
+
+

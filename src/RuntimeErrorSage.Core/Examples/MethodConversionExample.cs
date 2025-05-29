@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Execution;
 
 namespace RuntimeErrorSage.Application.Examples;
@@ -31,3 +32,9 @@ public static class MethodConversionExample
         Console.WriteLine($"Duration (with extension): {durationValue2} seconds");
     }
 } 
+
+
+
+
+
+

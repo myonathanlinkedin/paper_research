@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
@@ -16,57 +17,57 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the unique identifier of the action.
         /// </summary>
-        public string ActionId { get; set; } = Guid.NewGuid().ToString();
+        public string ActionId { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the name of the action.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the description of the action.
         /// </summary>
-        public string Description { get; set; } = string.Empty;
+        public string Description { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the context in which the action should be executed.
         /// </summary>
-        public ErrorContext Context { get; set; }
+        public ErrorContext Context { get; }
 
         /// <summary>
         /// Gets or sets the priority of the action.
         /// </summary>
-        public int Priority { get; set; }
+        public int Priority { get; }
 
         /// <summary>
         /// Gets or sets the impact level of the action.
         /// </summary>
-        public ImpactLevel Impact { get; set; }
+        public ImpactLevel Impact { get; }
 
         /// <summary>
         /// Gets or sets the risk level of the action.
         /// </summary>
-        public RiskLevel RiskLevel { get; set; }
+        public RiskLevel RiskLevel { get; }
 
         /// <summary>
         /// Gets or sets the status of the action.
         /// </summary>
-        public RemediationStatusEnum Status { get; set; }
+        public RemediationStatusEnum Status { get; }
 
         /// <summary>
         /// Gets or sets whether the action requires manual approval.
         /// </summary>
-        public bool RequiresManualApproval { get; set; }
+        public bool RequiresManualApproval { get; }
 
         /// <summary>
         /// Gets or sets the prerequisites for the action.
         /// </summary>
-        public List<string> Prerequisites { get; set; } = new();
+        public IReadOnlyCollection<Prerequisites> Prerequisites { get; } = new();
 
         /// <summary>
         /// Gets or sets the dependencies for the action.
         /// </summary>
-        public List<string> Dependencies { get; set; } = new();
+        public IReadOnlyCollection<Dependencies> Dependencies { get; } = new();
 
         /// <summary>
         /// Gets or sets the parameters for the action.
@@ -81,77 +82,77 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the tags for the action.
         /// </summary>
-        public List<string> Tags { get; set; } = new();
+        public IReadOnlyCollection<Tags> Tags { get; } = new();
 
         /// <summary>
         /// Gets or sets the version of the action.
         /// </summary>
-        public string Version { get; set; } = string.Empty;
+        public string Version { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the author of the action.
         /// </summary>
-        public string Author { get; set; } = string.Empty;
+        public string Author { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the creation date of the action.
         /// </summary>
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the last modified date of the action.
         /// </summary>
-        public DateTime LastModifiedDate { get; set; } = DateTime.UtcNow;
+        public DateTime LastModifiedDate { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the execution timeout in milliseconds.
         /// </summary>
-        public int ExecutionTimeoutMs { get; set; } = 300000; // 5 minutes default
+        public int ExecutionTimeoutMs { get; } = 300000; // 5 minutes default
 
         /// <summary>
         /// Gets or sets the retry count for the action.
         /// </summary>
-        public int RetryCount { get; set; } = 3;
+        public int RetryCount { get; } = 3;
 
         /// <summary>
         /// Gets or sets the retry delay in milliseconds.
         /// </summary>
-        public int RetryDelayMs { get; set; } = 30000; // 30 seconds default
+        public int RetryDelayMs { get; } = 30000; // 30 seconds default
 
         /// <summary>
         /// Gets or sets whether the action is enabled.
         /// </summary>
-        public bool IsEnabled { get; set; } = true;
+        public bool IsEnabled { get; } = true;
 
         /// <summary>
         /// Gets or sets whether the action is visible.
         /// </summary>
-        public bool IsVisible { get; set; } = true;
+        public bool IsVisible { get; } = true;
 
         /// <summary>
         /// Gets or sets the category of the action.
         /// </summary>
-        public string Category { get; set; } = string.Empty;
+        public string Category { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the subcategory of the action.
         /// </summary>
-        public string Subcategory { get; set; } = string.Empty;
+        public string Subcategory { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the severity of the action.
         /// </summary>
-        public string Severity { get; set; } = string.Empty;
+        public string Severity { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the complexity of the action.
         /// </summary>
-        public string Complexity { get; set; } = string.Empty;
+        public string Complexity { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the estimated duration of the action.
         /// </summary>
-        public TimeSpan EstimatedDuration { get; set; }
+        public TimeSpan EstimatedDuration { get; }
 
         /// <summary>
         /// Gets or sets the actual duration of the action.
@@ -171,22 +172,22 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the error message if the action failed.
         /// </summary>
-        public string ErrorMessage { get; set; } = string.Empty;
+        public string ErrorMessage { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the stack trace if the action failed.
         /// </summary>
-        public string StackTrace { get; set; } = string.Empty;
+        public string StackTrace { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the output of the action.
         /// </summary>
-        public string Output { get; set; } = string.Empty;
+        public string Output { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the validation results for the action.
         /// </summary>
-        public List<ValidationResult> ValidationResults { get; set; } = new();
+        public IReadOnlyCollection<ValidationResults> ValidationResults { get; } = new();
 
         /// <summary>
         /// Gets or sets the rollback status.
@@ -196,13 +197,18 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets whether the action can be rolled back.
         /// </summary>
-        public bool CanRollback { get; set; }
+        public bool CanRollback { get; }
 
         /// <summary>
         /// Gets or sets the rollback action if available.
         /// </summary>
-        public IRemediationAction RollbackAction { get; set; }
+        public IRemediationAction RollbackAction { get; }
     }
 } 
+
+
+
+
+
 
 

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,10 +22,10 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
     private readonly ILogger<RemediationStrategyRegistry> _logger;
     private readonly ConcurrentDictionary<string, IRemediationStrategy> _strategies;
     private readonly ConcurrentDictionary<string, StrategyMetadata> _strategyMetadata;
-    private readonly ConcurrentDictionary<string, List<string>> _strategyVersions;
-    private readonly ConcurrentDictionary<string, List<string>> _errorTypeStrategies;
-    private readonly Func<List<string>> _stringListFactory;
-    private readonly Func<List<IRemediationStrategy>> _strategyListFactory;
+    private readonly ConcurrentDictionary<string, Collection<string>> _strategyVersions;
+    private readonly ConcurrentDictionary<string, Collection<string>> _errorTypeStrategies;
+    private readonly Func<Collection<string>> _stringListFactory;
+    private readonly Func<Collection<IRemediationStrategy>> _strategyListFactory;
 
     public bool IsEnabled { get; } = true;
     public string Name { get; } = "RemediationStrategyRegistry";
@@ -34,26 +35,26 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
         ILogger<RemediationStrategyRegistry> logger,
         ConcurrentDictionary<string, IRemediationStrategy>? strategies = null,
         ConcurrentDictionary<string, StrategyMetadata>? strategyMetadata = null,
-        ConcurrentDictionary<string, List<string>>? strategyVersions = null,
-        ConcurrentDictionary<string, List<string>>? errorTypeStrategies = null,
-        Func<List<string>>? stringListFactory = null,
-        Func<List<IRemediationStrategy>>? strategyListFactory = null)
+        ConcurrentDictionary<string, Collection<string>>? strategyVersions = null,
+        ConcurrentDictionary<string, Collection<string>>? errorTypeStrategies = null,
+        Func<Collection<string>>? stringListFactory = null,
+        Func<Collection<IRemediationStrategy>>? strategyListFactory = null)
     {
         _logger = logger;
         _strategies = strategies ?? new ConcurrentDictionary<string, IRemediationStrategy>();
         _strategyMetadata = strategyMetadata ?? new ConcurrentDictionary<string, StrategyMetadata>();
-        _strategyVersions = strategyVersions ?? new ConcurrentDictionary<string, List<string>>();
-        _errorTypeStrategies = errorTypeStrategies ?? new ConcurrentDictionary<string, List<string>>();
-        _stringListFactory = stringListFactory ?? (() => new List<string>());
-        _strategyListFactory = strategyListFactory ?? (() => new List<IRemediationStrategy>());
+        _strategyVersions = strategyVersions ?? new ConcurrentDictionary<string, Collection<string>>();
+        _errorTypeStrategies = errorTypeStrategies ?? new ConcurrentDictionary<string, Collection<string>>();
+        _stringListFactory = stringListFactory ?? (() => new Collection<string>());
+        _strategyListFactory = strategyListFactory ?? (() => new Collection<IRemediationStrategy>());
     }
 
     public void RegisterStrategy(IRemediationStrategy strategy, StrategyMetadata metadata)
     {
         if (strategy == null)
-            throw new ArgumentNullException(nameof(strategy));
+            ArgumentNullException.ThrowIfNull(strategy);
         if (metadata == null)
-            throw new ArgumentNullException(nameof(metadata));
+            ArgumentNullException.ThrowIfNull(metadata);
 
         var strategyKey = GetStrategyKey(strategy.Name, metadata.Version);
         
@@ -137,7 +138,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
     public IEnumerable<IRemediationStrategy> GetStrategiesForError(ErrorAnalysisResult analysis)
     {
         if (analysis == null)
-            throw new ArgumentNullException(nameof(analysis));
+            ArgumentNullException.ThrowIfNull(analysis);
 
         return _strategies.Values
             .Where(s => s.CanHandle(analysis))
@@ -399,3 +400,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
 
     private static string GetStrategyKey(string strategyName, string version) => $"{strategyName}:{version}";
 } 
+
+
+
+

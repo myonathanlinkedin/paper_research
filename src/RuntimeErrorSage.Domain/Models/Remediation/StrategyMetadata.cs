@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,47 +12,47 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the unique identifier for this strategy metadata.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the name of the strategy.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the version of the strategy.
         /// </summary>
-        public string Version { get; set; } = string.Empty;
+        public string Version { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the description of the strategy.
         /// </summary>
-        public string Description { get; set; } = string.Empty;
+        public string Description { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the author of the strategy.
         /// </summary>
-        public string Author { get; set; } = string.Empty;
+        public string Author { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the creation date of the strategy.
         /// </summary>
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the last modified date of the strategy.
         /// </summary>
-        public DateTime LastModifiedDate { get; set; } = DateTime.UtcNow;
+        public DateTime LastModifiedDate { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the list of error types this strategy can handle.
         /// </summary>
-        public List<string> SupportedErrorTypes { get; set; } = new();
+        public IReadOnlyCollection<SupportedErrorTypes> SupportedErrorTypes { get; } = new();
 
         /// <summary>
         /// Gets or sets the list of dependencies required by this strategy.
         /// </summary>
-        public List<string> Dependencies { get; set; } = new();
+        public IReadOnlyCollection<Dependencies> Dependencies { get; } = new();
 
         /// <summary>
         /// Gets or sets the configuration parameters for this strategy.
@@ -61,16 +62,22 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets whether this strategy is enabled.
         /// </summary>
-        public bool IsEnabled { get; set; } = true;
+        public bool IsEnabled { get; } = true;
 
         /// <summary>
         /// Gets or sets the priority level of this strategy.
         /// </summary>
-        public int Priority { get; set; }
+        public int Priority { get; }
 
         /// <summary>
         /// Gets or sets tags associated with this strategy.
         /// </summary>
-        public List<string> Tags { get; set; } = new();
+        public IReadOnlyCollection<Tags> Tags { get; } = new();
     }
 } 
+
+
+
+
+
+

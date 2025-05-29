@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 
 namespace RuntimeErrorSage.Application.Models.Metrics
@@ -10,16 +11,21 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the metric name.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; }
 
         /// <summary>
         /// Gets or sets the metric value.
         /// </summary>
-        public double Value { get; set; }
+        public double Value { get; }
 
         /// <summary>
         /// Gets or sets the timestamp when the metric was recorded.
         /// </summary>
-        public DateTime Timestamp { get; set; }
+        public DateTime Timestamp { get; }
     }
 } 
+
+
+
+
+

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using RuntimeErrorSage.Application.Models.Context;
 
@@ -16,7 +17,7 @@ public static class ErrorContextExtensions
     public static RuntimeContext ToRuntimeContext(this ErrorContext errorContext)
     {
         if (errorContext == null)
-            throw new ArgumentNullException(nameof(errorContext));
+            ArgumentNullException.ThrowIfNull(nameof(errorContext));
 
         return new RuntimeContext
         {
@@ -29,3 +30,8 @@ public static class ErrorContextExtensions
         };
     }
 } 
+
+
+
+
+

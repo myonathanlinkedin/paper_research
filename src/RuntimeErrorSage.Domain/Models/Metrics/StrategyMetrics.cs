@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,32 +12,32 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the name of the strategy.
         /// </summary>
-        public string StrategyName { get; set; } = string.Empty;
+        public string StrategyName { get; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the total number of executions.
         /// </summary>
-        public int ExecutionCount { get; set; }
+        public int ExecutionCount { get; }
 
         /// <summary>
         /// Gets or sets the number of successful executions.
         /// </summary>
-        public int SuccessCount { get; set; }
+        public int SuccessCount { get; }
 
         /// <summary>
         /// Gets or sets the number of failed executions.
         /// </summary>
-        public int FailureCount { get; set; }
+        public int FailureCount { get; }
 
         /// <summary>
         /// Gets or sets the total duration of all executions in milliseconds.
         /// </summary>
-        public double TotalDurationMs { get; set; }
+        public double TotalDurationMs { get; }
 
         /// <summary>
         /// Gets or sets the average duration of executions in milliseconds.
         /// </summary>
-        public double AverageDurationMs { get; set; }
+        public double AverageDurationMs { get; }
 
         /// <summary>
         /// Gets or sets the timestamp of the last execution.
@@ -46,12 +47,12 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the success rate of the strategy (0-1).
         /// </summary>
-        public double SuccessRate { get; set; }
+        public double SuccessRate { get; }
 
         /// <summary>
         /// Gets or sets the failure rate of the strategy (0-1).
         /// </summary>
-        public double FailureRate { get; set; }
+        public double FailureRate { get; }
 
         /// <summary>
         /// Gets or sets the count of errors by type.
@@ -61,32 +62,32 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the average resource usage during executions.
         /// </summary>
-        public MetricsResourceUsage AverageResourceUsage { get; set; } = new();
+        public MetricsResourceUsage AverageResourceUsage { get; } = new();
 
         /// <summary>
         /// Gets or sets the peak resource usage during executions.
         /// </summary>
-        public MetricsResourceUsage PeakResourceUsage { get; set; } = new();
+        public MetricsResourceUsage PeakResourceUsage { get; } = new();
 
         /// <summary>
         /// Gets or sets the number of retries attempted.
         /// </summary>
-        public int RetryCount { get; set; }
+        public int RetryCount { get; }
 
         /// <summary>
         /// Gets or sets the average number of retries per execution.
         /// </summary>
-        public double AverageRetriesPerExecution { get; set; }
+        public double AverageRetriesPerExecution { get; }
 
         /// <summary>
         /// Gets or sets the number of timeouts encountered.
         /// </summary>
-        public int TimeoutCount { get; set; }
+        public int TimeoutCount { get; }
 
         /// <summary>
         /// Gets or sets the number of validation failures.
         /// </summary>
-        public int ValidationFailureCount { get; set; }
+        public int ValidationFailureCount { get; }
 
         /// <summary>
         /// Gets or sets any additional metrics.
@@ -103,14 +104,21 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <param name="retryCount">The number of retries attempted.</param>
         /// <param name="isTimeout">Whether the execution timed out.</param>
         /// <param name="isValidationFailure">Whether the execution failed validation.</param>
-        public void UpdateMetrics(
+        public 
             double durationMs,
             bool isSuccessful,
             string? errorType = null,
             MetricsResourceUsage? resourceUsage = null,
             int retryCount = 0,
             bool isTimeout = false,
-            bool isValidationFailure = false)
+            bool isValidationFailure = false { ArgumentNullException.ThrowIfNull(
+            double durationMs,
+            bool isSuccessful,
+            string? errorType = null,
+            MetricsResourceUsage? resourceUsage = null,
+            int retryCount = 0,
+            bool isTimeout = false,
+            bool isValidationFailure = false); }
         {
             ExecutionCount++;
             if (isSuccessful)
@@ -172,3 +180,8 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         }
     }
 } 
+
+
+
+
+

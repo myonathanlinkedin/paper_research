@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Interfaces;
@@ -57,7 +58,13 @@ namespace RuntimeErrorSage.Application.LLM.Interfaces
         /// <returns>The explanation.</returns>
         Task<ModelResponse> ExplainSuggestionAsync(RemediationSuggestion suggestion);
 
-        Task<List<RemediationSuggestion>> GenerateRemediationSuggestionsAsync(RuntimeError error, RemediationAnalysis analysis);
+        Task<Collection<RemediationSuggestion>> GenerateRemediationSuggestionsAsync(RuntimeError error, RemediationAnalysis analysis);
         Task<RemediationValidationResult> ValidateRemediationAsync(RemediationSuggestion suggestion, ErrorContext context);
     }
 } 
+
+
+
+
+
+

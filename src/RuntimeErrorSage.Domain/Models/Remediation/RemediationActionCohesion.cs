@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Models.Remediation;
 using System;
@@ -11,18 +12,18 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     /// </summary>
     public class RemediationActionCohesion
     {
-        private readonly List<string> _relatedActions = new();
+        private readonly Collection<string> _relatedActions = new();
         private readonly Dictionary<string, double> _cohesionScores = new();
 
         /// <summary>
         /// Gets or sets the cohesion level.
         /// </summary>
-        public CohesionLevel Level { get; set; } = CohesionLevel.High;
+        public CohesionLevel Level { get; } = CohesionLevel.High;
 
         /// <summary>
         /// Gets the related actions.
         /// </summary>
-        public IReadOnlyList<string> RelatedActions => _relatedActions;
+        public IReadOnlyCollection<string> RelatedActions => _relatedActions;
 
         /// <summary>
         /// Gets the cohesion scores.
@@ -34,7 +35,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <param name="cohesionScore">The cohesion score.</param>
-        public void AddRelatedAction(string actionId, double cohesionScore)
+        public string actionId, double cohesionScore { ArgumentNullException.ThrowIfNull(string actionId, double cohesionScore); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             
@@ -52,7 +53,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Removes a related action.
         /// </summary>
         /// <param name="actionId">The action ID.</param>
-        public void RemoveRelatedAction(string actionId)
+        public string actionId { ArgumentNullException.ThrowIfNull(string actionId); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             
@@ -77,7 +78,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         /// <param name="actionId">The action ID.</param>
         /// <returns>The cohesion score.</returns>
-        public double GetCohesionScore(string actionId)
+        public string actionId { ArgumentNullException.ThrowIfNull(string actionId); }
         {
             ArgumentNullException.ThrowIfNull(actionId);
             
@@ -110,6 +111,12 @@ namespace RuntimeErrorSage.Application.Models.Remediation
     }
 }
  
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,21 +12,26 @@ namespace RuntimeErrorSage.Application.Models.Monitoring
         /// <summary>
         /// Gets or sets the component name.
         /// </summary>
-        public string ComponentName { get; set; }
+        public string ComponentName { get; }
         
         /// <summary>
         /// Gets or sets whether the component is healthy.
         /// </summary>
-        public bool IsHealthy { get; set; }
+        public bool IsHealthy { get; }
         
         /// <summary>
         /// Gets or sets the health score (0-100).
         /// </summary>
-        public int HealthScore { get; set; }
+        public int HealthScore { get; }
         
         /// <summary>
         /// Gets or sets any health issues detected.
         /// </summary>
-        public List<string> Issues { get; set; } = new();
+        public IReadOnlyCollection<Issues> Issues { get; } = new();
     }
 } 
+
+
+
+
+

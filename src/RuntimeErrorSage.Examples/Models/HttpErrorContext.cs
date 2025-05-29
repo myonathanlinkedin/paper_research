@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System;
 using System.Collections.Generic;
 
@@ -11,37 +12,37 @@ namespace RuntimeErrorSage.Examples.Models
         /// <summary>
         /// Gets or sets the name of the service where the error occurred.
         /// </summary>
-        public string ServiceName { get; set; }
+        public string ServiceName { get; }
 
         /// <summary>
         /// Gets or sets the name of the operation that caused the error.
         /// </summary>
-        public string OperationName { get; set; }
+        public string OperationName { get; }
 
         /// <summary>
         /// Gets or sets the correlation ID for tracking the error.
         /// </summary>
-        public string CorrelationId { get; set; }
+        public string CorrelationId { get; }
 
         /// <summary>
         /// Gets or sets the exception that was thrown.
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception Exception { get; }
 
         /// <summary>
         /// Gets or sets the URL of the HTTP request.
         /// </summary>
-        public string Url { get; set; }
+        public string Url { get; }
 
         /// <summary>
         /// Gets or sets the HTTP method used in the request.
         /// </summary>
-        public string Method { get; set; }
+        public string Method { get; }
 
         /// <summary>
         /// Gets or sets the HTTP status code received.
         /// </summary>
-        public int StatusCode { get; set; }
+        public int StatusCode { get; }
 
         /// <summary>
         /// Gets or sets the request headers.
@@ -56,11 +57,17 @@ namespace RuntimeErrorSage.Examples.Models
         /// <summary>
         /// Gets or sets the request body content.
         /// </summary>
-        public string RequestBody { get; set; }
+        public string RequestBody { get; }
 
         /// <summary>
         /// Gets or sets the response body content.
         /// </summary>
-        public string ResponseBody { get; set; }
+        public string ResponseBody { get; }
     }
 } 
+
+
+
+
+
+

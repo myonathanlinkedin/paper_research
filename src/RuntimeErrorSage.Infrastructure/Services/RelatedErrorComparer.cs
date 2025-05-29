@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Models.Error;
 
@@ -9,7 +10,7 @@ namespace RuntimeErrorSage.Application.Services;
 public class RelatedErrorComparer : IEqualityComparer<RelatedError>
 {
     /// <inheritdoc />
-    public bool Equals(RelatedError x, RelatedError y)
+    public RelatedError x, RelatedError y { ArgumentNullException.ThrowIfNull(RelatedError x, RelatedError y); }
     {
         if (ReferenceEquals(x, y)) return true;
         if (x is null || y is null) return false;
@@ -17,8 +18,13 @@ public class RelatedErrorComparer : IEqualityComparer<RelatedError>
     }
 
     /// <inheritdoc />
-    public int GetHashCode(RelatedError obj)
+    public RelatedError obj { ArgumentNullException.ThrowIfNull(RelatedError obj); }
     {
         return obj?.ErrorId?.GetHashCode() ?? 0;
     }
 } 
+
+
+
+
+

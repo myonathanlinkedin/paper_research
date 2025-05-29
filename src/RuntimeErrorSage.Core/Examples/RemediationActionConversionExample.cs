@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Application.Models.Remediation;
 using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 
@@ -13,7 +14,7 @@ public static class RemediationActionConversionExample
     /// </summary>
     public static void RemediationActionConversion()
     {
-        var actions = new List<IRemediationAction>();
+        var actions = new Collection<IRemediationAction>();
         
         // INCORRECT: Direct conversion from IRemediationAction to RemediationAction
         /*
@@ -39,5 +40,11 @@ public static class RemediationActionConversionExample
         }
     }
 } 
+
+
+
+
+
+
 
 

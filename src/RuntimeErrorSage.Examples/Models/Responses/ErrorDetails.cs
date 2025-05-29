@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 namespace RuntimeErrorSage.Examples.Models.Responses;
 
 /// <summary>
@@ -30,3 +31,9 @@ public class ErrorDetails
     /// </summary>
     public Dictionary<string, object>? Context { get; set; }
 } 
+
+
+
+
+
+

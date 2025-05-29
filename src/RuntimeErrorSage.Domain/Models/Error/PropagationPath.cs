@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Models.Error;
@@ -10,20 +11,26 @@ public class PropagationPath
     /// <summary>
     /// Gets or sets the source component.
     /// </summary>
-    public string Source { get; set; } = string.Empty;
+    public string Source { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the target component.
     /// </summary>
-    public string Target { get; set; } = string.Empty;
+    public string Target { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the propagation time.
     /// </summary>
-    public double PropagationTime { get; set; }
+    public double PropagationTime { get; }
 
     /// <summary>
     /// Gets or sets the severity of the error.
     /// </summary>
-    public ErrorSeverity Severity { get; set; }
+    public ErrorSeverity Severity { get; }
 } 
+
+
+
+
+
+
