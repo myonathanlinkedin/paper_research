@@ -29,7 +29,12 @@ public enum RemediationActionSeverity
     /// <summary>
     /// Critical severity level.
     /// </summary>
-    Critical
+    Critical,
+    
+    /// <summary>
+    /// Unknown severity level.
+    /// </summary>
+    Unknown
 } 
 
 

@@ -18,7 +18,7 @@ using RuntimeErrorSage.Application.Options;
 using RuntimeErrorSage.Application.Analysis;
 using RuntimeErrorSage.Application.Interfaces;
 
-namespace RuntimeErrorSage.Application.Remediation
+namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
     /// Service for managing remediation operations.
@@ -146,6 +146,73 @@ namespace RuntimeErrorSage.Application.Remediation
                     Context = context,
                     Status = RemediationStatusEnum.Failed,
                     Message = $"Remediation failed: {ex.Message}",
+                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
+                };
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<RemediationResult> ExecuteActionAsync(RemediationAction action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+
+            try
+            {
+                _logger.LogInformation("Executing remediation action: {ActionId} - {ActionName}", action.Id, action.Name);
+                
+                // Validate the action first
+                var validationResult = await ValidateActionAsync(action);
+                if (!validationResult.IsValid)
+                {
+                    return new RemediationResult
+                    {
+                        Status = RemediationStatusEnum.Failed,
+                        Message = "Action validation failed",
+                        Validation = validationResult
+                    };
+                }
+                
+                // Execute the action if validation passed
+                var executionResult = await ExecuteActionAsync(action, action.Context);
+                
+                // Collect metrics about the execution
+                await _metricsCollector.RecordMetricAsync(
+                    action.Id,
+                    "action_executed",
+                    new
+                    {
+                        ActionType = action.ActionType,
+                        ExecutionTime = DateTime.UtcNow,
+                        Status = executionResult.Status.ToString()
+                    });
+                
+                return new RemediationResult
+                {
+                    Status = executionResult.Status == ExecutionStatus.Success 
+                        ? RemediationStatusEnum.Success 
+                        : RemediationStatusEnum.Failed,
+                    Message = executionResult.Message,
+                    CompletedSteps = new List<RemediationStep> 
+                    { 
+                        new RemediationStep 
+                        { 
+                            Name = action.Name,
+                            Status = executionResult.Status == ExecutionStatus.Success 
+                                ? RemediationStepStatus.Completed 
+                                : RemediationStepStatus.Failed,
+                            StartTime = executionResult.StartTime,
+                            EndTime = executionResult.EndTime
+                        } 
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing action {ActionId}", action.Id);
+                return new RemediationResult
+                {
+                    Status = RemediationStatusEnum.Failed,
+                    Message = $"Action execution failed: {ex.Message}",
                     Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
                 };
             }
@@ -461,7 +528,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 };
 
                 // Execute the action
-                var result = await ExecuteActionAsync(action);
+                var result = await ExecuteActionAsync(action, errorContext);
                 result.Context = errorContext;
                 
                 await _metricsCollector.TrackRemediationAsync(new RemediationMetrics
@@ -513,8 +580,8 @@ namespace RuntimeErrorSage.Application.Remediation
                 {
                     return new RemediationImpact
                     {
-                        Severity = SeverityLevel.Unknown.ToImpactSeverity(),
-                        Scope = ImpactScope.Component,
+                        Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
+                        Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
                         AffectedComponents = new List<string>(),
                         EstimatedRecoveryTime = TimeSpan.Zero
                     };
@@ -543,8 +610,8 @@ namespace RuntimeErrorSage.Application.Remediation
                 {
                     return new RemediationImpact
                     {
-                        Severity = SeverityLevel.Unknown.ToImpactSeverity(),
-                        Scope = ImpactScope.Component,
+                        Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
+                        Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
                         AffectedComponents = new List<string>(),
                         EstimatedRecoveryTime = TimeSpan.Zero
                     };
@@ -554,8 +621,8 @@ namespace RuntimeErrorSage.Application.Remediation
                 var impact = await strategyAdapter.GetImpactAsync(errorContext);
                 return impact ?? new RemediationImpact
                 {
-                    Severity = SeverityLevel.Unknown.ToImpactSeverity(),
-                    Scope = ImpactScope.Component,
+                    Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
+                    Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
                     AffectedComponents = new List<string>(),
                     EstimatedRecoveryTime = TimeSpan.Zero
                 };
@@ -565,8 +632,8 @@ namespace RuntimeErrorSage.Application.Remediation
                 _logger.LogError(ex, "Error getting impact for suggestion for error context {ErrorId}", errorContext.Id);
                 return new RemediationImpact
                 {
-                    Severity = SeverityLevel.Unknown.ToImpactSeverity(),
-                    Scope = ImpactScope.Component,
+                    Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
+                    Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
                     AffectedComponents = new List<string>(),
                     EstimatedRecoveryTime = TimeSpan.Zero
                 };
@@ -574,43 +641,31 @@ namespace RuntimeErrorSage.Application.Remediation
         }
 
         /// <inheritdoc />
-        public async Task<RemediationResult> ExecuteActionAsync(RemediationAction action)
+        public async Task<Domain.Models.Execution.RemediationActionExecution> ExecuteActionAsync(RemediationAction action, ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(action);
+            ArgumentNullException.ThrowIfNull(context);
 
             try
             {
-                _logger.LogInformation("Executing remediation action {ActionId}", action.ActionId);
-                
-                if (action.Context == null)
-                {
-                    return new RemediationResult
-                    {
-                        Status = RemediationStatusEnum.Failed,
-                        Message = "No context provided for action execution"
-                    };
-                }
-                
-                var errorContext = action.Context;
-                var result = await _executor.ExecuteActionAsync(action, errorContext);
-                
-                return new RemediationResult
-                {
-                    Context = errorContext,
-                    Status = result.Status == RemediationStatusEnum.Success ? RemediationStatusEnum.Success : RemediationStatusEnum.Failed,
-                    Message = result.ErrorMessage ?? "Action executed successfully",
-                    ActionId = result.ActionId
-                };
+                _logger.LogInformation("Executing remediation action {ActionId} for context {ContextId}",
+                    action.ActionId, context.Id);
+
+                var execution = new Domain.Models.Execution.RemediationActionExecution(
+                    action.ActionId,
+                    context.Id,
+                    DateTime.UtcNow,
+                    RemediationActionSeverity.Medium,
+                    new Dictionary<string, object>()
+                );
+
+                // Add execution logic here
+                return execution;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error executing action {ActionId}", action.ActionId);
-                
-                return new RemediationResult
-                {
-                    Status = RemediationStatusEnum.Failed,
-                    Message = $"Error executing action: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error executing remediation action {ActionId}", action.ActionId);
+                throw;
             }
         }
 
@@ -712,8 +767,8 @@ namespace RuntimeErrorSage.Application.Remediation
         {
             return new RemediationImpact
             {
-                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
-                Scope = ImpactScope.Component,
+                Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
+                Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
                 AffectedComponents = new List<string>(),
                 EstimatedRecoveryTime = TimeSpan.Zero
             };
@@ -723,8 +778,8 @@ namespace RuntimeErrorSage.Application.Remediation
         {
             return new RemediationImpact
             {
-                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
-                Scope = ImpactScope.Component,
+                Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
+                Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
                 AffectedComponents = new List<string>(),
                 EstimatedRecoveryTime = TimeSpan.Zero,
                 Description = errorMessage
@@ -735,8 +790,8 @@ namespace RuntimeErrorSage.Application.Remediation
         {
             return new RemediationImpact
             {
-                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
-                Scope = ImpactScope.Unknown,
+                Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
+                Scope = ImpactScope.Unknown.ToRemediationActionImpactScope(),
                 AffectedComponents = new List<string>(),
                 EstimatedRecoveryTime = TimeSpan.Zero,
                 Description = "Operation timed out"
@@ -747,8 +802,8 @@ namespace RuntimeErrorSage.Application.Remediation
         {
             return new RemediationImpact
             {
-                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
-                Scope = ImpactScope.Unknown,
+                Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
+                Scope = ImpactScope.Unknown.ToRemediationActionImpactScope(),
                 AffectedComponents = new List<string>(),
                 EstimatedRecoveryTime = TimeSpan.Zero,
                 Description = "Operation was cancelled"
@@ -780,34 +835,6 @@ namespace RuntimeErrorSage.Application.Remediation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating remediation action for context {ContextId}", context.Id);
-                throw;
-            }
-        }
-
-        public async Task<RemediationActionExecution> ExecuteActionAsync(RemediationAction action, ErrorContext context)
-        {
-            ArgumentNullException.ThrowIfNull(action);
-            ArgumentNullException.ThrowIfNull(context);
-
-            try
-            {
-                _logger.LogInformation("Executing remediation action {ActionId} for context {ContextId}",
-                    action.ActionId, context.Id);
-
-                var execution = new RemediationActionExecution(
-                    action.ActionId,
-                    context.Id,
-                    DateTime.UtcNow,
-                    RemediationActionSeverity.Medium,
-                    new Dictionary<string, object>()
-                );
-
-                // Add execution logic here
-                return execution;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing remediation action {ActionId}", action.ActionId);
                 throw;
             }
         }
@@ -852,6 +879,92 @@ namespace RuntimeErrorSage.Application.Remediation
             {
                 return RemediationResult.CreateFailure(context, ex.Message);
             }
+        }
+
+        public async Task<RemediationAction> CreateActionFromStrategyAsync(IRemediationStrategy strategy, ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(strategy);
+            ArgumentNullException.ThrowIfNull(context);
+
+            var action = new RemediationAction(_validationRuleProvider)
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = strategy.Name,
+                Description = strategy.Description,
+                Context = context,
+                ActionType = strategy.StrategyType,
+                ErrorType = context.ErrorType,
+                Severity = strategy.Impact.ToRemediationActionSeverity(),
+                ImpactScope = strategy.Scope.ToRemediationActionImpactScope(),
+                Parameters = strategy.Parameters ?? new Dictionary<string, object>(),
+                Strategy = strategy,
+                RiskLevel = strategy.RiskLevel
+            };
+
+            return action;
+        }
+
+        public async Task<RemediationAction> CreateGenericActionAsync(ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            var action = new RemediationAction(_validationRuleProvider)
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Generic Remediation Action",
+                Description = "A generic remediation action for handling errors",
+                Context = context,
+                ActionType = "Generic",
+                ErrorType = context.ErrorType,
+                Severity = ImpactSeverity.Warning.ToRemediationActionSeverity(),
+                ImpactScope = ImpactScope.Component.ToRemediationActionImpactScope(),
+                Parameters = new Dictionary<string, object>(),
+                RiskLevel = RiskLevel.Low
+            };
+
+            return action;
+        }
+
+        public async Task<RemediationAction> CreateSystemActionAsync(ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            var action = new RemediationAction(_validationRuleProvider)
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "System Remediation Action",
+                Description = "A system-generated remediation action",
+                Context = context,
+                ActionType = "System",
+                ErrorType = context.ErrorType,
+                Severity = ImpactSeverity.Info.ToRemediationActionSeverity(),
+                ImpactScope = ImpactScope.Component.ToRemediationActionImpactScope(),
+                Parameters = new Dictionary<string, object>(),
+                RiskLevel = RiskLevel.Low
+            };
+
+            return action;
+        }
+
+        public async Task<RemediationAction> CreateAutomaticActionAsync(ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            var action = new RemediationAction(_validationRuleProvider)
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Automatic Remediation Action",
+                Description = "An automatically generated remediation action",
+                Context = context,
+                ActionType = "Automatic",
+                ErrorType = context.ErrorType,
+                Severity = ImpactSeverity.Info.ToRemediationActionSeverity(),
+                ImpactScope = ImpactScope.Component.ToRemediationActionImpactScope(),
+                Parameters = new Dictionary<string, object>(),
+                RiskLevel = RiskLevel.Low
+            };
+
+            return action;
         }
     }
 } 

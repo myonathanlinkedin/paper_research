@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Domain.Interfaces
 {
@@ -30,6 +31,11 @@ namespace RuntimeErrorSage.Domain.Interfaces
         /// Gets a value indicating whether the strategy is enabled.
         /// </summary>
         bool IsEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets the risk level of the strategy.
+        /// </summary>
+        RiskLevel RiskLevel { get; set; }
 
         /// <summary>
         /// Determines whether the strategy applies to the specified error context.

@@ -10,7 +10,7 @@ using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
 
-namespace RuntimeErrorSage.Application.Remediation.Strategies
+namespace RuntimeErrorSage.Core.Remediation.Strategies
 {
     /// <summary>
     /// Strategy for alerting about errors.
@@ -20,10 +20,15 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         private readonly ILogger<AlertStrategy> _logger;
         private readonly ILLMClient _llmClient;
         private readonly IRemediationMetricsCollector _metricsCollector;
+        private readonly List<RemediationAction> _actions = new();
+        private readonly DateTime _createdAt = DateTime.UtcNow;
         
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; } = "Alert";
+        public string Version { get; } = "1.0.0";
+        public bool IsEnabled { get; } = true;
         public RemediationPriority Priority { get; set; } = RemediationPriority.High;
+        public RiskLevel RiskLevel { get; set; } = RiskLevel.Medium;
         public string Description { get; set; } = "Sends alerts for error conditions";
         public Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();
         public ISet<string> SupportedErrorTypes { get; } = new HashSet<string> 
@@ -32,6 +37,9 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
             "ServiceUnavailable", 
             "SecurityViolation" 
         };
+        
+        public List<RemediationAction> Actions => _actions;
+        public DateTime CreatedAt => _createdAt;
 
         public AlertStrategy(
             ILogger<AlertStrategy> logger,
@@ -45,6 +53,16 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
             // Add required parameters with default values
             Parameters["channel"] = "default";
             Parameters["severity"] = "medium";
+            
+            // Add default alert action
+            _actions.Add(new RemediationAction
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Send Alert",
+                Description = "Sends an alert to the configured channel",
+                ActionType = "Alert",
+                Priority = RemediationPriority.High
+            });
         }
 
         public async Task<RemediationResult> ExecuteAsync(ErrorContext context)
@@ -82,6 +100,83 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
                 _logger.LogError(ex, $"Error executing alert strategy: {ex.Message}");
                 return CreateFailureResult($"Failed to execute alert strategy: {ex.Message}");
             }
+        }
+
+        public async Task<bool> CanHandleAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return false;
+            }
+
+            return SupportedErrorTypes.Contains(context.ErrorType) || SupportedErrorTypes.Count == 0;
+        }
+
+        public async Task<double> GetConfidenceAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return 0.0;
+            }
+
+            // Higher confidence if error type is explicitly supported
+            if (SupportedErrorTypes.Contains(context.ErrorType))
+            {
+                return 0.9;
+            }
+
+            // Medium confidence for any error if no specific types are defined
+            if (SupportedErrorTypes.Count == 0)
+            {
+                return 0.7;
+            }
+
+            // Low confidence for other errors
+            return 0.3;
+        }
+
+        public async Task<List<RemediationSuggestion>> GetSuggestionsAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return new List<RemediationSuggestion>();
+            }
+
+            var suggestions = new List<RemediationSuggestion>
+            {
+                new RemediationSuggestion
+                {
+                    SuggestionId = Guid.NewGuid().ToString(),
+                    StrategyId = Id,
+                    StrategyName = Name,
+                    Title = "Send Alert Notification",
+                    Description = $"Send alert for {context.ErrorType} error in {context.ComponentId}",
+                    ConfidenceLevel = await GetConfidenceAsync(context),
+                    Priority = Priority
+                }
+            };
+
+            return suggestions;
+        }
+
+        public async Task<RemediationPlan> CreatePlanAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var plan = new RemediationPlan
+            {
+                PlanId = Guid.NewGuid().ToString(),
+                Name = "Alert Notification Plan",
+                Description = $"Plan to send alerts for {context.ErrorType} error",
+                Context = context,
+                CreatedAt = DateTime.UtcNow,
+                Actions = new List<RemediationAction>(_actions)
+            };
+
+            return plan;
         }
 
         private async Task ValidateRequiredParametersAsync()
@@ -160,10 +255,10 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         {
             return new RemediationImpact
             {
-                Severity = ImpactSeverity.Low,
-                Scope = ImpactScope.Service,
+                Severity = ImpactSeverity.Low.ToRemediationActionSeverity(),
+                Scope = ImpactScope.Service.ToRemediationActionImpactScope(),
                 Description = "Alert notification only - no system changes",
-                AffectedUsers = 0,
+                AffectedUsers = new List<string>(),
                 RequiresApproval = false,
                 ConfidenceLevel = 0.95
             };
@@ -236,27 +331,6 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
                 _logger.LogError(ex, "Error validating alert strategy for context {ErrorId}", context.ErrorId);
                 return result;
             }
-        }
-
-        private RemediationImpact CreateDefaultImpact()
-        {
-            return new RemediationImpact
-            {
-                Severity = SeverityLevel.Low.ToImpactSeverity(),
-                Scope = RemediationActionImpactScope.Local,
-                AffectedComponents = new List<string>(),
-                EstimatedDuration = TimeSpan.FromMinutes(5)
-            };
-        }
-
-        private void AddValidationResult(ValidationResult result, string message, SeverityLevel severity)
-        {
-            result.AddError(message, severity.ToValidationSeverity());
-        }
-
-        private void AddValidationWarning(ValidationResult result, string message, SeverityLevel severity)
-        {
-            result.AddWarning(message, severity.ToValidationSeverity());
         }
     }
 } 

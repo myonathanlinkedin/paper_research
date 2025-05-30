@@ -45,7 +45,7 @@ namespace RuntimeErrorSage.Application.Interfaces
         /// <summary>
         /// Gets the current remediation state.
         /// </summary>
-        RuntimeErrorSage.Domain.Models.Remediation.RemediationState State { get; }
+        Domain.Enums.RemediationStateEnum State { get; }
 
         /// <summary>
         /// Gets or sets the current remediation strategy.
@@ -70,6 +70,6 @@ namespace RuntimeErrorSage.Application.Interfaces
         /// <summary>
         /// Gets or sets the remediation validation rules.
         /// </summary>
-        List<RuntimeErrorSage.Domain.Models.Remediation.RemediationValidationRule> ValidationRules { get; set; }
+        List<Domain.Models.Remediation.RemediationValidationRule> ValidationRules { get; set; }
     }
 } 

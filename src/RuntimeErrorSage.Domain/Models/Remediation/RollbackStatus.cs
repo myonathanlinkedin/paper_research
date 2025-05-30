@@ -10,6 +10,14 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
     public class RollbackStatus
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="RollbackStatus"/> class.
+        /// </summary>
+        public RollbackStatus()
+        {
+            Timestamp = DateTime.UtcNow;
+        }
+
+        /// <summary>
         /// Gets or sets the action ID associated with the rollback.
         /// </summary>
         public string ActionId { get; set; } = string.Empty;
@@ -27,7 +35,7 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// <summary>
         /// Gets or sets the timestamp of the rollback.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; }
 
         /// <summary>
         /// Gets or sets the error message if the rollback failed.
@@ -35,9 +43,19 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         public string ErrorMessage { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the exception if the rollback failed.
+        /// </summary>
+        public Exception Exception { get; set; }
+
+        /// <summary>
         /// Gets whether the rollback was successful.
         /// </summary>
         public bool Success => Status == RollbackStatusEnum.Completed;
+
+        /// <summary>
+        /// Gets or sets whether the rollback was successful (alias for Success).
+        /// </summary>
+        public bool IsSuccessful { get; set; }
 
         /// <summary>
         /// Converts a RemediationResult to a RollbackStatus
@@ -53,7 +71,8 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
                 Status = MapStatus(result.Status),
                 Message = result.Message,
                 Timestamp = result.Timestamp,
-                ErrorMessage = result.ErrorMessage
+                ErrorMessage = result.ErrorMessage,
+                IsSuccessful = result.Status == RemediationStatusEnum.Success
             };
         }
         

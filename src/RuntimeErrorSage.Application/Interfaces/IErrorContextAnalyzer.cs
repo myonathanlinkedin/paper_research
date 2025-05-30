@@ -6,7 +6,7 @@ using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Domain.Models.Analysis;
 
-namespace RuntimeErrorSage.Application.Analysis.Interfaces;
+namespace RuntimeErrorSage.Application.Interfaces;
 
 /// <summary>
 /// Interface for analyzing error contexts.
@@ -61,7 +61,7 @@ public interface IErrorContextAnalyzer
     /// </summary>
     /// <param name="context">The error context to analyze.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the analysis result.</returns>
-    Task<RuntimeErrorSage.Domain.Models.Analysis.GraphAnalysisResult> AnalyzeErrorContextAsync(ErrorContext context);
+    Task<Domain.Models.Analysis.GraphAnalysisResult> AnalyzeErrorContextAsync(ErrorContext context);
 
     /// <summary>
     /// Builds a dependency graph for the given error context.
@@ -75,7 +75,7 @@ public interface IErrorContextAnalyzer
     /// </summary>
     /// <param name="context">The error context to analyze.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the impact analysis result.</returns>
-    Task<RuntimeErrorSage.Domain.Models.Analysis.ImpactAnalysisResult> AnalyzeImpactAsync(ErrorContext context);
+    Task<Domain.Models.Analysis.ImpactAnalysisResult> AnalyzeImpactAsync(ErrorContext context);
 
     /// <summary>
     /// Calculates the shortest path between two nodes in the dependency graph.

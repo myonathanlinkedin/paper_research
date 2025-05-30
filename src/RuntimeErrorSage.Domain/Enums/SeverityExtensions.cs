@@ -118,6 +118,40 @@ public static class SeverityExtensions
     }
 
     /// <summary>
+    /// Converts an ImpactLevel to RemediationActionSeverity.
+    /// </summary>
+    /// <param name="impactLevel">The impact level to convert.</param>
+    /// <returns>The corresponding RemediationActionSeverity.</returns>
+    public static RemediationActionSeverity ToRemediationActionSeverity(this ImpactLevel impactLevel)
+    {
+        return impactLevel switch
+        {
+            ImpactLevel.Critical => RemediationActionSeverity.Critical,
+            ImpactLevel.High => RemediationActionSeverity.High,
+            ImpactLevel.Medium => RemediationActionSeverity.Medium,
+            ImpactLevel.Low => RemediationActionSeverity.Low,
+            _ => RemediationActionSeverity.Unknown
+        };
+    }
+
+    /// <summary>
+    /// Converts an ImpactLevel to a SeverityLevel.
+    /// </summary>
+    /// <param name="impactLevel">The impact level to convert.</param>
+    /// <returns>The corresponding SeverityLevel.</returns>
+    public static SeverityLevel ToSeverityLevel(this ImpactLevel impactLevel)
+    {
+        return impactLevel switch
+        {
+            ImpactLevel.Critical => SeverityLevel.Critical,
+            ImpactLevel.High => SeverityLevel.High,
+            ImpactLevel.Medium => SeverityLevel.Medium,
+            ImpactLevel.Low => SeverityLevel.Low,
+            _ => SeverityLevel.Unknown
+        };
+    }
+
+    /// <summary>
     /// Converts a SeverityLevel to ValidationSeverity.
     /// </summary>
     public static ValidationSeverity ToValidationSeverity(this SeverityLevel severity)
@@ -129,6 +163,101 @@ public static class SeverityExtensions
             SeverityLevel.Medium => ValidationSeverity.Warning,
             SeverityLevel.Low => ValidationSeverity.Info,
             _ => ValidationSeverity.Info
+        };
+    }
+
+    /// <summary>
+    /// Converts a RemediationRiskLevel to RiskLevel.
+    /// </summary>
+    /// <param name="riskLevel">The remediation risk level to convert.</param>
+    /// <returns>The corresponding RiskLevel.</returns>
+    public static RiskLevel ToRiskLevel(this RemediationRiskLevel riskLevel)
+    {
+        return riskLevel switch
+        {
+            RemediationRiskLevel.Critical => RiskLevel.Critical,
+            RemediationRiskLevel.High => RiskLevel.High,
+            RemediationRiskLevel.Medium => RiskLevel.Medium,
+            RemediationRiskLevel.Low => RiskLevel.Low,
+            RemediationRiskLevel.None => RiskLevel.None,
+            RemediationRiskLevel.Unknown => RiskLevel.Unknown,
+            _ => RiskLevel.Unknown
+        };
+    }
+    
+    /// <summary>
+    /// Converts a RiskLevel to RemediationRiskLevel.
+    /// </summary>
+    /// <param name="riskLevel">The risk level to convert.</param>
+    /// <returns>The corresponding RemediationRiskLevel.</returns>
+    public static RemediationRiskLevel ToRemediationRiskLevel(this RiskLevel riskLevel)
+    {
+        return riskLevel switch
+        {
+            RiskLevel.Critical => RemediationRiskLevel.Critical,
+            RiskLevel.High => RemediationRiskLevel.High,
+            RiskLevel.Medium => RemediationRiskLevel.Medium,
+            RiskLevel.Low => RemediationRiskLevel.Low,
+            RiskLevel.None => RemediationRiskLevel.None,
+            RiskLevel.Unknown => RemediationRiskLevel.Unknown,
+            _ => RemediationRiskLevel.Unknown
+        };
+    }
+
+    /// <summary>
+    /// Converts an ImpactSeverity to RemediationActionSeverity.
+    /// </summary>
+    /// <param name="severity">The impact severity to convert.</param>
+    /// <returns>The corresponding RemediationActionSeverity.</returns>
+    public static RemediationActionSeverity ToRemediationActionSeverity(this ImpactSeverity severity)
+    {
+        return severity switch
+        {
+            ImpactSeverity.Critical => RemediationActionSeverity.Critical,
+            ImpactSeverity.Error => RemediationActionSeverity.High,
+            ImpactSeverity.Warning => RemediationActionSeverity.Medium,
+            ImpactSeverity.Info => RemediationActionSeverity.Low,
+            ImpactSeverity.Success => RemediationActionSeverity.None,
+            _ => RemediationActionSeverity.Unknown
+        };
+    }
+
+    /// <summary>
+    /// Converts an ImpactScope to RemediationActionImpactScope.
+    /// </summary>
+    /// <param name="scope">The impact scope to convert.</param>
+    /// <returns>The corresponding RemediationActionImpactScope.</returns>
+    public static RemediationActionImpactScope ToRemediationActionImpactScope(this ImpactScope scope)
+    {
+        return scope switch
+        {
+            ImpactScope.None => RemediationActionImpactScope.None,
+            ImpactScope.Local => RemediationActionImpactScope.Local,
+            ImpactScope.Service => RemediationActionImpactScope.Service,
+            ImpactScope.System => RemediationActionImpactScope.System,
+            ImpactScope.Component => RemediationActionImpactScope.Module,
+            ImpactScope.MultiComponent => RemediationActionImpactScope.Module,
+            ImpactScope.External => RemediationActionImpactScope.Global,
+            _ => RemediationActionImpactScope.None
+        };
+    }
+
+    /// <summary>
+    /// Converts a RemediationActionImpactScope to ImpactScope.
+    /// </summary>
+    /// <param name="scope">The remediation action impact scope to convert.</param>
+    /// <returns>The corresponding ImpactScope.</returns>
+    public static ImpactScope ToImpactScope(this RemediationActionImpactScope scope)
+    {
+        return scope switch
+        {
+            RemediationActionImpactScope.None => ImpactScope.None,
+            RemediationActionImpactScope.Local => ImpactScope.Local,
+            RemediationActionImpactScope.Module => ImpactScope.Component,
+            RemediationActionImpactScope.Service => ImpactScope.Service,
+            RemediationActionImpactScope.System => ImpactScope.System,
+            RemediationActionImpactScope.Global => ImpactScope.External,
+            _ => ImpactScope.None
         };
     }
 } 

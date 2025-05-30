@@ -15,6 +15,11 @@ public class RiskAssessmentModel
     public RemediationRiskLevel RiskLevel { get; set; }
 
     /// <summary>
+    /// Gets or sets the risk level.
+    /// </summary>
+    public RiskLevel Level { get; set; }
+
+    /// <summary>
     /// Gets or sets a description of the risk.
     /// </summary>
     public string Description { get; set; } = string.Empty;

@@ -8,38 +8,38 @@ namespace RuntimeErrorSage.Domain.Enums
     public enum SuggestionStatus
     {
         /// <summary>
-        /// The suggestion is pending review.
+        /// The suggestion is pending.
         /// </summary>
-        Pending,
+        Pending = 0,
 
         /// <summary>
-        /// The suggestion has been approved.
+        /// The suggestion is available for use.
         /// </summary>
-        Approved,
+        Available = 1,
 
         /// <summary>
-        /// The suggestion has been rejected.
+        /// The suggestion is active and being applied.
         /// </summary>
-        Rejected,
+        Active = 2,
 
         /// <summary>
-        /// The suggestion is being implemented.
+        /// The suggestion was accepted.
         /// </summary>
-        InProgress,
+        Accepted = 3,
 
         /// <summary>
-        /// The suggestion has been completed.
+        /// The suggestion was rejected.
         /// </summary>
-        Completed,
+        Rejected = 4,
 
         /// <summary>
-        /// The suggestion has been cancelled.
+        /// The suggestion was completed.
         /// </summary>
-        Cancelled,
+        Completed = 5,
 
         /// <summary>
-        /// The suggestion has failed.
+        /// The suggestion failed.
         /// </summary>
-        Failed
+        Failed = 6
     }
 } 

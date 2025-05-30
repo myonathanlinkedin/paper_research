@@ -1,7 +1,7 @@
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Classifier;
+namespace RuntimeErrorSage.Core.Classifier;
 
 /// <summary>
 /// Provides functionality for determining error severity based on analysis results.
@@ -31,6 +31,6 @@ public static class SeverityDetermination
             if (severity >= 0.4) return ErrorSeverity.Medium;
             if (severity >= 0.2) return ErrorSeverity.Low;
         }
-        return ErrorSeverity.Unknown;
+        return ErrorSeverity.Warning;
     }
 } 

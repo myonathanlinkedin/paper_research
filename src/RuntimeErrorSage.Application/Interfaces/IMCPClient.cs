@@ -7,6 +7,7 @@ using RuntimeErrorSage.Domain.Models.MCP;
 using RuntimeErrorSage.Domain.Models.Remediation;
 using ContextHistory = RuntimeErrorSage.Domain.Models.Context.ContextHistory;
 using TimeRange = RuntimeErrorSage.Domain.Models.Common.TimeRange;
+using MCPConnectionStatus = RuntimeErrorSage.Domain.Models.MCP.MCPConnectionStatus;
 
 namespace RuntimeErrorSage.Application.MCP.Interfaces
 {

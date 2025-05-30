@@ -10,7 +10,7 @@ using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Domain.Models.Remediation.Factories;
 using RuntimeErrorSage.Domain.Models.Validation;
 
-namespace RuntimeErrorSage.Application.Remediation.Strategies
+namespace RuntimeErrorSage.Core.Remediation.Strategies
 {
     /// <summary>
     /// Strategy for backing up system state.
@@ -21,6 +21,8 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         private readonly IBackupService _backupService;
         private readonly ILLMClient _llmClient;
         private readonly IRemediationActionResultFactory _resultFactory;
+        private readonly List<RemediationAction> _actions = new();
+        private readonly DateTime _createdAt = DateTime.UtcNow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackupStrategy"/> class.
@@ -40,30 +42,51 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
             _llmClient = llmClient;
             _resultFactory = resultFactory;
             Id = Guid.NewGuid().ToString();
-            Name = "Backup Strategy";
-            Description = "Creates a backup before attempting remediation";
+            Name = "Backup";
+            Version = "1.0.0";
+            IsEnabled = true;
+            Priority = RemediationPriority.Medium;
+            RiskLevel = RiskLevel.Low;
+            Description = "Creates a backup before remediation";
             Parameters = new Dictionary<string, object>();
             SupportedErrorTypes = new HashSet<string> { "System.Exception", "System.IO.IOException" };
-            Priority = RemediationPriority.High;
+            
+            // Add default backup action
+            _actions.Add(CreateBackupAction("Create System Backup", "Creates a system backup before remediation"));
         }
 
         /// <inheritdoc/>
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <inheritdoc/>
-        public string Name { get; set; }
+        public string Name { get; set; } = "Backup";
 
         /// <inheritdoc/>
-        public RemediationPriority Priority { get; set; }
+        public string Version { get; } = "1.0.0";
 
         /// <inheritdoc/>
-        public string Description { get; set; }
+        public bool IsEnabled { get; } = true;
+
+        /// <inheritdoc/>
+        public RemediationPriority Priority { get; set; } = RemediationPriority.Medium;
+
+        /// <inheritdoc/>
+        public RiskLevel RiskLevel { get; set; } = RiskLevel.Low;
+
+        /// <inheritdoc/>
+        public string Description { get; set; } = "Creates a backup before remediation";
 
         /// <inheritdoc/>
         public Dictionary<string, object> Parameters { get; set; }
 
         /// <inheritdoc/>
         public ISet<string> SupportedErrorTypes { get; }
+
+        /// <inheritdoc/>
+        public List<RemediationAction> Actions => _actions;
+
+        /// <inheritdoc/>
+        public DateTime CreatedAt => _createdAt;
 
         /// <inheritdoc/>
         public async Task<RemediationResult> ExecuteAsync(ErrorContext context)
@@ -111,6 +134,80 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
                     EndTime = DateTime.UtcNow
                 };
             }
+        }
+
+        /// <inheritdoc/>
+        public Task<bool> CanHandleAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(SupportedErrorTypes.Contains(context.ErrorType));
+        }
+
+        /// <inheritdoc/>
+        public Task<double> GetConfidenceAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return Task.FromResult(0.0);
+            }
+
+            // Return confidence based on error type
+            if (SupportedErrorTypes.Contains(context.ErrorType))
+            {
+                return Task.FromResult(0.8);
+            }
+
+            return Task.FromResult(0.3);
+        }
+
+        /// <inheritdoc/>
+        public Task<List<RemediationSuggestion>> GetSuggestionsAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return Task.FromResult(new List<RemediationSuggestion>());
+            }
+
+            var suggestions = new List<RemediationSuggestion>
+            {
+                new RemediationSuggestion
+                {
+                    SuggestionId = Guid.NewGuid().ToString(),
+                    StrategyId = Id,
+                    StrategyName = Name,
+                    Title = "Create System Backup",
+                    Description = "Create a backup before attempting any remediation actions",
+                    ConfidenceLevel = 0.9,
+                    Priority = RemediationPriority.High
+                }
+            };
+
+            return Task.FromResult(suggestions);
+        }
+
+        /// <inheritdoc/>
+        public Task<RemediationPlan> CreatePlanAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var plan = new RemediationPlan
+            {
+                PlanId = Guid.NewGuid().ToString(),
+                Name = "Backup Plan",
+                Description = "Plan to create a system backup",
+                Context = context,
+                CreatedAt = DateTime.UtcNow,
+                Actions = new List<RemediationAction>(_actions)
+            };
+
+            return Task.FromResult(plan);
         }
 
         /// <inheritdoc/>

@@ -10,10 +10,9 @@ using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Application.LLM.Interfaces;
-using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Remediation.Strategies
+namespace RuntimeErrorSage.Core.Remediation.Strategies
 {
     /// <summary>
     /// Strategy for monitoring system health.
@@ -23,6 +22,8 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         private readonly ILogger<MonitorStrategy> _logger;
         private readonly IMonitoringService _monitoringService;
         private readonly IRemediationActionResultFactory _resultFactory;
+        private readonly List<RemediationAction> _actions = new();
+        private readonly DateTime _createdAt = DateTime.UtcNow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MonitorStrategy"/> class.
@@ -39,30 +40,51 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
             _monitoringService = monitoringService;
             _resultFactory = resultFactory;
             Id = Guid.NewGuid().ToString();
-            Name = "System Monitoring";
-            Description = "Monitors system health metrics";
+            Name = "Monitoring";
+            Version = "1.0.0";
+            IsEnabled = true;
+            Priority = RemediationPriority.Low;
+            RiskLevel = RiskLevel.Low;
+            Description = "Monitors system performance after errors";
             Parameters = new Dictionary<string, object>();
             SupportedErrorTypes = new HashSet<string> { "System.OutOfMemoryException", "System.TimeoutException" };
-            Priority = RemediationPriority.Low;
+            
+            // Add default monitoring action
+            _actions.Add(CreateMonitorAction("Monitor System Health", "Collects and analyzes system health metrics"));
         }
 
         /// <inheritdoc/>
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <inheritdoc/>
-        public string Name { get; set; }
+        public string Name { get; set; } = "Monitoring";
 
         /// <inheritdoc/>
-        public RemediationPriority Priority { get; set; }
+        public string Version { get; } = "1.0.0";
 
         /// <inheritdoc/>
-        public string Description { get; set; }
+        public bool IsEnabled { get; } = true;
+
+        /// <inheritdoc/>
+        public RemediationPriority Priority { get; set; } = RemediationPriority.Low;
+
+        /// <inheritdoc/>
+        public RiskLevel RiskLevel { get; set; } = RiskLevel.Low;
+
+        /// <inheritdoc/>
+        public string Description { get; set; } = "Monitors system performance after errors";
 
         /// <inheritdoc/>
         public Dictionary<string, object> Parameters { get; set; }
 
         /// <inheritdoc/>
         public ISet<string> SupportedErrorTypes { get; }
+
+        /// <inheritdoc/>
+        public List<RemediationAction> Actions => _actions;
+
+        /// <inheritdoc/>
+        public DateTime CreatedAt => _createdAt;
 
         /// <inheritdoc/>
         public async Task<RemediationResult> ExecuteAsync(ErrorContext context)
@@ -110,6 +132,81 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
                     EndTime = DateTime.UtcNow
                 };
             }
+        }
+
+        /// <inheritdoc/>
+        public Task<bool> CanHandleAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(SupportedErrorTypes.Contains(context.ErrorType));
+        }
+
+        /// <inheritdoc/>
+        public Task<double> GetConfidenceAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return Task.FromResult(0.0);
+            }
+
+            // Higher confidence for explicitly supported error types
+            if (SupportedErrorTypes.Contains(context.ErrorType))
+            {
+                return Task.FromResult(0.85);
+            }
+
+            // Lower confidence for other errors
+            return Task.FromResult(0.4);
+        }
+
+        /// <inheritdoc/>
+        public Task<List<RemediationSuggestion>> GetSuggestionsAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                return Task.FromResult(new List<RemediationSuggestion>());
+            }
+
+            var suggestions = new List<RemediationSuggestion>
+            {
+                new RemediationSuggestion
+                {
+                    SuggestionId = Guid.NewGuid().ToString(),
+                    StrategyId = Id,
+                    StrategyName = Name,
+                    Title = "Monitor System Health",
+                    Description = $"Monitor system health metrics to analyze {context.ErrorType} error",
+                    ConfidenceLevel = SupportedErrorTypes.Contains(context.ErrorType) ? 0.8 : 0.5,
+                    Priority = Priority
+                }
+            };
+
+            return Task.FromResult(suggestions);
+        }
+
+        /// <inheritdoc/>
+        public Task<RemediationPlan> CreatePlanAsync(ErrorContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var plan = new RemediationPlan
+            {
+                PlanId = Guid.NewGuid().ToString(),
+                Name = "Monitoring Plan",
+                Description = $"Plan to monitor system health for {context.ErrorType} error",
+                Context = context,
+                CreatedAt = DateTime.UtcNow,
+                Actions = new List<RemediationAction>(_actions)
+            };
+
+            return Task.FromResult(plan);
         }
 
         /// <inheritdoc/>

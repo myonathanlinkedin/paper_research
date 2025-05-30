@@ -35,6 +35,36 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         public double RiskScore { get; set; }
 
         /// <summary>
+        /// Gets or sets the overall risk score (0-1).
+        /// </summary>
+        public double OverallRiskScore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confidence score (0-1).
+        /// </summary>
+        public double ConfidenceScore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the potential impact score (0-1).
+        /// </summary>
+        public double PotentialImpactScore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the complexity score (0-1).
+        /// </summary>
+        public double ComplexityScore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time sensitivity score (0-1).
+        /// </summary>
+        public double TimeSensitivityScore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the strategy ID associated with these metrics.
+        /// </summary>
+        public string StrategyId { get; set; }
+
+        /// <summary>
         /// Gets or sets the probability of failure (0-1).
         /// </summary>
         public double FailureProbability { get; set; }

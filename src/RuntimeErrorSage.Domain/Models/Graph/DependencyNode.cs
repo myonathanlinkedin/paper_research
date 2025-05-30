@@ -30,9 +30,23 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         public string ComponentName { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the name of the node.
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the node type.
         /// </summary>
         public string NodeType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the type of the node (alias for NodeType).
+        /// </summary>
+        public string Type 
+        { 
+            get => NodeType;
+            set => NodeType = value;
+        }
 
         /// <summary>
         /// Gets or sets the health score of the node (0-1).

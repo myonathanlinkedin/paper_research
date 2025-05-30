@@ -7,6 +7,10 @@ using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Error.Factories;
 using RuntimeErrorSage.Domain.Models.LLM;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RuntimeErrorSage.Domain.Models.Qwen;
 

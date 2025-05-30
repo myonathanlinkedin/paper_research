@@ -96,9 +96,9 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         var result = new ValidationResult
         {
             StartTime = DateTime.UtcNow,
-            CorrelationId = context.CorrelationId,
             Timestamp = DateTime.UtcNow
         };
+        result.SetCorrelationId(context.CorrelationId);
 
         try
         {
@@ -170,9 +170,9 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         var result = new ValidationResult
         {
             StartTime = DateTime.UtcNow,
-            CorrelationId = context.CorrelationId,
             Timestamp = DateTime.UtcNow
         };
+        result.SetCorrelationId(context.CorrelationId);
 
         try
         {
@@ -221,9 +221,9 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         var result = new ValidationResult
         {
             StartTime = DateTime.UtcNow,
-            CorrelationId = context.CorrelationId,
             Timestamp = DateTime.UtcNow
         };
+        result.SetCorrelationId(context.CorrelationId);
 
         try
         {
@@ -286,9 +286,9 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         var result = new ValidationResult
         {
             StartTime = DateTime.UtcNow,
-            CorrelationId = context.CorrelationId,
             Timestamp = DateTime.UtcNow
         };
+        result.SetCorrelationId(context.CorrelationId);
 
         try
         {
@@ -332,9 +332,9 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         var result = new ValidationResult
         {
             StartTime = DateTime.UtcNow,
-            CorrelationId = context.CorrelationId,
             Timestamp = DateTime.UtcNow
         };
+        result.SetCorrelationId(context.CorrelationId);
 
         try
         {

@@ -10,37 +10,60 @@ namespace RuntimeErrorSage.Domain.Models.Validation
     /// </summary>
     public sealed class ValidationWarning
     {
-        private readonly Dictionary<string, object> _details;
+        private Dictionary<string, object> _details = new();
 
         /// <summary>
-        /// Gets the warning identifier.
+        /// Gets or sets the warning identifier.
         /// </summary>
-        public string WarningId { get; }
+        public string WarningId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets the warning code.
+        /// Gets or sets the warning code.
         /// </summary>
-        public string Code { get; }
+        public string Code { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets the warning message.
+        /// Gets or sets the warning message.
         /// </summary>
-        public string Message { get; }
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets the warning source.
+        /// Gets or sets the warning source.
         /// </summary>
-        public string Source { get; }
+        public string Source { get; set; } = "System";
 
         /// <summary>
-        /// Gets the warning severity.
+        /// Gets or sets the warning severity.
         /// </summary>
-        public ValidationSeverity Severity { get; }
+        public ValidationSeverity Severity { get; set; } = ValidationSeverity.Warning;
 
         /// <summary>
-        /// Gets additional warning details.
+        /// Gets or sets the timestamp when this warning was generated.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Details => new ReadOnlyDictionary<string, object>(_details);
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets additional warning details.
+        /// </summary>
+        public Dictionary<string, object> Details
+        { 
+            get => _details;
+            set => _details = value ?? new Dictionary<string, object>();
+        }
+
+        /// <summary>
+        /// Gets additional warning details as read-only dictionary.
+        /// </summary>
+        public IReadOnlyDictionary<string, object> ReadOnlyDetails => new ReadOnlyDictionary<string, object>(_details);
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValidationWarning"/> class.
+        /// </summary>
+        public ValidationWarning()
+        {
+            Timestamp = DateTime.UtcNow;
+            WarningId = Guid.NewGuid().ToString();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidationWarning"/> class.
@@ -68,6 +91,17 @@ namespace RuntimeErrorSage.Domain.Models.Validation
             Source = source;
             Severity = severity;
             _details = details ?? new Dictionary<string, object>();
+            Timestamp = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValidationWarning"/> class with simplified parameters.
+        /// </summary>
+        /// <param name="message">The warning message.</param>
+        /// <param name="severity">The warning severity.</param>
+        public ValidationWarning(string message, ValidationSeverity severity = ValidationSeverity.Warning)
+            : this("W" + Guid.NewGuid().ToString().Substring(0, 8), message, "System", severity)
+        {
         }
 
         /// <summary>

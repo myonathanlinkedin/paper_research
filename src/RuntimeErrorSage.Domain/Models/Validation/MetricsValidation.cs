@@ -4,59 +4,59 @@ using System.Collections.Generic;
 namespace RuntimeErrorSage.Domain.Models.Validation
 {
     /// <summary>
-    /// Represents validation of metrics.
+    /// Represents metrics for validation operations.
     /// </summary>
     public class MetricsValidation
     {
         /// <summary>
-        /// Gets or sets the unique identifier for this validation.
+        /// Gets or sets the duration of the validation in milliseconds.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public long DurationMs { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the metric being validated.
+        /// Gets or sets the number of rules validated.
         /// </summary>
-        public string MetricName { get; set; } = string.Empty;
+        public int RulesValidated { get; set; }
 
         /// <summary>
-        /// Gets or sets the current value of the metric.
+        /// Gets or sets the number of errors found.
         /// </summary>
-        public double CurrentValue { get; set; }
+        public int ErrorCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the threshold value for the metric.
+        /// Gets or sets the number of warnings found.
         /// </summary>
-        public double Threshold { get; set; }
+        public int WarningCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the comparison operator used for validation.
+        /// Gets or sets the memory usage during validation.
         /// </summary>
-        public string ComparisonOperator { get; set; } = string.Empty;
+        public long MemoryUsage { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the metric validation passed.
-        /// </summary>
-        public bool IsValid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timestamp when the validation was performed.
+        /// Gets or sets the timestamp when the metrics were collected.
         /// </summary>
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
+        /// Gets or sets additional metrics.
+        /// </summary>
+        public Dictionary<string, object> AdditionalMetrics { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Gets or sets whether the validation is valid.
+        /// </summary>
+        public bool IsValid { get; set; }
+
+        /// <summary>
         /// Gets or sets the validation message.
         /// </summary>
-        public string Message { get; set; } = string.Empty;
+        public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets the validation severity.
+        /// Gets or sets the validation metadata.
         /// </summary>
-        public string Severity { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets additional metadata about the validation.
-        /// </summary>
-        public Dictionary<string, string> Metadata { get; set; } = new();
+        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
     }
 } 
 

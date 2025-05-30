@@ -1,50 +1,46 @@
+using System;
 using RuntimeErrorSage.Domain.Models.Remediation;
 namespace RuntimeErrorSage.Domain.Enums
 {
     /// <summary>
-    /// Defines the possible status values for a remediation action.
+    /// Represents the status of a remediation action.
     /// </summary>
     public enum RemediationActionStatus
     {
         /// <summary>
-        /// The status is unknown.
+        /// The action has not started yet.
         /// </summary>
-        Unknown = 0,
+        Pending = 0,
 
         /// <summary>
-        /// The action is queued and waiting to start.
+        /// The action is in progress.
         /// </summary>
-        Queued = 1,
-
-        /// <summary>
-        /// The action is running.
-        /// </summary>
-        Running = 2,
+        InProgress = 1,
 
         /// <summary>
         /// The action has completed successfully.
         /// </summary>
-        Completed = 3,
+        Completed = 2,
 
         /// <summary>
         /// The action has failed.
         /// </summary>
-        Failed = 4,
+        Failed = 3,
 
         /// <summary>
-        /// The action was cancelled.
+        /// The action has been cancelled.
         /// </summary>
-        Cancelled = 5,
+        Cancelled = 4,
 
         /// <summary>
-        /// The action is pending validation.
+        /// The action is waiting for something.
         /// </summary>
-        PendingValidation = 6,
+        Waiting = 5,
 
         /// <summary>
-        /// The action was skipped.
+        /// The action has been rolled back.
         /// </summary>
-        Skipped = 7
+        RolledBack = 6
     }
 } 
 

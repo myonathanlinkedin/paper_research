@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.LLM.Interfaces;
@@ -11,7 +12,6 @@ using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
-using RuntimeErrorSage.Application.Interfaces;
 
 namespace RuntimeErrorSage.Application.Remediation
 {
@@ -71,7 +71,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 Severity = analysis.ApplicableStrategies.Max(s => s.Priority),
                 AffectedComponents = analysis.GraphAnalysis.AffectedComponents,
                 EstimatedDuration = TimeSpan.FromMinutes(analysis.ApplicableStrategies.Count * 5),
-                RiskLevel = CalculateRiskLevel(analysis),
+                RiskLevel = CalculateRiskLevel(analysis).ToRiskLevel(),
                 Timestamp = DateTime.UtcNow,
                 CorrelationId = context.CorrelationId
             };
@@ -81,7 +81,7 @@ namespace RuntimeErrorSage.Application.Remediation
         {
             var analysis = await AnalyzeErrorAsync(context);
             var bestStrategy = analysis.ApplicableStrategies.OrderByDescending(s => s.Confidence).FirstOrDefault();
-            return bestStrategy != null ? await _strategyProvider.GetStrategyAsync(bestStrategy.StrategyName) : null;
+            return bestStrategy != null ? await _strategyProvider.GetStrategyByIdAsync(bestStrategy.StrategyName) : null;
         }
 
         public async Task<double> GetConfidenceLevelAsync(ErrorContext context)

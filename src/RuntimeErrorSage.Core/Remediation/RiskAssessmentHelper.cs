@@ -4,7 +4,7 @@ using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Remediation;
 
-namespace RuntimeErrorSage.Core.Storage.Utilities
+namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
     /// Helper class for risk assessment operations.
@@ -50,98 +50,59 @@ namespace RuntimeErrorSage.Core.Storage.Utilities
                 SeverityLevel.High => RemediationRiskLevel.High,
                 SeverityLevel.Medium => RemediationRiskLevel.Medium,
                 SeverityLevel.Low => RemediationRiskLevel.Low,
-                _ => RemediationRiskLevel.None
+                SeverityLevel.None => RemediationRiskLevel.None,
+                _ => RemediationRiskLevel.Medium
             };
         }
 
         /// <summary>
-        /// Generates potential issues based on the risk level.
+        /// Calculates the risk level based on severity and impact scope.
         /// </summary>
-        /// <param name="riskLevel">The risk level.</param>
-        /// <returns>A list of potential issues.</returns>
-        public static List<string> GeneratePotentialIssues(RemediationRiskLevel riskLevel)
+        /// <param name="severity">The severity level.</param>
+        /// <param name="impactScope">The impact scope.</param>
+        /// <returns>The calculated risk level.</returns>
+        public static RemediationRiskLevel CalculateRiskLevel(SeverityLevel severity, ImpactScope impactScope)
         {
-            var issues = new List<string>();
-            
-            switch (riskLevel)
-            {
-                case RemediationRiskLevel.Critical:
-                    issues.Add("May cause significant system downtime");
-                    issues.Add("Could affect multiple dependent services");
-                    issues.Add("May require manual intervention to recover");
-                    issues.Add("Data loss or corruption is possible");
-                    issues.Add("May affect system stability");
-                    break;
-                    
-                case RemediationRiskLevel.High:
-                    issues.Add("May cause temporary service disruption");
-                    issues.Add("Could affect related components");
-                    issues.Add("May require additional monitoring after execution");
-                    issues.Add("Performance degradation is possible");
-                    break;
-                    
-                case RemediationRiskLevel.Medium:
-                    issues.Add("May cause minor service disruption");
-                    issues.Add("Could affect specific functionality");
-                    issues.Add("May require validation after execution");
-                    break;
-                    
-                case RemediationRiskLevel.Low:
-                    issues.Add("Minimal impact expected");
-                    issues.Add("Limited to specific component");
-                    break;
-                    
-                case RemediationRiskLevel.None:
-                    issues.Add("No significant impact expected");
-                    break;
-                    
-                default:
-                    issues.Add("Unknown potential issues");
-                    break;
-            }
-            
-            return issues;
+            // Convert ImpactScope to RemediationActionImpactScope and call the other overload
+            return CalculateRiskLevel(severity, impactScope.ToRemediationActionImpactScope());
         }
 
         /// <summary>
-        /// Generates mitigation steps based on the risk level.
+        /// Generates a list of recommended mitigation steps based on risk level.
         /// </summary>
         /// <param name="riskLevel">The risk level.</param>
         /// <returns>A list of mitigation steps.</returns>
         public static List<string> GenerateMitigationSteps(RemediationRiskLevel riskLevel)
         {
             var steps = new List<string>();
-            
-            // Common steps for all risk levels
-            steps.Add("Verify system state before execution");
-            steps.Add("Validate system state after execution");
-            
+
+            // Add common steps for all risk levels
+            steps.Add("Monitor system metrics during execution");
+            steps.Add("Have rollback plan ready");
+
+            // Add specific steps based on risk level
             switch (riskLevel)
             {
                 case RemediationRiskLevel.Critical:
-                    steps.Add("Schedule during maintenance window");
-                    steps.Add("Prepare rollback plan");
-                    steps.Add("Coordinate with dependent service teams");
-                    steps.Add("Set up additional monitoring");
-                    steps.Add("Prepare incident response plan");
+                    steps.Add("Perform in maintenance window");
+                    steps.Add("Notify all stakeholders");
+                    steps.Add("Prepare contingency plan");
+                    steps.Add("Have backup systems ready");
                     break;
                     
                 case RemediationRiskLevel.High:
-                    steps.Add("Schedule during low-traffic period");
-                    steps.Add("Prepare rollback plan");
-                    steps.Add("Notify dependent service teams");
-                    steps.Add("Set up monitoring");
+                    steps.Add("Perform in low-traffic period");
+                    steps.Add("Notify key stakeholders");
+                    steps.Add("Test in staging environment first");
                     break;
                     
                 case RemediationRiskLevel.Medium:
-                    steps.Add("Schedule during off-peak hours");
-                    steps.Add("Prepare basic rollback plan");
-                    steps.Add("Set up basic monitoring");
+                    steps.Add("Consider performing in low-traffic period");
+                    steps.Add("Test in staging environment if possible");
                     break;
                     
                 case RemediationRiskLevel.Low:
-                    steps.Add("Schedule during normal business hours");
-                    steps.Add("Prepare simple rollback plan");
+                    steps.Add("Proceed with standard precautions");
                     break;
                     
                 case RemediationRiskLevel.None:

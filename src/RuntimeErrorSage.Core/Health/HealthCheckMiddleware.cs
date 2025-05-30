@@ -3,8 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.IO;
+using System.Text.Json;
 
-namespace RuntimeErrorSage.API.Core.Health
+namespace RuntimeErrorSage.Core.Health
 {
     public class HealthCheckMiddleware
     {
@@ -37,19 +38,41 @@ namespace RuntimeErrorSage.API.Core.Health
                     };
 
                     context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsJsonAsync(healthStatus);
+                    await WriteJsonResponseAsync(context.Response, healthStatus);
                     return;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error during health check");
                     context.Response.StatusCode = 500;
-                    await context.Response.WriteAsJsonAsync(new { Status = "Unhealthy", Error = ex.Message });
+                    await WriteJsonResponseAsync(context.Response, new { Status = "Unhealthy", Error = ex.Message });
                     return;
                 }
             }
 
             await _next(context);
+        }
+
+        /// <summary>
+        /// Writes a JSON response to the HTTP context.
+        /// </summary>
+        /// <param name="context">The HTTP context.</param>
+        /// <param name="statusCode">The HTTP status code.</param>
+        /// <param name="content">The content to write.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task WriteJsonResponseAsync(HttpContext context, int statusCode, object content)
+        {
+            context.Response.StatusCode = statusCode;
+            context.Response.ContentType = "application/json";
+            
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            
+            var json = JsonSerializer.Serialize(content, options);
+            await context.Response.WriteAsync(json);
         }
 
         private object GetMemoryStatus()

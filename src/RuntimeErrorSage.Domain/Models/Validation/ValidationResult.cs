@@ -14,8 +14,9 @@ namespace RuntimeErrorSage.Domain.Models.Validation
         private readonly List<string> _errors = new();
         private readonly List<string> _warnings = new();
         private readonly List<string> _validationRules = new();
-        private readonly List<string> _messages = new();
+        private List<string> _messages = new();
         private readonly Dictionary<string, object> _metadata = new();
+        private Dictionary<string, object> _details = new();
         private readonly List<ValidationSuggestion> _suggestions = new();
         private string _actionId;
         private DateTime _timestamp = DateTime.UtcNow;
@@ -25,8 +26,12 @@ namespace RuntimeErrorSage.Domain.Models.Validation
         private ValidationStatus _status;
         private readonly ValidationContext _context;
         private readonly MetricsValidation _metrics;
-        private readonly string _correlationId;
+        private string _correlationId;
         private string _message;
+        private DateTime _startTime = DateTime.UtcNow;
+        private DateTime? _endTime;
+        private string _strategyId;
+        private string _strategyName;
 
         /// <summary>
         /// Gets or sets the ID of the action that was validated.
@@ -80,14 +85,27 @@ namespace RuntimeErrorSage.Domain.Models.Validation
         }
 
         /// <summary>
-        /// Gets the validation messages.
+        /// Gets or sets the validation messages.
         /// </summary>
-        public IReadOnlyList<string> Messages => new ReadOnlyCollection<string>(_messages);
+        public List<string> Messages
+        {
+            get => _messages;
+            set => _messages = value ?? new List<string>();
+        }
 
         /// <summary>
         /// Gets the additional metadata.
         /// </summary>
         public IReadOnlyDictionary<string, object> Metadata => new ReadOnlyDictionary<string, object>(_metadata);
+
+        /// <summary>
+        /// Gets or sets the additional validation details.
+        /// </summary>
+        public Dictionary<string, object> Details
+        {
+            get => _details;
+            set => _details = value ?? new Dictionary<string, object>();
+        }
 
         /// <summary>
         /// Gets or sets the severity of the validation result.
@@ -137,6 +155,50 @@ namespace RuntimeErrorSage.Domain.Models.Validation
         }
 
         /// <summary>
+        /// Gets or sets the start time of validation.
+        /// </summary>
+        public DateTime StartTime
+        {
+            get => _startTime;
+            set => _startTime = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the end time of validation.
+        /// </summary>
+        public DateTime? EndTime
+        {
+            get => _endTime;
+            set => _endTime = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the strategy ID associated with the validation.
+        /// </summary>
+        public string StrategyId
+        {
+            get => _strategyId;
+            set => _strategyId = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the strategy name associated with the validation.
+        /// </summary>
+        public string StrategyName
+        {
+            get => _strategyName;
+            set => _strategyName = value;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValidationResult"/> class with default values.
+        /// </summary>
+        public ValidationResult()
+            : this(new ValidationContext(), true, ValidationSeverity.Info, ValidationStatus.Pending, null, null)
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ValidationResult"/> class.
         /// </summary>
         /// <param name="context">The validation context.</param>
@@ -177,6 +239,29 @@ namespace RuntimeErrorSage.Domain.Models.Validation
         }
 
         /// <summary>
+        /// Adds a validation error to the validation result.
+        /// </summary>
+        /// <param name="error">The validation error to add.</param>
+        public void AddError(ValidationError error)
+        {
+            ArgumentNullException.ThrowIfNull(error);
+            _errors.Add(error.Message);
+            _isValid = false;
+        }
+
+        /// <summary>
+        /// Adds an error to the validation result with specified message and severity.
+        /// </summary>
+        /// <param name="message">The error message.</param>
+        /// <param name="severity">The error severity.</param>
+        public void AddError(string message, ValidationSeverity severity)
+        {
+            var error = new ValidationError(message, severity);
+            _errors.Add(error.Message);
+            _isValid = false;
+        }
+
+        /// <summary>
         /// Adds a warning message to the validation result.
         /// </summary>
         /// <param name="warning">The warning message to add.</param>
@@ -186,6 +271,27 @@ namespace RuntimeErrorSage.Domain.Models.Validation
             {
                 _warnings.Add(warning);
             }
+        }
+
+        /// <summary>
+        /// Adds a validation warning to the validation result.
+        /// </summary>
+        /// <param name="warning">The validation warning to add.</param>
+        public void AddWarning(ValidationWarning warning)
+        {
+            ArgumentNullException.ThrowIfNull(warning);
+            _warnings.Add(warning.Message);
+        }
+
+        /// <summary>
+        /// Adds a warning to the validation result with specified message and severity.
+        /// </summary>
+        /// <param name="message">The warning message.</param>
+        /// <param name="severity">The warning severity.</param>
+        public void AddWarning(string message, ValidationSeverity severity)
+        {
+            var warning = new ValidationWarning(message, severity);
+            _warnings.Add(warning.Message);
         }
 
         /// <summary>
@@ -239,6 +345,24 @@ namespace RuntimeErrorSage.Domain.Models.Validation
         }
 
         /// <summary>
+        /// Sets the messages collection to a new list of messages.
+        /// </summary>
+        /// <param name="messages">The messages to set.</param>
+        public void SetMessages(IEnumerable<string> messages)
+        {
+            ArgumentNullException.ThrowIfNull(messages);
+            
+            _messages.Clear();
+            foreach (var message in messages)
+            {
+                if (!string.IsNullOrEmpty(message))
+                {
+                    _messages.Add(message);
+                }
+            }
+        }
+
+        /// <summary>
         /// Adds metadata to the validation result.
         /// </summary>
         /// <param name="key">The metadata key.</param>
@@ -261,6 +385,54 @@ namespace RuntimeErrorSage.Domain.Models.Validation
             {
                 _suggestions.Add(suggestion);
             }
+        }
+
+        /// <summary>
+        /// Merges another validation result into this one.
+        /// </summary>
+        /// <param name="other">The validation result to merge.</param>
+        /// <returns>This validation result instance for chaining.</returns>
+        public ValidationResult Merge(ValidationResult other)
+        {
+            ArgumentNullException.ThrowIfNull(other);
+            
+            // Merge properties
+            _isValid = _isValid && other.IsValid;
+            _severity = other.Severity > _severity ? other.Severity : _severity;
+            _status = other.Status == ValidationStatus.Failed ? ValidationStatus.Failed : _status;
+            
+            // Merge collections
+            foreach (var error in other.Errors)
+            {
+                _errors.Add(error);
+            }
+            
+            foreach (var warning in other.Warnings)
+            {
+                _warnings.Add(warning);
+            }
+            
+            foreach (var message in other.Messages)
+            {
+                _messages.Add(message);
+            }
+            
+            foreach (var rule in other.ValidationRules)
+            {
+                _validationRules.Add(rule);
+            }
+            
+            foreach (var suggestion in other.Suggestions)
+            {
+                _suggestions.Add(suggestion);
+            }
+            
+            foreach (var kvp in other.Metadata)
+            {
+                _metadata[kvp.Key] = kvp.Value;
+            }
+            
+            return this;
         }
 
         /// <summary>
@@ -334,6 +506,15 @@ namespace RuntimeErrorSage.Domain.Models.Validation
             }
 
             return combinedResult;
+        }
+
+        /// <summary>
+        /// Sets the correlation ID for tracking related validations.
+        /// </summary>
+        /// <param name="correlationId">The correlation ID to set.</param>
+        public void SetCorrelationId(string correlationId)
+        {
+            _correlationId = correlationId ?? Guid.NewGuid().ToString();
         }
     }
 } 

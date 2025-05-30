@@ -9,7 +9,7 @@ using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Application.Remediation.Interfaces;
+namespace RuntimeErrorSage.Core.Remediation;
 
 /// <summary>
 /// Implements a registry pattern for managing remediation strategies.
@@ -18,7 +18,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
 {
     private readonly ILogger<RemediationStrategyRegistry> _logger;
     private readonly ConcurrentDictionary<string, IRemediationStrategy> _strategies;
-    private readonly ConcurrentDictionary<string, Models.Remediation.StrategyMetadata> _strategyMetadata;
+    private readonly ConcurrentDictionary<string, Domain.Models.Remediation.StrategyMetadata> _strategyMetadata;
     private readonly ConcurrentDictionary<string, List<string>> _strategyVersions;
     private readonly ConcurrentDictionary<string, List<string>> _errorTypeStrategies;
     private readonly Func<List<string>> _stringListFactory;
@@ -31,7 +31,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
     public RemediationStrategyRegistry(
         ILogger<RemediationStrategyRegistry> logger,
         ConcurrentDictionary<string, IRemediationStrategy>? strategies = null,
-        ConcurrentDictionary<string, Models.Remediation.StrategyMetadata>? strategyMetadata = null,
+        ConcurrentDictionary<string, Domain.Models.Remediation.StrategyMetadata>? strategyMetadata = null,
         ConcurrentDictionary<string, List<string>>? strategyVersions = null,
         ConcurrentDictionary<string, List<string>>? errorTypeStrategies = null,
         Func<List<string>>? stringListFactory = null,
@@ -39,14 +39,14 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
     {
         _logger = logger;
         _strategies = strategies ?? new ConcurrentDictionary<string, IRemediationStrategy>();
-        _strategyMetadata = strategyMetadata ?? new ConcurrentDictionary<string, Models.Remediation.StrategyMetadata>();
+        _strategyMetadata = strategyMetadata ?? new ConcurrentDictionary<string, Domain.Models.Remediation.StrategyMetadata>();
         _strategyVersions = strategyVersions ?? new ConcurrentDictionary<string, List<string>>();
         _errorTypeStrategies = errorTypeStrategies ?? new ConcurrentDictionary<string, List<string>>();
         _stringListFactory = stringListFactory ?? (() => new List<string>());
         _strategyListFactory = strategyListFactory ?? (() => new List<IRemediationStrategy>());
     }
 
-    public void RegisterStrategy(IRemediationStrategy strategy, Models.Remediation.StrategyMetadata metadata)
+    public void RegisterStrategy(IRemediationStrategy strategy, Domain.Models.Remediation.StrategyMetadata metadata)
     {
         if (strategy == null)
             throw new ArgumentNullException(nameof(strategy));
@@ -149,7 +149,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
             : throw new KeyNotFoundException($"No versions found for strategy {strategyName}");
     }
 
-    public Models.Remediation.StrategyMetadata GetStrategyMetadata(string strategyName, string version)
+    public Domain.Models.Remediation.StrategyMetadata GetStrategyMetadata(string strategyName, string version)
     {
         var key = GetStrategyKey(strategyName, version);
         if (!_strategyMetadata.TryGetValue(key, out var metadata))
@@ -290,7 +290,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
 
         try
         {
-            var metadata = new Models.Remediation.StrategyMetadata
+            var metadata = new Domain.Models.Remediation.StrategyMetadata
             {
                 Name = strategy.Name,
                 Version = "1.0.0",

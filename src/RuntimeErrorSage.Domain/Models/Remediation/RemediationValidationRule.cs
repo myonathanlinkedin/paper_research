@@ -8,7 +8,6 @@ using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Domain.Models.Remediation;
 
-using RuntimeErrorSage.Domain.Models.Metrics;
 using ValidationScope = RuntimeErrorSage.Domain.Enums.ValidationScope;
 
 namespace RuntimeErrorSage.Domain.Models.Remediation

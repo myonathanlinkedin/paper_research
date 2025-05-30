@@ -3,7 +3,10 @@ using RuntimeErrorSage.Application.Classifier.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Graph;
-using RuntimeErrorSage.Domain.Models.Interfaces;
+using RuntimeErrorSage.Domain.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RuntimeErrorSage.Application.Classifier;
 

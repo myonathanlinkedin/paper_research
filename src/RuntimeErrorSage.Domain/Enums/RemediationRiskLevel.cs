@@ -28,5 +28,10 @@ public enum RemediationRiskLevel
     /// <summary>
     /// Critical risk level.
     /// </summary>
-    Critical = 4
+    Critical = 4,
+    
+    /// <summary>
+    /// Unknown risk level.
+    /// </summary>
+    Unknown = 5
 } 

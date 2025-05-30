@@ -217,7 +217,7 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         public string StackTrace { get; set; } = string.Empty;
 
         /// <summary>
-        /// Creates a successful remediation result.
+        /// Creates a successful remediation result with a message.
         /// </summary>
         /// <param name="message">The success message.</param>
         /// <returns>A successful remediation result.</returns>
@@ -234,6 +234,47 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         public static RemediationResult Failure(string error)
         {
             return new RemediationResult(new ErrorContext(null, string.Empty, DateTime.UtcNow), RemediationStatusEnum.Failed, error, string.Empty);
+        }
+
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        public RemediationResult()
+        {
+            Context = new ErrorContext(null, string.Empty, DateTime.UtcNow);
+            Status = RemediationStatusEnum.Pending;
+        }
+
+        /// <summary>
+        /// Constructor with success parameter.
+        /// </summary>
+        /// <param name="success">Whether the remediation was successful.</param>
+        public RemediationResult(bool success)
+        {
+            Context = new ErrorContext(null, string.Empty, DateTime.UtcNow);
+            Status = success ? RemediationStatusEnum.Success : RemediationStatusEnum.Failed;
+            IsSuccessful = success;
+            Success = success;
+        }
+
+        /// <summary>
+        /// Sets the success status of this remediation result.
+        /// </summary>
+        /// <param name="success">Whether the remediation was successful.</param>
+        public void SetSuccess(bool success)
+        {
+            IsSuccessful = success;
+            Success = success;
+            Status = success ? RemediationStatusEnum.Success : RemediationStatusEnum.Failed;
+        }
+
+        /// <summary>
+        /// Checks if the remediation was successful.
+        /// </summary>
+        /// <returns>True if the remediation was successful, false otherwise.</returns>
+        public bool WasSuccessful()
+        {
+            return Status == RemediationStatusEnum.Success;
         }
 
         public RemediationResult(ErrorContext context, RemediationStatusEnum status, string errorMessage, string stackTrace)

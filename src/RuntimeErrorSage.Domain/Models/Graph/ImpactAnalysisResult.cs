@@ -100,6 +100,26 @@ public class ImpactAnalysisResult
     public List<DependencyNode> AffectedNodes { get; set; } = new List<DependencyNode>();
 
     /// <summary>
+    /// Gets or sets the start node ID for the impact analysis.
+    /// </summary>
+    public string StartNodeId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the affected nodes with their impact probability.
+    /// </summary>
+    public Dictionary<string, double> AffectedNodesMap { get; set; } = new Dictionary<string, double>();
+
+    /// <summary>
+    /// Gets or sets the status of the analysis.
+    /// </summary>
+    public AnalysisStatus Status { get; set; } = AnalysisStatus.NotStarted;
+
+    /// <summary>
+    /// Gets or sets the total impact score.
+    /// </summary>
+    public double TotalImpactScore { get; set; }
+
+    /// <summary>
     /// Gets or sets the impact metrics for this analysis.
     /// </summary>
     public Dictionary<string, object> ImpactMetrics { get; set; } = new Dictionary<string, object>();

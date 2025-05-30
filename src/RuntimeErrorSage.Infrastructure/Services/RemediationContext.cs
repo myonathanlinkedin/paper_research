@@ -50,7 +50,7 @@ namespace RuntimeErrorSage.Infrastructure.Services
         /// Gets the current remediation state.
         /// </summary>
         private Domain.Models.Remediation.RemediationState _state;
-        public Domain.Models.Remediation.RemediationState State => _state;
+        public Domain.Enums.RemediationStateEnum State => (Domain.Enums.RemediationStateEnum)(int)_state.CurrentState;
 
         /// <summary>
         /// Gets or sets the current remediation strategy.

@@ -6,32 +6,42 @@ namespace RuntimeErrorSage.Domain.Enums;
 public enum ImpactScope
 {
     /// <summary>
+    /// No impact scope specified.
+    /// </summary>
+    None = 0,
+    
+    /// <summary>
+    /// Unknown impact scope.
+    /// </summary>
+    Unknown = 1,
+    
+    /// <summary>
     /// Impact is limited to a single component.
     /// </summary>
-    Component,
+    Component = 2,
 
     /// <summary>
     /// Impact affects multiple components.
     /// </summary>
-    MultiComponent,
+    MultiComponent = 3,
 
     /// <summary>
     /// Impact affects the entire system.
     /// </summary>
-    System,
+    System = 4,
 
     /// <summary>
     /// Impact affects external systems.
     /// </summary>
-    External,
+    External = 5,
     
     /// <summary>
     /// Impact is limited to a local context.
     /// </summary>
-    Local,
+    Local = 6,
     
     /// <summary>
     /// Impact affects a service.
     /// </summary>
-    Service
+    Service = 7
 } 

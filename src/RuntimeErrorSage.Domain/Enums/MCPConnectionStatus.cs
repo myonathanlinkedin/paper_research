@@ -3,7 +3,7 @@ namespace RuntimeErrorSage.Domain.Enums;
 /// <summary>
 /// Represents the status of an MCP (Model Control Protocol) connection.
 /// </summary>
-public enum MCPConnectionStatus
+public enum MCPConnectionStatusEnum
 {
     /// <summary>
     /// The connection is disconnected.

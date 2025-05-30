@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Core.Storage.Utilities;
 
-namespace RuntimeErrorSage.Domain.Models.Remediation
+namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
     /// Provides risk analysis functionality for remediation actions.
@@ -20,7 +24,8 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
             }
 
             // Use the helper to calculate risk level
-            var remediationRiskLevel = RiskAssessmentHelper.CalculateRiskLevel(action.Impact, action.ImpactScope);
+            SeverityLevel severityLevel = action.Impact.ToSeverityLevel();
+            var remediationRiskLevel = RiskAssessmentHelper.CalculateRiskLevel(severityLevel, action.ImpactScope);
 
             // Return the calculated risk level
             return remediationRiskLevel;
@@ -47,9 +52,9 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
             }
 
             // Add issues based on stack trace
-            if (!string.IsNullOrEmpty(action.StackTrace))
+            if (action.Context?.Error?.StackTrace != null)
             {
-                var stackLines = action.StackTrace.Split('\n');
+                var stackLines = action.Context.Error.StackTrace.Split('\n');
                 if (stackLines.Length > 5)
                 {
                     issues.Add("Deep call stack may indicate complex error propagation");
@@ -57,16 +62,16 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
             }
 
             // Add issues based on context
-            if (action.Context?.Count > 0)
+            if (action.Parameters?.Count > 0)
             {
-                if (action.Context.Count > 5)
+                if (action.Parameters.Count > 5)
                 {
                     issues.Add("Complex context may lead to unexpected side effects");
                 }
             }
 
             // Add risk-based issues
-            switch (action.RiskLevel)
+            switch (action.RiskLevel.ToRemediationRiskLevel())
             {
                 case RemediationRiskLevel.Critical:
                     issues.Add("Critical risk level may impact system stability");
@@ -102,7 +107,7 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
             steps.Add("Verify system state before execution");
 
             // Add risk-specific steps
-            switch (action.RiskLevel)
+            switch (action.RiskLevel.ToRemediationRiskLevel())
             {
                 case RemediationRiskLevel.Critical:
                     steps.Add("Implement comprehensive rollback strategy");
@@ -123,9 +128,9 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
             }
 
             // Add context-specific steps
-            if (action.Context?.Count > 0)
+            if (action.Parameters?.Count > 0)
             {
-                foreach (var kvp in action.Context)
+                foreach (var kvp in action.Parameters)
                 {
                     steps.Add($"Validate {kvp.Key} before use");
                 }

@@ -1,6 +1,8 @@
+using System;
+using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Models.Graph;
 
-namespace RuntimeErrorSage.Application.Examples
+namespace RuntimeErrorSage.Core.Examples
 {
     /// <summary>
     /// Example code showing how to fix KeyValuePair access issues.
@@ -30,10 +32,14 @@ namespace RuntimeErrorSage.Application.Examples
                 // For properties that might not exist in GraphNode but in a derived type,
                 // use a safe approach with dictionaries
                 if (node.Value.Metadata != null && 
-                    node.Value.Metadata.TryGetValue("ErrorProbability", out var probability) && 
-                    probability is double errorProb)
+                    node.Value.Metadata.TryGetValue("ErrorProbability", out var probability))
                 {
-                    Console.WriteLine($"Error Probability: {errorProb}");
+                    // Check for double using proper type check instead of pattern matching
+                    if (probability is double)
+                    {
+                        double errorProb = (double)probability;
+                        Console.WriteLine($"Error Probability: {errorProb}");
+                    }
                 }
             }
 

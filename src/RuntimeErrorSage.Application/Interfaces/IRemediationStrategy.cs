@@ -43,6 +43,11 @@ namespace RuntimeErrorSage.Application.Interfaces
         RemediationPriority Priority { get; }
 
         /// <summary>
+        /// Gets the risk level of the strategy.
+        /// </summary>
+        RiskLevel RiskLevel { get; set; }
+
+        /// <summary>
         /// Gets the strategy parameters.
         /// </summary>
         Dictionary<string, object> Parameters { get; set; }

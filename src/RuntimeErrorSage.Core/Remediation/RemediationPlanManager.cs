@@ -5,10 +5,12 @@ using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Models.Common;
+using System.Collections.Generic;
+using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Remediation
+namespace RuntimeErrorSage.Core.Remediation
 {
     public class RemediationPlanManager : IRemediationPlanManager
     {
@@ -43,7 +45,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 var analysis = await _errorContextAnalyzer.AnalyzeContextAsync(context);
                 var strategies = await _registry.GetStrategiesForErrorAsync(context);
 
-                var statusInfo = new Models.Common.RemediationStatusInfo
+                var statusInfo = new Domain.Models.Common.RemediationStatusInfo
                 {
                     Status = RemediationStatusEnum.Created,
                     Message = "Remediation plan created",
@@ -107,7 +109,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 var status = isSuccessful ? RemediationStatusEnum.Success : RemediationStatusEnum.Failed;
                 
                 // Create new status info
-                var statusInfo = new RemediationStatusInfo
+                var statusInfo = new Domain.Models.Common.RemediationStatusInfo
                 {
                     Status = status,
                     Message = isSuccessful ? "Remediation completed successfully" : "Remediation failed",
@@ -123,7 +125,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 // Add previous status to history if it exists
                 if (plan.StatusInfo != null)
                 {
-                    statusInfo.History.Add(new StatusHistoryEntry
+                    statusInfo.History.Add(new Domain.Models.Common.StatusHistoryEntry
                     {
                         Status = plan.Status,
                         Message = plan.StatusInfo.Message,

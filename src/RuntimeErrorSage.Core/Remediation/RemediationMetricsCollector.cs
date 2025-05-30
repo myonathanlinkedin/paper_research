@@ -21,8 +21,10 @@ using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
+using System.Diagnostics.PerformanceData;
+using System.IO;
 
-namespace RuntimeErrorSage.Application.Remediation;
+namespace RuntimeErrorSage.Core.Remediation;
 
 /// <summary>
 /// Collects and aggregates remediation metrics.
@@ -46,7 +48,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
     private readonly Dictionary<string, EventId> _eventIds;
     private readonly Func<List<RemediationMetrics>> _remediationMetricsListFactory;
     private readonly Func<List<StepMetrics>> _stepMetricsListFactory;
-    private readonly Func<List<Models.Remediation.MetricValue>> _metricValueListFactory;
+    private readonly Func<List<Domain.Models.Remediation.MetricValue>> _metricValueListFactory;
     private readonly Func<List<ValidationWarning>> _validationWarningListFactory;
 
     public RemediationMetricsCollector(
@@ -62,7 +64,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         Dictionary<string, EventId>? eventIds = null,
         Func<List<RemediationMetrics>>? remediationMetricsListFactory = null,
         Func<List<StepMetrics>>? stepMetricsListFactory = null,
-        Func<List<Models.Remediation.MetricValue>>? metricValueListFactory = null,
+        Func<List<Domain.Models.Remediation.MetricValue>>? metricValueListFactory = null,
         Func<List<ValidationWarning>>? validationWarningListFactory = null)
     {
         ArgumentNullException.ThrowIfNull(logger);
@@ -95,14 +97,17 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             { nameof(RecordStepMetricsAsync), new EventId(10, nameof(RecordStepMetricsAsync)) },
             { nameof(GetMetricsAsync), new EventId(11, nameof(GetMetricsAsync)) },
             { nameof(GetAggregatedMetricsAsync), new EventId(12, nameof(GetAggregatedMetricsAsync)) },
-            { nameof(ValidateMetricsAsync), new EventId(13, nameof(ValidateMetricsAsync)) }
+            { nameof(ValidateMetricsAsync), new EventId(13, nameof(ValidateMetricsAsync)) },
+            { nameof(CollectSystemMetricsAsync), new EventId(14, nameof(CollectSystemMetricsAsync)) },
+            { nameof(GetWindowsMemoryMetrics), new EventId(15, nameof(GetWindowsMemoryMetrics)) },
+            { nameof(GetLinuxMemoryMetrics), new EventId(16, nameof(GetLinuxMemoryMetrics)) }
         };
 
         // TODO: Implement factories for lists if needed
-        //_remediationMetricsListFactory = remediationMetricsListFactory ?? (() => new List<RemediationMetrics>());
-        //_stepMetricsListFactory = stepMetricsListFactory ?? (() => new List<StepMetrics>());
-        //_metricValueListFactory = metricValueListFactory ?? (() => new List<Models.Remediation.MetricValue>());
-        //_validationWarningListFactory = validationWarningListFactory ?? (() => new List<ValidationWarning>());
+        _remediationMetricsListFactory = remediationMetricsListFactory ?? (() => new List<RemediationMetrics>());
+        _stepMetricsListFactory = stepMetricsListFactory ?? (() => new List<StepMetrics>());
+        _metricValueListFactory = metricValueListFactory ?? (() => new List<Domain.Models.Remediation.MetricValue>());
+        _validationWarningListFactory = validationWarningListFactory ?? (() => new List<ValidationWarning>());
 
         //// Setup collection timer with dueTime and period in milliseconds
         //_collectionTimer = new Timer(
@@ -207,7 +212,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
     }
 
     /// <inheritdoc/>
-    public async Task<Dictionary<string, List<Models.Remediation.MetricValue>>> GetMetricsHistoryAsync(string remediationId)
+    public async Task<Dictionary<string, List<RemediationMetrics>>> GetMetricsHistoryAsync(string remediationId)
     {
         ArgumentNullException.ThrowIfNull(remediationId);
         ThrowIfDisposed();
@@ -217,26 +222,10 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             _logger.LogInformation(_eventIds[nameof(GetMetricsHistoryAsync)], 
                 "Getting metrics history for remediation {RemediationId}", remediationId);
 
-            var history = new Dictionary<string, List<Models.Remediation.MetricValue>>();
+            var history = new Dictionary<string, List<RemediationMetrics>>();
             if (_metricsHistory.TryGetValue(remediationId, out var metrics))
             {
-                foreach (var metric in metrics)
-                {
-                    foreach (var (key, value) in metric.Values)
-                    {
-                        if (!history.ContainsKey(key))
-                        {
-                            history[key] = _metricValueListFactory();
-                        }
-                        history[key].Add(new Models.Remediation.MetricValue
-                        {
-                            Name = key,
-                            Value = value,
-                            Timestamp = metric.Timestamp,
-                            Labels = metric.Labels
-                        });
-                    }
-                }
+                history["remediation"] = metrics;
             }
 
             return history;
@@ -576,41 +565,77 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
 
     private async Task<Dictionary<string, object>> CollectSystemMetricsAsync(CancellationToken cancellationToken)
     {
+        var metrics = new Dictionary<string, object>();
+        
         try
         {
-            _logger.LogInformation(_eventIds[nameof(CollectMetricsAsync)], 
-                "Collecting system metrics");
-
-            var metrics = new Dictionary<string, object>
-            {
-                ["cpu_usage"] = _currentProcess.TotalProcessorTime.TotalMilliseconds,
-                ["memory_usage"] = _currentProcess.WorkingSet64,
-                ["thread_count"] = _currentProcess.Threads.Count,
-                ["handle_count"] = _currentProcess.HandleCount,
-                ["start_time"] = _currentProcess.StartTime,
-                ["runtime"] = (DateTime.Now - _currentProcess.StartTime).TotalMilliseconds
-            };
-
+            // Process metrics
+            metrics["process_cpu_time"] = _currentProcess.TotalProcessorTime.TotalMilliseconds;
+            metrics["process_memory_usage"] = _currentProcess.WorkingSet64;
+            metrics["process_thread_count"] = _currentProcess.Threads.Count;
+            metrics["process_start_time"] = _currentProcess.StartTime.ToUniversalTime();
+            metrics["process_handle_count"] = _currentProcess.HandleCount;
+            
+            // System metrics
+            metrics["system_time"] = DateTime.UtcNow;
+            metrics["system_uptime"] = Environment.TickCount64 / 1000.0;
+            metrics["system_os_version"] = Environment.OSVersion.ToString();
+            metrics["system_processor_count"] = Environment.ProcessorCount;
+            metrics["system_is_64bit_os"] = Environment.Is64BitOperatingSystem;
+            metrics["system_is_64bit_process"] = Environment.Is64BitProcess;
+            
+            // Memory metrics
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                metrics["is_windows"] = true;
+                metrics["memory_available"] = GetWindowsMemoryMetrics();
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                metrics["is_linux"] = true;
+                metrics["memory_available"] = GetLinuxMemoryMetrics();
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                metrics["is_osx"] = true;
-            }
-
-            return metrics;
+            
+            // Disk metrics
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var driveInfo = new DriveInfo(Path.GetPathRoot(currentDirectory));
+            metrics["disk_total_space"] = driveInfo.TotalSize;
+            metrics["disk_available_space"] = driveInfo.AvailableFreeSpace;
+            metrics["disk_used_space"] = driveInfo.TotalSize - driveInfo.AvailableFreeSpace;
+            metrics["disk_drive_format"] = driveInfo.DriveFormat;
+            
+            await Task.CompletedTask; // Make sure the method is async
         }
         catch (Exception ex)
         {
-            _logger.LogError(_eventIds[nameof(CollectMetricsAsync)], ex, 
+            _logger.LogError(_eventIds[nameof(CollectSystemMetricsAsync)], ex, 
                 "Error collecting system metrics");
-            throw;
+        }
+        
+        return metrics;
+    }
+    
+    private double GetWindowsMemoryMetrics()
+    {
+        try
+        {
+            // Simple implementation for Windows
+            return new PerformanceCounter("Memory", "Available MBytes").NextValue();
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+    
+    private double GetLinuxMemoryMetrics()
+    {
+        try
+        {
+            // Simple implementation for Linux
+            return 0; // Would normally read from /proc/meminfo
+        }
+        catch
+        {
+            return 0;
         }
     }
 

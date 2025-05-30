@@ -25,6 +25,11 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         public string Type { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the type of the node as an enum.
+        /// </summary>
+        public GraphNodeType NodeType { get; set; } = GraphNodeType.Unknown;
+
+        /// <summary>
         /// Gets or sets the list of incoming dependencies.
         /// </summary>
         public List<string> IncomingDependencies { get; set; } = new();

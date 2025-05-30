@@ -17,7 +17,7 @@ using RuntimeErrorSage.Domain.Models.Common;
 using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Application.Interfaces;
 
-namespace RuntimeErrorSage.Application.Remediation.Examples
+namespace RuntimeErrorSage.Core.Examples
 {
     /// <summary>
     /// Examples showing the fixed patterns for common errors in RemediationExecutor
@@ -396,46 +396,64 @@ namespace RuntimeErrorSage.Application.Remediation.Examples
         }
 
         /// <inheritdoc />
-        public async Task<RemediationAction> ExecuteActionAsync(RemediationAction action, ErrorContext context)
+        public async Task<RemediationResult> ExecuteActionAsync(RemediationAction action, ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(action);
             ArgumentNullException.ThrowIfNull(context);
 
             try
             {
-                _logger.LogInformation("Executing action {ActionId} for error context {ErrorId}", 
-                    action.ActionId, context.Id);
+                _logger.LogInformation("Executing action {ActionName} for error context {ErrorId}", 
+                    action.Name, context.ErrorId);
                 
-                action.StartTime = DateTime.UtcNow;
-                
-                // Validate
+                // Validate action
                 var validationResult = await ValidateActionAsync(action, context);
                 if (!validationResult.IsValid)
                 {
-                    action.Status = RemediationStatus.Failed;
-                    action.ErrorMessage = $"Action validation failed: {string.Join(", ", validationResult.Messages)}";
-                    action.EndTime = DateTime.UtcNow;
-                    return action;
+                    return new RemediationResult
+                    {
+                        Success = false,
+                        ErrorMessage = "Action validation failed: " + string.Join(", ", validationResult.Errors),
+                        Status = RemediationStatusEnum.Failed,
+                        StartTime = DateTime.UtcNow,
+                        EndTime = DateTime.UtcNow
+                    };
                 }
                 
-                // Execute
-                await Task.Delay(100); // Simulate work
+                // Execute action
+                var result = new RemediationResult
+                {
+                    Success = true,
+                    Status = RemediationStatusEnum.Success,
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow.AddSeconds(1),
+                    Actions = new List<RemediationActionResult>
+                    {
+                        new RemediationActionResult
+                        {
+                            ActionId = action.Id,
+                            IsSuccessful = true,
+                            StartTime = DateTime.UtcNow,
+                            EndTime = DateTime.UtcNow.AddSeconds(1)
+                        }
+                    }
+                };
                 
-                action.Status = RemediationStatus.Success;
-                action.EndTime = DateTime.UtcNow;
-                
-                return action;
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error executing action {ActionId} for context {ErrorId}", 
-                    action.ActionId, context.Id);
+                _logger.LogError(ex, "Error executing action {ActionName} for context {ErrorId}", 
+                    action.Name, context.ErrorId);
                 
-                action.Status = RemediationStatus.Failed;
-                action.ErrorMessage = ex.Message;
-                action.EndTime = DateTime.UtcNow;
-                
-                return action;
+                return new RemediationResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Execution error: {ex.Message}",
+                    Status = RemediationStatusEnum.Failed,
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow
+                };
             }
         }
 
@@ -489,7 +507,7 @@ namespace RuntimeErrorSage.Application.Remediation.Examples
                 
                 return new RemediationImpact
                 {
-                    Severity = ImpactSeverity.Low,
+                    Severity = ImpactSeverity.Low.ToRemediationActionSeverity(),
                     Description = "Minimal system impact expected",
                     AffectedComponents = new List<string> { "Component1", "Component2" }
                 };
@@ -501,7 +519,7 @@ namespace RuntimeErrorSage.Application.Remediation.Examples
                 
                 return new RemediationImpact
                 {
-                    Severity = ImpactSeverity.Unknown,
+                    Severity = ImpactSeverity.Unknown.ToRemediationActionSeverity(),
                     Description = $"Error calculating impact: {ex.Message}"
                 };
             }
@@ -522,7 +540,7 @@ namespace RuntimeErrorSage.Application.Remediation.Examples
                 
                 return new RiskAssessmentModel
                 {
-                    RiskLevel = RiskLevel.Low,
+                    RiskLevel = RiskLevel.Low.ToRemediationRiskLevel(),
                     Description = "Low risk remediation action",
                     PotentialIssues = new List<string> { "Temporary performance impact" },
                     MitigationSteps = new List<string> { "Monitor system performance during remediation" }
@@ -535,7 +553,7 @@ namespace RuntimeErrorSage.Application.Remediation.Examples
                 
                 return new RiskAssessmentModel
                 {
-                    RiskLevel = RiskLevel.Unknown,
+                    RiskLevel = RiskLevel.Medium.ToRemediationRiskLevel(),
                     Description = $"Error calculating risk: {ex.Message}"
                 };
             }
@@ -723,6 +741,188 @@ namespace RuntimeErrorSage.Application.Remediation.Examples
             
             // Execute the strategy with explicit namespace references
             return await strategy.ExecuteAsync(context);
+        }
+
+        /// <inheritdoc />
+        public async Task<RemediationResult> ExecuteRemediationAsync(RemediationPlan plan, ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(plan);
+            ArgumentNullException.ThrowIfNull(context);
+
+            try
+            {
+                _logger.LogInformation("Executing remediation plan {PlanId} for context {ContextId}", 
+                    plan.PlanId, context.Id);
+
+                var result = new RemediationResult
+                {
+                    Context = context,
+                    Status = RemediationStatusEnum.InProgress,
+                    Message = "Remediation execution started",
+                    StartTime = DateTime.UtcNow
+                };
+
+                // Execute actions in the plan
+                foreach (var action in plan.Actions)
+                {
+                    var actionResult = await ExecuteActionAsync(action, context);
+                    
+                    if (actionResult.Status != RemediationActionStatus.Completed)
+                    {
+                        result.Status = RemediationStatusEnum.Failed;
+                        result.Message = $"Action {action.Name} failed: {actionResult.ErrorMessage}";
+                        break;
+                    }
+
+                    result.CompletedSteps.Add(new RemediationStep
+                    {
+                        Name = action.Name,
+                        Status = RemediationStepStatus.Completed,
+                        StartTime = actionResult.StartTime,
+                        EndTime = actionResult.EndTime
+                    });
+                }
+
+                if (result.Status == RemediationStatusEnum.InProgress)
+                {
+                    result.Status = RemediationStatusEnum.Success;
+                    result.Message = "Remediation executed successfully";
+                }
+
+                result.EndTime = DateTime.UtcNow;
+                
+                // Record metrics
+                await _metricsCollector.RecordMetricAsync(
+                    plan.PlanId,
+                    "remediation_executed",
+                    new
+                    {
+                        Status = result.Status.ToString(),
+                        Duration = (result.EndTime - result.StartTime).TotalMilliseconds
+                    });
+                
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing remediation for plan {PlanId} and context {ContextId}", 
+                    plan.PlanId, context.Id);
+                
+                return new RemediationResult
+                {
+                    Context = context,
+                    Status = RemediationStatusEnum.Failed,
+                    Message = $"Remediation execution failed: {ex.Message}",
+                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
+                };
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<RemediationResult> RollbackActionAsync(string actionId, ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(actionId);
+            ArgumentNullException.ThrowIfNull(context);
+
+            try
+            {
+                _logger.LogInformation("Rolling back action {ActionId} for context {ContextId}", 
+                    actionId, context.Id);
+                
+                // Perform rollback logic
+                await Task.Delay(100); // Simulate work
+                
+                // Record metrics
+                await _metricsCollector.RecordMetricAsync(
+                    actionId,
+                    "action_rollback",
+                    new
+                    {
+                        Status = "Success",
+                        Timestamp = DateTime.UtcNow
+                    });
+                
+                return new RemediationResult
+                {
+                    Context = context,
+                    Status = RemediationStatusEnum.Success,
+                    Message = $"Action {actionId} rolled back successfully",
+                    IsRollback = true,
+                    StartTime = DateTime.UtcNow.AddMilliseconds(-100),
+                    EndTime = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rolling back action {ActionId}", actionId);
+                
+                await _metricsCollector.RecordMetricAsync(
+                    actionId,
+                    "action_rollback",
+                    new
+                    {
+                        Status = "Failed",
+                        Error = ex.Message,
+                        Timestamp = DateTime.UtcNow
+                    });
+                
+                return new RemediationResult
+                {
+                    Context = context,
+                    Status = RemediationStatusEnum.Failed,
+                    Message = $"Action rollback failed: {ex.Message}",
+                    IsRollback = true,
+                    StartTime = DateTime.UtcNow.AddMilliseconds(-100),
+                    EndTime = DateTime.UtcNow,
+                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
+                };
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<RemediationResult> GetActionStatusAsync(string actionId, ErrorContext context)
+        {
+            ArgumentNullException.ThrowIfNull(actionId);
+            ArgumentNullException.ThrowIfNull(context);
+
+            try
+            {
+                _logger.LogInformation("Getting status for action {ActionId} in context {ContextId}", 
+                    actionId, context.Id);
+                
+                // Retrieve action status from execution history
+                RemediationStatusEnum status = RemediationStatusEnum.Unknown;
+                string message = "Status unknown";
+                
+                if (_executionHistory.TryGetValue(actionId, out var execution))
+                {
+                    status = execution.Status;
+                    message = execution.Message;
+                }
+                
+                return new RemediationResult
+                {
+                    Context = context,
+                    Status = status,
+                    Message = message,
+                    ActionId = actionId,
+                    StartTime = DateTime.UtcNow.AddMilliseconds(-100),
+                    EndTime = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting status for action {ActionId}", actionId);
+                
+                return new RemediationResult
+                {
+                    Context = context,
+                    Status = RemediationStatusEnum.Failed,
+                    Message = $"Error getting action status: {ex.Message}",
+                    ActionId = actionId,
+                    Validation = new ValidationResult { IsValid = false, Messages = new List<string> { ex.Message } }
+                };
+            }
         }
     }
 } 

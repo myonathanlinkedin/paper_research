@@ -5,7 +5,7 @@ using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using System.Linq;
 
-namespace RuntimeErrorSage.Application.Remediation
+namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
     /// Analyzes error context graphs to determine component health and relationships for remediation purposes.
@@ -103,7 +103,7 @@ namespace RuntimeErrorSage.Application.Remediation
                     var strength = CalculateRelationshipStrength(source, target, context);
                     var type = DetermineRelationshipType(source, target, context);
 
-                    relationships.Add(new Models.Graph.ComponentRelationship
+                    relationships.Add(new Domain.Models.Graph.ComponentRelationship
                     {
                         SourceComponent = source,
                         TargetComponent = target,
@@ -117,7 +117,7 @@ namespace RuntimeErrorSage.Application.Remediation
             return relationships;
         }
 
-        private async Task<Models.Error.ErrorPropagation> AnalyzeErrorPropagationAsync(ErrorContext context)
+        private async Task<Domain.Models.Error.ErrorPropagation> AnalyzeErrorPropagationAsync(ErrorContext context)
         {
             var affectedComponents = new HashSet<string>();
             var propagationPaths = new List<List<string>>();
@@ -168,7 +168,7 @@ namespace RuntimeErrorSage.Application.Remediation
             }
 
             await Task.CompletedTask;
-            return new Models.Error.ErrorPropagation
+            return new Domain.Models.Error.ErrorPropagation
             {
                 AffectedComponents = affectedComponents.ToList(),
                 PropagationPaths = propagationPaths,

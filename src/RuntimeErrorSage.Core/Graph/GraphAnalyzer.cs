@@ -76,7 +76,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             result.ImpactResults = new List<ImpactAnalysisResult> { impactResults };
 
             // Find related errors
-            result.RelatedErrors = await _relationshipAnalyzer.FindRelatedErrorsAsync(context, result.DependencyGraph);
+            result.RelatedErrors = await _relationshipAnalyzer.FindRelatedErrorsAsync(context);
 
             // Calculate graph metrics
             result.Metrics = await CalculateGraphMetricsAsync(result.DependencyGraph);
@@ -118,13 +118,13 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
 
         try
         {
-            _logger.LogInformation("Analyzing impact for node {NodeId}", startNodeId);
+            _logger.LogInformation("Analyzing impact from node {NodeId}", startNodeId);
             
             var result = new ImpactAnalysisResult
             {
                 StartNodeId = startNodeId,
                 Timestamp = DateTime.UtcNow,
-                AffectedNodes = new Dictionary<string, double>()
+                AffectedNodesMap = new Dictionary<string, double>()
             };
 
             // Find all nodes that are reachable from the start node
@@ -136,28 +136,28 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             while (queue.Count > 0)
             {
                 var currentNodeId = queue.Dequeue();
-                var currentNode = graph.Nodes.FirstOrDefault(n => n.Id == currentNodeId);
+                var currentNode = graph.Nodes.FirstOrDefault(n => n.Key == currentNodeId);
                 
-                if (currentNode == null)
+                if (currentNode.Equals(default(KeyValuePair<string, GraphNode>)))
                     continue;
 
                 // Calculate impact probability for this node
                 double impactProbability = 0.8; // Default value
-                result.AffectedNodes[currentNodeId] = impactProbability;
+                result.AffectedNodesMap[currentNodeId] = impactProbability;
 
                 // Find outgoing edges
-                var outgoingEdges = graph.Edges.Where(e => e.SourceId == currentNodeId);
+                var outgoingEdges = graph.Edges.Where(e => e.Value.SourceId == currentNodeId);
                 foreach (var edge in outgoingEdges)
                 {
-                    if (!visited.Contains(edge.TargetId))
+                    if (!visited.Contains(edge.Value.TargetId))
                     {
-                        visited.Add(edge.TargetId);
-                        queue.Enqueue(edge.TargetId);
+                        visited.Add(edge.Value.TargetId);
+                        queue.Enqueue(edge.Value.TargetId);
                     }
                 }
             }
 
-            result.TotalImpactScore = result.AffectedNodes.Values.Sum();
+            result.TotalImpactScore = result.AffectedNodesMap.Values.Sum();
             result.Status = AnalysisStatus.Completed;
 
             return result;
@@ -182,13 +182,13 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             
             // Find all terminal nodes (nodes with no outgoing edges)
             var terminalNodes = graph.Nodes
-                .Where(n => !graph.Edges.Any(e => e.SourceId == n.Id))
+                .Where(n => !graph.Edges.Any(e => e.Value.SourceId == n.Key))
                 .ToList();
             
             // For each terminal node, find the longest path to it
             foreach (var terminal in terminalNodes)
             {
-                var longestPath = FindLongestPathToNode(graph, terminal.Id);
+                var longestPath = FindLongestPathToNode(graph, terminal.Key);
                 if (longestPath.Nodes.Count > 0)
                 {
                     criticalPaths.Add(longestPath);
@@ -217,9 +217,9 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             
             foreach (var node in graph.Nodes)
             {
-                if (node.ErrorProbability >= threshold)
+                if (node.Value.ErrorProbability >= threshold)
                 {
-                    highRiskNodes.Add(node);
+                    highRiskNodes.Add(node.Value);
                 }
             }
             
@@ -319,16 +319,16 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             // Initialize visited and recursion stack for all nodes
             foreach (var node in graph.Nodes)
             {
-                visited[node.Id] = false;
-                recStack[node.Id] = false;
+                visited[node.Key] = false;
+                recStack[node.Key] = false;
             }
             
             // Check for cycles starting from each node
             foreach (var node in graph.Nodes)
             {
-                if (!visited[node.Id])
+                if (!visited[node.Key])
                 {
-                    FindCyclesUtil(graph, node.Id, visited, recStack, new List<string>(), cycles);
+                    FindCyclesUtil(graph, node.Key, visited, recStack, new List<string>(), cycles);
                 }
             }
             
@@ -356,8 +356,8 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             foreach (var node in graph.Nodes)
             {
                 // Count incoming and outgoing edges
-                int inDegree = graph.Edges.Count(e => e.TargetId == node.Id);
-                int outDegree = graph.Edges.Count(e => e.SourceId == node.Id);
+                int inDegree = graph.Edges.Count(e => e.Value.TargetId == node.Key);
+                int outDegree = graph.Edges.Count(e => e.Value.SourceId == node.Key);
                 
                 // Normalize by maximum possible edges (n-1)
                 int nodeCount = graph.Nodes.Count;
@@ -365,7 +365,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
                     ? 0 
                     : (inDegree + outDegree) / (double)(2 * (nodeCount - 1));
                 
-                centrality[node.Id] = normalizedDegree;
+                centrality[node.Key] = normalizedDegree;
             }
             
             return centrality;
@@ -387,7 +387,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
 
         foreach (var node in graph.Nodes)
         {
-            var neighbors = graph.GetNeighbors(node.Id).ToList();
+            var neighbors = graph.GetNeighbors(node.Key).ToList();
             if (neighbors.Count <= 1)
                 continue;
 
@@ -423,7 +423,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         // Initialize distances
         foreach (var node in graph.Nodes)
         {
-            distances[node.Id] = -1; // -1 represents unreachable
+            distances[node.Key] = -1; // -1 represents unreachable
         }
         
         // Use topological sort to find longest path
@@ -432,9 +432,9 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         // Set distance to source as 0
         foreach (var node in graph.Nodes)
         {
-            if (!graph.Edges.Any(e => e.TargetId == node.Id))
+            if (!graph.Edges.Any(e => e.Value.TargetId == node.Key))
             {
-                distances[node.Id] = 0;
+                distances[node.Key] = 0;
             }
         }
         
@@ -443,14 +443,14 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         {
             if (distances[nodeId] != -1)
             {
-                var incomingEdges = graph.Edges.Where(e => e.TargetId == nodeId);
+                var incomingEdges = graph.Edges.Where(e => e.Value.TargetId == nodeId);
                 foreach (var edge in incomingEdges)
                 {
                     var newDistance = distances[nodeId] + 1;
-                    if (distances[edge.SourceId] < newDistance)
+                    if (distances[edge.Value.SourceId] < newDistance)
                     {
-                        distances[edge.SourceId] = newDistance;
-                        predecessors[edge.SourceId] = nodeId;
+                        distances[edge.Value.SourceId] = newDistance;
+                        predecessors[edge.Value.SourceId] = nodeId;
                     }
                 }
             }
@@ -487,15 +487,15 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         // Initialize visited for all nodes
         foreach (var node in graph.Nodes)
         {
-            visited[node.Id] = false;
+            visited[node.Key] = false;
         }
         
         // Visit each unvisited node
         foreach (var node in graph.Nodes)
         {
-            if (!visited[node.Id])
+            if (!visited[node.Key])
             {
-                TopologicalSortUtil(graph, node.Id, visited, stack);
+                TopologicalSortUtil(graph, node.Key, visited, stack);
             }
         }
         
@@ -507,12 +507,12 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         visited[nodeId] = true;
         
         // Visit all outgoing edges
-        var outgoingEdges = graph.Edges.Where(e => e.SourceId == nodeId);
+        var outgoingEdges = graph.Edges.Where(e => e.Value.SourceId == nodeId);
         foreach (var edge in outgoingEdges)
         {
-            if (!visited[edge.TargetId])
+            if (!visited[edge.Value.TargetId])
             {
-                TopologicalSortUtil(graph, edge.TargetId, visited, stack);
+                TopologicalSortUtil(graph, edge.Value.TargetId, visited, stack);
             }
         }
         
@@ -526,7 +526,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         currentPath.Add(nodeId);
         
         // If this is a terminal node, add the path
-        if (!graph.Edges.Any(e => e.SourceId == nodeId))
+        if (!graph.Edges.Any(e => e.Value.SourceId == nodeId))
         {
             var newPath = new GraphPath
             {
@@ -538,12 +538,12 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         else
         {
             // Continue exploring all outgoing edges
-            var outgoingEdges = graph.Edges.Where(e => e.SourceId == nodeId);
+            var outgoingEdges = graph.Edges.Where(e => e.Value.SourceId == nodeId);
             foreach (var edge in outgoingEdges)
             {
-                if (!visited.Contains(edge.TargetId))
+                if (!visited.Contains(edge.Value.TargetId))
                 {
-                    FindAllPathsFromNode(graph, edge.TargetId, currentPath, visited, paths);
+                    FindAllPathsFromNode(graph, edge.Value.TargetId, currentPath, visited, paths);
                 }
             }
         }
@@ -559,19 +559,19 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         visited.Add(nodeId);
         
         // Find all incoming edges
-        var incomingEdges = graph.Edges.Where(e => e.TargetId == nodeId);
+        var incomingEdges = graph.Edges.Where(e => e.Value.TargetId == nodeId);
         foreach (var edge in incomingEdges)
         {
-            var sourceNode = graph.Nodes.FirstOrDefault(n => n.Id == edge.SourceId);
+            var sourceNode = graph.Nodes.FirstOrDefault(n => n.Key == edge.Value.SourceId);
             if (sourceNode != null)
             {
                 // Add this node as a potential cause with its error probability
-                potentialCauses[sourceNode.Id] = sourceNode.ErrorProbability;
+                potentialCauses[sourceNode.Key] = sourceNode.Value.ErrorProbability;
                 
                 // Continue traversal if not visited
-                if (!visited.Contains(sourceNode.Id))
+                if (!visited.Contains(sourceNode.Key))
                 {
-                    FindPotentialRootCauses(graph, sourceNode.Id, potentialCauses, visited);
+                    FindPotentialRootCauses(graph, sourceNode.Key, potentialCauses, visited);
                 }
             }
         }
@@ -585,23 +585,23 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         currentPath.Add(nodeId);
         
         // Check all neighbors
-        var outgoingEdges = graph.Edges.Where(e => e.SourceId == nodeId);
+        var outgoingEdges = graph.Edges.Where(e => e.Value.SourceId == nodeId);
         foreach (var edge in outgoingEdges)
         {
             // If not visited, continue DFS
-            if (!visited[edge.TargetId])
+            if (!visited[edge.Value.TargetId])
             {
-                FindCyclesUtil(graph, edge.TargetId, visited, recStack, currentPath, cycles);
+                FindCyclesUtil(graph, edge.Value.TargetId, visited, recStack, currentPath, cycles);
             }
             // If already in recursion stack, we found a cycle
-            else if (recStack[edge.TargetId])
+            else if (recStack[edge.Value.TargetId])
             {
                 // Find the start of the cycle
-                int startIdx = currentPath.IndexOf(edge.TargetId);
+                int startIdx = currentPath.IndexOf(edge.Value.TargetId);
                 if (startIdx != -1)
                 {
                     var cycleNodes = currentPath.GetRange(startIdx, currentPath.Count - startIdx);
-                    cycleNodes.Add(edge.TargetId); // Complete the cycle
+                    cycleNodes.Add(edge.Value.TargetId); // Complete the cycle
                     
                     var cycle = new GraphCycle
                     {
@@ -647,15 +647,15 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             var shortestPaths = 0;
             var pathsThroughNode = 0;
 
-            foreach (var source in graph.Nodes.Where(n => n.Id != node.Id))
+            foreach (var source in graph.Nodes.Where(n => n.Key != node.Key))
             {
-                foreach (var target in graph.Nodes.Where(n => n.Id != node.Id && n.Id != source.Id))
+                foreach (var target in graph.Nodes.Where(n => n.Key != node.Key && n.Key != source.Key))
                 {
-                    var path = graph.GetPath(source.Id, target.Id);
+                    var path = graph.GetPath(source.Key, target.Key);
                     if (path != null)
                     {
                         shortestPaths++;
-                        if (path.Any(n => n.Id == node.Id))
+                        if (path.Any(n => n.Key == node.Key))
                         {
                             pathsThroughNode++;
                         }
@@ -681,7 +681,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         var totalProbability = 0.0;
         foreach (var node in graph.Nodes)
         {
-            totalProbability += await _errorClassifier.CalculateErrorProbabilityAsync(node);
+            totalProbability += await _errorClassifier.CalculateErrorProbabilityAsync(node.Value);
         }
 
         return totalProbability / graph.Nodes.Count;
@@ -697,21 +697,21 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         {
             var errorContext = new ErrorContext(
                 _errorFactory.CreateError(
-                    type: node.NodeType,
+                    type: node.Value.NodeType,
                     message: "Node error analysis",
-                    source: node.Id,
+                    source: node.Key,
                     stackTrace: string.Empty
                 ),
                 environment: null,
                 timestamp: DateTime.UtcNow
             );
 
-            errorContext.ComponentId = node.Id;
-            errorContext.ErrorType = node.NodeType;
+            errorContext.ComponentId = node.Key;
+            errorContext.ErrorType = node.Value.NodeType;
             errorContext.ServiceName = graph.Metadata.TryGetValue("ServiceName", out var svc) ? svc?.ToString() : string.Empty;
             
-            errorContext.AddMetadata("NodeId", node.Id);
-            errorContext.AddMetadata("NodeType", node.NodeType);
+            errorContext.AddMetadata("NodeId", node.Key);
+            errorContext.AddMetadata("NodeType", node.Value.NodeType);
             var impactResults = await _impactAnalyzer.AnalyzeImpactAsync(errorContext, graph);
             var impact = impactResults?.FirstOrDefault();
             if (impact != null)
@@ -728,7 +728,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         if (graph.Nodes.Count == 0)
             return 0;
 
-        var errorNodes = graph.Nodes.Where(n => n.ErrorProbability > 0.5).ToList();
+        var errorNodes = graph.Nodes.Where(n => n.Value.ErrorProbability > 0.5).ToList();
         if (!errorNodes.Any())
             return 0;
 
@@ -737,19 +737,19 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         {
             var errorContext = new ErrorContext(
                 _errorFactory.CreateError(
-                    type: errorNode.NodeType,
+                    type: errorNode.Value.NodeType,
                     message: "Error spread analysis",
-                    source: errorNode.Id,
+                    source: errorNode.Key,
                     stackTrace: string.Empty
                 ),
                 environment: null,
                 timestamp: DateTime.UtcNow
             );
 
-            errorContext.ComponentId = errorNode.Id;
-            errorContext.AddMetadata("NodeId", errorNode.Id);
-            errorContext.AddMetadata("NodeType", errorNode.NodeType);
-            errorContext.AddMetadata("ErrorProbability", errorNode.ErrorProbability);
+            errorContext.ComponentId = errorNode.Key;
+            errorContext.AddMetadata("NodeId", errorNode.Key);
+            errorContext.AddMetadata("NodeType", errorNode.Value.NodeType);
+            errorContext.AddMetadata("ErrorProbability", errorNode.Value.ErrorProbability);
 
             var impactResults = await _impactAnalyzer.AnalyzeImpactAsync(errorContext, graph);
             var impact = impactResults?.FirstOrDefault();
@@ -770,7 +770,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         var totalHealth = 0.0;
         foreach (var node in graph.Nodes)
         {
-            var health = 1.0 - node.ErrorProbability;
+            var health = 1.0 - node.Value.ErrorProbability;
             if (health < 0.0) health = 0.0;
             if (health > 1.0) health = 1.0;
             totalHealth += health;

@@ -28,13 +28,21 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// <summary>
         /// Initializes a new instance of the <see cref="RemediationAction"/> class.
         /// </summary>
-        public RemediationAction(IValidationRuleProvider ruleProvider)
+        public RemediationAction()
         {
             _core = new RemediationActionCore();
             var defaultContext = new ValidationContext();
             _validation = new RemediationActionValidation(this, defaultContext);
             _execution = new RemediationActionExecution();
             _result = new RemediationActionResult();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemediationAction"/> class.
+        /// </summary>
+        public RemediationAction(IValidationRuleProvider ruleProvider) : this()
+        {
+            // Additional initialization with rule provider if needed
         }
 
         /// <summary>
@@ -45,6 +53,48 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
             get => _core.Id;
             set => _core.Id = value;
         }
+
+        /// <summary>
+        /// Gets or sets the action ID (alias for Id).
+        /// </summary>
+        public string ActionId
+        {
+            get => _core.Id;
+            set => _core.Id = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the stack trace information if available.
+        /// </summary>
+        public string StackTrace { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error context.
+        /// </summary>
+        public ErrorContext Context
+        {
+            get => _core.Context;
+            set => _core.Context = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the error context (alias for Context).
+        /// </summary>
+        public ErrorContext ErrorContext
+        {
+            get => _core.Context;
+            set => _core.Context = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the creation timestamp.
+        /// </summary>
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the strategy associated with this action.
+        /// </summary>
+        public IRemediationStrategy Strategy { get; set; }
 
         /// <summary>
         /// Gets or sets the action name.
@@ -74,13 +124,18 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets the error context.
+        /// Gets or sets the type of the action (alias for ActionType).
         /// </summary>
-        public ErrorContext Context
+        public string Type
         {
-            get => _core.Context;
-            set => _core.Context = value;
+            get => _core.ActionType;
+            set => _core.ActionType = value;
         }
+
+        /// <summary>
+        /// Gets or sets the severity of the action.
+        /// </summary>
+        public RemediationActionSeverity Severity { get; set; } = RemediationActionSeverity.None;
 
         /// <summary>
         /// Gets or sets the priority of the action.
@@ -264,7 +319,15 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// <returns>The estimated impact.</returns>
         public async Task<RemediationImpact> GetEstimatedImpactAsync()
         {
-            return new RemediationImpact();
+            return new RemediationImpact
+            {
+                Level = Impact,
+                Severity = Severity,
+                Scope = ImpactScope,
+                Description = Description,
+                Timestamp = DateTime.UtcNow,
+                CorrelationId = Id
+            };
         }
     }
 } 

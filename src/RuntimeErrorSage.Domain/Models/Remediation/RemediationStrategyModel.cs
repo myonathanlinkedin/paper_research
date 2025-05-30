@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Models.Common;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Domain.Models.Remediation
 {
@@ -15,6 +16,15 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// Gets or sets the unique identifier for this strategy.
         /// </summary>
         public string StrategyId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the unique identifier for this strategy (alias for StrategyId).
+        /// </summary>
+        public string Id
+        {
+            get => StrategyId;
+            set => StrategyId = value;
+        }
 
         /// <summary>
         /// Gets or sets the strategy name.
@@ -40,6 +50,11 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// Gets or sets the strategy priority (lower is higher priority).
         /// </summary>
         public int Priority { get; set; }
+
+        /// <summary>
+        /// Gets or sets the risk level of the strategy.
+        /// </summary>
+        public RiskLevel RiskLevel { get; set; } = RiskLevel.Medium;
 
         /// <summary>
         /// Gets or sets the error patterns this strategy can handle.
@@ -85,5 +100,20 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// Gets or sets the average execution time in seconds.
         /// </summary>
         public double AverageExecutionTimeSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the complexity of the strategy (0-1).
+        /// </summary>
+        public double? Complexity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system impact of the strategy (0-1).
+        /// </summary>
+        public double? SystemImpact { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the strategy can be rolled back.
+        /// </summary>
+        public bool IsRollbackable { get; set; }
     }
 } 

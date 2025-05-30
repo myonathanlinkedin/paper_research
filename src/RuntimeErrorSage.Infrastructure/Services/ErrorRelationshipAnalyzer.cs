@@ -31,42 +31,6 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelatedErrorModel>> FindRelatedErrorsAsync(ErrorContext context, DependencyGraph graph)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(graph);
-
-        try
-        {
-            _logger.LogInformation("Finding related errors for error {ErrorId}", context.ErrorId);
-
-            var relatedErrors = new List<RelatedErrorModel>();
-
-            // Find errors in the same component
-            var componentErrors = await FindErrorsInComponentAsync(context, graph);
-            relatedErrors.AddRange(componentErrors);
-
-            // Find errors in dependent components
-            var dependentErrors = await FindErrorsInDependentComponentsAsync(context, graph);
-            relatedErrors.AddRange(dependentErrors);
-
-            // Find errors with similar patterns
-            var similarErrors = await FindErrorsWithSimilarPatternsAsync(context, graph);
-            relatedErrors.AddRange(similarErrors);
-
-            // Remove duplicates and sort by relationship strength
-            return relatedErrors
-                .Distinct(new RelatedErrorComparer())
-                .OrderByDescending(e => e.ConfidenceLevel);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error finding related errors for error {ErrorId}", context.ErrorId);
-            throw;
-        }
-    }
-
-    /// <inheritdoc />
     public async Task<ErrorRelationship> AnalyzeRelationshipAsync(ErrorContext error1, ErrorContext error2)
     {
         ArgumentNullException.ThrowIfNull(error1);
@@ -386,6 +350,66 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         return errors;
     }
 
+    /// <summary>
+    /// Finds related errors for a given error context and dependency graph.
+    /// </summary>
+    /// <param name="context">The error context.</param>
+    /// <param name="graph">The dependency graph.</param>
+    /// <returns>The list of related errors.</returns>
+    public async Task<IEnumerable<RelatedErrorModel>> FindRelatedErrorsInGraphAsync(ErrorContext context, DependencyGraph graph)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(graph);
+
+        try
+        {
+            _logger.LogInformation("Finding related errors for error {ErrorId}", context.ErrorId);
+
+            var relatedErrors = new List<RelatedErrorModel>();
+
+            // Find errors in the same component
+            var componentErrors = await FindErrorsInComponentAsync(context, graph);
+            relatedErrors.AddRange(componentErrors);
+
+            // Find errors in dependent components
+            var dependentErrors = await FindErrorsInDependentComponentsAsync(context, graph);
+            relatedErrors.AddRange(dependentErrors);
+
+            // Find errors with similar patterns
+            var similarErrors = await FindErrorsWithSimilarPatternsAsync(context, graph);
+            relatedErrors.AddRange(similarErrors);
+
+            // Remove duplicates and sort by relationship strength
+            return relatedErrors
+                .Distinct(new RelatedErrorComparer())
+                .OrderByDescending(e => e.ConfidenceLevel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error finding related errors for error {ErrorId}", context.ErrorId);
+            throw;
+        }
+    }
+
+    public async Task<List<RelatedErrorModel>> FindRelatedErrorsAsync(ErrorContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        
+        try
+        {
+            _logger.LogInformation("Finding related errors for error {ErrorId} without graph data", context.ErrorId);
+            
+            // Use AnalyzeRelationshipsAsync as an alternative implementation without a graph
+            var relationships = await AnalyzeRelationshipsAsync(context);
+            return relationships.ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error finding related errors for error {ErrorId}", context.ErrorId);
+            return new List<RelatedErrorModel>();
+        }
+    }
+
     public bool IsEnabled => true;
     public string Name => "DefaultErrorRelationshipAnalyzer";
     public string Version => "1.0.0";
@@ -394,12 +418,6 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
     {
         // Dummy implementation for interface compliance
         return 0.5;
-    }
-
-    public async Task<List<RelatedErrorModel>> FindRelatedErrorsAsync(ErrorContext context)
-    {
-        // Dummy implementation for interface compliance
-        return new List<RelatedErrorModel>();
     }
 
     public async Task<List<RelatedErrorModel>> GetRelatedErrorsAsync(RuntimeError error)

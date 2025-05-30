@@ -13,7 +13,7 @@ using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
 
-namespace RuntimeErrorSage.Application.Remediation;
+namespace RuntimeErrorSage.Core.Remediation;
 
 /// <summary>
 /// Provides remediation strategies based on error context analysis.
@@ -91,26 +91,74 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
     }
 
     /// <inheritdoc/>
-    public async Task<IRemediationStrategy> GetStrategyAsync(string strategyName)
+    public async Task<List<IRemediationStrategy>> GetStrategiesAsync(ErrorContext context)
     {
-        ArgumentNullException.ThrowIfNull(strategyName);
+        return await GetApplicableStrategiesAsync(context);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IRemediationStrategy> GetStrategyByIdAsync(string strategyId)
+    {
+        ArgumentNullException.ThrowIfNull(strategyId);
 
         try
         {
-            var strategy = await _registry.GetStrategyAsync(strategyName);
+            var strategy = await _registry.GetStrategyAsync(strategyId);
             
-            _logger.LogDebug("Retrieved strategy '{StrategyName}'", strategyName);
+            _logger.LogDebug("Retrieved strategy with ID '{StrategyId}'", strategyId);
             
             return strategy;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving strategy {StrategyName}", strategyName);
+            _logger.LogError(ex, "Error retrieving strategy with ID {StrategyId}", strategyId);
             throw;
         }
     }
 
-    public async Task<RemediationPlan> CreateRemediationPlanAsync(ErrorContext context)
+    /// <inheritdoc/>
+    public async Task<List<IRemediationStrategy>> GetAllStrategiesAsync()
+    {
+        try
+        {
+            var strategies = await _registry.GetAllStrategiesAsync();
+            
+            _logger.LogDebug("Retrieved {Count} strategies", strategies.Count());
+            
+            return strategies.ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving all strategies");
+            return new List<IRemediationStrategy>();
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<IRemediationStrategy> GetBestStrategyAsync(ErrorContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        try
+        {
+            var strategies = await GetApplicableStrategiesAsync(context);
+            if (!strategies.Any())
+            {
+                return null;
+            }
+
+            // Return the highest priority strategy
+            return strategies.First();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting best strategy for error type {ErrorType}", context.ErrorType);
+            return null;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<RemediationPlan> CreatePlanAsync(ErrorContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -122,41 +170,29 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
                 return new RemediationPlan
                 {
                     PlanId = Guid.NewGuid().ToString(),
-                    Steps = new List<RemediationStep>(),
-                    Status = RemediationPlanStatus.NoStrategiesAvailable,
-                    Message = $"No applicable strategies found for error type '{context.ErrorType}'"
+                    Status = RemediationStatusEnum.Failed,
+                    StatusInfo = new Domain.Models.Common.RemediationStatusInfo
+                    {
+                        Status = RemediationStatusEnum.Failed,
+                        Message = $"No applicable strategies found for error type '{context.ErrorType}'",
+                        LastUpdated = DateTime.UtcNow
+                    }
                 };
             }
 
             var plan = new RemediationPlan
             {
                 PlanId = Guid.NewGuid().ToString(),
-                Steps = new List<RemediationStep>(),
-                Status = RemediationPlanStatus.Created,
-                Message = "Remediation plan created"
-            };
-
-            // Add steps for each strategy
-            for (int i = 0; i < strategies.Count; i++)
-            {
-                var strategy = strategies[i];
-                plan.Steps.Add(new RemediationStep
+                Context = context,
+                CreatedAt = DateTime.UtcNow,
+                Status = RemediationStatusEnum.Created,
+                StatusInfo = new Domain.Models.Common.RemediationStatusInfo
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    StrategyName = strategy.Name,
-                    Context = context,
-                    Parameters = strategy.Parameters,
-                    Order = i + 1
-                });
-            }
-
-            // Validate the plan
-            var validationResult = await _validator.ValidatePlanAsync(plan, context);
-            if (!validationResult.IsValid)
-            {
-                plan.Status = RemediationPlanStatus.Invalid;
-                plan.Message = validationResult.Messages.FirstOrDefault() ?? "Validation failed";
-            }
+                    Status = RemediationStatusEnum.Created,
+                    Message = "Remediation plan created",
+                    LastUpdated = DateTime.UtcNow
+                }
+            };
 
             return plan;
         }
@@ -166,9 +202,13 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             return new RemediationPlan
             {
                 PlanId = Guid.NewGuid().ToString(),
-                Steps = new List<RemediationStep>(),
-                Status = RemediationPlanStatus.Failed,
-                Message = $"Failed to create remediation plan: {ex.Message}"
+                Status = RemediationStatusEnum.Failed,
+                StatusInfo = new Domain.Models.Common.RemediationStatusInfo
+                {
+                    Status = RemediationStatusEnum.Failed,
+                    Message = $"Failed to create remediation plan: {ex.Message}",
+                    LastUpdated = DateTime.UtcNow
+                }
             };
         }
     }
@@ -184,23 +224,23 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             {
                 return new RemediationImpact
                 {
-                    Severity = SeverityLevel.Low.ToImpactSeverity(),
-                    Scope = ImpactScope.Component,
+                    Severity = SeverityLevel.Low.ToImpactSeverity().ToRemediationActionSeverity(),
+                    Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
                     AffectedComponents = new List<string> { context.ComponentId },
                     EstimatedRecoveryTime = TimeSpan.Zero,
                     RiskLevel = RiskLevel.Low,
-                    Confidence = ConfidenceLevel.Low
+                    Confidence = (double)ConfidenceLevel.Low
                 };
             }
 
             var impact = new RemediationImpact
             {
-                Severity = SeverityLevel.Low.ToImpactSeverity(),
-                Scope = ImpactScope.Component,
+                Severity = SeverityLevel.Low.ToImpactSeverity().ToRemediationActionSeverity(),
+                Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
                 AffectedComponents = new List<string> { context.ComponentId },
                 EstimatedRecoveryTime = TimeSpan.Zero,
                 RiskLevel = RiskLevel.Low,
-                Confidence = ConfidenceLevel.Low
+                Confidence = (double)ConfidenceLevel.Low
             };
 
             // Aggregate impact from all strategies
@@ -217,7 +257,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
                 impact.AffectedComponents = impact.AffectedComponents.Union(strategyImpact.AffectedComponents).ToList();
                 impact.EstimatedRecoveryTime += strategyImpact.EstimatedRecoveryTime;
                 impact.RiskLevel = (RiskLevel)Math.Max((int)impact.RiskLevel, (int)strategyImpact.RiskLevel);
-                impact.Confidence = Math.Max(impact.Confidence, strategyImpact.Confidence);
+                impact.Confidence = Math.Max(impact.Confidence, (double)strategyImpact.Confidence);
             }
 
             return impact;
@@ -227,12 +267,12 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             _logger.LogError(ex, "Error estimating impact for error type {ErrorType}", context.ErrorType);
             return new RemediationImpact
             {
-                Severity = SeverityLevel.Unknown.ToImpactSeverity(),
-                Scope = ImpactScope.Component,
+                Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
+                Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
                 AffectedComponents = new List<string> { context.ComponentId },
                 EstimatedRecoveryTime = TimeSpan.Zero,
                 RiskLevel = RiskLevel.Unknown,
-                Confidence = ConfidenceLevel.Low
+                Confidence = (double)ConfidenceLevel.Low
             };
         }
     }
@@ -241,8 +281,8 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
     {
         return new RemediationImpact
         {
-            Severity = SeverityLevel.Low.ToImpactSeverity(),
-            Scope = ImpactScope.Component,
+            Severity = SeverityLevel.Low.ToImpactSeverity().ToRemediationActionSeverity(),
+            Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
             AffectedComponents = new List<string>(),
             EstimatedRecoveryTime = TimeSpan.FromMinutes(5)
         };
@@ -252,8 +292,8 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
     {
         return new RemediationImpact
         {
-            Severity = SeverityLevel.Unknown.ToImpactSeverity(),
-            Scope = ImpactScope.Component,
+            Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
+            Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
             AffectedComponents = new List<string>(),
             EstimatedRecoveryTime = TimeSpan.Zero
         };
@@ -263,7 +303,7 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
     {
         var currentSeverity = impact.Severity.ToSeverityLevel();
         var strategySeverity = strategyImpact.Severity.ToSeverityLevel();
-        impact.Severity = (currentSeverity > strategySeverity ? currentSeverity : strategySeverity).ToImpactSeverity();
+        impact.Severity = (currentSeverity > strategySeverity ? currentSeverity : strategySeverity).ToImpactSeverity().ToRemediationActionSeverity();
     }
 
     public async Task<RemediationPlan> CreatePlanAsync(ErrorContext context, IRemediationStrategy strategy)

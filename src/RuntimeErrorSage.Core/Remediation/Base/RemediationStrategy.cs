@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace RuntimeErrorSage.Application.Remediation.Base;
+namespace RuntimeErrorSage.Core.Remediation.Base;
 
 /// <summary>
 /// Base class for remediation strategies.
@@ -47,6 +47,9 @@ public abstract class RemediationStrategy : IRemediationStrategy
     public RemediationPriority Priority { get; set; }
 
     /// <inheritdoc/>
+    public RiskLevel RiskLevel { get; set; } = RiskLevel.Medium;
+
+    /// <inheritdoc/>
     public abstract string Description { get; set; }
 
     /// <inheritdoc/>
@@ -63,6 +66,12 @@ public abstract class RemediationStrategy : IRemediationStrategy
 
     /// <inheritdoc/>
     public RemediationStatusEnum Status { get; protected set; }
+
+    /// <inheritdoc/>
+    public virtual string Version { get; } = "1.0.0";
+
+    /// <inheritdoc/>
+    public virtual bool IsEnabled { get; } = true;
 
     /// <inheritdoc/>
     public virtual async Task<RemediationResult> ExecuteAsync(ErrorContext context)
@@ -255,6 +264,26 @@ public abstract class RemediationStrategy : IRemediationStrategy
     {
         // Default implementation returns a medium priority
         return Task.FromResult(RemediationPriority.Medium);
+    }
+
+    /// <inheritdoc/>
+    public virtual Task<bool> CanHandleAsync(ErrorContext context)
+    {
+        return CanHandleErrorAsync(context);
+    }
+
+    /// <inheritdoc/>
+    public virtual Task<double> GetConfidenceAsync(ErrorContext context)
+    {
+        // Default implementation returns a medium confidence
+        return Task.FromResult(0.6);
+    }
+
+    /// <inheritdoc/>
+    public virtual Task<List<RemediationSuggestion>> GetSuggestionsAsync(ErrorContext context)
+    {
+        // Default implementation returns an empty list of suggestions
+        return Task.FromResult(new List<RemediationSuggestion>());
     }
 
     protected RemediationAction CreateAction(string name, string description, RemediationActionType type)

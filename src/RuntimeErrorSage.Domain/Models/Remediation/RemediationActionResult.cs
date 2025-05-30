@@ -65,6 +65,57 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         }
 
         /// <summary>
+        /// Constructor with success parameter.
+        /// </summary>
+        /// <param name="success">Whether the action was successful.</param>
+        public RemediationActionResult(bool success)
+        {
+            ActionId = string.Empty;
+            Name = string.Empty;
+            ErrorMessage = string.Empty;
+            _results = new Dictionary<string, ActionResult>();
+            _resultHandlers = new List<Action<ActionResult>>();
+            Success = success;
+            Message = success ? "Action completed successfully" : "Action failed";
+        }
+
+        /// <summary>
+        /// Sets the success status of this action result.
+        /// </summary>
+        /// <param name="success">Whether the action was successful.</param>
+        public void SetSuccess(bool success)
+        {
+            Success = success;
+            Message = success ? "Action completed successfully" : "Action failed";
+        }
+
+        /// <summary>
+        /// Creates a successful action result.
+        /// </summary>
+        /// <returns>A successful action result.</returns>
+        public static RemediationActionResult CreateSuccessResult()
+        {
+            return new RemediationActionResult(true)
+            {
+                Message = "Action completed successfully"
+            };
+        }
+
+        /// <summary>
+        /// Creates a failed action result with the specified error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>A failed action result.</returns>
+        public static RemediationActionResult Failure(string errorMessage)
+        {
+            return new RemediationActionResult(false)
+            {
+                ErrorMessage = errorMessage,
+                Message = $"Action failed: {errorMessage}"
+            };
+        }
+
+        /// <summary>
         /// Records a result for a remediation action.
         /// </summary>
         /// <param name="action">The action.</param>

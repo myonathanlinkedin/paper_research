@@ -29,6 +29,11 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         public double Weight { get; set; }
 
         /// <summary>
+        /// Gets or sets the edge value.
+        /// </summary>
+        public object Value { get; set; }
+
+        /// <summary>
         /// Gets or sets the edge metadata.
         /// </summary>
         public Dictionary<string, string> Metadata { get; set; } = new();

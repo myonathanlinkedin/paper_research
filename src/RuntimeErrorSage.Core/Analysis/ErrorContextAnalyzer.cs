@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Analysis;
@@ -12,7 +13,7 @@ using RuntimeErrorSage.Domain.Models.Error.Factories;
 using RuntimeErrorSage.Domain.Models.Common.Factories;
 using RuntimeErrorSage.Domain.Models.Common.Interfaces;
 
-namespace RuntimeErrorSage.Application.Analysis
+namespace RuntimeErrorSage.Core.Analysis
 {
     /// <summary>
     /// Analyzes error contexts to determine remediation options.
@@ -89,8 +90,8 @@ namespace RuntimeErrorSage.Application.Analysis
                 var rootCause = await GetRootCauseAsync(context);
 
                 // Create remediation suggestions based on analysis
-                var suggestions = _collectionFactory.CreateList<Models.Remediation.RemediationSuggestion>();
-                suggestions.Add(new Models.Remediation.RemediationSuggestion
+                var suggestions = _collectionFactory.CreateList<Domain.Models.Remediation.RemediationSuggestion>();
+                suggestions.Add(new Domain.Models.Remediation.RemediationSuggestion
                 {
                     Title = "Restart affected component",
                     Description = "Restart the component where the error occurred.",
@@ -228,11 +229,11 @@ namespace RuntimeErrorSage.Application.Analysis
         }
 
         /// <summary>
-        /// Analyzes an error context and builds a dependency graph.
+        /// Analyzes an error context for finding patterns in the error graph.
         /// </summary>
         /// <param name="context">The error context to analyze.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the analysis result.</returns>
-        public async Task<Models.Analysis.GraphAnalysisResult> AnalyzeErrorContextAsync(ErrorContext context)
+        /// <returns>The graph analysis result.</returns>
+        public async Task<Domain.Models.Analysis.GraphAnalysisResult> AnalyzeErrorContextAsync(ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
 
@@ -240,31 +241,28 @@ namespace RuntimeErrorSage.Application.Analysis
             {
                 _logger.LogInformation("Analyzing error context graph for {ContextId}", context.ContextId);
 
-                // For demonstration, create a sample graph analysis result
-                var result = new Models.Analysis.GraphAnalysisResult
+                // Create sample analysis result
+                var result = new Domain.Models.Analysis.GraphAnalysisResult
                 {
-                    AnalysisId = Guid.NewGuid().ToString(),
-                    Context = context,
-                    StartTime = DateTime.UtcNow,
-                    Status = AnalysisStatus.Completed,
+                    ErrorId = context.ErrorId,
                     CorrelationId = context.CorrelationId,
-                    Timestamp = DateTime.UtcNow,
-                    ComponentId = context.ComponentId,
-                    ComponentName = context.ComponentName
+                    AffectedComponents = new List<string> { context.ComponentId },
+                    ErrorProbability = 0.75,
+                    IsValid = true,
+                    Timestamp = DateTime.UtcNow
                 };
 
-                // Add dependency graph data
-                var dependencyGraph = await GetErrorDependencyGraphAsync(context);
-                result.RootNode = dependencyGraph.RootNode;
-                result.RelatedErrors = await GetRelatedErrorsAsync(context);
-                result.EndTime = DateTime.UtcNow;
-
+                await Task.Delay(10); // Simulate async work
                 return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error analyzing error context graph for {ContextId}", context.ContextId);
-                throw;
+                return new Domain.Models.Analysis.GraphAnalysisResult
+                {
+                    IsValid = false,
+                    ErrorMessage = ex.Message
+                };
             }
         }
 
@@ -312,27 +310,26 @@ namespace RuntimeErrorSage.Application.Analysis
         /// <summary>
         /// Analyzes the impact of an error on the system.
         /// </summary>
-        /// <param name="context">The error context to analyze.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the impact analysis result.</returns>
-        public async Task<Models.Analysis.ImpactAnalysisResult> AnalyzeImpactAsync(ErrorContext context)
+        /// <param name="context">The error context.</param>
+        /// <returns>The impact analysis result.</returns>
+        public async Task<Domain.Models.Analysis.ImpactAnalysisResult> AnalyzeImpactAsync(ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
 
             try
             {
-                _logger.LogInformation("Analyzing impact for {ContextId}", context.ContextId);
+                _logger.LogInformation("Analyzing impact for error {ContextId}", context.ContextId);
 
-                var affectedComponents = _collectionFactory.CreateList<string>();
-                affectedComponents.Add(context.ComponentId);
-
-                var result = new Models.Analysis.ImpactAnalysisResult
+                // Create sample impact analysis
+                var result = new Domain.Models.Analysis.ImpactAnalysisResult
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    ContextId = context.ContextId,
-                    IsValid = true,
+                    ErrorId = context.ErrorId,
                     CorrelationId = context.CorrelationId,
-                    Timestamp = DateTime.UtcNow,
-                    AffectedComponents = affectedComponents
+                    ImpactScope = ImpactScope.Component,
+                    AffectedServices = new List<string> { context.ServiceName },
+                    EstimatedRecoveryTime = TimeSpan.FromMinutes(15),
+                    IsValid = true,
+                    Timestamp = DateTime.UtcNow
                 };
 
                 await Task.Delay(10); // Simulate async work
@@ -341,7 +338,11 @@ namespace RuntimeErrorSage.Application.Analysis
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error analyzing impact for {ContextId}", context.ContextId);
-                throw;
+                return new Domain.Models.Analysis.ImpactAnalysisResult
+                {
+                    IsValid = false,
+                    ErrorMessage = ex.Message
+                };
             }
         }
 

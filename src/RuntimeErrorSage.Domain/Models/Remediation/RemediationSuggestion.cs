@@ -33,6 +33,20 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         public string StrategyName { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the strategy ID.
+        /// </summary>
+        public string StrategyId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the ID of the suggestion (alias for SuggestionId).
+        /// </summary>
+        public string Id
+        {
+            get => SuggestionId;
+            set => SuggestionId = value;
+        }
+
+        /// <summary>
         /// Gets or sets the priority of the suggestion.
         /// </summary>
         public RemediationPriority Priority { get; set; } = RemediationPriority.Medium;

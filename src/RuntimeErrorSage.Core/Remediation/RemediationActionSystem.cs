@@ -1,14 +1,32 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Application.Interfaces;
 
-namespace RuntimeErrorSage.Domain.Models.Remediation
+namespace RuntimeErrorSage.Core.Remediation
 {
     public class RemediationActionSystem
     {
+        private readonly ILogger<RemediationActionSystem> _logger;
+        private readonly IRemediationActionTracker _tracker;
+
+        public RemediationActionSystem(
+            ILogger<RemediationActionSystem> logger,
+            IRemediationActionTracker tracker)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _tracker = tracker ?? throw new ArgumentNullException(nameof(tracker));
+        }
+
         private RemediationActionSeverity CalculateImpactSeverity(RemediationSuggestion suggestion)
         {
             // Determine impact severity based on actions
-            var severities = suggestion.Actions?.Select(a => a.Severity) ?? Enumerable.Empty<RemediationActionSeverity>();
+            var severities = suggestion.Actions?.Select(a => a.Impact.ToRemediationActionSeverity()) ?? Enumerable.Empty<RemediationActionSeverity>();
             return severities.Any() ? severities.Max() : RemediationActionSeverity.Medium;
         }
 
@@ -77,9 +95,9 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
             }
 
             // Factor 3: Context complexity
-            if (suggestion.Context?.Count > 0)
+            if (suggestion.Parameters?.Count > 0)
             {
-                factors.Add(Math.Min(suggestion.Context.Count / 10.0, 1.0));
+                factors.Add(Math.Min(suggestion.Parameters.Count / 10.0, 1.0));
             }
 
             return factors.Any() ? factors.Average() : 0.5;
@@ -89,21 +107,33 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         {
             try
             {
-                var result = await action.ExecuteAsync(context);
+                _logger.LogInformation("Executing remediation action {ActionId} for context {ContextId}", 
+                    action.Id, context.Id);
+                    
+                var result = await action.ExecuteAsync();
                 if (result.Status == RemediationStatusEnum.Success)
                 {
-                    await _tracker.TrackActionCompletionAsync(action.ActionId, true);
+                    await _tracker.TrackActionCompletionAsync(action.Id, true);
                 }
                 else
                 {
-                    await _tracker.TrackActionCompletionAsync(action.ActionId, false, result.Error);
+                    await _tracker.TrackActionCompletionAsync(action.Id, false, result.Message);
                 }
                 return result;
             }
             catch (Exception ex)
             {
-                await _tracker.TrackActionCompletionAsync(action.ActionId, false, ex.Message);
-                return RemediationResult.CreateFailure(context, ex.Message);
+                _logger.LogError(ex, "Error executing action {ActionId} for context {ContextId}", 
+                    action.Id, context.Id);
+                    
+                await _tracker.TrackActionCompletionAsync(action.Id, false, ex.Message);
+                
+                return new RemediationResult 
+                { 
+                    Context = context,
+                    Status = RemediationStatusEnum.Failed,
+                    Message = ex.Message
+                };
             }
         }
     }

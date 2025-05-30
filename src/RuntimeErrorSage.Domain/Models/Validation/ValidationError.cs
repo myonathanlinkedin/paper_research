@@ -11,52 +11,73 @@ namespace RuntimeErrorSage.Domain.Models.Validation;
 /// </summary>
 public sealed class ValidationError
 {
-    private readonly Dictionary<string, object> _details;
+    private Dictionary<string, object> _details = new();
 
     /// <summary>
-    /// Gets the error message.
+    /// Gets or sets the error message.
     /// </summary>
-    public string Message { get; }
+    public string Message { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets the error code.
+    /// Gets or sets the error code.
     /// </summary>
-    public string Code { get; }
+    public string Code { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets the error severity.
+    /// Gets or sets the error severity.
     /// </summary>
-    public ValidationSeverity Severity { get; }
+    public ValidationSeverity Severity { get; set; }
 
     /// <summary>
-    /// Gets the error source.
+    /// Gets or sets the error source.
     /// </summary>
-    public string Source { get; }
+    public string Source { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets the error details.
+    /// Gets or sets the error details.
     /// </summary>
-    public IReadOnlyDictionary<string, object> Details => new ReadOnlyDictionary<string, object>(_details);
+    public Dictionary<string, object> Details 
+    { 
+        get => _details;
+        set => _details = value ?? new Dictionary<string, object>();
+    }
 
     /// <summary>
-    /// Gets the timestamp when the error was generated.
+    /// Gets the error details as read-only dictionary.
     /// </summary>
-    public DateTime Timestamp { get; }
+    public IReadOnlyDictionary<string, object> ReadOnlyDetails => new ReadOnlyDictionary<string, object>(_details);
 
     /// <summary>
-    /// Gets the exception that caused the error.
+    /// Gets or sets the timestamp when the error was generated.
     /// </summary>
-    public Exception Exception { get; }
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Gets the property that caused the error.
+    /// Gets or sets the exception that caused the error.
     /// </summary>
-    public string PropertyName { get; }
+    public Exception Exception { get; set; }
 
     /// <summary>
-    /// Gets the value that caused the error.
+    /// Gets or sets the property that caused the error.
     /// </summary>
-    public object PropertyValue { get; }
+    public string PropertyName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the value that caused the error.
+    /// </summary>
+    public object PropertyValue { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error ID.
+    /// </summary>
+    public string ErrorId { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValidationError"/> class.
+    /// </summary>
+    public ValidationError()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ValidationError"/> class.
@@ -94,6 +115,23 @@ public sealed class ValidationError
         PropertyValue = propertyValue;
         Timestamp = DateTime.UtcNow;
         _details = details ?? new Dictionary<string, object>();
+        ErrorId = Guid.NewGuid().ToString();
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValidationError"/> class with simplified parameters.
+    /// </summary>
+    /// <param name="message">The error message.</param>
+    /// <param name="severity">The error severity.</param>
+    public ValidationError(string message, ValidationSeverity severity = ValidationSeverity.Error)
+        : this("E" + Guid.NewGuid().ToString().Substring(0, 8), 
+              message, 
+              severity, 
+              "System", 
+              null, 
+              "Unknown", 
+              null)
+    {
     }
 
     /// <summary>
