@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents the result of an action execution.
@@ -36,5 +36,20 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Gets or sets the error that occurred during execution, if any.
         /// </summary>
         public Exception Error { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration of the execution.
+        /// </summary>
+        public TimeSpan? Duration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message if execution failed.
+        /// </summary>
+        public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the stack trace if execution failed.
+        /// </summary>
+        public string StackTrace { get; set; }
     }
 } 

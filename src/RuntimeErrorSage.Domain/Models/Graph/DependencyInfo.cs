@@ -1,6 +1,6 @@
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Graph;
+namespace RuntimeErrorSage.Domain.Models.Graph;
 
 /// <summary>
 /// Represents dependency information.

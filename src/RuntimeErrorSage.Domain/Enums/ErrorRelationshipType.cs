@@ -6,6 +6,11 @@ namespace RuntimeErrorSage.Domain.Enums
     public enum ErrorRelationshipType
     {
         /// <summary>
+        /// No relationship exists.
+        /// </summary>
+        None = -1,
+
+        /// <summary>
         /// The relationship type is unknown.
         /// </summary>
         Unknown = 0,
@@ -43,6 +48,36 @@ namespace RuntimeErrorSage.Domain.Enums
         /// <summary>
         /// One error is a child of another.
         /// </summary>
-        ChildOf = 7
+        ChildOf = 7,
+
+        /// <summary>
+        /// Errors are siblings (share the same parent).
+        /// </summary>
+        Sibling = 8,
+
+        /// <summary>
+        /// One error has a dependency relationship with another.
+        /// </summary>
+        Dependency = 9,
+
+        /// <summary>
+        /// Errors are correlated (occur together).
+        /// </summary>
+        Correlation = 10,
+
+        /// <summary>
+        /// Errors are related in time.
+        /// </summary>
+        Temporal = 11,
+
+        /// <summary>
+        /// Errors are related in location.
+        /// </summary>
+        Spatial = 12,
+
+        /// <summary>
+        /// Errors are logically related.
+        /// </summary>
+        Logical = 13
     }
 } 

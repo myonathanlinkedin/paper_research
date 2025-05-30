@@ -1,8 +1,9 @@
+using System;
+using System.Threading.Tasks;
+using RuntimeErrorSage.Domain.Models.Error;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Application.Models.Error;
 using RuntimeErrorSage.Application.Runtime.Interfaces;
-using RuntimeErrorSage.Core.Models.Error;
 using RuntimeErrorSage.Core.Runtime.Interfaces;
 
 namespace RuntimeErrorSage.Middleware
@@ -38,20 +39,22 @@ namespace RuntimeErrorSage.Middleware
             }
             catch (Exception ex)
             {
-                var errorContext = new ErrorContext
-                {
-                    ErrorType = ex.GetType().Name,
-                    ErrorMessage = ex.Message,
-                    Source = "Middleware",
-                    Timestamp = DateTime.UtcNow,
-                    AdditionalContext = new Dictionary<string, object>
-                    {
-                        { "RequestPath", context.Request.Path },
-                        { "RequestMethod", context.Request.Method },
-                        { "StatusCode", context.Response.StatusCode },
-                        { "StackTrace", ex.StackTrace ?? string.Empty }
-                    }
-                };
+                var error = new RuntimeError(
+                    message: ex.Message,
+                    errorType: ex.GetType().Name,
+                    source: "Middleware",
+                    stackTrace: ex.StackTrace ?? string.Empty
+                );
+
+                var errorContext = new ErrorContext(
+                    error: error,
+                    context: "Middleware",
+                    timestamp: DateTime.UtcNow
+                );
+
+                errorContext.AddMetadata("RequestPath", context.Request.Path);
+                errorContext.AddMetadata("RequestMethod", context.Request.Method);
+                errorContext.AddMetadata("StatusCode", context.Response.StatusCode);
 
                 try
                 {

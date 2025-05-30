@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Classifier.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
-using RuntimeErrorSage.Application.Models.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Interfaces;
 
 namespace RuntimeErrorSage.Application.Classifier;
 

@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents the status of an action execution.

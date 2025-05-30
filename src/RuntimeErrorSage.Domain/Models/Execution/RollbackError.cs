@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Execution
+namespace RuntimeErrorSage.Domain.Models.Execution
 {
     /// <summary>
     /// Represents an error that occurred during a rollback operation.

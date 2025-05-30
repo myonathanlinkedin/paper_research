@@ -1,6 +1,6 @@
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Health;
+namespace RuntimeErrorSage.Domain.Models.Health;
 
 /// <summary>
 /// Represents a health issue in the system.

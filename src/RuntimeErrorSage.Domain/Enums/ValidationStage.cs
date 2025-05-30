@@ -1,24 +1,24 @@
 namespace RuntimeErrorSage.Domain.Enums
 {
     /// <summary>
-    /// Defines the stages of validation operations.
+    /// Defines the stages of validation processing.
     /// </summary>
     public enum ValidationStage
     {
         /// <summary>
-        /// Unknown validation stage.
+        /// No validation stage specified.
         /// </summary>
-        Unknown = 0,
+        None = 0,
 
         /// <summary>
-        /// Initial validation stage.
+        /// Pre-validation stage.
         /// </summary>
-        Initial = 1,
+        PreValidation = 1,
 
         /// <summary>
-        /// Pre-processing validation stage.
+        /// Input validation stage.
         /// </summary>
-        PreProcessing = 2,
+        Input = 2,
 
         /// <summary>
         /// Processing validation stage.
@@ -26,38 +26,33 @@ namespace RuntimeErrorSage.Domain.Enums
         Processing = 3,
 
         /// <summary>
-        /// Post-processing validation stage.
+        /// Output validation stage.
         /// </summary>
-        PostProcessing = 4,
+        Output = 4,
 
         /// <summary>
-        /// Final validation stage.
+        /// Post-validation stage.
         /// </summary>
-        Final = 5,
+        PostValidation = 5,
 
         /// <summary>
-        /// Pre-execution stage.
+        /// Error handling stage.
         /// </summary>
-        PreExecution = 6,
+        ErrorHandling = 6,
 
         /// <summary>
-        /// Execution stage.
+        /// Recovery stage.
         /// </summary>
-        Execution = 7,
+        Recovery = 7,
 
         /// <summary>
-        /// Post-execution stage.
+        /// Cleanup stage.
         /// </summary>
-        PostExecution = 8,
+        Cleanup = 8,
 
         /// <summary>
-        /// Initialization stage.
+        /// Final stage.
         /// </summary>
-        Initialization = 9,
-
-        /// <summary>
-        /// Finalization stage.
-        /// </summary>
-        Finalization = 10
+        Final = 9
     }
 } 

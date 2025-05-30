@@ -1,14 +1,14 @@
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
-/// Defines the risk level of a remediation action.
+/// Defines the risk level for a remediation action.
 /// </summary>
 public enum RemediationRiskLevel
 {
     /// <summary>
-    /// Unknown risk level.
+    /// No risk.
     /// </summary>
-    Unknown = 0,
+    None = 0,
 
     /// <summary>
     /// Low risk level.

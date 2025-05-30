@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Utilities;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Core.Storage.Utilities;
 
-namespace RuntimeErrorSage.Application.Models.Remediation;
+namespace RuntimeErrorSage.Core.Remediation;
 
 /// <summary>
 /// Provides risk assessment functionality for remediation actions.

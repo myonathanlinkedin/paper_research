@@ -2,287 +2,121 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Execution;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Execution;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Metrics;
 
-namespace RuntimeErrorSage.Application.Models.Metrics
+
+// TODO: Remove this stub and use the correct MetricsResult type when available
+public class MetricsResult {
+    public bool IsSuccess { get; set; }
+    public string Error { get; set; }
+    public DateTime Timestamp { get; set; }
+    public Dictionary<string, object> Metrics { get; set; }
+}
+
+namespace RuntimeErrorSage.Domain.Models.Metrics
 {
     /// <summary>
-    /// Represents execution metrics for error analysis and remediation.
+    /// Represents metrics collected during the execution of a remediation action.
     /// </summary>
     public class ExecutionMetrics
     {
         /// <summary>
-        /// Gets or sets the total number of executions.
+        /// Gets or sets the unique identifier for these metrics.
         /// </summary>
-        public int TotalExecutions { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the number of successful executions.
+        /// Gets or sets the ID of the action these metrics are associated with.
         /// </summary>
-        public int SuccessfulExecutions { get; set; }
+        public string ActionId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the number of failed executions.
+        /// Gets or sets the start time of the execution.
         /// </summary>
-        public int FailedExecutions { get; set; }
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the average execution time in milliseconds.
+        /// Gets or sets the end time of the execution.
         /// </summary>
-        public double AverageExecutionTimeMs { get; set; }
+        public DateTime? EndTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the execution history by strategy.
+        /// Gets or sets the duration of the execution.
         /// </summary>
-        public Dictionary<string, List<RemediationExecution>> ExecutionHistory { get; set; } = new();
+        public TimeSpan Duration => EndTime.HasValue ? EndTime.Value - StartTime : TimeSpan.Zero;
 
         /// <summary>
-        /// Gets or sets the success rate of executions (0-1).
+        /// Gets or sets whether the execution was successful.
         /// </summary>
-        public double SuccessRate => TotalExecutions > 0 ? (double)SuccessfulExecutions / TotalExecutions : 0;
+        public bool IsSuccess { get; set; }
 
         /// <summary>
-        /// Gets or sets the failure rate of executions (0-1).
+        /// Gets or sets the error message if the execution failed.
         /// </summary>
-        public double FailureRate => TotalExecutions > 0 ? (double)FailedExecutions / TotalExecutions : 0;
+        public string? ErrorMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the average resource usage during executions.
+        /// Gets or sets the number of steps executed.
         /// </summary>
-        public MetricsResourceUsage AverageResourceUsage { get; set; } = new();
+        public int StepsExecuted { get; set; }
 
         /// <summary>
-        /// Gets or sets the peak resource usage during executions.
+        /// Gets or sets the number of steps failed.
         /// </summary>
-        public MetricsResourceUsage PeakResourceUsage { get; set; } = new();
+        public int StepsFailed { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of timeouts encountered.
+        /// Gets or sets the memory usage in bytes.
         /// </summary>
-        public int TimeoutCount { get; set; }
+        public long MemoryUsageBytes { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of validation failures.
+        /// Gets or sets the CPU time used in milliseconds.
         /// </summary>
-        public int ValidationFailureCount { get; set; }
+        public long CpuTimeMs { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of retries attempted.
+        /// Gets or sets the number of database operations performed.
         /// </summary>
-        public int RetryCount { get; set; }
+        public int DatabaseOperations { get; set; }
 
         /// <summary>
-        /// Gets or sets the average number of retries per execution.
+        /// Gets or sets the number of network calls made.
         /// </summary>
-        public double AverageRetriesPerExecution => TotalExecutions > 0 ? (double)RetryCount / TotalExecutions : 0;
+        public int NetworkCalls { get; set; }
 
         /// <summary>
-        /// Gets or sets the distribution of execution statuses.
+        /// Gets or sets additional execution data.
         /// </summary>
-        public Dictionary<RemediationExecutionStatus, int> StatusDistribution { get; set; } = new();
+        public Dictionary<string, object> Data { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the distribution of error types.
+        /// Marks the execution as completed.
         /// </summary>
-        public Dictionary<string, int> ErrorTypeDistribution { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the distribution of execution durations.
-        /// </summary>
-        public Dictionary<TimeSpan, int> DurationDistribution { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets any additional metrics.
-        /// </summary>
-        public Dictionary<string, object> AdditionalMetrics { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the timestamp of the metrics.
-        /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets the CPU usage.
-        /// </summary>
-        public double CpuUsage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the memory usage.
-        /// </summary>
-        public double MemoryUsage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the latency.
-        /// </summary>
-        public double Latency { get; set; }
-
-        /// <summary>
-        /// Gets or sets custom metrics.
-        /// </summary>
-        public Dictionary<string, double> CustomMetrics { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets step metrics.
-        /// </summary>
-        public List<StepMetrics> StepMetrics { get; set; } = new();
-
-        public ExecutionMetrics()
+        /// <param name="success">Whether the execution was successful.</param>
+        /// <param name="errorMessage">The error message if the execution failed.</param>
+        public void Complete(bool success, string? errorMessage = null)
         {
-            ExecutionHistory = new Dictionary<string, List<RemediationExecution>>();
-            StatusDistribution = new Dictionary<RemediationExecutionStatus, int>();
-            ErrorTypeDistribution = new Dictionary<string, int>();
-            DurationDistribution = new Dictionary<TimeSpan, int>();
-            AdditionalMetrics = new Dictionary<string, object>();
-            CustomMetrics = new Dictionary<string, double>();
-            StepMetrics = new List<StepMetrics>();
-            Timestamp = DateTime.UtcNow;
-            CpuUsage = 0.0;
-            MemoryUsage = 0.0;
-            Latency = 0.0;
-            TotalExecutions = 0;
-            SuccessfulExecutions = 0;
-            FailedExecutions = 0;
-            AverageExecutionTimeMs = 0.0;
-            TimeoutCount = 0;
-            ValidationFailureCount = 0;
-            RetryCount = 0;
-            AverageResourceUsage = new MetricsResourceUsage();
-            PeakResourceUsage = new MetricsResourceUsage();
+            EndTime = DateTime.UtcNow;
+            IsSuccess = success;
+            ErrorMessage = errorMessage;
         }
 
         /// <summary>
-        /// Updates the metrics with a new execution result.
+        /// Adds a data point to the metrics.
         /// </summary>
-        /// <param name="execution">The remediation execution to record.</param>
-        public void UpdateMetrics(RemediationExecution execution)
+        /// <param name="key">The data point key.</param>
+        /// <param name="value">The data point value.</param>
+        public void AddData(string key, object value)
         {
-            TotalExecutions++;
-            if (execution.IsSuccessful)
-                SuccessfulExecutions++;
-            else
-                FailedExecutions++;
-
-            // Update execution history
-            var strategyName = execution.StrategyName ?? "Unknown";
-            if (!ExecutionHistory.ContainsKey(strategyName))
-                ExecutionHistory[strategyName] = new List<RemediationExecution>();
-            ExecutionHistory[strategyName].Add(execution);
-
-            // Update status distribution
-            if (!StatusDistribution.ContainsKey(execution.Status))
-                StatusDistribution[execution.Status] = 0;
-            StatusDistribution[execution.Status]++;
-
-            // Update error type distribution if there's an error
-            if (!string.IsNullOrEmpty(execution.Error))
+            if (string.IsNullOrEmpty(key))
             {
-                var errorType = execution.Error.Split(':')[0].Trim();
-                if (!ErrorTypeDistribution.ContainsKey(errorType))
-                    ErrorTypeDistribution[errorType] = 0;
-                ErrorTypeDistribution[errorType]++;
+                throw new ArgumentException("Key cannot be null or empty", nameof(key));
             }
 
-            // Update duration distribution
-            if (execution.DurationSeconds.HasValue)
-            {
-                var duration = TimeSpan.FromSeconds(execution.DurationSeconds.Value);
-                var roundedDuration = TimeSpan.FromSeconds(Math.Round(duration.TotalSeconds / 5) * 5); // Round to nearest 5 seconds
-                if (!DurationDistribution.ContainsKey(roundedDuration))
-                    DurationDistribution[roundedDuration] = 0;
-                DurationDistribution[roundedDuration]++;
-
-                // Update average execution time
-                AverageExecutionTimeMs = ((AverageExecutionTimeMs * (TotalExecutions - 1)) + duration.TotalMilliseconds) / TotalExecutions;
-            }
-
-            // Update resource usage
-            if (execution.Metrics != null)
-            {
-                UpdateResourceUsage(execution.Metrics);
-            }
-
-            // Update other metrics
-            if (execution.Status == RemediationExecutionStatus.Timeout)
-                TimeoutCount++;
-
-            if (execution.Status == RemediationExecutionStatus.ValidationFailed)
-                ValidationFailureCount++;
-
-            RetryCount += execution.Metrics?.RetryCount ?? 0;
-        }
-
-        private void UpdateResourceUsage(RemediationMetrics metrics)
-        {
-            // Update average resource usage
-            if (TotalExecutions == 1)
-            {
-                AverageResourceUsage = metrics.EndResourceUsage;
-                PeakResourceUsage = metrics.EndResourceUsage;
-            }
-            else
-            {
-                // Update averages
-                AverageResourceUsage.CpuUsage = (AverageResourceUsage.CpuUsage * (TotalExecutions - 1) + metrics.EndResourceUsage.CpuUsage) / TotalExecutions;
-                AverageResourceUsage.MemoryUsage = (AverageResourceUsage.MemoryUsage * (TotalExecutions - 1) + metrics.EndResourceUsage.MemoryUsage) / TotalExecutions;
-                AverageResourceUsage.DiskUsage = (AverageResourceUsage.DiskUsage * (TotalExecutions - 1) + metrics.EndResourceUsage.DiskUsage) / TotalExecutions;
-                AverageResourceUsage.NetworkUsage = (AverageResourceUsage.NetworkUsage * (TotalExecutions - 1) + metrics.EndResourceUsage.NetworkUsage) / TotalExecutions;
-
-                // Update peaks
-                PeakResourceUsage.CpuUsage = Math.Max(PeakResourceUsage.CpuUsage, metrics.EndResourceUsage.CpuUsage);
-                PeakResourceUsage.MemoryUsage = Math.Max(PeakResourceUsage.MemoryUsage, metrics.EndResourceUsage.MemoryUsage);
-                PeakResourceUsage.DiskUsage = Math.Max(PeakResourceUsage.DiskUsage, metrics.EndResourceUsage.DiskUsage);
-                PeakResourceUsage.NetworkUsage = Math.Max(PeakResourceUsage.NetworkUsage, metrics.EndResourceUsage.NetworkUsage);
-            }
-        }
-
-        /// <summary>
-        /// Adds a custom metric.
-        /// </summary>
-        /// <param name="name">The name of the metric.</param>
-        /// <param name="value">The value of the metric.</param>
-        public void AddCustomMetric(string name, double value)
-        {
-            CustomMetrics[name] = value;
-        }
-
-        /// <summary>
-        /// Adds step metrics.
-        /// </summary>
-        /// <param name="metrics">The step metrics to add.</param>
-        public void AddStepMetrics(StepMetrics metrics)
-        {
-            StepMetrics.Add(metrics);
-        }
-
-        /// <summary>
-        /// Gets the average latency.
-        /// </summary>
-        /// <returns>The average latency.</returns>
-        public double GetAverageLatency()
-        {
-            if (StepMetrics.Count == 0) return 0;
-            return StepMetrics.Average(m => m.Latency);
-        }
-
-        /// <summary>
-        /// Gets the maximum memory usage.
-        /// </summary>
-        /// <returns>The maximum memory usage.</returns>
-        public double GetMaxMemoryUsage()
-        {
-            if (StepMetrics.Count == 0) return MemoryUsage;
-            return Math.Max(MemoryUsage, StepMetrics.Max(m => m.MemoryUsage));
-        }
-
-        /// <summary>
-        /// Gets the maximum CPU usage.
-        /// </summary>
-        /// <returns>The maximum CPU usage.</returns>
-        public double GetMaxCpuUsage()
-        {
-            if (StepMetrics.Count == 0) return CpuUsage;
-            return Math.Max(CpuUsage, StepMetrics.Max(m => m.CpuUsage));
+            Data[key] = value;
         }
     }
 } 

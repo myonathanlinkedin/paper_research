@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Graph;
 
 namespace RuntimeErrorSage.Application.Services.Graph
 {

@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.LLM.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 

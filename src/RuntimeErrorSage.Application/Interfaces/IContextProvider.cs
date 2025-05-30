@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Context;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Context;
 
 namespace RuntimeErrorSage.Application.Context.Interfaces
 {

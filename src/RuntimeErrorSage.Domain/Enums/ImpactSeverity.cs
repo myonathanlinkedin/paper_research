@@ -1,7 +1,7 @@
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
-/// Defines the severity level of an impact.
+/// Represents the severity level of an impact.
 /// </summary>
 public enum ImpactSeverity
 {
@@ -9,39 +9,54 @@ public enum ImpactSeverity
     /// Unknown severity level.
     /// </summary>
     Unknown = 0,
-    
-    /// <summary>
-    /// Negligible impact.
-    /// </summary>
-    Negligible = 1,
-    
-    /// <summary>
-    /// Minor impact.
-    /// </summary>
-    Minor = 2,
-    
-    /// <summary>
-    /// Moderate impact.
-    /// </summary>
-    Moderate = 3,
-    
-    /// <summary>
-    /// Major impact.
-    /// </summary>
-    Major = 4,
-    
-    /// <summary>
-    /// Critical impact.
-    /// </summary>
-    Critical = 5,
-    
-    /// <summary>
-    /// Catastrophic impact.
-    /// </summary>
-    Catastrophic = 6,
 
     /// <summary>
-    /// Low impact.
+    /// No severity level specified.
     /// </summary>
-    Low = 7
+    None = 1,
+
+    /// <summary>
+    /// Informational severity level. No impact on functionality.
+    /// </summary>
+    Info = 2,
+
+    /// <summary>
+    /// Success level - operation passed.
+    /// </summary>
+    Success = 3,
+
+    /// <summary>
+    /// Low severity level. Minor issues or warnings.
+    /// </summary>
+    Low = 4,
+
+    /// <summary>
+    /// Warning level - potential issues found.
+    /// </summary>
+    Warning = 5,
+
+    /// <summary>
+    /// Medium severity level. Functionality is impaired but not blocked.
+    /// </summary>
+    Medium = 6,
+
+    /// <summary>
+    /// Error level - issues found that must be fixed.
+    /// </summary>
+    Error = 7,
+
+    /// <summary>
+    /// High severity level. Major functionality is affected.
+    /// </summary>
+    High = 8,
+
+    /// <summary>
+    /// Critical severity level. System is unusable or data is at risk.
+    /// </summary>
+    Critical = 9,
+
+    /// <summary>
+    /// Fatal severity level. Unrecoverable issues found.
+    /// </summary>
+    Fatal = 10
 } 

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
@@ -15,7 +15,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
     /// <summary>
     /// Strategy for alerting about errors.
     /// </summary>
-    public class AlertStrategy : Models.Remediation.Interfaces.IRemediationStrategy
+    public class AlertStrategy : IRemediationStrategy
     {
         private readonly ILogger<AlertStrategy> _logger;
         private readonly ILLMClient _llmClient;
@@ -169,9 +169,9 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
             };
         }
 
-        public async Task<RiskAssessment> GetRiskAsync(ErrorContext context)
+        public async Task<RiskAssessmentModel> GetRiskAsync(ErrorContext context)
         {
-            return new RiskAssessment
+            return new RiskAssessmentModel
             {
                 RiskLevel = RemediationRiskLevel.Low,
                 Description = "Low risk - alert notification only",

@@ -1,7 +1,8 @@
 using System;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Error.Factories
+namespace RuntimeErrorSage.Domain.Models.Error.Factories
 {
     /// <summary>
     /// Factory for creating RelatedError instances.
@@ -31,11 +32,21 @@ namespace RuntimeErrorSage.Application.Models.Error.Factories
         {
             return new RelatedError
             {
-                Error = _runtimeErrorFactory.Create(errorMessage, errorType),
+                ErrorId = _runtimeErrorFactory.Create(errorMessage, errorType).Id,
                 CorrelationId = correlationId,
-                RelationshipType = relationshipType,
+                RelationshipType = Enum.Parse<ErrorRelationshipType>(relationshipType),
                 Timestamp = DateTime.UtcNow
             };
+        }
+
+        public RelatedError CreateRelatedError(RuntimeError error, string relationshipType)
+        {
+            var relatedError = new RelatedError
+            {
+                ErrorId = error.Id,
+                RelationshipType = Enum.Parse<ErrorRelationshipType>(relationshipType)
+            };
+            return relatedError;
         }
     }
 } 

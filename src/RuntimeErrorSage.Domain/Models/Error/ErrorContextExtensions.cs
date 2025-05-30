@@ -1,7 +1,7 @@
 using System;
-using RuntimeErrorSage.Application.Models.Context;
+using RuntimeErrorSage.Domain.Models.Context;
 
-namespace RuntimeErrorSage.Application.Models.Error;
+namespace RuntimeErrorSage.Domain.Models.Error;
 
 /// <summary>
 /// Extension methods for ErrorContext
@@ -18,14 +18,22 @@ public static class ErrorContextExtensions
         if (errorContext == null)
             throw new ArgumentNullException(nameof(errorContext));
 
-        return new RuntimeContext
+        var context = new RuntimeContext
         {
-            ContextId = errorContext.Id,
-            ApplicationName = errorContext.ComponentName,
-            Environment = errorContext.ServiceName,
-            CorrelationId = errorContext.CorrelationId,
-            Timestamp = errorContext.Timestamp,
-            Metadata = errorContext.Metadata.ToDictionary(kv => kv.Key, kv => kv.Value)
+            Id = errorContext.ContextId,
+            ComponentId = errorContext.ComponentId,
+            ComponentName = errorContext.ComponentName,
+            ErrorMessage = errorContext.Message,
+            StackTrace = errorContext.StackTrace,
+            CorrelationId = errorContext.CorrelationId
         };
+
+        // Add additional metadata from error context
+        foreach (var item in errorContext.Metadata)
+        {
+            context.Metadata[item.Key] = item.Value;
+        }
+
+        return context;
     }
 } 

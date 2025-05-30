@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Concurrent;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Application.Remediation
 {

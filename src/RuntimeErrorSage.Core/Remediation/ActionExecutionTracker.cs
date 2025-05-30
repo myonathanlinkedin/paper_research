@@ -1,22 +1,23 @@
 using System;
 using System.Collections.Concurrent;
-using RuntimeErrorSage.Application.Models.Execution;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Domain.Models.Execution;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Application.Remediation
 {
     public class ActionExecutionTracker
     {
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, RemediationActionExecution>> _actionExecutions = new();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, Domain.Models.Execution.RemediationActionExecution>> _actionExecutions = new();
 
         public void TrackActionStart(string planId, string actionId)
         {
-            var actionExecutions = _actionExecutions.GetOrAdd(planId, _ => new ConcurrentDictionary<string, RemediationActionExecution>());
-            var actionExecution = new RemediationActionExecution
+            var actionExecutions = _actionExecutions.GetOrAdd(planId, _ => new ConcurrentDictionary<string, Domain.Models.Execution.RemediationActionExecution>());
+            var actionExecution = new Domain.Models.Execution.RemediationActionExecution
             {
                 ActionId = actionId,
                 StartTime = DateTime.UtcNow,
-                Status = RemediationActionStatus.InProgress
+                Status = RemediationActionStatus.InProgress.ToString()
             };
             actionExecutions.AddOrUpdate(actionId, actionExecution, (_, _) => actionExecution);
         }
@@ -27,7 +28,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 actionExecutions.TryGetValue(actionId, out var actionExecution))
             {
                 actionExecution.EndTime = DateTime.UtcNow;
-                actionExecution.Status = success ? RemediationActionStatus.Completed : RemediationActionStatus.Failed;
+                actionExecution.Status = success ? RemediationActionStatus.Completed.ToString() : RemediationActionStatus.Failed.ToString();
                 if (errorMessage != null)
                 {
                     actionExecution.ErrorMessage = errorMessage;

@@ -6,33 +6,53 @@ namespace RuntimeErrorSage.Domain.Enums
     public enum ValidationScope
     {
         /// <summary>
-        /// Unknown validation scope.
+        /// No scope specified.
         /// </summary>
-        Unknown = 0,
+        None = 0,
 
         /// <summary>
-        /// Local validation scope.
+        /// Validation applies to a single property.
         /// </summary>
-        Local = 1,
+        Property = 1,
 
         /// <summary>
-        /// Global validation scope.
+        /// Validation applies to a single object.
         /// </summary>
-        Global = 2,
+        Object = 2,
 
         /// <summary>
-        /// Component validation scope.
+        /// Validation applies to a collection of objects.
         /// </summary>
-        Component = 3,
+        Collection = 3,
 
         /// <summary>
-        /// System validation scope.
+        /// Validation applies to a component.
         /// </summary>
-        System = 4,
+        Component = 4,
 
         /// <summary>
-        /// Environment validation scope.
+        /// Validation applies to a module.
         /// </summary>
-        Environment = 5
+        Module = 5,
+
+        /// <summary>
+        /// Validation applies to a service.
+        /// </summary>
+        Service = 6,
+
+        /// <summary>
+        /// Validation applies to the entire system.
+        /// </summary>
+        System = 7,
+
+        /// <summary>
+        /// Validation applies to external dependencies.
+        /// </summary>
+        External = 8,
+
+        /// <summary>
+        /// Validation applies to the global scope.
+        /// </summary>
+        Global = 9
     }
 } 

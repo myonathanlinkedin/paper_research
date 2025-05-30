@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Xunit;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Application.Services;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
@@ -145,7 +145,16 @@ namespace RuntimeErrorSage.Tests.TestSuite
 
             var RuntimeErrorSageResult = await _RuntimeErrorSageService.ProcessExceptionAsync(
                 await scenario.ExecuteAsync(),
-                new ErrorContext { ErrorType = scenario.ErrorType });
+                new ErrorContext(
+                    error: new RuntimeError(
+                        message: scenario.ErrorMessage,
+                        errorType: scenario.ErrorType,
+                        source: scenario.Id,
+                        stackTrace: string.Empty
+                    ),
+                    context: scenario.Id,
+                    timestamp: DateTime.UtcNow
+                ));
 
             return new ComparisonScenario
             {
@@ -181,7 +190,16 @@ namespace RuntimeErrorSage.Tests.TestSuite
 
             var RuntimeErrorSageResult = await _RuntimeErrorSageService.ProcessExceptionAsync(
                 await scenario.ExecuteAsync(),
-                new ErrorContext { ErrorType = scenario.ErrorType });
+                new ErrorContext(
+                    error: new RuntimeError(
+                        message: scenario.ErrorMessage,
+                        errorType: scenario.ErrorType,
+                        source: scenario.Id,
+                        stackTrace: string.Empty
+                    ),
+                    context: scenario.Id,
+                    timestamp: DateTime.UtcNow
+                ));
 
             return new ComparisonScenario
             {
@@ -217,7 +235,16 @@ namespace RuntimeErrorSage.Tests.TestSuite
 
             var RuntimeErrorSageResult = await _RuntimeErrorSageService.ProcessExceptionAsync(
                 await scenario.ExecuteAsync(),
-                new ErrorContext { ErrorType = scenario.ErrorType });
+                new ErrorContext(
+                    error: new RuntimeError(
+                        message: scenario.ErrorMessage,
+                        errorType: scenario.ErrorType,
+                        source: scenario.Id,
+                        stackTrace: string.Empty
+                    ),
+                    context: scenario.Id,
+                    timestamp: DateTime.UtcNow
+                ));
 
             return new ComparisonScenario
             {

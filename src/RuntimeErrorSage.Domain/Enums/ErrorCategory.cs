@@ -1,102 +1,82 @@
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
-/// Defines the category of an error.
+/// Defines the categories of errors that can occur in the system.
 /// </summary>
 public enum ErrorCategory
 {
     /// <summary>
-    /// The category is unknown.
+    /// Unknown error category.
     /// </summary>
     Unknown = 0,
 
     /// <summary>
-    /// The error is a syntax error.
+    /// Runtime exception error.
     /// </summary>
-    Syntax = 1,
+    RuntimeException = 1,
 
     /// <summary>
-    /// The error is a runtime error.
+    /// Compilation error.
     /// </summary>
-    Runtime = 2,
+    CompilationError = 2,
 
     /// <summary>
-    /// The error is a logical error.
+    /// Configuration error.
     /// </summary>
-    Logical = 3,
+    Configuration = 3,
 
     /// <summary>
-    /// The error is a resource error.
+    /// Database error.
     /// </summary>
-    Resource = 4,
+    Database = 4,
 
     /// <summary>
-    /// The error is a configuration error.
+    /// Network error.
     /// </summary>
-    Configuration = 5,
+    Network = 5,
 
     /// <summary>
-    /// The error is a network error.
+    /// Security error.
     /// </summary>
-    Network = 6,
+    Security = 6,
 
     /// <summary>
-    /// The error is a security error.
+    /// Performance error.
     /// </summary>
-    Security = 7,
+    Performance = 7,
 
     /// <summary>
-    /// The error is a performance error.
+    /// Resource error.
     /// </summary>
-    Performance = 8,
+    Resource = 8,
 
     /// <summary>
-    /// The error is a concurrency error.
+    /// Validation error.
     /// </summary>
-    Concurrency = 9,
+    Validation = 9,
 
     /// <summary>
-    /// The error is a data error.
+    /// Business logic error.
     /// </summary>
-    Data = 10,
+    BusinessLogic = 10,
 
     /// <summary>
-    /// The error is a validation error.
+    /// Integration error.
     /// </summary>
-    Validation = 11,
+    Integration = 11,
 
     /// <summary>
-    /// The error is a business logic error.
+    /// Infrastructure error.
     /// </summary>
-    BusinessLogic = 12,
+    Infrastructure = 12,
 
     /// <summary>
-    /// The error is a system error.
+    /// Data error.
     /// </summary>
-    System = 13,
+    Data = 13,
 
     /// <summary>
-    /// The error is an application error.
+    /// System error.
     /// </summary>
-    Application = 14,
-
-    /// <summary>
-    /// The error is a framework error.
-    /// </summary>
-    Framework = 15,
-
-    /// <summary>
-    /// The error is a library error.
-    /// </summary>
-    Library = 16,
-
-    /// <summary>
-    /// The error is a third-party error.
-    /// </summary>
-    ThirdParty = 17,
-
-    /// <summary>
-    /// The error is a custom error.
-    /// </summary>
-    Custom = 18
+    System = 14
 } 

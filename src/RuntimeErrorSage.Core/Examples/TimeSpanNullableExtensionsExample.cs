@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Application.Extensions;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Execution;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Execution;
 
 namespace RuntimeErrorSage.Application.Examples
 {

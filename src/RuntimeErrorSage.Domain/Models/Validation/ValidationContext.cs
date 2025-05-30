@@ -3,29 +3,62 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace RuntimeErrorSage.Application.Models.Validation
+namespace RuntimeErrorSage.Domain.Models.Validation
 {
     /// <summary>
     /// Represents the context for validation operations.
     /// </summary>
-    public sealed class ValidationContext
+    public class ValidationContext
     {
-        private readonly Dictionary<string, object> _parameters = new();
-        private readonly Dictionary<string, object> _metadata = new();
-        private object _target;
-        private ValidationType _type;
-        private ValidationScope _scope;
-        private ValidationLevel _level;
-        private ValidationCategory _category;
-        private ValidationStage _stage;
-        private bool _stopOnFirstError;
-        private bool _validateRecursively;
-        private int _timeoutSeconds = 30;
+        /// <summary>
+        /// Gets or sets the unique identifier for this validation context.
+        /// </summary>
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets the unique identifier for this context.
+        /// Gets or sets the timestamp when the validation was performed.
         /// </summary>
-        public string Id { get; } = Guid.NewGuid().ToString();
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the validation rules that were applied.
+        /// </summary>
+        public List<string> AppliedRules { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the validation parameters.
+        /// </summary>
+        public Dictionary<string, object> Parameters { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the validation scope.
+        /// </summary>
+        public string Scope { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the validation level.
+        /// </summary>
+        public string Level { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets whether the validation was successful.
+        /// </summary>
+        public bool IsValid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the validation errors.
+        /// </summary>
+        public List<string> Errors { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the validation warnings.
+        /// </summary>
+        public List<string> Warnings { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets additional metadata about the validation.
+        /// </summary>
+        public Dictionary<string, string> Metadata { get; set; } = new();
 
         /// <summary>
         /// Gets the object being validated.
@@ -36,16 +69,6 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// Gets the validation type.
         /// </summary>
         public ValidationType Type => _type;
-
-        /// <summary>
-        /// Gets the validation scope.
-        /// </summary>
-        public ValidationScope Scope => _scope;
-
-        /// <summary>
-        /// Gets the validation level.
-        /// </summary>
-        public ValidationLevel Level => _level;
 
         /// <summary>
         /// Gets the validation category.
@@ -60,12 +83,7 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <summary>
         /// Gets the additional validation parameters.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Parameters => new ReadOnlyDictionary<string, object>(_parameters);
-
-        /// <summary>
-        /// Gets the validation timestamp.
-        /// </summary>
-        public DateTime Timestamp { get; } = DateTime.UtcNow;
+        public IReadOnlyDictionary<string, object> ParametersReadOnly => new ReadOnlyDictionary<string, object>(Parameters);
 
         /// <summary>
         /// Gets whether to stop on first error.
@@ -85,7 +103,19 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <summary>
         /// Gets the validation metadata.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Metadata => new ReadOnlyDictionary<string, object>(_metadata);
+        public IReadOnlyDictionary<string, string> MetadataReadOnly => new ReadOnlyDictionary<string, string>(Metadata);
+
+        private readonly Dictionary<string, object> _parameters = new();
+        private readonly Dictionary<string, object> _metadata = new();
+        private object _target;
+        private ValidationType _type;
+        private ValidationScope _scope;
+        private ValidationLevel _level;
+        private ValidationCategory _category;
+        private ValidationStage _stage;
+        private bool _stopOnFirstError;
+        private bool _validateRecursively;
+        private int _timeoutSeconds = 30;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidationContext"/> class.

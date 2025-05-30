@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Graph;
+namespace RuntimeErrorSage.Domain.Models.Graph;
 
 /// <summary>
 /// Represents a cycle in a dependency graph.

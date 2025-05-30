@@ -1,7 +1,7 @@
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
 using System.ComponentModel.DataAnnotations;
-using RemediationPlan = RuntimeErrorSage.Application.Models.Remediation.RemediationPlan;
+using RemediationPlan = RuntimeErrorSage.Domain.Models.Remediation.RemediationPlan;
 
 namespace RuntimeErrorSage.Application.Remediation.Interfaces;
 

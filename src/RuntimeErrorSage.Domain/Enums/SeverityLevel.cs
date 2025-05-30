@@ -1,43 +1,62 @@
-namespace RuntimeErrorSage.Domain.Enums
+namespace RuntimeErrorSage.Domain.Enums;
+
+/// <summary>
+/// Represents the severity level of an error or event.
+/// </summary>
+public enum SeverityLevel
 {
     /// <summary>
-    /// Defines the severity level of an error or issue.
+    /// Unknown severity.
     /// </summary>
-    public enum SeverityLevel
-    {
-        /// <summary>
-        /// Unknown severity level.
-        /// </summary>
-        Unknown = 0,
+    Unknown = 0,
 
-        /// <summary>
-        /// Informational severity level.
-        /// </summary>
-        Info = 1,
+    /// <summary>
+    /// No severity.
+    /// </summary>
+    None = 1,
 
-        /// <summary>
-        /// Low severity level.
-        /// </summary>
-        Low = 2,
+    /// <summary>
+    /// Informational message.
+    /// </summary>
+    Info = 2,
 
-        /// <summary>
-        /// Medium severity level.
-        /// </summary>
-        Medium = 3,
+    /// <summary>
+    /// Success message.
+    /// </summary>
+    Success = 3,
 
-        /// <summary>
-        /// High severity level.
-        /// </summary>
-        High = 4,
+    /// <summary>
+    /// Low severity.
+    /// </summary>
+    Low = 4,
 
-        /// <summary>
-        /// Critical severity level.
-        /// </summary>
-        Critical = 5,
+    /// <summary>
+    /// Warning severity.
+    /// </summary>
+    Warning = 5,
 
-        /// <summary>
-        /// Catastrophic severity level.
-        /// </summary>
-        Catastrophic = 6
-    }
+    /// <summary>
+    /// Medium severity.
+    /// </summary>
+    Medium = 6,
+
+    /// <summary>
+    /// Error severity.
+    /// </summary>
+    Error = 7,
+
+    /// <summary>
+    /// High severity.
+    /// </summary>
+    High = 8,
+
+    /// <summary>
+    /// Critical severity.
+    /// </summary>
+    Critical = 9,
+
+    /// <summary>
+    /// Fatal severity.
+    /// </summary>
+    Fatal = 10
 } 

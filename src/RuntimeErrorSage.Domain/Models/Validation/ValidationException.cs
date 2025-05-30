@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace RuntimeErrorSage.Application.Models.Validation;
+namespace RuntimeErrorSage.Domain.Models.Validation;
 
 /// <summary>
 /// Exception thrown when validation fails.

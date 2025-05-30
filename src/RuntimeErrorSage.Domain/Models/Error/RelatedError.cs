@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Error
+namespace RuntimeErrorSage.Domain.Models.Error
 {
     /// <summary>
     /// Represents a related error.

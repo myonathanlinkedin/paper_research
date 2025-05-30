@@ -1,25 +1,44 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Context;
+using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.MCP
+namespace RuntimeErrorSage.Domain.Models.MCP
 {
+    /// <summary>
+    /// Represents the result of a context analysis operation.
+    /// </summary>
     public class ContextAnalysisResult
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        /// <summary>
+        /// Gets or sets the context identifier.
+        /// </summary>
         public string ContextId { get; set; } = string.Empty;
-        public DateTime AnalyzedAt { get; set; } = DateTime.UtcNow;
-        public Dictionary<string, object> Analysis { get; set; } = new();
-        public Dictionary<string, object> Metrics { get; set; } = new();
-        public Dictionary<string, object> Health { get; set; } = new();
-        public Dictionary<string, object> Validation { get; set; } = new();
-        public Dictionary<string, object> Remediation { get; set; } = new();
-        public List<string> Issues { get; set; } = new();
-        public List<string> Recommendations { get; set; } = new();
-        public Dictionary<string, object> Metadata { get; set; } = new();
-        public string Version { get; set; } = "1.0.0";
-        public bool IsValid { get; set; } = true;
-        public string Status { get; set; } = "Success";
-        public Dictionary<string, object> Configuration { get; set; } = new();
-        public Dictionary<string, object> State { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the timestamp of the analysis.
+        /// </summary>
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the context metadata.
+        /// </summary>
+        public ContextMetadata Metadata { get; set; } = new ContextMetadata();
+
+        /// <summary>
+        /// Gets or sets the dependency graph.
+        /// </summary>
+        public DependencyGraph DependencyGraph { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status of the analysis.
+        /// </summary>
+        public AnalysisStatus Status { get; set; } = AnalysisStatus.NotStarted;
+
+        /// <summary>
+        /// Gets or sets additional details about the analysis.
+        /// </summary>
+        public Dictionary<string, object> Details { get; set; } = new Dictionary<string, object>();
     }
 } 

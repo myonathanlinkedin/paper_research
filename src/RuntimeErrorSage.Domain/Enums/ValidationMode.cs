@@ -1,38 +1,33 @@
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
-/// Defines the modes of validation operations.
+/// Defines the modes of validation.
 /// </summary>
 public enum ValidationMode
 {
     /// <summary>
-    /// Unknown validation mode.
-    /// </summary>
-    Unknown = 0,
-
-    /// <summary>
     /// Automatic validation mode.
     /// </summary>
-    Automatic = 1,
+    Automatic,
 
     /// <summary>
     /// Manual validation mode.
     /// </summary>
-    Manual = 2,
+    Manual,
 
     /// <summary>
     /// Scheduled validation mode.
     /// </summary>
-    Scheduled = 3,
+    Scheduled,
 
     /// <summary>
     /// OnDemand validation mode.
     /// </summary>
-    OnDemand = 4,
+    OnDemand,
 
     /// <summary>
-    /// Continuous validation mode.
+    /// Unknown validation mode.
     /// </summary>
-    Continuous = 5
+    Unknown
 } 
 

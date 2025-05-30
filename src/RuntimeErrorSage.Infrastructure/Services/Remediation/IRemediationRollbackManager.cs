@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Application.Services.Remediation
 {

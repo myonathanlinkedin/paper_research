@@ -1,23 +1,21 @@
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Common;
-using RuntimeErrorSage.Application.Models.Validation;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Common;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Interfaces;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Handles results of remediation actions.
     /// </summary>
     public class RemediationActionResult
     {
-        public static readonly DateTimeOffset Timestamp = DateTimeOffset.UtcNow;
-
         private readonly Dictionary<string, ActionResult> _results = new();
         private readonly List<Action<ActionResult>> _resultHandlers = new();
 
@@ -42,6 +40,11 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         public string ErrorMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets the message associated with the action result.
+        /// </summary>
+        public string Message { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets the collection of results.
         /// </summary>
         public IReadOnlyDictionary<string, ActionResult> Results => new ReadOnlyDictionary<string, ActionResult>(_results);
@@ -59,7 +62,6 @@ namespace RuntimeErrorSage.Application.Models.Remediation
             _results = new Dictionary<string, ActionResult>();
             _resultHandlers = new List<Action<ActionResult>>();
             Success = false;
-            Timestamp = DateTimeOffset.UtcNow;
         }
 
         /// <summary>

@@ -19,10 +19,15 @@ namespace RuntimeErrorSage.Domain.Enums
         /// Medium priority - requires attention but not urgent.
         /// </summary>
         Medium = 2,
+        
+        /// <summary>
+        /// Normal priority - should be addressed in normal course of operations.
+        /// </summary>
+        Normal = 3,
 
         /// <summary>
         /// Low priority - can be addressed when convenient.
         /// </summary>
-        Low = 3
+        Low = 4
     }
 } 

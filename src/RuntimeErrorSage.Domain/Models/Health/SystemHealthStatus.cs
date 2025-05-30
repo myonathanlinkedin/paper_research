@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Health
+namespace RuntimeErrorSage.Domain.Models.Health
 {
     /// <summary>
     /// Represents the health status of the system.

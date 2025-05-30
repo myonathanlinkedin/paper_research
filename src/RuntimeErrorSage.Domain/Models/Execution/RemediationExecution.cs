@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Metrics;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Metrics;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RollbackStatus = RuntimeErrorSage.Domain.Models.Remediation.RollbackStatus;
 
-namespace RuntimeErrorSage.Application.Models.Execution
+namespace RuntimeErrorSage.Domain.Models.Execution
 {
     /// <summary>
     /// Represents the execution status and details of a remediation action.
@@ -104,7 +105,7 @@ namespace RuntimeErrorSage.Application.Models.Execution
         /// <summary>
         /// Gets or sets the rollback status.
         /// </summary>
-        public RollbackStatus? RollbackStatus { get; set; }
+        public RollbackStatus RollbackStatus { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the validation result.

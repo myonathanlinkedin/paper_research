@@ -1,100 +1,93 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
-    /// Represents the context for a remediation process.
+    /// Represents the context for remediation operations.
     /// </summary>
-    public class RemediationContext : IRemediationContext
+    public class RemediationContext
     {
         /// <summary>
-        /// Gets the error analysis result.
+        /// Gets or sets the error context.
         /// </summary>
-        public ErrorAnalysisResult AnalysisResult { get; }
+        public ErrorContext ErrorContext { get; set; }
 
         /// <summary>
-        /// Gets the remediation plan.
+        /// Gets or sets the remediation options.
         /// </summary>
-        public RemediationPlan Plan { get; }
+        public Dictionary<string, object> Options { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Gets the current remediation action.
+        /// Gets or sets the source identifier.
         /// </summary>
-        public IRemediationAction CurrentAction { get; private set; }
+        public string SourceId { get; set; }
 
         /// <summary>
-        /// Gets the remediation history.
+        /// Gets or sets the timestamp.
         /// </summary>
-        public List<RemediationResult> History { get; }
-
-        /// <summary>
-        /// Gets the context data.
-        /// </summary>
-        public Dictionary<string, object> ContextData { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the remediation is in rollback mode.
-        /// </summary>
-        public bool IsRollbackMode { get; set; }
-
-        /// <summary>
-        /// Gets the current remediation state.
-        /// </summary>
-        public RemediationState State { get; private set; }
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RemediationContext"/> class.
         /// </summary>
-        /// <param name="analysisResult">The error analysis result.</param>
-        /// <param name="plan">The remediation plan.</param>
-        public RemediationContext(ErrorAnalysisResult analysisResult, RemediationPlan plan)
+        public RemediationContext()
         {
-            ArgumentNullException.ThrowIfNull(analysisResult);
-            ArgumentNullException.ThrowIfNull(plan);
-
-            AnalysisResult = analysisResult;
-            Plan = plan;
-            History = new List<RemediationResult>();
-            ContextData = new Dictionary<string, object>();
-            State = RemediationState.NotStarted;
         }
 
         /// <summary>
-        /// Updates the context with a new remediation result.
+        /// Initializes a new instance of the <see cref="RemediationContext"/> class.
         /// </summary>
-        /// <param name="result">The remediation result.</param>
-        public void UpdateContext(RemediationResult result)
+        /// <param name="errorContext">The error context.</param>
+        public RemediationContext(ErrorContext errorContext)
         {
-            ArgumentNullException.ThrowIfNull(result);
-
-            History.Add(result);
-            State = result.IsSuccessful ? RemediationState.Completed : RemediationState.Failed;
+            ErrorContext = errorContext ?? throw new ArgumentNullException(nameof(errorContext));
         }
 
         /// <summary>
-        /// Clears the context data.
+        /// Sets an option in the remediation context.
         /// </summary>
-        public void ClearContext()
+        /// <param name="key">The option key.</param>
+        /// <param name="value">The option value.</param>
+        public void SetOption(string key, object value)
         {
-            ContextData.Clear();
-            CurrentAction = null;
-            State = RemediationState.NotStarted;
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentNullException(nameof(key));
+
+            Options[key] = value;
         }
 
         /// <summary>
-        /// Sets the current action.
+        /// Gets an option from the remediation context.
         /// </summary>
-        /// <param name="action">The remediation action.</param>
-        public void SetCurrentAction(IRemediationAction action)
+        /// <typeparam name="T">The option type.</typeparam>
+        /// <param name="key">The option key.</param>
+        /// <returns>The option value.</returns>
+        public T GetOption<T>(string key)
         {
-            ArgumentNullException.ThrowIfNull(action);
-            
-            CurrentAction = action;
-            State = RemediationState.InProgress;
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentNullException(nameof(key));
+
+            if (Options.TryGetValue(key, out var value) && value is T typedValue)
+                return typedValue;
+
+            return default;
+        }
+
+        /// <summary>
+        /// Creates a copy of the remediation context.
+        /// </summary>
+        /// <returns>A copy of the remediation context.</returns>
+        public RemediationContext Copy()
+        {
+            return new RemediationContext
+            {
+                ErrorContext = ErrorContext,
+                Options = new Dictionary<string, object>(Options),
+                SourceId = SourceId,
+                Timestamp = Timestamp
+            };
         }
     }
 } 

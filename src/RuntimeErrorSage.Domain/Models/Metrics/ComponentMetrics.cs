@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Metrics
+namespace RuntimeErrorSage.Domain.Models.Metrics
 {
     /// <summary>
     /// Represents metrics for a component.

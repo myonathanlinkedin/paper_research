@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 
-namespace RuntimeErrorSage.Application.Models.Context
+namespace RuntimeErrorSage.Domain.Models.Context
 {
     /// <summary>
     /// Represents the history of context changes.
@@ -32,7 +32,7 @@ namespace RuntimeErrorSage.Application.Models.Context
         /// <summary>
         /// Gets or sets the most recent context.
         /// </summary>
-        public ErrorContext MostRecentContext { get; set; } = new();
+        public ErrorContext MostRecentContext { get; set; }
 
         /// <summary>
         /// Gets or sets the previous state.
@@ -68,5 +68,28 @@ namespace RuntimeErrorSage.Application.Models.Context
         /// Gets or sets who made the change.
         /// </summary>
         public string ChangedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the error associated with this history.
+        /// </summary>
+        public RuntimeError Error { get; set; }
+
+        /// <summary>
+        /// Gets or sets the context string.
+        /// </summary>
+        public string Context { get; set; }
+
+        public ContextHistory()
+        {
+            MostRecentContext = new ErrorContext(null, string.Empty, DateTime.UtcNow);
+        }
+
+        public ContextHistory(RuntimeError error, string context, DateTime timestamp)
+        {
+            Error = error;
+            Context = context;
+            Timestamp = timestamp;
+            MostRecentContext = new ErrorContext(error, context, timestamp);
+        }
     }
 } 

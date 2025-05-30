@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.LLM;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.LLM;
 
 namespace RuntimeErrorSage.Application.Analysis.Interfaces;
 

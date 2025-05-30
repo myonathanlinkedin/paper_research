@@ -1,5 +1,5 @@
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Validation;
 using System.Threading.Tasks;
 
 namespace RuntimeErrorSage.Application.Validation.Interfaces;

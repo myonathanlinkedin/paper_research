@@ -1,6 +1,6 @@
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Error;
+namespace RuntimeErrorSage.Domain.Models.Error;
 
 /// <summary>
 /// Represents a path of error propagation.

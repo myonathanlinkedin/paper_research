@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Validation
+namespace RuntimeErrorSage.Domain.Models.Validation
 {
     /// <summary>
     /// Represents the result of a validation.
@@ -17,30 +17,43 @@ namespace RuntimeErrorSage.Application.Models.Validation
         private readonly List<string> _messages = new();
         private readonly Dictionary<string, object> _metadata = new();
         private readonly List<ValidationSuggestion> _suggestions = new();
-        private readonly string _actionId;
-        private readonly DateTime _timestamp = DateTime.UtcNow;
-        private readonly bool _isValid;
-        private readonly long _durationMs;
-        private readonly ValidationSeverity _severity;
-        private readonly ValidationStatus _status;
+        private string _actionId;
+        private DateTime _timestamp = DateTime.UtcNow;
+        private bool _isValid;
+        private long _durationMs;
+        private ValidationSeverity _severity;
+        private ValidationStatus _status;
         private readonly ValidationContext _context;
         private readonly MetricsValidation _metrics;
         private readonly string _correlationId;
+        private string _message;
 
         /// <summary>
-        /// Gets the ID of the action that was validated.
+        /// Gets or sets the ID of the action that was validated.
         /// </summary>
-        public string ActionId => _actionId;
+        public string ActionId
+        {
+            get => _actionId;
+            set => _actionId = value;
+        }
 
         /// <summary>
-        /// Gets the timestamp of the validation.
+        /// Gets or sets the timestamp of the validation.
         /// </summary>
-        public DateTime Timestamp => _timestamp;
+        public DateTime Timestamp
+        {
+            get => _timestamp;
+            set => _timestamp = value;
+        }
 
         /// <summary>
-        /// Gets whether the validation was successful.
+        /// Gets or sets whether the validation was successful.
         /// </summary>
-        public bool IsValid => _isValid;
+        public bool IsValid
+        {
+            get => _isValid;
+            set => _isValid = value;
+        }
 
         /// <summary>
         /// Gets the list of validation errors.
@@ -58,9 +71,13 @@ namespace RuntimeErrorSage.Application.Models.Validation
         public IReadOnlyList<string> ValidationRules => new ReadOnlyCollection<string>(_validationRules);
 
         /// <summary>
-        /// Gets the validation duration in milliseconds.
+        /// Gets or sets the validation duration in milliseconds.
         /// </summary>
-        public long DurationMs => _durationMs;
+        public long DurationMs
+        {
+            get => _durationMs;
+            set => _durationMs = value;
+        }
 
         /// <summary>
         /// Gets the validation messages.
@@ -73,14 +90,22 @@ namespace RuntimeErrorSage.Application.Models.Validation
         public IReadOnlyDictionary<string, object> Metadata => new ReadOnlyDictionary<string, object>(_metadata);
 
         /// <summary>
-        /// Gets the severity of the validation result.
+        /// Gets or sets the severity of the validation result.
         /// </summary>
-        public ValidationSeverity Severity => _severity;
+        public ValidationSeverity Severity
+        {
+            get => _severity;
+            set => _severity = value;
+        }
 
         /// <summary>
-        /// Gets the validation status.
+        /// Gets or sets the validation status.
         /// </summary>
-        public ValidationStatus Status => _status;
+        public ValidationStatus Status
+        {
+            get => _status;
+            set => _status = value;
+        }
 
         /// <summary>
         /// Gets the validation context.
@@ -101,6 +126,15 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// Gets the correlation ID for tracking related validations.
         /// </summary>
         public string CorrelationId => _correlationId;
+
+        /// <summary>
+        /// Gets or sets the validation message.
+        /// </summary>
+        public string Message
+        {
+            get => _message;
+            set => _message = value;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidationResult"/> class.
@@ -126,6 +160,107 @@ namespace RuntimeErrorSage.Application.Models.Validation
             _status = status;
             _metrics = metrics ?? new MetricsValidation();
             _correlationId = correlationId ?? Guid.NewGuid().ToString();
+            _message = string.Empty;
+        }
+
+        /// <summary>
+        /// Adds an error message to the validation result.
+        /// </summary>
+        /// <param name="error">The error message to add.</param>
+        public void AddError(string error)
+        {
+            if (!string.IsNullOrEmpty(error))
+            {
+                _errors.Add(error);
+                _isValid = false;
+            }
+        }
+
+        /// <summary>
+        /// Adds a warning message to the validation result.
+        /// </summary>
+        /// <param name="warning">The warning message to add.</param>
+        public void AddWarning(string warning)
+        {
+            if (!string.IsNullOrEmpty(warning))
+            {
+                _warnings.Add(warning);
+            }
+        }
+
+        /// <summary>
+        /// Adds a validation rule to the result.
+        /// </summary>
+        /// <param name="rule">The validation rule to add.</param>
+        public void AddValidationRule(string rule)
+        {
+            if (!string.IsNullOrEmpty(rule))
+            {
+                _validationRules.Add(rule);
+            }
+        }
+
+        /// <summary>
+        /// Adds a message to the validation result.
+        /// </summary>
+        /// <param name="message">The message to add.</param>
+        public void AddMessage(string message)
+        {
+            if (string.IsNullOrEmpty(message))
+                throw new ArgumentNullException(nameof(message));
+
+            _messages.Add(message);
+        }
+
+        /// <summary>
+        /// Adds multiple messages to the validation result.
+        /// </summary>
+        /// <param name="messages">The messages to add.</param>
+        public void AddMessages(IEnumerable<string> messages)
+        {
+            if (messages == null)
+                throw new ArgumentNullException(nameof(messages));
+
+            foreach (var message in messages)
+            {
+                if (!string.IsNullOrEmpty(message))
+                {
+                    _messages.Add(message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clears all messages from the validation result.
+        /// </summary>
+        public void ClearMessages()
+        {
+            _messages.Clear();
+        }
+
+        /// <summary>
+        /// Adds metadata to the validation result.
+        /// </summary>
+        /// <param name="key">The metadata key.</param>
+        /// <param name="value">The metadata value.</param>
+        public void AddMetadata(string key, object value)
+        {
+            if (!string.IsNullOrEmpty(key))
+            {
+                _metadata[key] = value;
+            }
+        }
+
+        /// <summary>
+        /// Adds a validation suggestion.
+        /// </summary>
+        /// <param name="suggestion">The suggestion to add.</param>
+        public void AddSuggestion(ValidationSuggestion suggestion)
+        {
+            if (suggestion != null)
+            {
+                _suggestions.Add(suggestion);
+            }
         }
 
         /// <summary>
@@ -136,10 +271,10 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <returns>A successful validation result.</returns>
         public static ValidationResult Success(ValidationContext context, string message = null)
         {
-            var result = new ValidationResult(context, true, ValidationSeverity.Info, ValidationStatus.Success);
+            var result = new ValidationResult(context, true, ValidationSeverity.Info, ValidationStatus.Completed);
             if (!string.IsNullOrEmpty(message))
             {
-                result._messages.Add(message);
+                result.AddMessage(message);
             }
             return result;
         }
@@ -159,7 +294,7 @@ namespace RuntimeErrorSage.Application.Models.Validation
             var result = new ValidationResult(context, false, severity, ValidationStatus.Failed);
             if (!string.IsNullOrEmpty(errorMessage))
             {
-                result._errors.Add(errorMessage);
+                result.AddError(errorMessage);
             }
             return result;
         }
@@ -181,7 +316,7 @@ namespace RuntimeErrorSage.Application.Models.Validation
                 firstResult._context,
                 results.All(r => r._isValid),
                 results.Max(r => r._severity),
-                results.Any(r => r._status == ValidationStatus.Failed) ? ValidationStatus.Failed : ValidationStatus.Success
+                results.Any(r => r._status == ValidationStatus.Failed) ? ValidationStatus.Failed : ValidationStatus.Completed
             );
 
             foreach (var result in results)

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Validation;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents the result of a remediation action.

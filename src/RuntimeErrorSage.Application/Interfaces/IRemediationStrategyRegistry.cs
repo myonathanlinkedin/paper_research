@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Domain.Models;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Application.Interfaces;
 
 namespace RuntimeErrorSage.Application.Remediation.Interfaces;
 
@@ -26,11 +27,11 @@ public interface IRemediationStrategyRegistry
     void UnregisterStrategy(string strategyName, string version);
 
     /// <summary>
-    /// Gets all strategies that can handle the given error analysis result.
+    /// Gets all strategies that can handle the given error context.
     /// </summary>
-    /// <param name="analysis">The error analysis result</param>
+    /// <param name="context">The error context</param>
     /// <returns>An ordered collection of applicable strategies</returns>
-    IEnumerable<IRemediationStrategy> GetStrategiesForError(ErrorAnalysisResult analysis);
+    Task<IEnumerable<IRemediationStrategy>> GetStrategiesForErrorAsync(ErrorContext context);
 
     /// <summary>
     /// Gets a specific strategy by name and version.

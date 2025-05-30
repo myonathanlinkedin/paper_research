@@ -1,12 +1,12 @@
 using RuntimeErrorSage.Application.Interfaces;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Metrics;
-using RuntimeErrorSage.Application.Models.Common;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Metrics;
+using RuntimeErrorSage.Domain.Models.Common;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Validation;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.Options;
 
 namespace RuntimeErrorSage.Application.Interfaces
@@ -116,7 +116,7 @@ namespace RuntimeErrorSage.Application.Interfaces
         /// </summary>
         /// <param name="actionId">The action identifier.</param>
         /// <returns>The rollback status.</returns>
-        Task<RollbackStatus> RollbackActionAsync(string actionId);
+        Task<RuntimeErrorSage.Domain.Models.Remediation.RollbackStatus> RollbackActionAsync(string actionId);
 
         /// <summary>
         /// Gets the status of a remediation action.

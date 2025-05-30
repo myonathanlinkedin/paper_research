@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 
 namespace RuntimeErrorSage.Application.Services;
 

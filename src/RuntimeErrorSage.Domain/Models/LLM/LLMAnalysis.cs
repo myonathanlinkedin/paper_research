@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.LLM;
+namespace RuntimeErrorSage.Domain.Models.LLM;
 
 /// <summary>
 /// Represents an analysis result from the LLM.
 /// </summary>
-public class LLMAnalysis
+public class LLMAnalysis : ILLMAnalysis
 {
     /// <summary>
     /// Gets or sets the unique identifier of the error being analyzed.
@@ -58,4 +58,34 @@ public class LLMAnalysis
     /// Gets or sets the timestamp when the analysis was performed.
     /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets or sets the explanations for each remediation strategy.
+    /// </summary>
+    public IDictionary<string, string> StrategyExplanations { get; set; } = new Dictionary<string, string>();
+
+    /// <summary>
+    /// Gets or sets the scores for each remediation strategy.
+    /// </summary>
+    public IDictionary<string, double> StrategyScores { get; set; } = new Dictionary<string, double>();
+
+    /// <summary>
+    /// Gets or sets the detailed analysis text.
+    /// </summary>
+    public string Analysis { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the recommended approach for remediation.
+    /// </summary>
+    public string Approach { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets whether the analysis is valid.
+    /// </summary>
+    public bool IsValid { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error message if the analysis is invalid.
+    /// </summary>
+    public string ErrorMessage { get; set; } = string.Empty;
 } 

@@ -8,10 +8,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.MCP.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Execution;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Execution;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Tests.Helpers;
@@ -40,14 +40,28 @@ public static class TestHelper
         string source,
         Dictionary<string, string>? additionalContext = null)
     {
-        var error = new Error(
-            type: errorType,
+        var error = new RuntimeError(
             message: message,
+            errorType: errorType,
             source: source,
-            stackTrace: "Test stack trace",
-            metadata: additionalContext);
+            stackTrace: "Test stack trace"
+        );
 
-        return new ErrorContext(error);
+        var context = new ErrorContext(
+            error: error,
+            context: source,
+            timestamp: DateTime.UtcNow
+        );
+
+        if (additionalContext != null)
+        {
+            foreach (var kvp in additionalContext)
+            {
+                context.AddMetadata(kvp.Key, kvp.Value);
+            }
+        }
+
+        return context;
     }
 
     public static RemediationPlan CreateRemediationPlan(

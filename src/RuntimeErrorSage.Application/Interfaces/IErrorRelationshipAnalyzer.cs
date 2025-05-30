@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Analysis.Interfaces

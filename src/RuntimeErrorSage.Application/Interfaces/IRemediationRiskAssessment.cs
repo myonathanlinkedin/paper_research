@@ -1,24 +1,47 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
-namespace RuntimeErrorSage.Application.Remediation.Interfaces
+namespace RuntimeErrorSage.Application.Interfaces
 {
     /// <summary>
-    /// Interface for remediation risk assessment operations.
+    /// Interface for assessing risks associated with remediation strategies.
     /// </summary>
     public interface IRemediationRiskAssessment
     {
+        /// <summary>
+        /// Assesses the risk of a remediation strategy.
+        /// </summary>
+        /// <param name="strategy">The remediation strategy to assess.</param>
+        /// <returns>A risk assessment result.</returns>
+        RiskAssessmentModel AssessRisk(RemediationStrategyModel strategy);
+
+        /// <summary>
+        /// Gets the risk factors for a remediation strategy.
+        /// </summary>
+        /// <param name="strategy">The remediation strategy to assess.</param>
+        /// <returns>A list of risk factors.</returns>
+        List<RiskFactor> GetRiskFactors(RemediationStrategyModel strategy);
+
+        /// <summary>
+        /// Gets the risk metrics for a remediation strategy.
+        /// </summary>
+        /// <param name="strategy">The remediation strategy to assess.</param>
+        /// <returns>The risk metrics.</returns>
+        RiskMetrics GetRiskMetrics(RemediationStrategyModel strategy);
+
         /// <summary>
         /// Assesses the risk of a remediation action.
         /// </summary>
         /// <param name="action">The remediation action to assess.</param>
         /// <param name="context">The error context.</param>
         /// <returns>The risk assessment result.</returns>
-        Task<RiskAssessment> AssessRiskAsync(RemediationAction action, ErrorContext context);
+        Task<RiskAssessmentModel> AssessRiskAsync(RemediationAction action, ErrorContext context);
 
         /// <summary>
         /// Assesses the risk of a remediation strategy.
@@ -26,14 +49,14 @@ namespace RuntimeErrorSage.Application.Remediation.Interfaces
         /// <param name="strategy">The remediation strategy to assess.</param>
         /// <param name="context">The error context.</param>
         /// <returns>The risk assessment result.</returns>
-        Task<RiskAssessment> AssessStrategyRiskAsync(IRemediationStrategy strategy, ErrorContext context);
+        Task<RiskAssessmentModel> AssessStrategyRiskAsync(IRemediationStrategy strategy, ErrorContext context);
 
         /// <summary>
         /// Assesses the risk of a remediation plan.
         /// </summary>
         /// <param name="plan">The remediation plan to assess.</param>
         /// <returns>The risk assessment result.</returns>
-        Task<RiskAssessment> AssessPlanRiskAsync(RemediationPlan plan);
+        Task<RiskAssessmentModel> AssessPlanRiskAsync(RemediationPlan plan);
 
         /// <summary>
         /// Gets the risk level for a given error type.

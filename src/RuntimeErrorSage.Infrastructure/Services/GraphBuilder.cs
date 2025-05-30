@@ -1,10 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Application.Services.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RuntimeErrorSage.Application.Services;
 
@@ -47,13 +49,13 @@ public class GraphBuilder : IGraphBuilder
                     {
                         Id = componentId,
                         Name = componentId,
-                        Type = GraphNodeType.Component,
+                        Type = GraphNodeType.Component.ToString(),
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         Metadata = new Dictionary<string, string>()
                     };
 
-                    graph.Nodes.Add(node);
+                    graph.Nodes.Add(componentId, node);
 
                     // Add edges for dependencies
                     foreach (var dependencyId in dependencies)
@@ -82,7 +84,7 @@ public class GraphBuilder : IGraphBuilder
                 {
                     Id = context.ErrorSource,
                     Name = "Error Source",
-                    Type = GraphNodeType.Unknown,
+                    Type = GraphNodeType.Unknown.ToString(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     Metadata = new Dictionary<string, string>
@@ -92,7 +94,7 @@ public class GraphBuilder : IGraphBuilder
                     }
                 };
 
-                graph.Nodes.Add(errorNode);
+                graph.Nodes.Add(context.ErrorSource, errorNode);
             }
 
             // Add metadata

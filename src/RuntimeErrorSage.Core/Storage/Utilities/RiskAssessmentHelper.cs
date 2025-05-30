@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Enums;
 
 namespace RuntimeErrorSage.Core.Storage.Utilities
 {

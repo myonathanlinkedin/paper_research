@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using RuntimeErrorSage.Application.Models.Common;
+using RuntimeErrorSage.Domain.Models.Common;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Validation;
+namespace RuntimeErrorSage.Domain.Models.Validation;
 
 /// <summary>
 /// Represents a validation error.

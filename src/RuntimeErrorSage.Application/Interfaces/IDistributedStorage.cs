@@ -1,6 +1,6 @@
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Storage;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Storage;
 
 namespace RuntimeErrorSage.Application.Interfaces
 {

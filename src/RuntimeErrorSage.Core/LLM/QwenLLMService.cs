@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Application.Models.LLM;
+using RuntimeErrorSage.Domain.Models.LLM;
 
 namespace RuntimeErrorSage.Application.LLM;
 

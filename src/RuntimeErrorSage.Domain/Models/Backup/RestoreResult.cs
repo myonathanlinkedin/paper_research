@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Application.Models.Backup
+namespace RuntimeErrorSage.Domain.Models.Backup
 {
     /// <summary>
     /// Represents the result of a restore operation.

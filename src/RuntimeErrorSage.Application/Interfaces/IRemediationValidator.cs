@@ -1,10 +1,10 @@
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Common;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models;
+using RuntimeErrorSage.Domain.Models.Common;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Domain.Models.Validation;
 
 namespace RuntimeErrorSage.Application.Remediation.Interfaces;
 
@@ -34,7 +34,7 @@ public interface IRemediationValidator
     /// <param name="plan">The remediation plan to validate.</param>
     /// <param name="context">The error context.</param>
     /// <returns>The validation result.</returns>
-    Task<Models.Validation.ValidationResult> ValidatePlanAsync(RemediationPlan plan, ErrorContext context);
+    Task<Domain.Models.Validation.ValidationResult> ValidatePlanAsync(RemediationPlan plan, ErrorContext context);
 
     /// <summary>
     /// Validates a remediation strategy.
@@ -42,7 +42,7 @@ public interface IRemediationValidator
     /// <param name="strategy">The remediation strategy to validate.</param>
     /// <param name="context">The error context.</param>
     /// <returns>The validation result.</returns>
-    Task<Models.Validation.ValidationResult> ValidateStrategyAsync(IRemediationStrategy strategy, ErrorContext context);
+    Task<Domain.Models.Validation.ValidationResult> ValidateStrategyAsync(IRemediationStrategy strategy, ErrorContext context);
 
     /// <summary>
     /// Validates a remediation action.
@@ -50,7 +50,7 @@ public interface IRemediationValidator
     /// <param name="action">The remediation action to validate.</param>
     /// <param name="context">The error context.</param>
     /// <returns>The validation result.</returns>
-    Task<Models.Validation.ValidationResult> ValidateActionAsync(RemediationAction action, ErrorContext context);
+    Task<Domain.Models.Validation.ValidationResult> ValidateActionAsync(RemediationAction action, ErrorContext context);
 
     /// <summary>
     /// Validates a remediation step.
@@ -58,7 +58,7 @@ public interface IRemediationValidator
     /// <param name="step">The remediation step to validate.</param>
     /// <param name="context">The error context.</param>
     /// <returns>The validation result.</returns>
-    Task<Models.Validation.ValidationResult> ValidateStepAsync(RemediationStep step, ErrorContext context);
+    Task<Domain.Models.Validation.ValidationResult> ValidateStepAsync(RemediationStep step, ErrorContext context);
 
     /// <summary>
     /// Validates a remediation operation.
@@ -66,7 +66,7 @@ public interface IRemediationValidator
     /// <param name="analysisResult">The error analysis result.</param>
     /// <param name="context">The error context.</param>
     /// <returns>The validation result.</returns>
-    Task<Models.Validation.ValidationResult> ValidateRemediationAsync(ErrorAnalysisResult analysisResult, ErrorContext context);
+    Task<Domain.Models.Validation.ValidationResult> ValidateRemediationAsync(ErrorAnalysisResult analysisResult, ErrorContext context);
 
     /// <summary>
     /// Validates the system health after remediation.

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents a step in a remediation process.

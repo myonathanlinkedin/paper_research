@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents the status of a remediation operation.
@@ -12,7 +12,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the state of the remediation.
         /// </summary>
-        public RemediationState State { get; set; } = RemediationState.NotStarted;
+        public RemediationStateEnum State { get; set; } = RemediationStateEnum.NotStarted;
 
         /// <summary>
         /// Gets or sets the message describing the status.
@@ -55,7 +55,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <param name="state">The remediation state.</param>
         /// <param name="message">The status message.</param>
         /// <returns>A new status instance.</returns>
-        public static RemediationStatus Create(RemediationState state, string message = null)
+        public static RemediationStatus Create(RemediationStateEnum state, string message = null)
         {
             return new RemediationStatus
             {
@@ -72,7 +72,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <returns>A new status instance.</returns>
         public static RemediationStatus NotStarted(string message = null)
         {
-            return Create(RemediationState.NotStarted, message);
+            return Create(RemediationStateEnum.NotStarted, message);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <returns>A new status instance.</returns>
         public static RemediationStatus InProgress(string message = null, double progress = 0)
         {
-            var status = Create(RemediationState.InProgress, message);
+            var status = Create(RemediationStateEnum.InProgress, message);
             status.Progress = progress;
             return status;
         }
@@ -95,7 +95,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <returns>A new status instance.</returns>
         public static RemediationStatus Completed(string message = null)
         {
-            var status = Create(RemediationState.Completed, message);
+            var status = Create(RemediationStateEnum.Completed, message);
             status.Progress = 100;
             return status;
         }
@@ -108,7 +108,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <returns>A new status instance.</returns>
         public static RemediationStatus Failed(string errorDetails, string message = null)
         {
-            var status = Create(RemediationState.Failed, message ?? "Remediation failed");
+            var status = Create(RemediationStateEnum.Failed, message ?? "Remediation failed");
             status.ErrorDetails = errorDetails ?? string.Empty;
             return status;
         }

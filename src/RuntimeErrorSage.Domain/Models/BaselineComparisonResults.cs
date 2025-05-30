@@ -1,7 +1,7 @@
-using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Domain.Models.Metrics;
 using System;
 
-namespace RuntimeErrorSage.Application.Models
+namespace RuntimeErrorSage.Domain.Models
 {
     /// <summary>
     /// Represents the results of baseline comparison.

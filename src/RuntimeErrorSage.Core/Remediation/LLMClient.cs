@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.LLM;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.LLM;
 using System.Text.Json;
 using System.Text;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 
 namespace RuntimeErrorSage.Application.Remediation

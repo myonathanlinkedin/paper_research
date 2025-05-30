@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+using RuntimeErrorSage.Domain.Models.Remediation;
+
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents the availability of a remediation action.

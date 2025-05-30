@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Application.Exceptions;
 using RuntimeErrorSage.Application.LLM.Options;
-using RuntimeErrorSage.Application.Models.LLM;
+using RuntimeErrorSage.Domain.Models.LLM;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 
 namespace RuntimeErrorSage.Application.LLM

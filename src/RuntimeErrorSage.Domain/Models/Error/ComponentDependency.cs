@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Application.Models.Error;
+namespace RuntimeErrorSage.Domain.Models.Error;
 
 /// <summary>
 /// Represents a component dependency in the error context.

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Context
+namespace RuntimeErrorSage.Domain.Models.Context
 {
     /// <summary>
     /// Represents metadata for a runtime context.
@@ -9,58 +9,48 @@ namespace RuntimeErrorSage.Application.Models.Context
     public class ContextMetadata
     {
         /// <summary>
-        /// Gets or sets the unique identifier for this metadata.
+        /// Gets or sets the context identifier.
         /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string ContextId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the timestamp when this metadata was created.
-        /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets the name of the context.
-        /// </summary>
-        public string Name { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the description of the context.
-        /// </summary>
-        public string Description { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the type of the context.
+        /// Gets or sets the context type.
         /// </summary>
         public string ContextType { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the source of the context.
+        /// Gets or sets the timestamp when this metadata was created.
         /// </summary>
-        public string Source { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets additional properties for this metadata.
+        /// Gets or sets the last modification timestamp.
         /// </summary>
-        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+        public DateTime LastModified { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the tags for this metadata.
+        /// Gets or sets the application name.
         /// </summary>
-        public List<string> Tags { get; set; } = new List<string>();
+        public string ApplicationName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the correlation ID for tracing.
+        /// Gets or sets the environment (e.g., Development, Staging, Production).
+        /// </summary>
+        public string Environment { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the component name.
+        /// </summary>
+        public string ComponentName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the correlation identifier.
         /// </summary>
         public string CorrelationId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets whether this context is persistent.
+        /// Gets or sets additional properties.
         /// </summary>
-        public bool IsPersistent { get; set; }
-
-        /// <summary>
-        /// Gets or sets the expiration time for this metadata.
-        /// </summary>
-        public DateTime? ExpiresAt { get; set; }
+        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
     }
 } 

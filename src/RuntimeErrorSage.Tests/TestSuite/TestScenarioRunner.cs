@@ -1,5 +1,4 @@
-using RuntimeErrorSage.Application.Analysis.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
@@ -42,7 +41,20 @@ public class TestScenarioRunner
                 await scenario.TriggerAction();
             }
 
-            var analysis = await _errorAnalyzer.AnalyzeErrorAsync(new ErrorContext());
+            var error = new RuntimeError(
+                message: scenario.ExpectedErrorMessage,
+                errorType: scenario.ExpectedErrorType,
+                source: scenario.Name,
+                stackTrace: string.Empty
+            );
+
+            var context = new ErrorContext(
+                error: error,
+                context: scenario.Name,
+                timestamp: DateTime.UtcNow
+            );
+
+            var analysis = await _errorAnalyzer.AnalyzeErrorAsync(context);
             
             result.Passed = ValidateResults(analysis, scenario);
             result.ErrorAnalysis = analysis;

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Graph
+namespace RuntimeErrorSage.Domain.Models.Graph
 {
     /// <summary>
-    /// Represents a dependency graph for error analysis.
+    /// Represents a graph of component dependencies.
     /// </summary>
     public class DependencyGraph
     {
@@ -18,42 +18,57 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets the name of the graph.
         /// </summary>
-        public string Name { get; set; } = "Dependency Graph";
-
-        /// <summary>
-        /// Gets or sets the description of the graph.
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Gets or sets the creation time of the graph.
-        /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets the last update time of the graph.
-        /// </summary>
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the nodes in the graph.
         /// </summary>
-        public List<GraphNode> Nodes { get; set; } = new List<GraphNode>();
+        public Dictionary<string, GraphNode> Nodes { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the dependencies in the graph.
+        /// </summary>
+        public Dictionary<string, ComponentDependency> Dependencies { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the timestamp when the graph was created.
+        /// </summary>
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the timestamp when the graph was last updated.
+        /// </summary>
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>
+        /// Gets or sets the version of the graph.
+        /// </summary>
+        public string Version { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the description of the graph.
+        /// </summary>
+        public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets whether the graph is active.
+        /// </summary>
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the status of the graph.
+        /// </summary>
+        public string Status { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets additional metadata about the graph.
+        /// </summary>
+        public Dictionary<string, string> Metadata { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the edges in the graph.
         /// </summary>
-        public List<GraphEdge> Edges { get; set; } = new List<GraphEdge>();
-
-        /// <summary>
-        /// Gets or sets the root node of the graph.
-        /// </summary>
-        public GraphNode RootNode { get; set; }
-
-        /// <summary>
-        /// Gets or sets metadata associated with the graph.
-        /// </summary>
-        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
+        public List<GraphEdge> Edges { get; set; } = new();
 
         /// <summary>
         /// Adds a node to the graph.
@@ -64,9 +79,9 @@ namespace RuntimeErrorSage.Application.Models.Graph
             if (node == null)
                 throw new ArgumentNullException(nameof(node));
 
-            if (!Nodes.Any(n => n.Id == node.Id))
+            if (!Nodes.ContainsKey(node.Id))
             {
-                Nodes.Add(node);
+                Nodes.Add(node.Id, node);
             }
         }
 
@@ -79,8 +94,8 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <returns>The created edge.</returns>
         public GraphEdge AddEdge(string sourceNodeId, string targetNodeId, string label = "depends_on")
         {
-            var sourceNode = Nodes.FirstOrDefault(n => n.Id == sourceNodeId);
-            var targetNode = Nodes.FirstOrDefault(n => n.Id == targetNodeId);
+            var sourceNode = Nodes.Values.FirstOrDefault(n => n.Id == sourceNodeId);
+            var targetNode = Nodes.Values.FirstOrDefault(n => n.Id == targetNodeId);
 
             if (sourceNode == null)
                 throw new ArgumentException($"Source node with ID {sourceNodeId} not found.");
@@ -88,7 +103,6 @@ namespace RuntimeErrorSage.Application.Models.Graph
                 throw new ArgumentException($"Target node with ID {targetNodeId} not found.");
 
             var edge = new GraphEdge(sourceNode, targetNode, label);
-
             Edges.Add(edge);
             return edge;
         }
@@ -118,7 +132,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
                     .ToList();
             }
 
-            return Nodes.Where(n => neighborIds.Contains(n.Id)).ToList();
+            return Nodes.Values.Where(n => neighborIds.Contains(n.Id)).ToList();
         }
 
         /// <summary>
@@ -145,7 +159,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
         private bool FindPathDFS(string currentNodeId, string targetNodeId, HashSet<string> visited, List<GraphNode> path)
         {
             visited.Add(currentNodeId);
-            var currentNode = Nodes.FirstOrDefault(n => n.Id == currentNodeId);
+            var currentNode = Nodes.Values.FirstOrDefault(n => n.Id == currentNodeId);
             if (currentNode != null)
             {
                 path.Add(currentNode);

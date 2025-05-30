@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Remediation.Factories;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation.Factories;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
@@ -18,7 +18,7 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
     /// <summary>
     /// Strategy for monitoring system health.
     /// </summary>
-    public class MonitorStrategy : Models.Remediation.Interfaces.IRemediationStrategy
+    public class MonitorStrategy : IRemediationStrategy
     {
         private readonly ILogger<MonitorStrategy> _logger;
         private readonly IMonitoringService _monitoringService;
@@ -134,9 +134,9 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         }
 
         /// <inheritdoc/>
-        public Task<RiskAssessment> GetRiskAsync(ErrorContext context)
+        public Task<RiskAssessmentModel> GetRiskAsync(ErrorContext context)
         {
-            return Task.FromResult(new RiskAssessment
+            return Task.FromResult(new RiskAssessmentModel
             {
                 Level = RiskLevel.Low,
                 Description = "Monitoring operations are low risk",

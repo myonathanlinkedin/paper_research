@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Metrics
+namespace RuntimeErrorSage.Domain.Models.Metrics
 {
     /// <summary>
     /// Contains metrics information for a remediation execution step.

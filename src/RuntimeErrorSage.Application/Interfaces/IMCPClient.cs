@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.MCP;
-using RuntimeErrorSage.Application.Models.Remediation;
-using ContextHistory = RuntimeErrorSage.Application.Models.Context.ContextHistory;
-using TimeRange = RuntimeErrorSage.Application.Models.Common.TimeRange;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.MCP;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using ContextHistory = RuntimeErrorSage.Domain.Models.Context.ContextHistory;
+using TimeRange = RuntimeErrorSage.Domain.Models.Common.TimeRange;
 
 namespace RuntimeErrorSage.Application.MCP.Interfaces
 {

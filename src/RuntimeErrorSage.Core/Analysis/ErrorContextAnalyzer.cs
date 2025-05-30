@@ -3,14 +3,14 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Analysis;
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Analysis;
+using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Graph.Factories;
-using RuntimeErrorSage.Application.Models.Error.Factories;
-using RuntimeErrorSage.Application.Models.Common.Factories;
-using RuntimeErrorSage.Application.Models.Common.Interfaces;
+using RuntimeErrorSage.Domain.Models.Graph.Factories;
+using RuntimeErrorSage.Domain.Models.Error.Factories;
+using RuntimeErrorSage.Domain.Models.Common.Factories;
+using RuntimeErrorSage.Domain.Models.Common.Interfaces;
 
 namespace RuntimeErrorSage.Application.Analysis
 {

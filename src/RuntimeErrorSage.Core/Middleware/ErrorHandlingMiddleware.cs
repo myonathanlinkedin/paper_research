@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Text.Json;
 using RuntimeErrorSage.Application.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Application.MCP.Interfaces;
 using RuntimeErrorSage.Application.Runtime.Interfaces;

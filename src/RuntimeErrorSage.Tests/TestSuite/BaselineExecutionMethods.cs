@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using Xunit;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 using RuntimeErrorSage.Application.Analysis.Interfaces;

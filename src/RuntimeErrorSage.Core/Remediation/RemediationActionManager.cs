@@ -1,13 +1,14 @@
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
-using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Domain.Enums;
 using System.Collections.Generic;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Domain.Models.Metrics;
 
 namespace RuntimeErrorSage.Application.Remediation
 {
@@ -22,78 +23,235 @@ namespace RuntimeErrorSage.Application.Remediation
             IRemediationValidator validator,
             IRemediationExecutor executor)
         {
-            ArgumentNullException.ThrowIfNull(logger);
-            ArgumentNullException.ThrowIfNull(validator);
-            ArgumentNullException.ThrowIfNull(executor);
-
             _logger = logger;
             _validator = validator;
             _executor = executor;
         }
 
+        /// <summary>
+        /// Executes a remediation action.
+        /// </summary>
+        /// <param name="action">The action to execute.</param>
+        /// <returns>The result of the execution.</returns>
         public async Task<RemediationResult> ExecuteActionAsync(RemediationAction action)
         {
-            ArgumentNullException.ThrowIfNull(action);
+            _logger.LogInformation("Executing remediation action {ActionId}: {ActionName}", action.Id, action.Name);
 
             try
             {
-                return await _executor.ExecuteActionAsync(action, new ErrorContext());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing action {ActionName}", action.Name);
-                return new RemediationResult { Success = false, ErrorMessage = ex.Message };
-            }
-        }
-
-        public async Task<ValidationResult> ValidateActionAsync(RemediationAction action)
-        {
-            ArgumentNullException.ThrowIfNull(action);
-
-            try
-            {
-                return await _validator.ValidateActionAsync(action);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error validating action {ActionName}", action.Name);
-                return new ValidationResult { IsValid = false, Errors = new List<string> { ex.Message } };
-            }
-        }
-
-        public async Task<RollbackStatus> RollbackActionAsync(string actionId)
-        {
-            ArgumentNullException.ThrowIfNull(actionId);
-
-            try
-            {
-                var status = new RollbackStatus
+                // Validate the action before execution
+                var validationResult = await ValidateActionAsync(action);
+                if (!validationResult.IsValid)
                 {
-                    ActionId = actionId,
-                    Status = RollbackState.Completed,
-                    Message = "Action rolled back successfully"
-                };
-                return status;
+                    _logger.LogWarning("Remediation action {ActionId} validation failed: {ValidationMessage}", 
+                        action.Id, validationResult.Message);
+                    
+                    var actionContext = action.Context;
+                    var resultObj = new RemediationResult(actionContext)
+                    {
+                        IsSuccessful = false,
+                        ActionId = action.Id,
+                        ExecutionId = Guid.NewGuid().ToString(),
+                        Status = RemediationStatusEnum.ValidationFailed,
+                        ErrorMessage = validationResult.Message,
+                        Timestamp = DateTime.UtcNow
+                    };
+                    
+                    if (validationResult.Errors.Count > 0)
+                    {
+                        resultObj.Errors.AddRange(validationResult.Errors);
+                    }
+                    
+                    return resultObj;
+                }
+
+                // Execute the action
+                var context = action.Context;
+                var result = await _executor.ExecuteActionAsync(action, context);
+
+                _logger.LogInformation("Remediation action {ActionId} executed with result: {Status}", 
+                    action.Id, result.Status);
+
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error rolling back action {ActionId}", actionId);
-                return new RollbackStatus { Status = RollbackState.Failed, Message = ex.Message };
+                _logger.LogError(ex, "Error executing remediation action {ActionId}: {ErrorMessage}", 
+                    action.Id, ex.Message);
+                
+                var context = action.Context;
+                return new RemediationResult(context)
+                {
+                    IsSuccessful = false,
+                    ActionId = action.Id,
+                    ExecutionId = Guid.NewGuid().ToString(),
+                    Status = RemediationStatusEnum.Failed,
+                    ErrorMessage = ex.Message,
+                    Error = ex.ToString(),
+                    Exception = ex,
+                    Timestamp = DateTime.UtcNow
+                };
             }
         }
 
+        /// <summary>
+        /// Validates a remediation action.
+        /// </summary>
+        /// <param name="action">The action to validate.</param>
+        /// <returns>The validation result.</returns>
+        public async Task<Domain.Models.Validation.ValidationResult> ValidateActionAsync(RemediationAction action)
+        {
+            _logger.LogInformation("Validating remediation action {ActionId}: {ActionName}", action.Id, action.Name);
+
+            try
+            {
+                var result = await _validator.ValidateActionAsync(action, action.Context);
+                _logger.LogInformation("Validation for action {ActionId} completed. IsValid: {IsValid}", action.Id, result.IsValid);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating remediation action {ActionId}: {ErrorMessage}", action.Id, ex.Message);
+                
+                // Create a validation context for the exception
+                var validationContext = new ValidationContext();
+                validationContext.SetTarget(action);
+                
+                var result = new Domain.Models.Validation.ValidationResult(validationContext)
+                {
+                    IsValid = false,
+                    Message = $"Validation error: {ex.Message}"
+                };
+                
+                // Add validation error
+                result.AddError(ex.Message);
+                result.AddMessage($"Validation exception: {ex.Message}");
+                
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Rolls back a remediation action.
+        /// </summary>
+        /// <param name="actionId">The ID of the action to roll back.</param>
+        /// <returns>The rollback status.</returns>
+        public async Task<Domain.Models.Remediation.RollbackStatus> RollbackActionAsync(string actionId)
+        {
+            _logger.LogInformation("Rolling back remediation action {ActionId}", actionId);
+
+            try
+            {
+                // Find the action result
+                var actionResult = await GetActionStatusAsync(actionId);
+                if (actionResult == null)
+                {
+                    _logger.LogWarning("Action {ActionId} not found for rollback", actionId);
+                    return new Domain.Models.Remediation.RollbackStatus
+                    {
+                        IsSuccessful = false,
+                        ActionId = actionId,
+                        ErrorMessage = $"Action {actionId} not found",
+                        Timestamp = DateTime.UtcNow
+                    };
+                }
+
+                // Initialize metrics
+                var metrics = new ExecutionMetrics
+                {
+                    ActionId = actionId
+                };
+
+                // Create a RuntimeError instance for the error context
+                var runtimeError = new RuntimeError
+                {
+                    ErrorId = Guid.NewGuid().ToString(),
+                    Message = "Rollback operation"
+                };
+
+                // Create an error context for the rollback
+                var errorContext = new ErrorContext(runtimeError, "rollback", DateTime.UtcNow) 
+                { 
+                    ContextId = Guid.NewGuid().ToString()
+                };
+
+                // Execute the rollback
+                var rollbackResult = await _executor.RollbackActionAsync(actionId, errorContext);
+
+                _logger.LogInformation("Rollback for action {ActionId} completed with result: {IsSuccessful}", 
+                    actionId, rollbackResult.IsSuccessful);
+
+                // Update metrics
+                metrics.Complete(rollbackResult.IsSuccessful, rollbackResult.ErrorMessage);
+
+                return new Domain.Models.Remediation.RollbackStatus
+                {
+                    IsSuccessful = rollbackResult.IsSuccessful,
+                    ActionId = actionId,
+                    ErrorMessage = rollbackResult.ErrorMessage,
+                    Timestamp = DateTime.UtcNow,
+                    Exception = rollbackResult.Exception
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rolling back remediation action {ActionId}: {ErrorMessage}", 
+                    actionId, ex.Message);
+                
+                return new Domain.Models.Remediation.RollbackStatus
+                {
+                    IsSuccessful = false,
+                    ErrorMessage = $"Rollback error: {ex.Message}",
+                    ActionId = actionId,
+                    Timestamp = DateTime.UtcNow,
+                    Exception = ex
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets the status of a remediation action.
+        /// </summary>
+        /// <param name="actionId">The ID of the action to check.</param>
+        /// <returns>The action status.</returns>
         public async Task<RemediationResult> GetActionStatusAsync(string actionId)
         {
-            ArgumentNullException.ThrowIfNull(actionId);
+            _logger.LogInformation("Getting status for remediation action {ActionId}", actionId);
 
             try
             {
-                return await _executor.GetActionStatusAsync(actionId);
+                // Create a RuntimeError instance for the error context
+                var runtimeError = new RuntimeError
+                {
+                    ErrorId = Guid.NewGuid().ToString(),
+                    Message = "Status check"
+                };
+                
+                // Create an error context for the status check
+                var errorContext = new ErrorContext(runtimeError, "status_check", DateTime.UtcNow)
+                { 
+                    ContextId = Guid.NewGuid().ToString()
+                };
+                
+                var result = await _executor.GetActionStatusAsync(actionId, errorContext);
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting action status for {ActionId}", actionId);
-                return new RemediationResult { Success = false, ErrorMessage = ex.Message };
+                _logger.LogError(ex, "Error getting status for remediation action {ActionId}: {ErrorMessage}", 
+                    actionId, ex.Message);
+                
+                return new RemediationResult(errorContext)
+                {
+                    IsSuccessful = false,
+                    ActionId = actionId,
+                    ExecutionId = string.Empty,
+                    Status = RemediationStatusEnum.Failed,
+                    ErrorMessage = $"Status retrieval error: {ex.Message}",
+                    Error = ex.ToString(),
+                    Exception = ex,
+                    Timestamp = DateTime.UtcNow
+                };
             }
         }
     }

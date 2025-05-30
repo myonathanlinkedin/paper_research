@@ -1,10 +1,11 @@
 using System;
+using RuntimeErrorSage.Domain.Interfaces;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using System.Threading.Tasks;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents a suggested remediation action for an error.
@@ -97,12 +98,42 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         public string Message { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the confidence level of this suggestion (0-1).
+        /// </summary>
+        public double Confidence { get; set; }
+
+        /// <summary>
+        /// Gets or sets the severity of the suggested action.
+        /// </summary>
+        public RemediationSeverity Severity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scope of the suggested action.
+        /// </summary>
+        public ImpactScope Scope { get; set; }
+
+        /// <summary>
+        /// Gets or sets the estimated duration of the suggested action.
+        /// </summary>
+        public TimeSpan EstimatedDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the prerequisites for this suggestion.
+        /// </summary>
+        public List<string> Prerequisites { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets additional metadata about the suggestion.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new();
+
+        /// <summary>
         /// Creates a suggestion from a strategy.
         /// </summary>
         /// <param name="strategy">The strategy.</param>
         /// <param name="confidenceLevel">The confidence level.</param>
         /// <returns>The remediation suggestion.</returns>
-        public static RemediationSuggestion FromStrategy(Models.Remediation.Interfaces.IRemediationStrategy strategy, double confidenceLevel)
+        public static RemediationSuggestion FromStrategy(IRemediationStrategy strategy, double confidenceLevel)
         {
             if (strategy == null)
             {
@@ -112,10 +143,9 @@ namespace RuntimeErrorSage.Application.Models.Remediation
             return new RemediationSuggestion
             {
                 StrategyName = strategy.Name,
-                Priority = strategy.Priority,
                 Description = strategy.Description,
-                Parameters = new Dictionary<string, object>(strategy.Parameters),
-                ConfidenceLevel = confidenceLevel
+                ConfidenceLevel = confidenceLevel,
+                Parameters = new Dictionary<string, object>()
             };
         }
     }

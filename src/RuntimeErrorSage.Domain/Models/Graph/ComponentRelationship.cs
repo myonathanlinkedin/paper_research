@@ -1,7 +1,7 @@
 using System;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Graph;
+namespace RuntimeErrorSage.Domain.Models.Graph;
 
 /// <summary>
 /// Represents a relationship between two components in a system.

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Validation;
 
 namespace RuntimeErrorSage.Application.Services.Remediation
 {

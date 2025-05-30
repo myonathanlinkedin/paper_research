@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 
 namespace RuntimeErrorSage.Application.Context.Interfaces
 {

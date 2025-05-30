@@ -1,5 +1,5 @@
 using System;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 
 namespace RuntimeErrorSage.Application.Services;
 
@@ -14,7 +14,7 @@ public class ErrorPatternMatcher
     public bool HaveSimilarPatterns(ErrorContext error1, ErrorContext error2)
     {
         if (error1 == null || error2 == null) return false;
-        return CalculateStringSimilarity(error1.ErrorMessage, error2.ErrorMessage) > 0.8;
+        return CalculateStringSimilarity(error1.Message, error2.Message) > 0.8;
     }
 
     /// <summary>

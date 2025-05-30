@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RuntimeErrorSage.Application.Models.Metrics
+namespace RuntimeErrorSage.Domain.Models.Metrics
 {
     /// <summary>
     /// Represents a collection of metric values.
@@ -67,17 +67,16 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets all metric values with the specified tag.
         /// </summary>
-        /// <param name="key">The key of the tag.</param>
-        /// <param name="value">The value of the tag.</param>
+        /// <param name="tag">The tag to search for.</param>
         /// <returns>A list of metric values with the specified tag.</returns>
-        public List<MetricValue> GetMetricsByTag(string key, string value)
+        public List<MetricValue> GetMetricsByTag(string tag)
         {
-            if (string.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(tag))
             {
-                throw new ArgumentException("Tag key cannot be null or empty.", nameof(key));
+                throw new ArgumentException("Tag cannot be null or empty.", nameof(tag));
             }
 
-            return Values.Where(v => v.Tags.ContainsKey(key) && v.Tags[key] == value).ToList();
+            return Values.Where(v => v.Tags.Contains(tag)).ToList();
         }
 
         /// <summary>
@@ -115,7 +114,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
                 .GroupBy(v => v.Name)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Average(v => v.Value)
+                    g => Convert.ToDouble(g.Average(v => Convert.ToDouble(v.Value)))
                 );
         }
 
@@ -129,7 +128,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
                 .GroupBy(v => v.Name)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Max(v => v.Value)
+                    g => Convert.ToDouble(g.Max(v => Convert.ToDouble(v.Value)))
                 );
         }
 
@@ -143,7 +142,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
                 .GroupBy(v => v.Name)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Min(v => v.Value)
+                    g => Convert.ToDouble(g.Min(v => Convert.ToDouble(v.Value)))
                 );
         }
     }

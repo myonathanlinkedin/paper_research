@@ -1,32 +1,52 @@
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
-/// Represents the status of an analysis operation.
+/// Defines the status of an analysis operation.
 /// </summary>
 public enum AnalysisStatus
 {
     /// <summary>
-    /// The analysis has not yet started.
+    /// Analysis has not started.
     /// </summary>
     NotStarted = 0,
 
     /// <summary>
-    /// The analysis is in progress.
+    /// Analysis is in progress.
     /// </summary>
     InProgress = 1,
 
     /// <summary>
-    /// The analysis has completed successfully.
+    /// Analysis has completed successfully.
     /// </summary>
     Completed = 2,
 
     /// <summary>
-    /// The analysis has failed.
+    /// Analysis has failed.
     /// </summary>
     Failed = 3,
 
     /// <summary>
-    /// The analysis has been cancelled.
+    /// Analysis has been cancelled.
     /// </summary>
-    Cancelled = 4
+    Cancelled = 4,
+
+    /// <summary>
+    /// Analysis is waiting for additional input or resources.
+    /// </summary>
+    Waiting = 5,
+
+    /// <summary>
+    /// Analysis has timed out.
+    /// </summary>
+    TimedOut = 6,
+
+    /// <summary>
+    /// Analysis requires validation.
+    /// </summary>
+    NeedsValidation = 7,
+
+    /// <summary>
+    /// Analysis has been validated.
+    /// </summary>
+    Validated = 8
 } 

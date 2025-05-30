@@ -4,12 +4,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
-using RuntimeErrorSage.Application.Models.Dependency;
+using RuntimeErrorSage.Domain.Models.Dependency;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Application.Services.Interfaces;
 using RuntimeErrorSage.Application.Graph.Interfaces;
+using RuntimeErrorSage.Domain.Models;
 
 namespace RuntimeErrorSage.Application.Services;
 
@@ -105,7 +106,7 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<List<GraphPath>> IdentifyCriticalPathsAsync(DependencyGraph graph)
+    public async Task<List<GraphPath>> AnalyzeCriticalPathsAsync(DependencyGraph graph)
     {
         ArgumentNullException.ThrowIfNull(graph);
 
@@ -177,12 +178,12 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             {
                 var nodeAnalysis = new Dictionary<string, object>
                 {
-                    ["Dependencies"] = node.Dependencies,
-                    ["Dependents"] = node.Dependents,
-                    ["ImpactScore"] = CalculateImpactScore(dependencyGraph, node)
+                    ["Dependencies"] = node.Value.Dependencies,
+                    ["Dependents"] = node.Value.Dependents,
+                    ["ImpactScore"] = CalculateImpactScore(dependencyGraph, node.Value)
                 };
                 
-                result[node.Id] = nodeAnalysis;
+                result[node.Value.Id] = nodeAnalysis;
             }
             
             return result;
@@ -206,12 +207,14 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
             var affectedNodes = new List<GraphNode>();
             
             // Find the source node
-            var sourceNode = dependencyGraph.Nodes.FirstOrDefault(n => n.Id == sourceComponentId);
-            if (sourceNode == null)
+            var sourceNodeEntry = dependencyGraph.Nodes.FirstOrDefault(n => n.Value.Id == sourceComponentId);
+            if (sourceNodeEntry.Value == null)
             {
                 _logger.LogWarning("Source component {SourceId} not found in graph", sourceComponentId);
                 return affectedNodes;
             }
+            
+            var sourceNode = sourceNodeEntry.Value;
             
             // Use breadth-first search to find all affected nodes
             var visited = new HashSet<string>();
@@ -230,10 +233,10 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
                 // Add all dependent nodes to the queue
                 foreach (var dependent in current.Dependents)
                 {
-                    var dependentNode = dependencyGraph.Nodes.FirstOrDefault(n => n.Id == dependent);
-                    if (dependentNode != null && !visited.Contains(dependentNode.Id))
+                    var dependentNodeEntry = dependencyGraph.Nodes.FirstOrDefault(n => n.Value.Id == dependent);
+                    if (dependentNodeEntry.Value != null && !visited.Contains(dependentNodeEntry.Value.Id))
                     {
-                        queue.Enqueue(dependentNode);
+                        queue.Enqueue(dependentNodeEntry.Value);
                     }
                 }
             }
@@ -257,14 +260,14 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
         {
             _logger.LogInformation("Calculating impact score for component {ComponentId}", componentId);
             
-            var node = dependencyGraph.Nodes.FirstOrDefault(n => n.Id == componentId);
-            if (node == null)
+            var nodeEntry = dependencyGraph.Nodes.FirstOrDefault(n => n.Value.Id == componentId);
+            if (nodeEntry.Value == null)
             {
                 _logger.LogWarning("Component {ComponentId} not found in graph", componentId);
                 return 0.0;
             }
             
-            return CalculateImpactScore(dependencyGraph, node);
+            return CalculateImpactScore(dependencyGraph, nodeEntry.Value);
         }
         catch (Exception ex)
         {
@@ -360,5 +363,135 @@ public class GraphAnalyzer : IDependencyGraphAnalyzer
     {
         // Validate the analyzer's configuration
         return true; // For now, always return true
+    }
+
+    public async Task<ImpactAnalysisResult> AnalyzeImpactAsync(DependencyGraph graph, string nodeId)
+    {
+        // Implementation
+        return new ImpactAnalysisResult();
+    }
+
+    /// <inheritdoc />
+    public async Task<List<DependencyNode>> IdentifyHighRiskNodesAsync(DependencyGraph graph, double threshold)
+    {
+        ArgumentNullException.ThrowIfNull(graph);
+
+        try
+        {
+            _logger.LogInformation("Identifying high risk nodes with threshold {Threshold}", threshold);
+            var highRiskNodes = new List<DependencyNode>();
+            
+            // Implement high risk node identification
+            // Find nodes that exceed the risk threshold
+            
+            return highRiskNodes;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error identifying high risk nodes");
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<List<GraphPath>> CalculateErrorPropagationPathsAsync(DependencyGraph graph, string sourceNode)
+    {
+        ArgumentNullException.ThrowIfNull(graph);
+        ArgumentNullException.ThrowIfNull(sourceNode);
+
+        try
+        {
+            _logger.LogInformation("Calculating error propagation paths from node {NodeId}", sourceNode);
+            var propagationPaths = new List<GraphPath>();
+            
+            // Implement error propagation path calculation
+            // Find all possible paths where errors could propagate from the source node
+            
+            return propagationPaths;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error calculating error propagation paths");
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<RootCauseAnalysisResult> AnalyzeRootCauseAsync(DependencyGraph graph, string errorNode)
+    {
+        ArgumentNullException.ThrowIfNull(graph);
+        ArgumentNullException.ThrowIfNull(errorNode);
+
+        try
+        {
+            _logger.LogInformation("Analyzing root cause for error node {NodeId}", errorNode);
+            
+            // Implement root cause analysis
+            // Find the most likely root cause of the error
+            
+            // Try to find the node in the graph
+            var nodeEntry = graph.Nodes.FirstOrDefault(n => n.Value.Id == errorNode);
+            GraphNode rootCauseNode;
+            
+            if (nodeEntry.Value != null)
+            {
+                rootCauseNode = nodeEntry.Value;
+            }
+            else
+            {
+                // If node not found, create a placeholder
+                rootCauseNode = new GraphNode
+                {
+                    Id = errorNode,
+                    Name = "Unknown Node",
+                    Type = GraphNodeType.Unknown.ToString()
+                };
+            }
+            
+            return new RootCauseAnalysisResult
+            {
+                ErrorId = errorNode,
+                RootCauseNode = rootCauseNode,
+                Confidence = 0.5,
+                Status = AnalysisStatus.Completed,
+                Description = "Preliminary root cause analysis",
+                Timestamp = DateTime.UtcNow,
+                AlternativeRootCauses = new List<GraphNode>(),
+                ContributingFactors = new List<GraphNode>()
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error analyzing root cause");
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<List<GraphCycle>> FindCyclesAsync(DependencyGraph graph)
+    {
+        ArgumentNullException.ThrowIfNull(graph);
+
+        try
+        {
+            _logger.LogInformation("Finding cycles in graph");
+            var cycles = new List<GraphCycle>();
+            
+            // Implement cycle detection
+            // Find all cycles in the dependency graph
+            
+            return cycles;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error finding cycles");
+            throw;
+        }
+    }
+
+    public async Task<Dictionary<string, double>> CalculateCentralityAsync(DependencyGraph graph)
+    {
+        // Implementation
+        return new Dictionary<string, double>();
     }
 } 

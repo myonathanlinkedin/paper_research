@@ -1,9 +1,7 @@
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using System;
-using System.Threading.Tasks;
+using RuntimeErrorSage.Domain.Interfaces;
 
-namespace RuntimeErrorSage.Application.Models.Validation;
+namespace RuntimeErrorSage.Domain.Models.Validation;
 
 /// <summary>
 /// Represents a validation rule for remediation actions.
@@ -36,6 +34,11 @@ public class ValidationRule
     public bool IsEnabled { get; private set; } = true;
 
     /// <summary>
+    /// Gets the rule ID.
+    /// </summary>
+    public string RuleId { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ValidationRule"/> class.
     /// </summary>
     /// <param name="name">The name of the rule.</param>
@@ -57,6 +60,21 @@ public class ValidationRule
         Description = description;
         ValidateAsync = validateAsync;
         Severity = severity;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValidationRule"/> class.
+    /// </summary>
+    /// <param name="ruleId">The rule ID.</param>
+    /// <exception cref="ArgumentNullException">Thrown when ruleId is null.</exception>
+    public ValidationRule(string ruleId)
+    {
+        ArgumentNullException.ThrowIfNull(ruleId);
+        RuleId = ruleId;
+        Name = ruleId;
+        Description = string.Empty;
+        ValidateAsync = _ => Task.FromResult(new ValidationResult(new ValidationContext(), false, ValidationSeverity.Error, ValidationStatus.Failed, new MetricsValidation(), string.Empty));
+        Severity = ValidationSeverity.Error;
     }
 
     /// <summary>
@@ -97,12 +115,18 @@ public class ValidationRule
         }
         catch (Exception ex)
         {
-            return new ValidationResult
-            {
-                IsValid = false,
-                Errors = { $"Error validating rule '{Name}': {ex.Message}" }
-            };
+            return new ValidationResult(new ValidationContext(), false, ValidationSeverity.Error, ValidationStatus.Failed, new MetricsValidation(), $"Error validating rule '{Name}': {ex.Message}");
         }
+    }
+
+    protected ValidationResult CreateValidationResult(ValidationContext context, bool isValid, ValidationSeverity severity, ValidationStatus status, MetricsValidation metrics, string message)
+    {
+        var result = new ValidationResult(context, isValid, severity, status, metrics, message);
+        if (!isValid)
+        {
+            result.AddError(message);
+        }
+        return result;
     }
 } 
 

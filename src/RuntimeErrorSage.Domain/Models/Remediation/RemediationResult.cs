@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Validation;
 using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Validation;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents the result of a remediation operation.
@@ -15,6 +15,11 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Gets or sets the unique identifier for this result.
         /// </summary>
         public string ResultId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the execution identifier for this result.
+        /// </summary>
+        public string ExecutionId { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets whether the remediation was successful.
@@ -54,7 +59,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the rollback status.
         /// </summary>
-        public Enums.RollbackStatus RollbackStatus { get; set; } = Enums.RollbackStatus.NotAttempted;
+        public Domain.Enums.RollbackStatusEnum RollbackStatus { get; set; } = Domain.Enums.RollbackStatusEnum.NotAttempted;
 
         /// <summary>
         /// Gets or sets additional metadata for the result.
@@ -114,7 +119,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the risk assessment.
         /// </summary>
-        public RiskAssessment RiskAssessment { get; set; } = new();
+        public RiskAssessmentModel RiskAssessment { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the unique identifier of the plan.
@@ -130,6 +135,11 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// Gets or sets the error that occurred during remediation.
         /// </summary>
         public string Error { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the exception that caused the error.
+        /// </summary>
+        public Exception Exception { get; set; }
 
         /// <summary>
         /// Gets or sets the validation results.
@@ -202,19 +212,18 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         public bool IsCompleted => Status == RemediationStatusEnum.Success || Status == RemediationStatusEnum.Failed;
 
         /// <summary>
+        /// Gets or sets the stack trace.
+        /// </summary>
+        public string StackTrace { get; set; } = string.Empty;
+
+        /// <summary>
         /// Creates a successful remediation result.
         /// </summary>
         /// <param name="message">The success message.</param>
         /// <returns>A successful remediation result.</returns>
         public static RemediationResult CreateSuccessResult(string message)
         {
-            return new RemediationResult
-            {
-                Success = true,
-                IsSuccessful = true,
-                Message = message,
-                Status = RemediationStatusEnum.Success
-            };
+            return new RemediationResult(new ErrorContext(null, string.Empty, DateTime.UtcNow), RemediationStatusEnum.Success, message, string.Empty);
         }
 
         /// <summary>
@@ -224,30 +233,15 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <returns>A failed remediation result.</returns>
         public static RemediationResult Failure(string error)
         {
-            return new RemediationResult
-            {
-                Success = false,
-                IsSuccessful = false,
-                ErrorMessage = error,
-                Error = error,
-                Status = RemediationStatusEnum.Failed
-            };
+            return new RemediationResult(new ErrorContext(null, string.Empty, DateTime.UtcNow), RemediationStatusEnum.Failed, error, string.Empty);
         }
 
-        public RemediationResult(
-            ErrorContext context,
-            RemediationStatusEnum status,
-            string message,
-            string error)
+        public RemediationResult(ErrorContext context, RemediationStatusEnum status, string errorMessage, string stackTrace)
         {
-            ArgumentNullException.ThrowIfNull(context);
-
             Context = context;
             Status = status;
-            Message = message;
-            Error = error;
-            Timestamp = DateTime.UtcNow;
-            StartTime = DateTime.UtcNow;
+            Error = errorMessage;
+            this.StackTrace = stackTrace;
         }
 
         public static RemediationResult CreateSuccess(ErrorContext context, string message = "Remediation completed successfully")
@@ -255,9 +249,29 @@ namespace RuntimeErrorSage.Application.Models.Remediation
             return new RemediationResult(context, RemediationStatusEnum.Success, message, string.Empty);
         }
 
-        public static RemediationResult CreateFailure(ErrorContext context, string error, string message = "Remediation failed")
+        public static RemediationResult CreateFailure(ErrorContext context, string errorMessage, string details = "")
         {
-            return new RemediationResult(context, RemediationStatusEnum.Failed, message, error);
+            return new RemediationResult(context, RemediationStatusEnum.Failed, errorMessage, details);
+        }
+
+        public static RemediationResult CreateInProgress(ErrorContext context, string message = null)
+        {
+            return new RemediationResult(context, RemediationStatusEnum.InProgress, message ?? "Remediation in progress", null);
+        }
+
+        public static RemediationResult CreatePending(ErrorContext context, string message = null)
+        {
+            return new RemediationResult(context, RemediationStatusEnum.Pending, message ?? "Remediation pending", null);
+        }
+
+        public static RemediationResult CreateRolledBack(ErrorContext context, string message = null, string details = null)
+        {
+            return new RemediationResult(context, RemediationStatusEnum.RolledBack, message ?? "Remediation rolled back", details);
+        }
+
+        public static RemediationResult CreateRollbackFailed(ErrorContext context, string errorMessage, string details = null)
+        {
+            return new RemediationResult(context, RemediationStatusEnum.RollbackFailed, errorMessage, details);
         }
     }
 } 

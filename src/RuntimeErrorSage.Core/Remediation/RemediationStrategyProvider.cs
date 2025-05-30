@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
 
 namespace RuntimeErrorSage.Application.Remediation;
 

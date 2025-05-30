@@ -1,9 +1,9 @@
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Graph;
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Dependency
+namespace RuntimeErrorSage.Domain.Models.Dependency
 {
     /// <summary>
     /// Represents a potential source of an error in a dependency graph.

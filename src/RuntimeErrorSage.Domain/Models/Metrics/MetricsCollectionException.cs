@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Application.Models.Metrics
+namespace RuntimeErrorSage.Domain.Models.Metrics
 {
     /// <summary>
     /// Exception thrown when there is an error collecting metrics.

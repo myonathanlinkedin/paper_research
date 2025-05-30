@@ -1,83 +1,89 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Domain.Models.Error;
 
-namespace RuntimeErrorSage.Application.Models.Analysis
+namespace RuntimeErrorSage.Domain.Models.Analysis
 {
     /// <summary>
-    /// Represents the result of an error analysis.
+    /// Represents the result of error analysis.
     /// </summary>
     public class ErrorAnalysisResult
     {
         /// <summary>
-        /// Gets or sets the unique identifier.
+        /// Gets or sets the unique identifier for this result.
         /// </summary>
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the error context.
+        /// Gets or sets the error context that was analyzed.
         /// </summary>
-        public ErrorContext Context { get; set; }
+        public ErrorContext ErrorContext { get; set; }
 
         /// <summary>
-        /// Gets or sets the timestamp of the analysis.
+        /// Gets or sets the root cause of the error.
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public string RootCause { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the possible root causes.
+        /// Gets or sets the impact of the error.
         /// </summary>
-        public List<string> PossibleRootCauses { get; set; } = new List<string>();
+        public string Impact { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the probable root cause.
+        /// Gets or sets the severity of the error.
         /// </summary>
-        public string ProbableRootCause { get; set; } = string.Empty;
+        public string Severity { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the confidence level of the analysis (0-1).
+        /// Gets or sets the confidence level of the analysis.
         /// </summary>
         public double ConfidenceLevel { get; set; }
 
         /// <summary>
-        /// Gets or sets the related errors.
+        /// Gets or sets the timestamp when the analysis was performed.
         /// </summary>
-        public List<RelatedError> RelatedErrors { get; set; } = new List<RelatedError>();
+        public DateTime AnalyzedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the error frequency.
+        /// Gets or sets the analysis method used.
         /// </summary>
-        public int Frequency { get; set; }
+        public string AnalysisMethod { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the error type.
+        /// Gets or sets the analysis duration.
         /// </summary>
-        public string ErrorType { get; set; } = string.Empty;
+        public TimeSpan AnalysisDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the error severity.
+        /// Gets or sets the analysis findings.
         /// </summary>
-        public SeverityLevel ErrorSeverity { get; set; }
+        public List<string> Findings { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the component ID.
+        /// Gets or sets the analysis recommendations.
         /// </summary>
-        public string ComponentId { get; set; } = string.Empty;
+        public List<string> Recommendations { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the component name.
+        /// Gets or sets additional metadata about the analysis.
         /// </summary>
-        public string ComponentName { get; set; } = string.Empty;
+        public Dictionary<string, string> Metadata { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the correlation ID.
+        /// Initializes a new instance of the <see cref="ErrorAnalysisResult"/> class.
         /// </summary>
-        public string CorrelationId { get; set; } = string.Empty;
+        public ErrorAnalysisResult()
+        {
+            ErrorContext = new ErrorContext(new RuntimeError(), "Analysis", DateTime.UtcNow);
+        }
 
         /// <summary>
-        /// Gets or sets additional context.
+        /// Initializes a new instance of the <see cref="ErrorAnalysisResult"/> class.
         /// </summary>
-        public Dictionary<string, object> AdditionalContext { get; set; } = new Dictionary<string, object>();
+        /// <param name="errorContext">The error context to analyze.</param>
+        public ErrorAnalysisResult(ErrorContext errorContext)
+        {
+            ErrorContext = errorContext ?? throw new ArgumentNullException(nameof(errorContext));
+        }
     }
 } 

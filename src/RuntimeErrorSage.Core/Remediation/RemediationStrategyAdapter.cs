@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Validation;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Application.Interfaces;
 
 namespace RuntimeErrorSage.Application.Remediation
 {
@@ -15,9 +15,9 @@ namespace RuntimeErrorSage.Application.Remediation
     /// </summary>
     public class RemediationStrategyAdapter : IRemediationStrategy
     {
-        private readonly Models.Remediation.Interfaces.IRemediationStrategy _strategy;
+        private readonly IRemediationStrategy _strategy;
 
-        public RemediationStrategyAdapter(Models.Remediation.Interfaces.IRemediationStrategy strategy)
+        public RemediationStrategyAdapter(IRemediationStrategy strategy)
         {
             _strategy = strategy ?? throw new ArgumentNullException(nameof(strategy));
         }
@@ -69,7 +69,7 @@ namespace RuntimeErrorSage.Application.Remediation
             return await _strategy.GetImpactAsync(context);
         }
 
-        public async Task<RiskAssessment> GetRiskAsync(ErrorContext context)
+        public async Task<RiskAssessmentModel> GetRiskAsync(ErrorContext context)
         {
             return await _strategy.GetRiskAsync(context);
         }

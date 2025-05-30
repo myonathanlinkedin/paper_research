@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Error;
+namespace RuntimeErrorSage.Domain.Models.Error;
 
 /// <summary>
 /// Represents an analysis of an error occurrence.
@@ -78,7 +78,7 @@ public class ErrorAnalysis
     /// <summary>
     /// Gets or sets the status of the analysis.
     /// </summary>
-    public AnalysisStatus Status { get; set; } = AnalysisStatus.NotStarted;
+    public AnalysisStatus Status { get; set; }
 
     /// <summary>
     /// Gets or sets any metadata associated with the error.

@@ -1,5 +1,3 @@
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Remediation;
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
@@ -8,35 +6,27 @@ namespace RuntimeErrorSage.Domain.Enums;
 public enum RemediationActionImpactScope
 {
     /// <summary>
-    /// No impact scope.
+    /// No impact scope specified.
     /// </summary>
-    None,
-
+    None = 0,
     /// <summary>
-    /// Component-level impact.
+    /// Local impact.
     /// </summary>
-    Component,
-
+    Local = 1,
     /// <summary>
     /// Module-level impact.
     /// </summary>
-    Module,
-
+    Module = 2,
     /// <summary>
     /// Service-level impact.
     /// </summary>
-    Service,
-
+    Service = 3,
     /// <summary>
-    /// System-level impact.
+    /// System-wide impact.
     /// </summary>
-    System,
-
+    System = 4,
     /// <summary>
     /// Global impact.
     /// </summary>
-    Global
+    Global = 5
 } 
-
-
-

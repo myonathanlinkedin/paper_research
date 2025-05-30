@@ -1,26 +1,26 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Application.Models.Common;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Health;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Common;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Health;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using System.Collections.Concurrent;
 using IRemediationValidator = RuntimeErrorSage.Application.Remediation.Interfaces.IRemediationValidator;
-using ValidationResult = RuntimeErrorSage.Application.Models.Validation.ValidationResult;
+using ValidationResult = RuntimeErrorSage.Domain.Models.Validation.ValidationResult;
 using RuntimeErrorSage.Application.Interfaces;
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Graph;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Domain.Models.Metrics;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Validation.Interfaces;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
 
 namespace RuntimeErrorSage.Application.Remediation;
 

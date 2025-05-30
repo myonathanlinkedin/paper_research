@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Application.Models.Error
+namespace RuntimeErrorSage.Domain.Models.Error
 {
     /// <summary>
     /// Interface for creating error objects.

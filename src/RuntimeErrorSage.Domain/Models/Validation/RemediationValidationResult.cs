@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 
-namespace RuntimeErrorSage.Application.Models.Validation
+namespace RuntimeErrorSage.Domain.Models.Validation
 {
     /// <summary>
     /// Represents the result of validating a remediation.

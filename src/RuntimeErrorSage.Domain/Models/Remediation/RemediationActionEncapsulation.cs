@@ -1,9 +1,9 @@
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Remediation;
+
+using RuntimeErrorSage.Domain.Models.Remediation;
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Provides encapsulation functionality for remediation actions.

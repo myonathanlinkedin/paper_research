@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.LLM.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
-using RuntimeErrorSage.Application.Models.LLM;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Models.LLM;
+using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
 
 namespace RuntimeErrorSage.Application.Remediation
 {
@@ -50,10 +50,10 @@ namespace RuntimeErrorSage.Application.Remediation
             _llmClient = llmClient ?? throw new ArgumentNullException(nameof(llmClient));
         }
 
-        public async Task<RiskAssessment> GetRiskAssessmentAsync(ErrorContext context)
+        public async Task<RiskAssessmentModel> GetRiskAssessmentAsync(ErrorContext context)
         {
             var analysis = await AnalyzeErrorAsync(context);
-            return new RiskAssessment
+            return new RiskAssessmentModel
             {
                 RiskLevel = CalculateRiskLevel(analysis),
                 PotentialIssues = analysis.ApplicableStrategies.Select(s => s.Reasoning).ToList(),
@@ -185,7 +185,7 @@ namespace RuntimeErrorSage.Application.Remediation
         }
 
         private double CalculateStrategyConfidence(
-            Models.Remediation.Interfaces.IRemediationStrategy strategy,
+            IRemediationStrategy strategy,
             GraphAnalysis graphAnalysis,
             LLMAnalysis llmAnalysis)
         {
@@ -210,7 +210,7 @@ namespace RuntimeErrorSage.Application.Remediation
         }
 
         private string GenerateStrategyReasoning(
-            Models.Remediation.Interfaces.IRemediationStrategy strategy,
+            IRemediationStrategy strategy,
             GraphAnalysis graphAnalysis,
             LLMAnalysis llmAnalysis)
         {

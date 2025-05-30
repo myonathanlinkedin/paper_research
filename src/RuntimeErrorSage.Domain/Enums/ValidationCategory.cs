@@ -1,83 +1,73 @@
 namespace RuntimeErrorSage.Domain.Enums
 {
     /// <summary>
-    /// Defines the categories of validation operations.
+    /// Defines the categories of validation that can be performed.
     /// </summary>
     public enum ValidationCategory
     {
         /// <summary>
-        /// Unknown validation category.
+        /// No validation category specified.
         /// </summary>
-        Unknown = 0,
-
-        /// <summary>
-        /// General validation category.
-        /// </summary>
-        General = 1,
-
-        /// <summary>
-        /// Data validation category.
-        /// </summary>
-        Data = 2,
-
-        /// <summary>
-        /// Business validation category.
-        /// </summary>
-        Business = 3,
-
-        /// <summary>
-        /// Security validation category.
-        /// </summary>
-        Security = 4,
-
-        /// <summary>
-        /// Performance validation category.
-        /// </summary>
-        Performance = 5,
-
-        /// <summary>
-        /// Compliance validation category.
-        /// </summary>
-        Compliance = 6,
+        None = 0,
 
         /// <summary>
         /// Input validation.
         /// </summary>
-        Input = 7,
-
-        /// <summary>
-        /// Output validation.
-        /// </summary>
-        Output = 8,
-
-        /// <summary>
-        /// State validation.
-        /// </summary>
-        State = 9,
-
-        /// <summary>
-        /// Configuration validation.
-        /// </summary>
-        Configuration = 10,
+        Input = 1,
 
         /// <summary>
         /// Business rule validation.
         /// </summary>
-        BusinessRule = 11,
+        BusinessRule = 2,
 
         /// <summary>
-        /// Compatibility validation.
+        /// Data integrity validation.
         /// </summary>
-        Compatibility = 12,
+        DataIntegrity = 3,
 
         /// <summary>
-        /// Health validation.
+        /// Security validation.
         /// </summary>
-        Health = 13,
+        Security = 4,
+
+        /// <summary>
+        /// Performance validation.
+        /// </summary>
+        Performance = 5,
+
+        /// <summary>
+        /// Configuration validation.
+        /// </summary>
+        Configuration = 6,
 
         /// <summary>
         /// Dependency validation.
         /// </summary>
-        Dependency = 14
+        Dependency = 7,
+
+        /// <summary>
+        /// State validation.
+        /// </summary>
+        State = 8,
+
+        /// <summary>
+        /// Format validation.
+        /// </summary>
+        Format = 9,
+
+        /// <summary>
+        /// Compatibility validation.
+        /// </summary>
+        Compatibility = 10,
+
+        /// <summary>
+        /// Resource validation.
+        /// </summary>
+        Resource = 11,
+
+        /// <summary>
+        /// Custom validation.
+        /// </summary>
+        Custom = 12
     }
 } 

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Classification
+namespace RuntimeErrorSage.Domain.Models.Classification
 {
     /// <summary>
     /// Represents the classification of an error.

@@ -5,13 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Validation;
-using RemediationPlan = RuntimeErrorSage.Application.Models.Remediation.RemediationPlan;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RemediationPlan = RuntimeErrorSage.Domain.Models.Remediation.RemediationPlan;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
-using CoreValidationResult = RuntimeErrorSage.Application.Models.Validation.ValidationResult;
+using CoreValidationResult = RuntimeErrorSage.Domain.Models.Validation.ValidationResult;
 using DataAnnotationsValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Application.Remediation.Validation;
 

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
 
 namespace RuntimeErrorSage.Application.Classifier.Interfaces;
 

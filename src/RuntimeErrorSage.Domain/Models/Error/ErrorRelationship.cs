@@ -1,7 +1,7 @@
 using System;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Error
+namespace RuntimeErrorSage.Domain.Models.Error
 {
     /// <summary>
     /// Represents a relationship between two errors.
@@ -26,7 +26,7 @@ namespace RuntimeErrorSage.Application.Models.Error
         /// <summary>
         /// Gets or sets the relationship type.
         /// </summary>
-        public ErrorRelationshipType RelationshipType { get; set; } = ErrorRelationshipType.Unknown;
+        public ErrorRelationshipType RelationshipType { get; set; } = ErrorRelationshipType.None;
 
         /// <summary>
         /// Gets or sets the relationship strength (0-1).

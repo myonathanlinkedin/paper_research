@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Application.Models.Common
+namespace RuntimeErrorSage.Domain.Models.Common
 {
     /// <summary>
     /// Represents a time range with start and end times.

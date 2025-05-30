@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Application.Options;
-using RemediationResult = RuntimeErrorSage.Application.Models.Remediation.RemediationResult;
+using RemediationResult = RuntimeErrorSage.Domain.Models.Remediation.RemediationResult;
 using RuntimeErrorSage.Application.Analysis;
 using RuntimeErrorSage.Application.Remediation;
 using RuntimeErrorSage.Application.MCP;
@@ -10,8 +10,8 @@ using RuntimeErrorSage.Application.LLM;
 using RuntimeErrorSage.Application.Validation;
 using RuntimeErrorSage.Application.Graph;
 using System.ComponentModel.DataAnnotations;
-using RuntimeErrorSage.Application.Models.Graph;
-using RuntimeErrorSage.Application.Models.LLM;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Models.LLM;
 
 namespace RuntimeErrorSage.Application.Runtime.Interfaces
 {
@@ -46,7 +46,7 @@ namespace RuntimeErrorSage.Application.Runtime.Interfaces
         /// Registers a custom remediation strategy.
         /// </summary>
         /// <param name="strategy">The remediation strategy to register</param>
-        void RegisterRemediationStrategy(RuntimeErrorSage.Application.Models.Remediation.Interfaces.IRemediationStrategy strategy);
+        void RegisterRemediationStrategy(RuntimeErrorSage.Application.Interfaces.IRemediationStrategy strategy);
 
         /// <summary>
         /// Configures the service with specific settings.
@@ -69,7 +69,7 @@ namespace RuntimeErrorSage.Application.Runtime.Interfaces
         Task<RemediationResult> RemediateErrorAsync(ErrorContext context);
 
         /// <summary>
-        ///     Validates the error context using registered validators.
+        /// Validates the error context using registered validators.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -83,7 +83,7 @@ namespace RuntimeErrorSage.Application.Runtime.Interfaces
         Task<GraphAnalysisResult> AnalyzeContextGraphAsync(ErrorContext context);
 
         /// <summary>
-        ///     
+        /// Analyze with LLM asynchronously.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>

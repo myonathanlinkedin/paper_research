@@ -1,5 +1,4 @@
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation;
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>

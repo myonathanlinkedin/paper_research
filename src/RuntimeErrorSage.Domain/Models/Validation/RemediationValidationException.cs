@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Application.Models.Validation
+namespace RuntimeErrorSage.Domain.Models.Validation
 {
     /// <summary>
     /// Exception thrown when remediation validation fails.

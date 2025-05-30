@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Application.Models.Error;
+namespace RuntimeErrorSage.Domain.Models.Error;
 
 /// <summary>
 /// Represents a data flow in the error context.

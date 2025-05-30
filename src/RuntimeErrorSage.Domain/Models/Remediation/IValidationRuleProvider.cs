@@ -1,7 +1,7 @@
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Validation;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     public interface IValidationRuleProvider
     {

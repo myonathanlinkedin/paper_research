@@ -1,4 +1,4 @@
-using RuntimeErrorSage.Application.Models.Execution;
+using RuntimeErrorSage.Domain.Models.Execution;
 
 namespace RuntimeErrorSage.Application.Examples;
 

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RuntimeErrorSage.Application.Health.Exceptions;
 using RuntimeErrorSage.Application.Health.Interfaces;
-using RuntimeErrorSage.Application.Models.Health;
+using RuntimeErrorSage.Domain.Models.Health;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Options;
 using System.Collections.Concurrent;
@@ -177,7 +177,7 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
         }
     }
 
-    public async Task<RuntimeErrorSage.Application.Models.Health.HealthStatus> GetServiceHealthAsync(string serviceName)
+    public async Task<RuntimeErrorSage.Domain.Models.Health.HealthStatus> GetServiceHealthAsync(string serviceName)
     {
         try
         {
@@ -189,7 +189,7 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
             var serviceStatus = _serviceStatus.GetValueOrDefault(serviceName);
             var isHealthy = serviceStatus?.IsHealthy ?? false;
 
-            return new RuntimeErrorSage.Application.Models.Health.HealthStatus
+            return new RuntimeErrorSage.Domain.Models.Health.HealthStatus
             {
                 ServiceName = serviceName,
                 IsHealthy = isHealthy && healthScore >= _options.HealthScoreThreshold,

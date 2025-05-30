@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Application.Services;
 using RuntimeErrorSage.Application.Utilities;
 
@@ -47,12 +47,16 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
                 MaxRetries = 3,
                 RetryDelaySeconds = 30,
                 Warnings = new List<string> { "This is a test warning" },
-                Context = new ErrorContext
-                {
-                    ServiceName = "TestService",
-                    ModuleName = "TestModule",
-                    ComponentName = "TestComponent"
-                }
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Test error",
+                        errorType: "TestError",
+                        source: "TestService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "TestService",
+                    timestamp: DateTime.UtcNow
+                )
             };
 
             // Act
@@ -122,7 +126,17 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
                 Type = RemediationActionType.Monitor,
                 Severity = severity.ToRemediationActionSeverity(),
                 ImpactScope = impactScope,
-                Status = RemediationActionStatus.Pending
+                Status = RemediationActionStatus.Pending,
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Test error",
+                        errorType: "TestError",
+                        source: "TestService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "TestService",
+                    timestamp: DateTime.UtcNow
+                )
             };
 
             // Act
@@ -153,7 +167,17 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
                 Type = RemediationActionType.Monitor,
                 Severity = null,
                 ImpactScope = RemediationActionImpactScope.Local,
-                Status = RemediationActionStatus.Pending
+                Status = RemediationActionStatus.Pending,
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Test error",
+                        errorType: "TestError",
+                        source: "TestService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "TestService",
+                    timestamp: DateTime.UtcNow
+                )
             };
 
             // Act
@@ -174,7 +198,17 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
                 Type = RemediationActionType.Monitor,
                 Severity = SeverityLevel.Medium.ToRemediationActionSeverity(),
                 ImpactScope = null,
-                Status = RemediationActionStatus.Pending
+                Status = RemediationActionStatus.Pending,
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Test error",
+                        errorType: "TestError",
+                        source: "TestService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "TestService",
+                    timestamp: DateTime.UtcNow
+                )
             };
 
             // Act
@@ -250,7 +284,16 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
                 Name = "Test Action 2",
                 Impact = RemediationActionSeverity.Medium,
                 ImpactScope = RemediationActionImpactScope.Module,
-                Context = new ErrorContext()
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Test error",
+                        errorType: "TestError",
+                        source: "TestService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "TestService",
+                    timestamp: DateTime.UtcNow
+                )
             };
 
             // Act
@@ -325,10 +368,16 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
                 Name = "Test Action",
                 Impact = RemediationActionSeverity.Medium,
                 ImpactScope = RemediationActionImpactScope.Service,
-                Context = new ErrorContext
-                {
-                    ServiceName = "TestService"
-                }
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Test error",
+                        errorType: "TestError",
+                        source: "TestService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "TestService",
+                    timestamp: DateTime.UtcNow
+                )
             };
 
             // Act
@@ -348,17 +397,23 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
                 Name = "Test Action",
                 Impact = RemediationActionSeverity.Medium,
                 ImpactScope = RemediationActionImpactScope.Module,
-                Context = new ErrorContext
-                {
-                    ModuleName = "TestModule"
-                }
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Test error",
+                        errorType: "TestError",
+                        source: "TestService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "TestService",
+                    timestamp: DateTime.UtcNow
+                )
             };
 
             // Act
             var result = await _service.AssessRiskAsync(action);
 
             // Assert
-            Assert.Contains("Module: TestModule", result.AffectedComponents);
+            Assert.Contains("Module: TestService", result.AffectedComponents);
         }
 
         [Fact]
@@ -371,17 +426,23 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
                 Name = "Test Action",
                 Impact = RemediationActionSeverity.Medium,
                 ImpactScope = RemediationActionImpactScope.Component,
-                Context = new ErrorContext
-                {
-                    ComponentName = "TestComponent"
-                }
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Test error",
+                        errorType: "TestError",
+                        source: "TestService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "TestService",
+                    timestamp: DateTime.UtcNow
+                )
             };
 
             // Act
             var result = await _service.AssessRiskAsync(action);
 
             // Assert
-            Assert.Contains("Component: TestComponent", result.AffectedComponents);
+            Assert.Contains("Component: TestService", result.AffectedComponents);
         }
     }
 } 

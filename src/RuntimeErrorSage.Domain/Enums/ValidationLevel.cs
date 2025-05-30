@@ -1,38 +1,38 @@
 namespace RuntimeErrorSage.Domain.Enums
 {
     /// <summary>
-    /// Defines the level of validation operations.
+    /// Defines the levels of validation to be performed.
     /// </summary>
     public enum ValidationLevel
     {
         /// <summary>
-        /// Unknown validation level.
+        /// No validation.
         /// </summary>
-        Unknown = 0,
+        None = 0,
 
         /// <summary>
-        /// Normal validation level.
+        /// Basic validation - minimal checks.
         /// </summary>
-        Normal = 1,
+        Basic = 1,
 
         /// <summary>
-        /// Strict validation level.
+        /// Standard validation - common checks.
         /// </summary>
-        Strict = 2,
+        Standard = 2,
 
         /// <summary>
-        /// Relaxed validation level.
+        /// Advanced validation - thorough checks.
         /// </summary>
-        Relaxed = 3,
+        Advanced = 3,
 
         /// <summary>
-        /// Critical validation level.
+        /// Strict validation - comprehensive checks.
         /// </summary>
-        Critical = 4,
+        Strict = 4,
 
         /// <summary>
-        /// Warning validation level.
+        /// Custom validation - user-defined checks.
         /// </summary>
-        Warning = 5
+        Custom = 5
     }
 } 

@@ -2,8 +2,8 @@ using RuntimeErrorSage.Application.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Graph;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Domain.Enums;
 using System.Linq;
 
@@ -35,66 +35,32 @@ namespace RuntimeErrorSage.Application.Services.Graph
         {
             var analysis = new GraphAnalysis
             {
-                ErrorId = errorId,
+                CorrelationId = errorId,
                 Timestamp = DateTime.UtcNow,
-                ComponentHealth = new Dictionary<string, Models.Graph.ComponentHealth>(),
+                ComponentHealth = new Dictionary<string, double>(),
                 ComponentRelationships = new List<ComponentRelationship>(),
-                Metadata = new Dictionary<string, object>()
+                Metrics = new Dictionary<string, double>()
             };
 
             try
             {
-                // Get the graph
-                var graph = await _graphService.GetGraphAsync(errorId);
-                if (graph == null)
+                // Get the graph - note that GetGraphAsync already returns a GraphAnalysis
+                var existingGraph = await _graphService.GetGraphAsync(errorId);
+                if (existingGraph == null)
                 {
                     analysis.IsValid = false;
                     analysis.ErrorMessage = "Graph not found";
                     return analysis;
                 }
 
-                // Analyze component health
-                foreach (var component in graph.Components)
-                {
-                    var health = new Models.Graph.ComponentHealth
-                    {
-                        ComponentId = component.Id,
-                        ComponentName = component.Name,
-                        IsHealthy = true,
-                        HealthScore = 100,
-                        Metrics = new Dictionary<string, object>()
-                    };
+                // We can just use the existing graph and enhance it
+                analysis = existingGraph;
 
-                    // Calculate health score based on metrics
-                    if (component.Metrics != null)
-                    {
-                        foreach (var metric in component.Metrics)
-                        {
-                            health.Metrics[metric.Key] = metric.Value;
-                        }
-                    }
-
-                    analysis.ComponentHealth[component.Id] = health;
-                }
-
-                // Analyze relationships
-                foreach (var relationship in graph.Relationships)
-                {
-                    var componentRelationship = new ComponentRelationship
-                    {
-                        SourceComponent = relationship.SourceId,
-                        TargetComponent = relationship.TargetId,
-                        RelationshipType = relationship.Type,
-                        Strength = relationship.Weight,
-                        Metadata = new Dictionary<string, object>(),
-                        Timestamp = DateTime.UtcNow
-                    };
-
-                    analysis.ComponentRelationships.Add(componentRelationship);
-                }
-
+                // Add additional metrics and analysis
+                var confidenceScore = CalculateConfidenceScore(analysis);
+                analysis.Metrics["ConfidenceScore"] = confidenceScore;
+                
                 analysis.IsValid = true;
-                analysis.ConfidenceScore = CalculateConfidenceScore(analysis);
             }
             catch (Exception ex)
             {
@@ -120,7 +86,7 @@ namespace RuntimeErrorSage.Application.Services.Graph
             if (analysis.ComponentHealth.Count > 0)
             {
                 var healthDataScore = analysis.ComponentHealth.Values
-                    .Count(h => h.Metrics.Count > 0) / (double)analysis.ComponentHealth.Count;
+                    .Count(h => h > 0) / (double)analysis.ComponentHealth.Count;
                 score += healthDataScore;
                 factors++;
             }
@@ -134,8 +100,8 @@ namespace RuntimeErrorSage.Application.Services.Graph
                 factors++;
             }
 
-            // Factor 3: Metadata completeness
-            if (analysis.Metadata.Count > 0)
+            // Factor 3: Metrics completeness
+            if (analysis.Metrics.Count > 0)
             {
                 score += 0.5;
                 factors++;
@@ -144,9 +110,9 @@ namespace RuntimeErrorSage.Application.Services.Graph
             return factors > 0 ? score / factors : 0;
         }
 
-        public async Task<RuntimeErrorSage.Application.Models.Graph.ComponentHealth> AnalyzeComponentHealthAsync(string componentId)
+        public async Task<RuntimeErrorSage.Domain.Models.Graph.ComponentHealth> AnalyzeComponentHealthAsync(string componentId)
         {
-            return new RuntimeErrorSage.Application.Models.Graph.ComponentHealth
+            return new RuntimeErrorSage.Domain.Models.Graph.ComponentHealth
             {
                 ComponentId = componentId,
                 ComponentName = componentId,

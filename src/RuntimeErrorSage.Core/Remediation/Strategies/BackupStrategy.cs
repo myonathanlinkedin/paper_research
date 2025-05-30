@@ -5,18 +5,17 @@ using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Remediation.Factories;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation.Factories;
+using RuntimeErrorSage.Domain.Models.Validation;
 
 namespace RuntimeErrorSage.Application.Remediation.Strategies
 {
     /// <summary>
     /// Strategy for backing up system state.
     /// </summary>
-    public class BackupStrategy : Models.Remediation.Interfaces.IRemediationStrategy
+    public class BackupStrategy : IRemediationStrategy
     {
         private readonly ILogger<BackupStrategy> _logger;
         private readonly IBackupService _backupService;
@@ -136,9 +135,9 @@ namespace RuntimeErrorSage.Application.Remediation.Strategies
         }
 
         /// <inheritdoc/>
-        public Task<RiskAssessment> GetRiskAsync(ErrorContext context)
+        public Task<RiskAssessmentModel> GetRiskAsync(ErrorContext context)
         {
-            return Task.FromResult(new RiskAssessment
+            return Task.FromResult(new RiskAssessmentModel
             {
                 Level = RiskLevel.Low,
                 Description = "Backup operations are low risk",

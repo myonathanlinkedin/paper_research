@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
-using RuntimeErrorSage.Application.Models.Common;
-using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Domain.Models;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Common;
+using RuntimeErrorSage.Domain.Models.Metrics;
 
 namespace RuntimeErrorSage.Application.Interfaces
 {
@@ -44,12 +45,12 @@ namespace RuntimeErrorSage.Application.Interfaces
         /// <param name="value">The metric value</param>
         Task RecordMetricAsync(string remediationId, string metricName, object value);
 
-            /// <summary>
-    /// Gets the metrics history for a specific remediation.
-    /// </summary>
-    /// <param name="remediationId">The remediation ID</param>
-    /// <returns>A dictionary of metric histories</returns>
-    Task<Dictionary<string, List<Models.Remediation.MetricValue>>> GetMetricsHistoryAsync(string remediationId);
+        /// <summary>
+        /// Gets the metrics history for a specific remediation.
+        /// </summary>
+        /// <param name="remediationId">The remediation ID</param>
+        /// <returns>A dictionary of metric histories</returns>
+        Task<Dictionary<string, List<RemediationMetrics>>> GetMetricsHistoryAsync(string remediationId);
 
         /// <summary>
         /// Records the execution of a remediation operation.

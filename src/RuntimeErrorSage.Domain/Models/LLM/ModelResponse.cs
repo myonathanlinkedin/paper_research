@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.LLM
+namespace RuntimeErrorSage.Domain.Models.LLM
 {
     /// <summary>
     /// Represents a response from the LLM model.

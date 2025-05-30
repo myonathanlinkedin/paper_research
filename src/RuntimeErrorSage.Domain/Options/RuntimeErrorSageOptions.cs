@@ -1,6 +1,6 @@
 using System;
 using RuntimeErrorSage.Application.LLM.Options;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Options
@@ -93,7 +93,7 @@ namespace RuntimeErrorSage.Application.Options
         /// Gets or sets the minimum severity level required for automatic remediation.
         /// Additional feature for remediation control.
         /// </summary>
-        public ErrorSeverity AutoRemediationThreshold { get; set; } = ErrorSeverity.Medium;
+        public ErrorSeverity AutoRemediationThreshold { get; set; } = ErrorSeverity.Error;
 
         /// <summary>
         /// Gets or sets the MCP endpoint URL for pattern sharing and collaboration.
@@ -170,7 +170,7 @@ namespace RuntimeErrorSage.Application.Options
         /// <summary>
         /// Gets or sets the severity level threshold for remediation.
         /// </summary>
-        public ErrorSeverity RemediationSeverityThreshold { get; set; } = ErrorSeverity.Medium;
+        public ErrorSeverity RemediationSeverityThreshold { get; set; } = ErrorSeverity.Error;
 
         public bool EnableLLMAnalysis { get; set; } = true;
         public bool EnableGraphAnalysis { get; set; } = true;

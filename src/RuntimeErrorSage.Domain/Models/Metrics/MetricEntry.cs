@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Metrics
+namespace RuntimeErrorSage.Domain.Models.Metrics
 {
     /// <summary>
     /// Represents a metric entry.
@@ -21,5 +22,10 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// Gets or sets the timestamp when the metric was recorded.
         /// </summary>
         public DateTime Timestamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tags associated with this metric.
+        /// </summary>
+        public Dictionary<string, string> Tags { get; set; } = new Dictionary<string, string>();
     }
 } 

@@ -58,19 +58,22 @@ namespace RuntimeErrorSage.Examples.Controllers
         {
             try
             {
-                var errorContext = new ErrorContext
-                {
-                    ErrorType = "DatabaseError",
-                    ErrorMessage = "Database operation failed",
-                    Source = "Database",
-                    Timestamp = DateTime.UtcNow,
-                    AdditionalContext = new Dictionary<string, object>
-                    {
-                        { "Operation", context.OperationName },
-                        { "Database", context.DatabaseName },
-                        { "Query", context.Query }
-                    }
-                };
+                var error = new RuntimeError(
+                    message: "Database operation failed",
+                    errorType: "DatabaseError",
+                    source: "Database",
+                    stackTrace: string.Empty
+                );
+
+                var errorContext = new ErrorContext(
+                    error: error,
+                    context: "Database",
+                    timestamp: DateTime.UtcNow
+                );
+
+                errorContext.AddMetadata("Operation", context.OperationName);
+                errorContext.AddMetadata("Database", context.DatabaseName);
+                errorContext.AddMetadata("Query", context.Query);
 
                 var result = await _errorAnalyzer.AnalyzeErrorAsync(errorContext);
                 return Ok(result);
@@ -91,20 +94,23 @@ namespace RuntimeErrorSage.Examples.Controllers
         {
             try
             {
-                var errorContext = new ErrorContext
-                {
-                    ErrorType = "HttpError",
-                    ErrorMessage = $"HTTP request failed with status {context.StatusCode}",
-                    Source = "HttpClient",
-                    Timestamp = DateTime.UtcNow,
-                    AdditionalContext = new Dictionary<string, object>
-                    {
-                        { "Method", context.Method },
-                        { "Url", context.Url },
-                        { "StatusCode", context.StatusCode },
-                        { "ResponseContent", context.ResponseBody }
-                    }
-                };
+                var error = new RuntimeError(
+                    message: $"HTTP request failed with status {context.StatusCode}",
+                    errorType: "HttpError",
+                    source: "HttpClient",
+                    stackTrace: string.Empty
+                );
+
+                var errorContext = new ErrorContext(
+                    error: error,
+                    context: "HttpClient",
+                    timestamp: DateTime.UtcNow
+                );
+
+                errorContext.AddMetadata("Method", context.Method);
+                errorContext.AddMetadata("Url", context.Url);
+                errorContext.AddMetadata("StatusCode", context.StatusCode);
+                errorContext.AddMetadata("ResponseContent", context.ResponseBody);
 
                 var result = await _errorAnalyzer.AnalyzeErrorAsync(errorContext);
                 return Ok(result);

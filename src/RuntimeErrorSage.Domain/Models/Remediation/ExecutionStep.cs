@@ -1,7 +1,7 @@
 using System;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Remediation;
+namespace RuntimeErrorSage.Domain.Models.Remediation;
 
 /// <summary>
 /// Represents an execution step for a remediation action.

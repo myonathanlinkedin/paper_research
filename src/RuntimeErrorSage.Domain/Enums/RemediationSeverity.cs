@@ -1,37 +1,32 @@
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
-/// Defines the severity level of a remediation action.
+/// Represents the severity level of a remediation action.
 /// </summary>
 public enum RemediationSeverity
 {
     /// <summary>
-    /// Unknown severity level.
+    /// No severity level specified.
     /// </summary>
-    Unknown = 0,
+    None,
 
     /// <summary>
-    /// No severity - action has no impact.
+    /// Low severity - minimal impact on system.
     /// </summary>
-    None = 1,
+    Low,
 
     /// <summary>
-    /// Low severity - minimal impact.
+    /// Medium severity - moderate impact on system.
     /// </summary>
-    Low = 2,
+    Medium,
 
     /// <summary>
-    /// Medium severity - moderate impact.
+    /// High severity - significant impact on system.
     /// </summary>
-    Medium = 3,
+    High,
 
     /// <summary>
-    /// High severity - significant impact.
+    /// Critical severity - severe impact on system.
     /// </summary>
-    High = 4,
-
-    /// <summary>
-    /// Critical severity - major impact.
-    /// </summary>
-    Critical = 5
+    Critical
 } 

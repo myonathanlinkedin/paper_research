@@ -1,13 +1,13 @@
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
+// Git: fix application & domain & push
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Domain.Interfaces;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents a remediation action that can be executed to fix an error.
@@ -18,25 +18,50 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         private readonly RemediationActionValidation _validation;
         private readonly RemediationActionExecution _execution;
         private readonly RemediationActionResult _result;
+        private readonly List<string> _prerequisites = new();
+        private readonly List<string> _dependencies = new();
+        private readonly List<ValidationRule> _validationRules = new();
+        private readonly Dictionary<string, object> _parameters = new();
+        private Dictionary<string, object> _metadata = new();
+        private RemediationActionImpactScope _impactScope = RemediationActionImpactScope.None;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RemediationAction"/> class.
         /// </summary>
-        public RemediationAction()
+        public RemediationAction(IValidationRuleProvider ruleProvider)
         {
             _core = new RemediationActionCore();
-            _validation = new RemediationActionValidation();
+            var defaultContext = new ValidationContext();
+            _validation = new RemediationActionValidation(this, defaultContext);
             _execution = new RemediationActionExecution();
             _result = new RemediationActionResult();
         }
 
         /// <summary>
-        /// Gets or sets the unique identifier for the action.
+        /// Gets or sets the unique identifier for this action.
         /// </summary>
-        public string ActionId
+        public string Id
         {
-            get => _core.ActionId;
-            set => _core.ActionId = value;
+            get => _core.Id;
+            set => _core.Id = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the action name.
+        /// </summary>
+        public string Name
+        {
+            get => _core.Name;
+            set => _core.Name = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the action description.
+        /// </summary>
+        public string Description
+        {
+            get => _core.Description;
+            set => _core.Description = value;
         }
 
         /// <summary>
@@ -49,25 +74,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets the name of the action.
-        /// </summary>
-        public string Name
-        {
-            get => _core.Name;
-            set => _core.Name = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the description of the action.
-        /// </summary>
-        public string Description
-        {
-            get => _core.Description;
-            set => _core.Description = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the context in which the action should be executed.
+        /// Gets or sets the error context.
         /// </summary>
         public ErrorContext Context
         {
@@ -78,7 +85,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the priority of the action.
         /// </summary>
-        public int Priority
+        public RemediationPriority Priority
         {
             get => _core.Priority;
             set => _core.Priority = value;
@@ -112,7 +119,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets whether the action requires manual approval.
+        /// Gets or sets a value indicating whether the action requires manual approval.
         /// </summary>
         public bool RequiresManualApproval
         {
@@ -121,246 +128,12 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets the prerequisites for the action.
+        /// Gets or sets the rollback action.
         /// </summary>
-        public List<string> Prerequisites
+        public IRemediationAction RollbackAction
         {
-            get => _core.Prerequisites;
-            set => _core.Prerequisites = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the dependencies for the action.
-        /// </summary>
-        public List<string> Dependencies
-        {
-            get => _core.Dependencies;
-            set => _core.Dependencies = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the parameters for the action.
-        /// </summary>
-        public Dictionary<string, object> Parameters
-        {
-            get => _core.Parameters;
-            set => _core.Parameters = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the metadata for the action.
-        /// </summary>
-        public Dictionary<string, object> Metadata
-        {
-            get => _core.Metadata;
-            set => _core.Metadata = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the tags for the action.
-        /// </summary>
-        public List<string> Tags
-        {
-            get => _core.Tags;
-            set => _core.Tags = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the version of the action.
-        /// </summary>
-        public string Version
-        {
-            get => _core.Version;
-            set => _core.Version = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the author of the action.
-        /// </summary>
-        public string Author
-        {
-            get => _core.Author;
-            set => _core.Author = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the creation date of the action.
-        /// </summary>
-        public DateTime CreatedDate
-        {
-            get => _core.CreatedDate;
-            set => _core.CreatedDate = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the last modified date of the action.
-        /// </summary>
-        public DateTime LastModifiedDate
-        {
-            get => _core.LastModifiedDate;
-            set => _core.LastModifiedDate = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the execution timeout in milliseconds.
-        /// </summary>
-        public int ExecutionTimeoutMs
-        {
-            get => _core.ExecutionTimeoutMs;
-            set => _core.ExecutionTimeoutMs = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the number of retries.
-        /// </summary>
-        public int RetryCount
-        {
-            get => _core.RetryCount;
-            set => _core.RetryCount = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the retry delay in milliseconds.
-        /// </summary>
-        public int RetryDelayMs
-        {
-            get => _core.RetryDelayMs;
-            set => _core.RetryDelayMs = value;
-        }
-
-        /// <summary>
-        /// Gets or sets whether the action is enabled.
-        /// </summary>
-        public bool IsEnabled
-        {
-            get => _core.IsEnabled;
-            set => _core.IsEnabled = value;
-        }
-
-        /// <summary>
-        /// Gets or sets whether the action is visible.
-        /// </summary>
-        public bool IsVisible
-        {
-            get => _core.IsVisible;
-            set => _core.IsVisible = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the category of the action.
-        /// </summary>
-        public string Category
-        {
-            get => _core.Category;
-            set => _core.Category = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the subcategory of the action.
-        /// </summary>
-        public string Subcategory
-        {
-            get => _core.Subcategory;
-            set => _core.Subcategory = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the severity of the action.
-        /// </summary>
-        public string Severity
-        {
-            get => _core.Severity;
-            set => _core.Severity = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the complexity of the action.
-        /// </summary>
-        public string Complexity
-        {
-            get => _core.Complexity;
-            set => _core.Complexity = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the estimated duration of the action.
-        /// </summary>
-        public TimeSpan EstimatedDuration
-        {
-            get => _core.EstimatedDuration;
-            set => _core.EstimatedDuration = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the actual duration of the action.
-        /// </summary>
-        public TimeSpan? ActualDuration
-        {
-            get => _core.ActualDuration;
-            set => _core.ActualDuration = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the start time of the action.
-        /// </summary>
-        public DateTime? StartTime
-        {
-            get => _core.StartTime;
-            set => _core.StartTime = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the end time of the action.
-        /// </summary>
-        public DateTime? EndTime
-        {
-            get => _core.EndTime;
-            set => _core.EndTime = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the error message.
-        /// </summary>
-        public string ErrorMessage
-        {
-            get => _core.ErrorMessage;
-            set => _core.ErrorMessage = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the stack trace.
-        /// </summary>
-        public string StackTrace
-        {
-            get => _core.StackTrace;
-            set => _core.StackTrace = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the output.
-        /// </summary>
-        public string Output
-        {
-            get => _core.Output;
-            set => _core.Output = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the validation results.
-        /// </summary>
-        public List<ValidationResult> ValidationResults
-        {
-            get => _core.ValidationResults;
-            set => _core.ValidationResults = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the rollback status.
-        /// </summary>
-        public RollbackStatus? RollbackStatus
-        {
-            get => _core.RollbackStatus;
-            set => _core.RollbackStatus = value;
+            get => _core.RollbackAction;
+            set => _core.RollbackAction = value;
         }
 
         /// <summary>
@@ -373,130 +146,125 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         }
 
         /// <summary>
-        /// Gets or sets the rollback action.
+        /// Executes the remediation action.
         /// </summary>
-        public RemediationAction RollbackAction
+        /// <returns>The result of the action execution.</returns>
+        async Task IRemediationAction.ExecuteAsync()
         {
-            get => _core.RollbackAction;
-            set => _core.RollbackAction = value;
+            if (Context == null)
+                throw new InvalidOperationException("Cannot execute action without context");
+
+            await _execution.ExecuteAsync(this, Context);
         }
 
         /// <summary>
-        /// Validates the action.
+        /// Executes the remediation action.
         /// </summary>
-        /// <param name="context">The error context.</param>
+        /// <returns>The result of the action execution.</returns>
+        public async Task<RemediationResult> ExecuteAsync()
+        {
+            if (Context == null)
+                throw new InvalidOperationException("Cannot execute action without context");
+
+            return await _execution.ExecuteAsync(this, Context);
+        }
+
+        /// <summary>
+        /// Validates the remediation action.
+        /// </summary>
         /// <returns>The validation result.</returns>
-        public async Task<ValidationResult> ValidateAsync(ErrorContext context)
+        public async Task<ValidationResult> ValidateAsync()
         {
-            return await _validation.ValidateAsync(context);
-        }
+            if (Context == null)
+                throw new InvalidOperationException("Cannot validate action without context");
 
-        /// <summary>
-        /// Executes the action.
-        /// </summary>
-        /// <param name="context">The error context.</param>
-        /// <returns>The remediation result.</returns>
-        public async Task<RemediationResult> ExecuteAsync(ErrorContext context)
-        {
-            return await _execution.ExecuteAsync(context);
+            return await _validation.ValidateAsync();
         }
 
         /// <summary>
         /// Rolls back the remediation action.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation with a result indicating success or failure.</returns>
-        public async Task<RemediationResult> RollbackAsync()
+        /// <returns>The rollback status.</returns>
+        async Task<Domain.Enums.RollbackStatusEnum> IRemediationAction.RollbackAsync()
         {
-            return await _execution.RollbackAsync();
+            if (Context == null)
+                throw new InvalidOperationException("Cannot rollback action without context");
+
+            var result = await _execution.RollbackAsync(this, Context);
+            return (Domain.Enums.RollbackStatusEnum)(int)result.Status;
+        }
+
+        /// <summary>
+        /// Rolls back the remediation action.
+        /// </summary>
+        /// <returns>The rollback status.</returns>
+        public async Task<RollbackStatus> RollbackAsync()
+        {
+            if (Context == null)
+                throw new InvalidOperationException("Cannot rollback action without context");
+
+            return await _execution.RollbackAsync(this, Context);
+        }
+
+        /// <summary>
+        /// Gets or sets the parameters for the action.
+        /// </summary>
+        public Dictionary<string, object> Parameters
+        {
+            get => _parameters;
+            set
+            {
+                if (value != null)
+                {
+                    _parameters.Clear();
+                    foreach (var kvp in value)
+                    {
+                        _parameters.Add(kvp.Key, kvp.Value);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the validation rules.
+        /// </summary>
+        public List<string> ValidationRules
+        {
+            get => _validationRules.ConvertAll(r => r.RuleId);
+            set
+            {
+                _validationRules.Clear();
+                if (value != null)
+                {
+                    foreach (var ruleId in value)
+                    {
+                        _validationRules.Add(new ValidationRule(ruleId));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the error type this action addresses.
+        /// </summary>
+        public string ErrorType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the scope of impact for this remediation action.
+        /// </summary>
+        public RemediationActionImpactScope ImpactScope
+        {
+            get => _impactScope;
+            set => _impactScope = value;
         }
 
         /// <summary>
         /// Gets the estimated impact of this action.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation with the impact result.</returns>
+        /// <returns>The estimated impact.</returns>
         public async Task<RemediationImpact> GetEstimatedImpactAsync()
         {
-            return await _execution.GetEstimatedImpactAsync();
-        }
-
-        /// <summary>
-        /// Gets the result of the action.
-        /// </summary>
-        /// <returns>The action result.</returns>
-        public ActionResult GetResult()
-        {
-            return _result.GetResult();
-        }
-
-        /// <summary>
-        /// Registers a result handler.
-        /// </summary>
-        /// <param name="handler">The result handler.</param>
-        public void RegisterResultHandler(Action<ActionResult> handler)
-        {
-            _result.RegisterHandler(handler);
-        }
-
-        /// <summary>
-        /// Unregisters a result handler.
-        /// </summary>
-        /// <param name="handler">The result handler.</param>
-        public void UnregisterResultHandler(Action<ActionResult> handler)
-        {
-            _result.UnregisterHandler(handler);
-        }
-
-        /// <summary>
-        /// Registers an execution handler.
-        /// </summary>
-        /// <param name="handler">The execution handler.</param>
-        public void RegisterExecutionHandler(Action<ExecutionResult> handler)
-        {
-            _execution.RegisterHandler(handler);
-        }
-
-        /// <summary>
-        /// Unregisters an execution handler.
-        /// </summary>
-        /// <param name="handler">The execution handler.</param>
-        public void UnregisterExecutionHandler(Action<ExecutionResult> handler)
-        {
-            _execution.UnregisterHandler(handler);
-        }
-
-        /// <summary>
-        /// Adds a validation rule.
-        /// </summary>
-        /// <param name="rule">The validation rule.</param>
-        public void AddValidationRule(ValidationRule rule)
-        {
-            _validation.AddRule(rule);
-        }
-
-        /// <summary>
-        /// Removes a validation rule.
-        /// </summary>
-        /// <param name="rule">The validation rule.</param>
-        public void RemoveValidationRule(ValidationRule rule)
-        {
-            _validation.RemoveRule(rule);
-        }
-
-        /// <summary>
-        /// Gets the validation rules.
-        /// </summary>
-        /// <returns>The validation rules.</returns>
-        public IReadOnlyList<ValidationRule> GetValidationRules()
-        {
-            return _validation.GetRules();
-        }
-
-        /// <summary>
-        /// Clears the results.
-        /// </summary>
-        public void ClearResults()
-        {
-            _result.Clear();
+            return new RemediationImpact();
         }
     }
 } 

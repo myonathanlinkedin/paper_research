@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
-using RelatedErrorModel = RuntimeErrorSage.Application.Models.Error.RelatedError;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RelatedErrorModel = RuntimeErrorSage.Domain.Models.Error.RelatedError;
 
 namespace RuntimeErrorSage.Application.Services;
 
@@ -57,7 +57,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
             // Remove duplicates and sort by relationship strength
             return relatedErrors
                 .Distinct(new RelatedErrorComparer())
-                .OrderByDescending(e => e.RelationshipStrength);
+                .OrderByDescending(e => e.ConfidenceLevel);
         }
         catch (Exception ex)
         {
@@ -86,25 +86,25 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
             // Check if errors are in the same component
             if (error1.ComponentId == error2.ComponentId)
             {
-                relationship.Type = ErrorRelationshipType.SameComponent;
-                relationship.Strength = 0.8;
+                relationship.RelationshipType = ErrorRelationshipType.RelatedTo;
+                relationship.Confidence = 0.8;
             }
             // Check if errors are in dependent components
             else if (_analysis.AreComponentsDependent(error1.ComponentId, error2.ComponentId))
             {
-                relationship.Type = ErrorRelationshipType.Dependent;
-                relationship.Strength = 0.6;
+                relationship.RelationshipType = ErrorRelationshipType.DependsOn;
+                relationship.Confidence = 0.6;
             }
             // Check if errors have similar patterns
             else if (_analysis.HaveSimilarPatterns(error1, error2))
             {
-                relationship.Type = ErrorRelationshipType.SimilarPattern;
-                relationship.Strength = 0.4;
+                relationship.RelationshipType = ErrorRelationshipType.SimilarTo;
+                relationship.Confidence = 0.4;
             }
             else
             {
-                relationship.Type = ErrorRelationshipType.Unknown;
-                relationship.Strength = 0.1;
+                relationship.RelationshipType = ErrorRelationshipType.Unknown;
+                relationship.Confidence = 0.1;
             }
 
             await Task.CompletedTask;
@@ -153,14 +153,14 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
                     relationships.Add(new RelatedErrorModel
                     {
                         ErrorId = previousError.ErrorId,
-                        RelationshipType = relationship.Type,
-                        RelationshipStrength = relationship.Strength,
+                        RelationshipType = relationship.RelationshipType,
+                        ConfidenceLevel = relationship.Confidence,
                         Timestamp = DateTime.UtcNow
                     });
                 }
             }
 
-            return relationships.OrderByDescending(r => r.RelationshipStrength);
+            return relationships.OrderByDescending(r => r.ConfidenceLevel);
         }
         catch (Exception ex)
         {
@@ -181,10 +181,9 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
             {
                 return new ErrorRelationship
                 {
-                    SourceErrorId = source.ErrorId,
-                    TargetErrorId = target.ErrorId,
+                    SourceErrorId = source.Id,
+                    TargetErrorId = target.Id,
                     RelationshipType = ErrorRelationshipType.Sibling,
-                    Strength = 0.8,
                     Confidence = 0.8,
                     Description = "These errors appear to be related based on error type",
                     Timestamp = DateTime.UtcNow,
@@ -197,10 +196,9 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
             {
                 return new ErrorRelationship
                 {
-                    SourceErrorId = source.ErrorId,
-                    TargetErrorId = target.ErrorId,
+                    SourceErrorId = source.Id,
+                    TargetErrorId = target.Id,
                     RelationshipType = ErrorRelationshipType.Dependency,
-                    Strength = 0.6,
                     Confidence = 0.6,
                     Description = "These errors appear to be related based on error type",
                     Timestamp = DateTime.UtcNow,
@@ -213,10 +211,9 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
             {
                 return new ErrorRelationship
                 {
-                    SourceErrorId = source.ErrorId,
-                    TargetErrorId = target.ErrorId,
+                    SourceErrorId = source.Id,
+                    TargetErrorId = target.Id,
                     RelationshipType = ErrorRelationshipType.Correlation,
-                    Strength = 0.4,
                     Confidence = 0.4,
                     Description = "These errors appear to be related based on error type",
                     Timestamp = DateTime.UtcNow,
@@ -229,10 +226,9 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
             {
                 return new ErrorRelationship
                 {
-                    SourceErrorId = source.ErrorId,
-                    TargetErrorId = target.ErrorId,
+                    SourceErrorId = source.Id,
+                    TargetErrorId = target.Id,
                     RelationshipType = ErrorRelationshipType.Temporal,
-                    Strength = 0.5,
                     Confidence = 0.5,
                     Description = "These errors appear to be related based on timing",
                     Timestamp = DateTime.UtcNow,
@@ -245,10 +241,9 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
             {
                 return new ErrorRelationship
                 {
-                    SourceErrorId = source.ErrorId,
-                    TargetErrorId = target.ErrorId,
+                    SourceErrorId = source.Id,
+                    TargetErrorId = target.Id,
                     RelationshipType = ErrorRelationshipType.Spatial,
-                    Strength = 0.3,
                     Confidence = 0.3,
                     Description = "These errors appear to be related based on location",
                     Timestamp = DateTime.UtcNow,
@@ -261,10 +256,9 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
             {
                 return new ErrorRelationship
                 {
-                    SourceErrorId = source.ErrorId,
-                    TargetErrorId = target.ErrorId,
+                    SourceErrorId = source.Id,
+                    TargetErrorId = target.Id,
                     RelationshipType = ErrorRelationshipType.Logical,
-                    Strength = 0.2,
                     Confidence = 0.2,
                     Description = "These errors appear to be related based on logic",
                     Timestamp = DateTime.UtcNow,
@@ -274,10 +268,9 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
 
             return new ErrorRelationship
             {
-                SourceErrorId = source.ErrorId,
-                TargetErrorId = target.ErrorId,
+                SourceErrorId = source.Id,
+                TargetErrorId = target.Id,
                 RelationshipType = ErrorRelationshipType.None,
-                Strength = 0.1,
                 Confidence = 0.1,
                 Description = "These errors do not appear to be related",
                 Timestamp = DateTime.UtcNow,
@@ -300,12 +293,12 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
 
         // Find all error nodes in the same component
         var componentErrors = graph.Nodes.Values
-            .Where(n => n.Type == GraphNodeType.Error && n.Metadata.TryGetValue("ComponentId", out var compId) && compId?.ToString() == context.ComponentId)
+            .Where(n => n.Type == GraphNodeType.Error.ToString() && n.Metadata.TryGetValue("ComponentId", out var compId) && compId?.ToString() == context.ComponentId)
             .Select(n => new RelatedErrorModel
             {
                 ErrorId = n.Id,
-                RelationshipType = ErrorRelationshipType.SameComponent,
-                RelationshipStrength = 0.8,
+                RelationshipType = ErrorRelationshipType.RelatedTo,
+                ConfidenceLevel = 0.8,
                 Timestamp = DateTime.UtcNow
             });
 
@@ -331,12 +324,12 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         foreach (var componentId in dependentComponents)
         {
             var componentErrors = graph.Nodes.Values
-                .Where(n => n.Type == GraphNodeType.Error && n.Metadata.TryGetValue("ComponentId", out var compId) && compId?.ToString() == componentId)
+                .Where(n => n.Type == GraphNodeType.Error.ToString() && n.Metadata.TryGetValue("ComponentId", out var compId) && compId?.ToString() == componentId)
                 .Select(n => new RelatedErrorModel
                 {
                     ErrorId = n.Id,
-                    RelationshipType = ErrorRelationshipType.Dependent,
-                    RelationshipStrength = 0.6,
+                    RelationshipType = ErrorRelationshipType.DependsOn,
+                    ConfidenceLevel = 0.6,
                     Timestamp = DateTime.UtcNow
                 });
 
@@ -353,7 +346,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
 
         // Find all error nodes
         var errorNodes = graph.Nodes.Values
-            .Where(n => n.Type == GraphNodeType.Error)
+            .Where(n => n.Type == GraphNodeType.Error.ToString())
             .ToList();
 
         // Compare each error with the context error
@@ -361,20 +354,28 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         {
             if (node.Metadata.TryGetValue("ErrorMessage", out var errorMessage) && errorMessage != null)
             {
-                var nodeError = new ErrorContext
-                {
-                    ErrorId = node.Id,
-                    ErrorMessage = errorMessage.ToString(),
-                    ComponentId = node.Metadata.TryGetValue("ComponentId", out var compId) ? compId?.ToString() : null
-                };
+                // Create RuntimeError with correct constructor parameters
+                var error = new RuntimeError(
+                    type: "Unknown", // Use a default type since we don't have it
+                    message: errorMessage.ToString(),
+                    source: node.Metadata.TryGetValue("ComponentId", out var compId) ? compId?.ToString() : "Unknown",
+                    stackTrace: string.Empty
+                );
+
+                // Create ErrorContext with correct constructor parameters
+                var nodeError = new ErrorContext(
+                    error: error,
+                    context: node.Metadata.TryGetValue("ComponentId", out var componentId) ? componentId?.ToString() : "Unknown",
+                    timestamp: DateTime.UtcNow
+                );
 
                 if (_analysis.HaveSimilarPatterns(context, nodeError))
                 {
                     errors.Add(new RelatedErrorModel
                     {
                         ErrorId = node.Id,
-                        RelationshipType = ErrorRelationshipType.SimilarPattern,
-                        RelationshipStrength = 0.4,
+                        RelationshipType = ErrorRelationshipType.SimilarTo,
+                        ConfidenceLevel = 0.4,
                         Timestamp = DateTime.UtcNow
                     });
                 }
@@ -403,7 +404,13 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
 
     public async Task<List<RelatedErrorModel>> GetRelatedErrorsAsync(RuntimeError error)
     {
-        var context = new ErrorContext(error, "Error context", DateTime.UtcNow);
+        // Create ErrorContext with correct constructor parameters
+        var context = new ErrorContext(
+            error: error,
+            context: "Error context",
+            timestamp: DateTime.UtcNow
+        );
+        
         return await FindRelatedErrorsAsync(context);
     }
 

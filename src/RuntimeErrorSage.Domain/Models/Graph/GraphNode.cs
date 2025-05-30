@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Graph
+namespace RuntimeErrorSage.Domain.Models.Graph
 {
     /// <summary>
-    /// Represents a node in a dependency graph.
+    /// Represents a node in the dependency graph.
     /// </summary>
     public class GraphNode
     {
@@ -17,27 +17,57 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <summary>
         /// Gets or sets the name of the node.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the type of the node.
         /// </summary>
-        public GraphNodeType Type { get; set; } = GraphNodeType.Unknown;
+        public string Type { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the status of the node.
+        /// Gets or sets the list of incoming dependencies.
         /// </summary>
-        public string Status { get; set; } = "Active";
+        public List<string> IncomingDependencies { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the list of outgoing dependencies.
+        /// </summary>
+        public List<string> OutgoingDependencies { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the metadata for this node.
+        /// </summary>
+        public Dictionary<string, string> Metadata { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the timestamp when the node was created.
+        /// </summary>
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the timestamp when the node was last updated.
+        /// </summary>
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>
+        /// Gets or sets the version of the node.
+        /// </summary>
+        public string Version { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the description of the node.
         /// </summary>
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the properties of the node.
+        /// Gets or sets whether the node is active.
         /// </summary>
-        public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the status of the node.
+        /// </summary>
+        public string Status { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the importance level of the node.
@@ -53,36 +83,6 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// Gets or sets the health status of the node.
         /// </summary>
         public string HealthStatus { get; set; } = "Healthy";
-
-        /// <summary>
-        /// Gets or sets the creation time of the node.
-        /// </summary>
-        public DateTime CreationTime { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets metadata associated with the node.
-        /// </summary>
-        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
-
-        /// <summary>
-        /// Gets or sets the incoming dependencies.
-        /// </summary>
-        public List<GraphEdge> IncomingEdges { get; set; }
-
-        /// <summary>
-        /// Gets or sets the outgoing dependencies.
-        /// </summary>
-        public List<GraphEdge> OutgoingEdges { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timestamp when the node was created.
-        /// </summary>
-        public DateTime CreatedAt { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timestamp when the node was last updated.
-        /// </summary>
-        public DateTime UpdatedAt { get; set; }
 
         /// <summary>
         /// Gets or sets the probability of error for this node (0-1).
@@ -106,8 +106,6 @@ namespace RuntimeErrorSage.Application.Models.Graph
         {
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
-            IncomingEdges = new List<GraphEdge>();
-            OutgoingEdges = new List<GraphEdge>();
         }
 
         /// <summary>
@@ -121,7 +119,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
                 throw new ArgumentException("Edge target must be this node.");
             }
 
-            IncomingEdges.Add(edge);
+            IncomingDependencies.Add(edge.Source.Id);
             UpdatedAt = DateTime.UtcNow;
         }
 
@@ -136,7 +134,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
                 throw new ArgumentException("Edge source must be this node.");
             }
 
-            OutgoingEdges.Add(edge);
+            OutgoingDependencies.Add(edge.Target.Id);
             UpdatedAt = DateTime.UtcNow;
         }
 
@@ -146,7 +144,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <param name="edge">The edge to remove.</param>
         public void RemoveIncomingEdge(GraphEdge edge)
         {
-            IncomingEdges.Remove(edge);
+            IncomingDependencies.Remove(edge.Source.Id);
             UpdatedAt = DateTime.UtcNow;
         }
 
@@ -156,7 +154,7 @@ namespace RuntimeErrorSage.Application.Models.Graph
         /// <param name="edge">The edge to remove.</param>
         public void RemoveOutgoingEdge(GraphEdge edge)
         {
-            OutgoingEdges.Remove(edge);
+            OutgoingDependencies.Remove(edge.Target.Id);
             UpdatedAt = DateTime.UtcNow;
         }
     }

@@ -1,68 +1,68 @@
 namespace RuntimeErrorSage.Domain.Enums
 {
     /// <summary>
-    /// Defines the types of validation operations.
+    /// Defines the types of validation that can be performed.
     /// </summary>
     public enum ValidationType
     {
         /// <summary>
-        /// Unknown validation type.
+        /// No validation type specified.
         /// </summary>
-        Unknown = 0,
+        None = 0,
 
         /// <summary>
-        /// General validation type.
+        /// Data validation.
         /// </summary>
-        General = 1,
+        Data = 1,
 
         /// <summary>
-        /// Schema validation type.
+        /// Business rule validation.
         /// </summary>
-        Schema = 2,
+        BusinessRule = 2,
 
         /// <summary>
-        /// Business rule validation type.
+        /// Schema validation.
         /// </summary>
-        BusinessRule = 3,
+        Schema = 3,
 
         /// <summary>
-        /// Format validation type.
+        /// Format validation.
         /// </summary>
         Format = 4,
 
         /// <summary>
-        /// Consistency validation type.
+        /// Type validation.
         /// </summary>
-        Consistency = 5,
+        Type = 5,
 
         /// <summary>
-        /// Security validation type.
+        /// Range validation.
         /// </summary>
-        Security = 6,
+        Range = 6,
 
         /// <summary>
-        /// Performance validation type.
+        /// Pattern validation.
         /// </summary>
-        Performance = 7,
+        Pattern = 7,
 
         /// <summary>
-        /// Compatibility validation type.
+        /// Dependency validation.
         /// </summary>
-        Compatibility = 8,
+        Dependency = 8,
 
         /// <summary>
-        /// Dependency validation type.
+        /// Security validation.
         /// </summary>
-        Dependency = 9,
+        Security = 9,
 
         /// <summary>
-        /// Configuration validation type.
+        /// Performance validation.
         /// </summary>
-        Configuration = 10,
+        Performance = 10,
 
         /// <summary>
-        /// Health validation type.
+        /// Custom validation.
         /// </summary>
-        Health = 11
+        Custom = 11
     }
 } 

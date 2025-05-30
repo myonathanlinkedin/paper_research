@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Application.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace RuntimeErrorSage.Application.Remediation.Base;
 /// <summary>
 /// Base class for remediation strategies.
 /// </summary>
-public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemediationStrategy
+public abstract class RemediationStrategy : IRemediationStrategy
 {
     protected readonly ILogger<RemediationStrategy> Logger;
 
@@ -192,10 +192,10 @@ public abstract class RemediationStrategy : Models.Remediation.Interfaces.IRemed
     }
 
     /// <inheritdoc/>
-    public virtual Task<RiskAssessment> GetRiskAsync(ErrorContext context)
+    public virtual Task<RiskAssessmentModel> GetRiskAsync(ErrorContext context)
     {
         // Default implementation returns a medium risk
-        return Task.FromResult(new RiskAssessment
+        return Task.FromResult(new RiskAssessmentModel
         {
             Level = RiskLevel.Medium,
             Description = "Default risk assessment",

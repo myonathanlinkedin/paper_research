@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.LLM;
+namespace RuntimeErrorSage.Domain.Models.LLM;
 
 /// <summary>
 /// Represents the context for an LLM analysis.

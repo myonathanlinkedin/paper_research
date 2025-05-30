@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.LLM;
+namespace RuntimeErrorSage.Domain.Models.LLM;
 
 /// <summary>
 /// Represents the result of an LLM analysis.

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Application.Options;
 using RuntimeErrorSage.Application.Storage.Exceptions;
 using RuntimeErrorSage.Application.Storage.Interfaces;

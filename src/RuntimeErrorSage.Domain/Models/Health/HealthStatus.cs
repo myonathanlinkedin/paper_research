@@ -1,4 +1,4 @@
-namespace RuntimeErrorSage.Application.Models.Health
+namespace RuntimeErrorSage.Domain.Models.Health
 {
     /// <summary>
     /// Represents the health status of a service or component

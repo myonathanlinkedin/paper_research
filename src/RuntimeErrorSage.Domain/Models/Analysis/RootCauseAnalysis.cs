@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Analysis
+namespace RuntimeErrorSage.Domain.Models.Analysis
 {
     /// <summary>
     /// Represents a root cause analysis for an error.

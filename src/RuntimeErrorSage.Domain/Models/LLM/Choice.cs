@@ -1,6 +1,6 @@
 using System;
 
-namespace RuntimeErrorSage.Application.Models.LLM
+namespace RuntimeErrorSage.Domain.Models.LLM
 {
     public class Choice
     {

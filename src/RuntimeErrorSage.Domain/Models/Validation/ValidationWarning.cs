@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Validation
+namespace RuntimeErrorSage.Domain.Models.Validation
 {
     /// <summary>
     /// Represents a validation warning.

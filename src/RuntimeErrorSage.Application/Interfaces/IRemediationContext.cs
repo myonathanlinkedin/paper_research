@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Domain.Models;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 
-namespace RuntimeErrorSage.Application.Remediation.Interfaces
+namespace RuntimeErrorSage.Application.Interfaces
 {
     /// <summary>
-    /// Interface for remediation context in the Remediation namespace.
+    /// Interface for remediation context.
     /// </summary>
     public interface IRemediationContext
     {
@@ -44,17 +45,31 @@ namespace RuntimeErrorSage.Application.Remediation.Interfaces
         /// <summary>
         /// Gets the current remediation state.
         /// </summary>
-        RemediationState State { get; }
+        RuntimeErrorSage.Domain.Models.Remediation.RemediationState State { get; }
 
         /// <summary>
-        /// Updates the context with a new remediation result.
+        /// Gets or sets the current remediation strategy.
         /// </summary>
-        /// <param name="result">The remediation result.</param>
-        void UpdateContext(RemediationResult result);
+        RemediationStrategyModel CurrentStrategy { get; set; }
 
         /// <summary>
-        /// Clears the context data.
+        /// Gets or sets the current remediation step.
         /// </summary>
-        void ClearContext();
+        RemediationStep CurrentStep { get; set; }
+
+        /// <summary>
+        /// Gets or sets the remediation status.
+        /// </summary>
+        RemediationStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the remediation metrics.
+        /// </summary>
+        RemediationMetrics Metrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the remediation validation rules.
+        /// </summary>
+        List<RuntimeErrorSage.Domain.Models.Remediation.RemediationValidationRule> ValidationRules { get; set; }
     }
 } 

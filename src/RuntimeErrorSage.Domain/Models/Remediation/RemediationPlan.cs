@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Common;
+using System.Threading.Tasks;
+using RuntimeErrorSage.Domain.Models.Common;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Interfaces;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents a plan for remediating an error.
@@ -115,7 +116,7 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <summary>
         /// Gets or sets the remediation strategies.
         /// </summary>
-        public List<Models.Remediation.Interfaces.IRemediationStrategy> Strategies { get; set; } = new();
+        public List<IRemediationStrategy> Strategies { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the remediation status information.

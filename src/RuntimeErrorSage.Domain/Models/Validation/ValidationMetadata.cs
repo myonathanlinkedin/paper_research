@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Validation
+namespace RuntimeErrorSage.Domain.Models.Validation
 {
     /// <summary>
     /// Represents metadata for a validation operation.
@@ -31,27 +31,27 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// <summary>
         /// Gets the type of validation.
         /// </summary>
-        public ValidationType Type { get; }
+        public RuntimeErrorSage.Domain.Enums.ValidationType Type { get; }
 
         /// <summary>
         /// Gets the scope of validation.
         /// </summary>
-        public ValidationScope Scope { get; }
+        public RuntimeErrorSage.Domain.Enums.ValidationScope Scope { get; }
 
         /// <summary>
         /// Gets the level of validation.
         /// </summary>
-        public ValidationLevel Level { get; }
+        public RuntimeErrorSage.Domain.Enums.ValidationLevel Level { get; }
 
         /// <summary>
         /// Gets the category of validation.
         /// </summary>
-        public ValidationCategory Category { get; }
+        public RuntimeErrorSage.Domain.Enums.ValidationCategory Category { get; }
 
         /// <summary>
         /// Gets the stage of validation.
         /// </summary>
-        public ValidationStage Stage { get; }
+        public RuntimeErrorSage.Domain.Enums.ValidationStage Stage { get; }
 
         /// <summary>
         /// Gets the timestamp when the validation was performed.
@@ -72,7 +72,7 @@ namespace RuntimeErrorSage.Application.Models.Validation
         /// Initializes a new instance of the <see cref="ValidationMetadata"/> class.
         /// </summary>
         public ValidationMetadata()
-            : this(string.Empty, string.Empty, ValidationType.General, ValidationScope.Local, ValidationLevel.Normal, ValidationCategory.General, ValidationStage.Initial)
+            : this(string.Empty, string.Empty, RuntimeErrorSage.Domain.Enums.ValidationType.None, RuntimeErrorSage.Domain.Enums.ValidationScope.None, RuntimeErrorSage.Domain.Enums.ValidationLevel.None, RuntimeErrorSage.Domain.Enums.ValidationCategory.None, RuntimeErrorSage.Domain.Enums.ValidationStage.None)
         {
         }
 
@@ -90,11 +90,11 @@ namespace RuntimeErrorSage.Application.Models.Validation
         public ValidationMetadata(
             string validatorName,
             string validatorVersion,
-            ValidationType type,
-            ValidationScope scope,
-            ValidationLevel level,
-            ValidationCategory category,
-            ValidationStage stage)
+            RuntimeErrorSage.Domain.Enums.ValidationType type,
+            RuntimeErrorSage.Domain.Enums.ValidationScope scope,
+            RuntimeErrorSage.Domain.Enums.ValidationLevel level,
+            RuntimeErrorSage.Domain.Enums.ValidationCategory category,
+            RuntimeErrorSage.Domain.Enums.ValidationStage stage)
         {
             ValidatorName = validatorName ?? throw new ArgumentNullException(nameof(validatorName));
             ValidatorVersion = validatorVersion ?? throw new ArgumentNullException(nameof(validatorVersion));
@@ -164,11 +164,11 @@ namespace RuntimeErrorSage.Application.Models.Validation
             return new ValidationMetadata(
                 validatorName,
                 validatorVersion,
-                ValidationType.General,
-                ValidationScope.Local,
-                ValidationLevel.Normal,
-                ValidationCategory.General,
-                ValidationStage.Initial);
+                RuntimeErrorSage.Domain.Enums.ValidationType.Data,
+                RuntimeErrorSage.Domain.Enums.ValidationScope.Object,
+                RuntimeErrorSage.Domain.Enums.ValidationLevel.Basic,
+                RuntimeErrorSage.Domain.Enums.ValidationCategory.Input,
+                RuntimeErrorSage.Domain.Enums.ValidationStage.PreValidation);
         }
     }
 }

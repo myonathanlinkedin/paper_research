@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Application.Interfaces
 {
@@ -43,7 +43,7 @@ namespace RuntimeErrorSage.Application.Interfaces
         /// </summary>
         /// <param name="context">The error context.</param>
         /// <returns>The risk assessment.</returns>
-        Task<RiskAssessment> GetRiskAssessmentAsync(ErrorContext context);
+        Task<RiskAssessmentModel> GetRiskAssessmentAsync(ErrorContext context);
 
         /// <summary>
         /// Gets the recommended remediation strategy.

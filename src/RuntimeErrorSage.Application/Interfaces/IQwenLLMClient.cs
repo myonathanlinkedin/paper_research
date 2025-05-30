@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Models.Context;
-using RuntimeErrorSage.Application.Models.LLM;
+using RuntimeErrorSage.Domain.Models.Context;
+using RuntimeErrorSage.Domain.Models.LLM;
 
 namespace RuntimeErrorSage.Application.LLM.Interfaces
 {

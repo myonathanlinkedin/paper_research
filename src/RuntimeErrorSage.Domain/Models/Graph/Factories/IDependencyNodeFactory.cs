@@ -1,6 +1,6 @@
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Graph;
 
-namespace RuntimeErrorSage.Application.Models.Graph.Factories
+namespace RuntimeErrorSage.Domain.Models.Graph.Factories
 {
     /// <summary>
     /// Interface for creating DependencyNode instances.

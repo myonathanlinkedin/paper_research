@@ -7,9 +7,9 @@ using Moq;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.MCP;
 using RuntimeErrorSage.Application.MCP.Interfaces;
-using RuntimeErrorSage.Application.Models.Context;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.MCP;
+using RuntimeErrorSage.Domain.Models.Context;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.MCP;
 using RuntimeErrorSage.Application.Storage.Interfaces;
 using Xunit;
 
@@ -58,13 +58,18 @@ namespace RuntimeErrorSage.Application.Tests.MCP
         public async Task AnalyzeErrorAsync_ShouldAnalyzeContextCorrectly()
         {
             // Arrange
-            var context = new ErrorContext
-            {
-                ErrorId = "test-error-1",
-                ErrorType = "RuntimeError",
-                Message = "Test error message",
-                ComponentGraph = new List<ComponentNode>()
-            };
+            var error = new RuntimeError(
+                message: "Test error message",
+                errorType: "RuntimeError",
+                source: "TestService",
+                stackTrace: string.Empty
+            );
+
+            var context = new ErrorContext(
+                error: error,
+                context: "TestService",
+                timestamp: DateTime.UtcNow
+            );
 
             _errorAnalyzerMock.Setup(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()))
                 .ReturnsAsync(new Dictionary<string, object>());
@@ -101,13 +106,18 @@ namespace RuntimeErrorSage.Application.Tests.MCP
         public async Task PublishContextAsync_ShouldUpdateCacheAndNotifySubscribers()
         {
             // Arrange
-            var context = new ErrorContext
-            {
-                ErrorId = "test-error-2",
-                ErrorType = "RuntimeError",
-                Message = "Test error message",
-                ComponentGraph = new List<ComponentNode>()
-            };
+            var error = new RuntimeError(
+                message: "Test error message",
+                errorType: "RuntimeError",
+                source: "TestService",
+                stackTrace: string.Empty
+            );
+
+            var context = new ErrorContext(
+                error: error,
+                context: "TestService",
+                timestamp: DateTime.UtcNow
+            );
 
             var callbackCalled = false;
             await _client.SubscribeToContextUpdatesAsync(context.ErrorId, async ctx =>

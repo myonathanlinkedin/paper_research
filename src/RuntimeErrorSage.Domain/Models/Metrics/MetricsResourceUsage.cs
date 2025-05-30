@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Metrics
+namespace RuntimeErrorSage.Domain.Models.Metrics
 {
     /// <summary>
     /// Represents resource usage metrics for a specific phase or operation
@@ -26,12 +26,12 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <summary>
         /// Gets or sets the disk usage in bytes.
         /// </summary>
-        public long DiskUsage { get; set; }
+        public double DiskUsage { get; set; }
 
         /// <summary>
         /// Gets or sets the network usage in bytes.
         /// </summary>
-        public long NetworkUsage { get; set; }
+        public double NetworkUsage { get; set; }
 
         /// <summary>
         /// Gets or sets the number of threads.

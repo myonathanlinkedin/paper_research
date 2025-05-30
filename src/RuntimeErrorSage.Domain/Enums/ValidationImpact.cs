@@ -1,33 +1,43 @@
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
-/// Defines impact levels for validation.
+/// Defines the impact levels for validation operations.
 /// </summary>
 public enum ValidationImpact
 {
     /// <summary>
-    /// Critical impact - system is unusable.
+    /// No impact.
     /// </summary>
-    Critical,
+    None = 0,
 
     /// <summary>
-    /// High impact - major functionality is impacted.
+    /// Minimal impact on the system.
     /// </summary>
-    High,
+    Minimal = 1,
 
     /// <summary>
-    /// Medium impact - system is degraded but functional.
+    /// Low impact on the system.
     /// </summary>
-    Medium,
+    Low = 2,
 
     /// <summary>
-    /// Low impact - minor impact on functionality.
+    /// Medium impact on the system.
     /// </summary>
-    Low,
+    Medium = 3,
 
     /// <summary>
-    /// No impact - no functional impact.
+    /// High impact on the system.
     /// </summary>
-    None
+    High = 4,
+
+    /// <summary>
+    /// Severe impact on the system.
+    /// </summary>
+    Severe = 5,
+
+    /// <summary>
+    /// Critical impact on the system.
+    /// </summary>
+    Critical = 6
 } 
 

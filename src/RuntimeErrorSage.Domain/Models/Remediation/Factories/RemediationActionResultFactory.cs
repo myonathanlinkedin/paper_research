@@ -1,7 +1,8 @@
 using System;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
-namespace RuntimeErrorSage.Application.Models.Remediation.Factories
+
+namespace RuntimeErrorSage.Domain.Models.Remediation.Factories
 {
     /// <summary>
     /// Factory for creating RemediationActionResult instances.
@@ -22,8 +23,17 @@ namespace RuntimeErrorSage.Application.Models.Remediation.Factories
                 ActionId = Guid.NewGuid().ToString(),
                 Name = name,
                 Success = success,
-                ErrorMessage = errorMessage,
-                Timestamp = DateTime.UtcNow
+                ErrorMessage = errorMessage
+            };
+        }
+
+        public RemediationActionResult CreateActionResult(string actionId, bool success, string message)
+        {
+            return new RemediationActionResult
+            {
+                ActionId = actionId,
+                Success = success,
+                Message = message
             };
         }
     }

@@ -1,6 +1,7 @@
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
-namespace RuntimeErrorSage.Application.Models.Remediation.Factories
+
+namespace RuntimeErrorSage.Domain.Models.Remediation.Factories
 {
     /// <summary>
     /// Interface for creating RemediationActionResult instances.

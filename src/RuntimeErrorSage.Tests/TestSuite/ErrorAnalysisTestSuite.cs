@@ -5,7 +5,7 @@ using Xunit;
 using RuntimeErrorSage.Application.Analysis;
 using RuntimeErrorSage.Application.LLM;
 using Moq;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 using RuntimeErrorSage.Tests.TestSuite.Enums;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
@@ -237,94 +237,182 @@ namespace RuntimeErrorSage.Tests.TestSuite
 
         private void AddDatabaseScenarios(Dictionary<string, ErrorScenario> scenarios)
         {
-            // Connection failures
-            scenarios.Add("db_connection_timeout", new ErrorScenario
+            scenarios.Add("DB_CONN_001", new ErrorScenario
             {
-                Name = "Database Connection Timeout",
+                Name = "Database Connection Error",
                 Type = ErrorType.Database,
-                Context = new ErrorContext
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Failed to connect to database",
+                        errorType: "DatabaseConnectionError",
+                        source: "DatabaseService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "DatabaseService",
+                    timestamp: DateTime.UtcNow
+                ),
+                ExpectedResult = new ExpectedResult
                 {
-                    Exception = new SqlException("Connection timeout"),
-                    StackTrace = "...",
-                    AdditionalContext = new Dictionary<string, string>
-                    {
-                        { "Server", "localhost" },
-                        { "Port", "1433" },
-                        { "Timeout", "30" }
-                    }
+                    Accuracy = 0.8,
+                    Latency = 500
                 }
             });
 
-            // Add more database scenarios...
+            scenarios.Add("DB_QUERY_001", new ErrorScenario
+            {
+                Name = "Database Query Error",
+                Type = ErrorType.Database,
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Failed to execute query",
+                        errorType: "DatabaseQueryError",
+                        source: "DatabaseService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "DatabaseService",
+                    timestamp: DateTime.UtcNow
+                ),
+                ExpectedResult = new ExpectedResult
+                {
+                    Accuracy = 0.8,
+                    Latency = 500
+                }
+            });
         }
 
         private void AddFileSystemScenarios(Dictionary<string, ErrorScenario> scenarios)
         {
-            // File access errors
-            scenarios.Add("file_access_denied", new ErrorScenario
+            scenarios.Add("FS_READ_001", new ErrorScenario
             {
-                Name = "File Access Denied",
+                Name = "File Read Error",
                 Type = ErrorType.FileSystem,
-                Context = new ErrorContext
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Failed to read file",
+                        errorType: "FileReadError",
+                        source: "FileSystemService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "FileSystemService",
+                    timestamp: DateTime.UtcNow
+                ),
+                ExpectedResult = new ExpectedResult
                 {
-                    Exception = new UnauthorizedAccessException("Access to the path is denied"),
-                    StackTrace = "...",
-                    AdditionalContext = new Dictionary<string, string>
-                    {
-                        { "Path", "C:\\Program Files\\App\\config.json" },
-                        { "User", "SYSTEM" },
-                        { "Permissions", "Read" }
-                    }
+                    Accuracy = 0.8,
+                    Latency = 500
                 }
             });
 
-            // Add more file system scenarios...
+            scenarios.Add("FS_WRITE_001", new ErrorScenario
+            {
+                Name = "File Write Error",
+                Type = ErrorType.FileSystem,
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Failed to write file",
+                        errorType: "FileWriteError",
+                        source: "FileSystemService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "FileSystemService",
+                    timestamp: DateTime.UtcNow
+                ),
+                ExpectedResult = new ExpectedResult
+                {
+                    Accuracy = 0.8,
+                    Latency = 500
+                }
+            });
         }
 
         private void AddHttpClientScenarios(Dictionary<string, ErrorScenario> scenarios)
         {
-            // HTTP client errors
-            scenarios.Add("http_timeout", new ErrorScenario
+            scenarios.Add("HTTP_CONN_001", new ErrorScenario
             {
-                Name = "HTTP Request Timeout",
+                Name = "HTTP Connection Error",
                 Type = ErrorType.HttpClient,
-                Context = new ErrorContext
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Failed to connect to HTTP service",
+                        errorType: "HttpConnectionError",
+                        source: "HttpClientService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "HttpClientService",
+                    timestamp: DateTime.UtcNow
+                ),
+                ExpectedResult = new ExpectedResult
                 {
-                    Exception = new HttpRequestException("The request timed out"),
-                    StackTrace = "...",
-                    AdditionalContext = new Dictionary<string, string>
-                    {
-                        { "Url", "https://api.example.com/data" },
-                        { "Method", "GET" },
-                        { "Timeout", "30" }
-                    }
+                    Accuracy = 0.8,
+                    Latency = 500
                 }
             });
 
-            // Add more HTTP client scenarios...
+            scenarios.Add("HTTP_REQ_001", new ErrorScenario
+            {
+                Name = "HTTP Request Error",
+                Type = ErrorType.HttpClient,
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Failed to send HTTP request",
+                        errorType: "HttpRequestError",
+                        source: "HttpClientService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "HttpClientService",
+                    timestamp: DateTime.UtcNow
+                ),
+                ExpectedResult = new ExpectedResult
+                {
+                    Accuracy = 0.8,
+                    Latency = 500
+                }
+            });
         }
 
         private void AddResourceScenarios(Dictionary<string, ErrorScenario> scenarios)
         {
-            // Resource exhaustion errors
-            scenarios.Add("memory_exhaustion", new ErrorScenario
+            scenarios.Add("RES_MEM_001", new ErrorScenario
             {
-                Name = "Memory Exhaustion",
+                Name = "Memory Error",
                 Type = ErrorType.Resource,
-                Context = new ErrorContext
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Out of memory",
+                        errorType: "MemoryError",
+                        source: "ResourceService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "ResourceService",
+                    timestamp: DateTime.UtcNow
+                ),
+                ExpectedResult = new ExpectedResult
                 {
-                    Exception = new OutOfMemoryException("Insufficient memory to continue the execution of the program"),
-                    StackTrace = "...",
-                    AdditionalContext = new Dictionary<string, string>
-                    {
-                        { "AvailableMemory", "512MB" },
-                        { "RequiredMemory", "1GB" },
-                        { "ProcessId", "1234" }
-                    }
+                    Accuracy = 0.8,
+                    Latency = 500
                 }
             });
 
-            // Add more resource scenarios...
+            scenarios.Add("RES_CPU_001", new ErrorScenario
+            {
+                Name = "CPU Error",
+                Type = ErrorType.Resource,
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "CPU limit exceeded",
+                        errorType: "CpuError",
+                        source: "ResourceService",
+                        stackTrace: string.Empty
+                    ),
+                    context: "ResourceService",
+                    timestamp: DateTime.UtcNow
+                ),
+                ExpectedResult = new ExpectedResult
+                {
+                    Accuracy = 0.8,
+                    Latency = 500
+                }
+            });
         }
 
         public async Task RunTestSuiteAsync()

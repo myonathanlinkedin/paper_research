@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Application.Services;
 
 namespace RuntimeErrorSage.Tests.TestSuite
@@ -343,14 +343,24 @@ namespace RuntimeErrorSage.Tests.TestSuite
             catch (Exception ex)
             {
                 // Create error context with real-world metadata
-                var context = new ErrorContext
+                var error = new RuntimeError(
+                    message: ex.Message,
+                    errorType: scenario.ErrorType,
+                    source: scenario.Id,
+                    stackTrace: ex.StackTrace
+                );
+
+                var context = new ErrorContext(
+                    error: error,
+                    context: scenario.Id,
+                    timestamp: DateTime.UtcNow
+                );
+
+                // Add real-world metadata
+                foreach (var metadata in scenario.Metadata)
                 {
-                    ErrorType = scenario.ErrorType,
-                    TestScenarioId = scenario.Id,
-                    Timestamp = DateTime.UtcNow,
-                    CorrelationId = Guid.NewGuid().ToString(),
-                    AdditionalContext = scenario.Metadata
-                };
+                    context.AddMetadata(metadata.Key, metadata.Value);
+                }
 
                 // Process the error through RuntimeErrorSage
                 return await _RuntimeErrorSageService.ProcessExceptionAsync(ex, context);

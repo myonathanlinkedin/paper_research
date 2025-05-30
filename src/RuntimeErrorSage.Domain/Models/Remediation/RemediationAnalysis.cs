@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
-using RuntimeErrorSage.Application.Models.LLM;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Context;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Models.LLM;
 
-namespace RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Context;
+
+namespace RuntimeErrorSage.Domain.Models.Remediation;
 
 /// <summary>
 /// Represents an analysis of a remediation operation.

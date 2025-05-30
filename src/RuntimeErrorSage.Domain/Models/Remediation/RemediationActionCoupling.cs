@@ -1,10 +1,4 @@
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Remediation;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Manages coupling between remediation actions.

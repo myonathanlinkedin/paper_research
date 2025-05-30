@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Error
+namespace RuntimeErrorSage.Domain.Models.Error
 {
     /// <summary>
     /// Represents a runtime error in the system.
@@ -10,24 +10,29 @@ namespace RuntimeErrorSage.Application.Models.Error
     public class RuntimeError
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the error.
+        /// Gets or sets the unique identifier for this error.
         /// </summary>
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
+        /// Gets or sets the error code.
+        /// </summary>
+        public string ErrorCode { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the error message.
         /// </summary>
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the error type.
         /// </summary>
-        public string ErrorType { get; set; }
+        public string ErrorType { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the component ID where the error occurred.
+        /// Gets or sets the error severity.
         /// </summary>
-        public string ComponentId { get; set; }
+        public string Severity { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the timestamp when the error occurred.
@@ -35,14 +40,59 @@ namespace RuntimeErrorSage.Application.Models.Error
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the stack trace of the error.
+        /// Gets or sets the stack trace.
         /// </summary>
-        public string StackTrace { get; set; }
+        public string? StackTrace { get; set; }
+
+        /// <summary>
+        /// Gets or sets the source of the error.
+        /// </summary>
+        public string Source { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the target of the error.
+        /// </summary>
+        public string Target { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the error context.
+        /// </summary>
+        public string? Context { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error category.
+        /// </summary>
+        public string Category { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the error subcategory.
+        /// </summary>
+        public string? Subcategory { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the error is handled.
+        /// </summary>
+        public bool IsHandled { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the error is critical.
+        /// </summary>
+        public bool IsCritical { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error correlation ID.
+        /// </summary>
+        public string? CorrelationId { get; set; }
 
         /// <summary>
         /// Gets or sets additional metadata about the error.
         /// </summary>
-        public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, string> Metadata { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the component ID associated with this error.
+        /// </summary>
+        public string ComponentId { get; set; } = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RuntimeError"/> class.
@@ -63,8 +113,8 @@ namespace RuntimeErrorSage.Application.Models.Error
             string type,
             string message,
             string source,
-            string stackTrace = null,
-            Dictionary<string, object> metadata = null)
+            string? stackTrace = null,
+            Dictionary<string, string>? metadata = null)
         {
             ArgumentNullException.ThrowIfNull(type);
             ArgumentNullException.ThrowIfNull(message);
@@ -72,6 +122,7 @@ namespace RuntimeErrorSage.Application.Models.Error
 
             ErrorType = type;
             Message = message;
+            Source = source;
             StackTrace = stackTrace;
             if (metadata != null)
             {
@@ -96,6 +147,78 @@ namespace RuntimeErrorSage.Application.Models.Error
                 message: exception.Message,
                 source: source,
                 stackTrace: exception.StackTrace);
+        }
+
+        /// <summary>
+        /// Adds metadata to the error.
+        /// </summary>
+        /// <param name="key">The metadata key.</param>
+        /// <param name="value">The metadata value.</param>
+        public void AddMetadata(string key, string value)
+        {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentNullException(nameof(key));
+
+            Metadata[key] = value;
+        }
+
+        /// <summary>
+        /// Gets metadata from the error.
+        /// </summary>
+        /// <param name="key">The metadata key.</param>
+        /// <returns>The metadata value.</returns>
+        public string? GetMetadata(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentNullException(nameof(key));
+
+            return Metadata.TryGetValue(key, out var value) ? value : null;
+        }
+
+        /// <summary>
+        /// Validates the error.
+        /// </summary>
+        /// <returns>True if the error is valid; otherwise, false.</returns>
+        public bool Validate()
+        {
+            if (string.IsNullOrEmpty(Id))
+                return false;
+
+            if (string.IsNullOrEmpty(Message))
+                return false;
+
+            if (string.IsNullOrEmpty(ErrorType))
+                return false;
+
+            if (string.IsNullOrEmpty(Source))
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Converts the error to a dictionary.
+        /// </summary>
+        /// <returns>The dictionary representation of the error.</returns>
+        public Dictionary<string, object> ToDictionary()
+        {
+            return new Dictionary<string, object>
+            {
+                { "Id", Id },
+                { "Message", Message },
+                { "ErrorType", ErrorType },
+                { "Source", Source },
+                { "Timestamp", Timestamp },
+                { "StackTrace", StackTrace },
+                { "Category", Category },
+                { "Severity", Severity },
+                { "Target", Target },
+                { "Context", Context },
+                { "IsHandled", IsHandled },
+                { "IsCritical", IsCritical },
+                { "CorrelationId", CorrelationId },
+                { "Metadata", Metadata }
+            };
         }
     }
 } 

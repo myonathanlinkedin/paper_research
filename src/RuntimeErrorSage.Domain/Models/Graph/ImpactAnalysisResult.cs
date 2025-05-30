@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Graph;
+namespace RuntimeErrorSage.Domain.Models.Graph;
 
 /// <summary>
 /// Represents the result of an impact analysis.

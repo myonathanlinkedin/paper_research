@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Error
+namespace RuntimeErrorSage.Domain.Models.Error
 {
     /// <summary>
     /// Factory for creating error objects.

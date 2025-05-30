@@ -4,11 +4,11 @@ using RuntimeErrorSage.Application.Classifier.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Error.Factories;
-using RuntimeErrorSage.Application.Models.LLM;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error.Factories;
+using RuntimeErrorSage.Domain.Models.LLM;
 
-namespace RuntimeErrorSage.Application.Models.Qwen;
+namespace RuntimeErrorSage.Domain.Models.Qwen;
 
 /// <summary>
 /// Implements the Qwen 2.5 7B Instruct 1M model integration for error analysis and remediation.
@@ -248,8 +248,9 @@ public class QwenModelIntegration : ILLMClient
             Timestamp = DateTime.UtcNow,
             Status = AnalysisStatus.Completed,
             RootCause = "Sample root cause",
-            Confidence = 0.8,
-            Severity = ErrorSeverity.Medium
+            Suggestions = new List<string> { "Sample suggestion" },
+            Confidence = 0.85,
+            Severity = ErrorSeverity.Error
         };
     }
 

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Monitoring
+namespace RuntimeErrorSage.Domain.Models.Monitoring
 {
     /// <summary>
     /// Represents component health status.

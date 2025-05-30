@@ -1,6 +1,6 @@
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 
-namespace RuntimeErrorSage.Application.Models.Error.Factories
+namespace RuntimeErrorSage.Domain.Models.Error.Factories
 {
     /// <summary>
     /// Interface for creating RelatedError instances.

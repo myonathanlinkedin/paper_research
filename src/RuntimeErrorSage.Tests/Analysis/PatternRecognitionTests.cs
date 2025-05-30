@@ -3,8 +3,8 @@ using Microsoft.Extensions.Options;
 using Moq;
 using RuntimeErrorSage.Application.Analysis;
 using RuntimeErrorSage.Application.MCP.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Interfaces;
 using RuntimeErrorSage.Application.Options;
 using RuntimeErrorSage.Application.Storage.Interfaces;
 using Xunit;
@@ -215,12 +215,25 @@ namespace RuntimeErrorSage.Tests.Analysis
 
         private static ErrorContext CreateTestContext(string errorType, Dictionary<string, object> additionalContext)
         {
-            return new ErrorContext
+            var error = new RuntimeError(
+                message: $"Test error of type {errorType}",
+                errorType: errorType,
+                source: "TestService",
+                stackTrace: string.Empty
+            );
+
+            var context = new ErrorContext(
+                error: error,
+                context: "TestService",
+                timestamp: DateTime.UtcNow
+            );
+
+            foreach (var kvp in additionalContext)
             {
-                ErrorType = errorType,
-                AdditionalContext = additionalContext,
-                Timestamp = DateTime.UtcNow
-            };
+                context.AddMetadata(kvp.Key, kvp.Value);
+            }
+
+            return context;
         }
 
         private static ErrorPattern CreateTestPattern(string errorType, Dictionary<string, object> context)

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
 using RuntimeErrorSage.Application.Services.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Services;
@@ -24,7 +24,7 @@ public class ImpactAnalyzer : IImpactAnalyzer
     }
 
     /// <inheritdoc />
-    public async Task<List<RuntimeErrorSage.Application.Models.Graph.ImpactAnalysisResult>> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph)
+    public async Task<List<RuntimeErrorSage.Domain.Models.Graph.ImpactAnalysisResult>> AnalyzeImpactAsync(ErrorContext context, DependencyGraph graph)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(graph);
@@ -33,20 +33,20 @@ public class ImpactAnalyzer : IImpactAnalyzer
         {
             _logger.LogInformation("Analyzing impact for error {ErrorId}", context.ErrorId);
 
-            var results = new List<RuntimeErrorSage.Application.Models.Graph.ImpactAnalysisResult>();
+            var results = new List<RuntimeErrorSage.Domain.Models.Graph.ImpactAnalysisResult>();
 
             // Start from the error source node
             var startNodeId = context.ErrorSource;
-            if (string.IsNullOrEmpty(startNodeId) || !graph.Nodes.ContainsKey(startNodeId))
+            if (string.IsNullOrEmpty(startNodeId) || !graph.Nodes.Any(n => n.Key == startNodeId))
             {
                 _logger.LogWarning("No valid error source node found for error {ErrorId}", context.ErrorId);
                 return results;
             }
 
             // Analyze impact on each node
-            foreach (var node in graph.Nodes.Values)
+            foreach (var kvp in graph.Nodes)
             {
-                var result = await AnalyzeNodeImpactAsync(node, graph, startNodeId);
+                var result = await AnalyzeNodeImpactAsync(kvp.Value, graph, startNodeId);
                 if (result != null)
                 {
                     results.Add(result);
@@ -81,28 +81,23 @@ public class ImpactAnalyzer : IImpactAnalyzer
         }
     }
 
-    private async Task<RuntimeErrorSage.Application.Models.Graph.ImpactAnalysisResult> AnalyzeNodeImpactAsync(GraphNode node, DependencyGraph graph, string startNodeId)
+    private async Task<RuntimeErrorSage.Domain.Models.Graph.ImpactAnalysisResult> AnalyzeNodeImpactAsync(GraphNode node, DependencyGraph graph, string startNodeId)
     {
         try
         {
-            var result = new RuntimeErrorSage.Application.Models.Graph.ImpactAnalysisResult
+            var result = new RuntimeErrorSage.Domain.Models.Graph.ImpactAnalysisResult
             {
                 ErrorId = graph.Metadata.TryGetValue("ErrorId", out var errorId) ? errorId?.ToString() : string.Empty,
                 ComponentId = node.Id,
                 ComponentName = node.Name,
-                ComponentType = node.Type,
+                ComponentType = ParseNodeType(node.Type),
                 Timestamp = DateTime.UtcNow
             };
 
             // Calculate direct dependencies
             var directDependencies = graph.Edges
                 .Where(e => e.Source.Id == node.Id)
-                .Select(e => new DependencyNode
-                {
-                    Id = e.Target.Id,
-                    Type = e.Target.Type,
-                    Weight = e.Weight
-                })
+                .Select(e => new DependencyNode { Id = e.Target.Id, Label = e.Target.Name, ComponentId = e.Target.Id, ComponentName = e.Target.Name })
                 .ToList();
 
             result.DirectDependencies = directDependencies;
@@ -128,12 +123,7 @@ public class ImpactAnalyzer : IImpactAnalyzer
                 {
                     if (!visited.Contains(edge.Target.Id))
                     {
-                        indirectDependencies.Add(new DependencyNode
-                        {
-                            Id = edge.Target.Id,
-                            Type = edge.Target.Type,
-                            Weight = edge.Weight
-                        });
+                        indirectDependencies.Add(new DependencyNode { Id = edge.Target.Id, Label = edge.Target.Name, ComponentId = edge.Target.Id, ComponentName = edge.Target.Name });
                         queue.Enqueue(edge.Target.Id);
                     }
                 }
@@ -145,7 +135,7 @@ public class ImpactAnalyzer : IImpactAnalyzer
             result.BlastRadius = directDependencies.Count + indirectDependencies.Count;
 
             // Calculate severity based on blast radius and node type
-            result.Severity = CalculateSeverity(result.BlastRadius, node.Type);
+            result.Severity = CalculateSeverity(result.BlastRadius, ParseNodeType(node.Type)).ToImpactSeverity();
             result.Scope = CalculateScope(result.BlastRadius);
 
             // Calculate confidence based on available data
@@ -161,13 +151,23 @@ public class ImpactAnalyzer : IImpactAnalyzer
         }
     }
 
+    private GraphNodeType ParseNodeType(string nodeType)
+    {
+        if (Enum.TryParse<GraphNodeType>(nodeType, out var result))
+        {
+            return result;
+        }
+        return GraphNodeType.Unknown;
+    }
+
     private SeverityLevel CalculateSeverity(int blastRadius, GraphNodeType nodeType)
     {
-        if (blastRadius > 10 || nodeType == GraphNodeType.Critical)
+        // Only use valid enum values
+        if (blastRadius > 10)
             return SeverityLevel.Critical;
-        if (blastRadius > 5 || nodeType == GraphNodeType.High)
+        if (blastRadius > 5)
             return SeverityLevel.High;
-        if (blastRadius > 2 || nodeType == GraphNodeType.Medium)
+        if (blastRadius > 2)
             return SeverityLevel.Medium;
         return SeverityLevel.Low;
     }
@@ -188,7 +188,8 @@ public class ImpactAnalyzer : IImpactAnalyzer
         var confidence = 0.0;
 
         // Base confidence on node type
-        switch (node.Type)
+        var nodeType = ParseNodeType(node.Type);
+        switch (nodeType)
         {
             case GraphNodeType.Component:
                 confidence += 0.3;

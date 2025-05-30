@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Common;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
-using RuntimeErrorSage.Application.Models.Execution;
-using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Common;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Execution;
+using RuntimeErrorSage.Domain.Models.Metrics;
 using RuntimeErrorSage.Application.Interfaces;
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.Options;
 using RuntimeErrorSage.Application.Analysis;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
 
 namespace RuntimeErrorSage.Application.Remediation
 {
@@ -75,7 +75,7 @@ namespace RuntimeErrorSage.Application.Remediation
         public string Version => "1.0.0";
 
         /// <inheritdoc />
-        public void RegisterStrategy(Models.Remediation.Interfaces.IRemediationStrategy strategy)
+        public void RegisterStrategy(IRemediationStrategy strategy)
         {
             ArgumentNullException.ThrowIfNull(strategy);
 
@@ -386,11 +386,20 @@ namespace RuntimeErrorSage.Application.Remediation
                 }
 
                 // Create a mock context with the strategy name to use with SelectStrategyAsync
-                var mockContext = new ErrorContext 
-                { 
-                    ErrorType = suggestion.StrategyName,
-                    CorrelationId = errorContext.CorrelationId
-                };
+                var error = new RuntimeError(
+                    message: $"Mock error for strategy {suggestion.StrategyName}",
+                    errorType: suggestion.StrategyName,
+                    source: "RemediationService",
+                    stackTrace: string.Empty
+                );
+
+                var mockContext = new ErrorContext(
+                    error: error,
+                    context: "RemediationService",
+                    timestamp: DateTime.UtcNow
+                );
+
+                mockContext.CorrelationId = errorContext.CorrelationId;
                 
                 var strategy = await _strategySelector.SelectStrategyAsync(mockContext);
                 if (strategy == null)
@@ -514,11 +523,20 @@ namespace RuntimeErrorSage.Application.Remediation
                 _logger.LogInformation("Getting impact for remediation suggestion for error context {ErrorId}", errorContext.Id);
                 
                 // Create a mock context with the strategy name to use with SelectStrategyAsync
-                var mockContext = new ErrorContext 
-                { 
-                    ErrorType = suggestion.StrategyName,
-                    CorrelationId = errorContext.CorrelationId
-                };
+                var error = new RuntimeError(
+                    message: $"Mock error for strategy {suggestion.StrategyName}",
+                    errorType: suggestion.StrategyName,
+                    source: "RemediationService",
+                    stackTrace: string.Empty
+                );
+
+                var mockContext = new ErrorContext(
+                    error: error,
+                    context: "RemediationService",
+                    timestamp: DateTime.UtcNow
+                );
+
+                mockContext.CorrelationId = errorContext.CorrelationId;
                 
                 var strategy = await _strategySelector.SelectStrategyAsync(mockContext);
                 if (strategy == null)

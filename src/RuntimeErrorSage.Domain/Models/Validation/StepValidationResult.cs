@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Validation
+namespace RuntimeErrorSage.Domain.Models.Validation
 {
     /// <summary>
     /// Represents the validation result for a remediation step.

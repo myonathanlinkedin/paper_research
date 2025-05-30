@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
+using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Represents a time window for availability.
@@ -298,6 +300,8 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// </summary>
         public DateTime? RecurrenceFiscalSemesterOfYearEnd { get; set; }
 
+        public List<DayOfWeek> DaysOfWeek { get; set; } = new List<DayOfWeek>();
+
         /// <summary>
         /// Checks if a given time falls within this window.
         /// </summary>
@@ -305,8 +309,50 @@ namespace RuntimeErrorSage.Application.Models.Remediation
         /// <returns>True if the time is within the window, false otherwise.</returns>
         public bool IsInWindow(DateTime time)
         {
-            var localTime = TimeZoneInfo.ConvertTimeFromUtc(time, TimeZone);
-            return localTime >= StartTime && localTime <= EndTime && DaysOfWeek.Contains(localTime.DayOfWeek);
+            var startTime = TimeSpan.Parse(StartTime);
+            var endTime = TimeSpan.Parse(EndTime);
+            var currentTime = time.TimeOfDay;
+
+            // Parse RecurrenceDaysOfWeek as comma-separated list
+            var daysOfWeek = new HashSet<DayOfWeek>();
+            if (!string.IsNullOrEmpty(RecurrenceDaysOfWeek))
+            {
+                foreach (var day in RecurrenceDaysOfWeek.Split(','))
+                {
+                    if (Enum.TryParse(day.Trim(), out DayOfWeek dow))
+                        daysOfWeek.Add(dow);
+                }
+            }
+
+            return currentTime >= startTime && currentTime <= endTime && daysOfWeek.Contains(time.DayOfWeek);
+        }
+
+        public bool IsWithinWindow(DateTime time, string timezone)
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(timezone);
+            var localTime = TimeZoneInfo.ConvertTime(time, tz);
+            var startTime = TimeSpan.Parse(StartTime);
+            var endTime = TimeSpan.Parse(EndTime);
+            var currentTime = localTime.TimeOfDay;
+
+            return currentTime >= startTime && currentTime <= endTime && 
+                   DaysOfWeek.Contains(localTime.DayOfWeek);
+        }
+
+        public bool IsAvailable(DayOfWeek dayOfWeek, TimeSpan timeOfDay)
+        {
+            if (!DaysOfWeek.Contains(dayOfWeek))
+                return false;
+
+            var startTime = TimeSpan.Parse(StartTime);
+            var endTime = TimeSpan.Parse(EndTime);
+
+            return timeOfDay >= startTime && timeOfDay <= endTime;
+        }
+
+        public bool IsAvailable(DateTime time)
+        {
+            return IsAvailable(time.DayOfWeek, time.TimeOfDay);
         }
     }
 } 

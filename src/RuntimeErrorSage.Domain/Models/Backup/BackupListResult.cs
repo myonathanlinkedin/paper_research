@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Backup
+namespace RuntimeErrorSage.Domain.Models.Backup
 {
     /// <summary>
     /// Represents the result of listing backups.

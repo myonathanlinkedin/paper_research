@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.Analysis.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Metrics;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Metrics;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
 
@@ -89,14 +88,18 @@ public class TestSuiteExecutor
         if (scenario == null)
             throw new ArgumentNullException(nameof(scenario));
 
-        var context = new ErrorContext
-        {
-            ErrorType = scenario.ErrorType,
-            ErrorMessage = scenario.ErrorMessage,
-            StackTrace = scenario.StackTrace,
-            Source = scenario.Source,
-            Timestamp = DateTime.UtcNow
-        };
+        var error = new RuntimeError(
+            message: scenario.ErrorMessage,
+            errorType: scenario.ErrorType,
+            source: scenario.Source,
+            stackTrace: scenario.StackTrace
+        );
+
+        var context = new ErrorContext(
+            error: error,
+            context: scenario.Source,
+            timestamp: DateTime.UtcNow
+        );
 
         var analysis = await _errorAnalyzer.AnalyzeErrorAsync(context).ConfigureAwait(false);
         scenario.Analysis = analysis;

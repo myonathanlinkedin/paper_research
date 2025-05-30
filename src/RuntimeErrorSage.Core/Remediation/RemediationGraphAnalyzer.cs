@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using System.Linq;
 

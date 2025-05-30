@@ -1,280 +1,150 @@
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Validation;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Linq;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Domain.Interfaces;
 
-namespace RuntimeErrorSage.Application.Models.Remediation
+
+namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
     /// Handles validation of remediation actions.
     /// </summary>
     public class RemediationActionValidation
     {
-        private readonly IValidationRuleProvider _ruleProvider;
-        private readonly IValidationResultStorage _resultStorage;
-        private readonly IValidationStateChecker _stateChecker;
-        private readonly List<IValidationResultHandler> _resultHandlers;
-        private readonly List<string> _validationMessages;
+        private readonly List<string> _errors = new();
+        private readonly List<string> _warnings = new();
+        private readonly List<string> _validationRules = new();
+        private readonly ValidationContext _context;
+        private readonly IRemediationAction _action;
+
+        /// <summary>
+        /// Gets the validation errors.
+        /// </summary>
+        public IReadOnlyList<string> Errors => _errors.AsReadOnly();
+
+        /// <summary>
+        /// Gets the validation warnings.
+        /// </summary>
+        public IReadOnlyList<string> Warnings => _warnings.AsReadOnly();
+
+        /// <summary>
+        /// Gets the validation rules.
+        /// </summary>
+        public IReadOnlyList<string> ValidationRules => _validationRules.AsReadOnly();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RemediationActionValidation"/> class.
         /// </summary>
-        /// <param name="ruleProvider">The validation rule provider.</param>
-        /// <param name="resultStorage">The validation result storage.</param>
-        /// <param name="stateChecker">The validation state checker.</param>
-        public RemediationActionValidation(
-            IValidationRuleProvider ruleProvider,
-            IValidationResultStorage resultStorage,
-            IValidationStateChecker stateChecker)
+        /// <param name="action">The remediation action to validate.</param>
+        /// <param name="context">The validation context.</param>
+        public RemediationActionValidation(IRemediationAction action, ValidationContext context)
         {
-            _ruleProvider = ruleProvider ?? throw new ArgumentNullException(nameof(ruleProvider));
-            _resultStorage = resultStorage ?? throw new ArgumentNullException(nameof(resultStorage));
-            _stateChecker = stateChecker ?? throw new ArgumentNullException(nameof(stateChecker));
-            _resultHandlers = new List<IValidationResultHandler>();
-            _validationMessages = new List<string>();
+            _action = action ?? throw new ArgumentNullException(nameof(action));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         /// <summary>
-        /// Gets the collection of result handlers.
+        /// Validates the action.
         /// </summary>
-        public IReadOnlyList<IValidationResultHandler> ResultHandlers => new ReadOnlyCollection<IValidationResultHandler>(_resultHandlers);
-
-        /// <summary>
-        /// Validates a remediation action.
-        /// </summary>
-        /// <param name="action">The action to validate.</param>
-        /// <param name="context">The error context.</param>
         /// <returns>The validation result.</returns>
-        public async Task<ValidationResult> ValidateActionAsync(IRemediationAction action, ErrorContext context)
+        public async Task<ValidationResult> ValidateAsync()
         {
-            ArgumentNullException.ThrowIfNull(action);
-            ArgumentNullException.ThrowIfNull(context);
+            _errors.Clear();
+            _warnings.Clear();
 
-            var result = new ValidationResult
+            // Validate required properties
+            if (string.IsNullOrEmpty(_action.Id))
+                _errors.Add("Action ID is required");
+
+            if (string.IsNullOrEmpty(_action.Name))
+                _errors.Add("Action name is required");
+
+            if (string.IsNullOrEmpty(_action.ActionType))
+                _errors.Add("Action type is required");
+
+            if (_action.Context == null)
+                _errors.Add("Error context is required");
+
+            // Create validation result with proper constructor parameters
+            var result = new ValidationResult(
+                _context,
+                isValid: !_errors.Any(),
+                severity: _errors.Any() ? ValidationSeverity.Error : ValidationSeverity.Info);
+            
+            // Add messages to the validation result
+            foreach (var error in _errors)
             {
-                ActionId = action.ActionId,
-                Timestamp = DateTime.UtcNow,
-                IsValid = true,
-                Errors = new List<string>(),
-                Warnings = new List<string>(),
-                ValidationRules = new List<string>()
-            };
-
-            try
-            {
-                var startTime = DateTime.UtcNow;
-
-                // Validate prerequisites
-                await ValidatePrerequisitesAsync(action, context, result);
-
-                // Validate dependencies
-                await ValidateDependenciesAsync(action, context, result);
-
-                // Validate parameters
-                ValidateParameters(action, result);
-
-                // Run custom validation rules
-                await ValidateWithRulesAsync(action, result);
-
-                // Validate action state
-                ValidateActionState(action, result);
-
-                result.DurationMs = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
-                _resultStorage.StoreResult(action.ActionId, result);
-                NotifyResultHandlers(result);
-                return result;
+                result.AddError(error);
             }
-            catch (ValidationException ex)
+            
+            foreach (var warning in _warnings)
             {
-                result.IsValid = false;
-                result.Errors.Add($"Validation failed: {ex.Message}");
-                _resultStorage.StoreResult(action.ActionId, result);
-                NotifyResultHandlers(result);
-                return result;
+                result.AddWarning(warning);
             }
-            catch (Exception ex)
+
+            return result;
+        }
+
+        /// <summary>
+        /// Adds a validation error.
+        /// </summary>
+        /// <param name="error">The error message.</param>
+        public void AddError(string error)
+        {
+            if (!string.IsNullOrEmpty(error))
             {
-                result.IsValid = false;
-                result.Errors.Add($"Unexpected error during validation: {ex.Message}");
-                _resultStorage.StoreResult(action.ActionId, result);
-                NotifyResultHandlers(result);
-                return result;
+                _errors.Add(error);
             }
         }
 
         /// <summary>
-        /// Gets the validation result for an action.
+        /// Adds a validation warning.
         /// </summary>
-        /// <param name="actionId">The action ID.</param>
-        /// <returns>The validation result, or null if not found.</returns>
-        public ValidationResult GetValidationResult(string actionId)
+        /// <param name="warning">The warning message.</param>
+        public void AddWarning(string warning)
         {
-            ArgumentNullException.ThrowIfNull(actionId);
-            return _resultStorage.GetResult(actionId);
+            if (!string.IsNullOrEmpty(warning))
+            {
+                _warnings.Add(warning);
+            }
         }
 
         /// <summary>
-        /// Clears all validation results.
+        /// Adds a validation rule.
         /// </summary>
-        public void ClearResults()
+        /// <param name="rule">The validation rule.</param>
+        public void AddRule(string rule)
         {
-            _resultStorage.ClearResults();
+            if (!string.IsNullOrEmpty(rule))
+            {
+                _validationRules.Add(rule);
+            }
         }
 
         /// <summary>
-        /// Registers a validation result handler.
+        /// Removes a validation rule.
         /// </summary>
-        /// <param name="handler">The handler to register.</param>
-        public void RegisterResultHandler(IValidationResultHandler handler)
+        /// <param name="rule">The validation rule to remove.</param>
+        public void RemoveRule(string rule)
         {
-            ArgumentNullException.ThrowIfNull(handler);
-            _resultHandlers.Add(handler);
+            if (!string.IsNullOrEmpty(rule))
+            {
+                _validationRules.Remove(rule);
+            }
         }
 
         /// <summary>
-        /// Unregisters a validation result handler.
+        /// Gets all validation rules.
         /// </summary>
-        /// <param name="handler">The handler to unregister.</param>
-        public void UnregisterResultHandler(IValidationResultHandler handler)
+        /// <returns>A list of validation rules.</returns>
+        public IReadOnlyList<string> GetRules()
         {
-            ArgumentNullException.ThrowIfNull(handler);
-            _resultHandlers.Remove(handler);
-        }
-
-        private static async Task ValidatePrerequisitesAsync(IRemediationAction action, ErrorContext context, ValidationResult result)
-        {
-            if (action.Prerequisites?.Count == 0) return;
-
-            foreach (var prerequisite in action.Prerequisites)
-            {
-                if (!await ValidatePrerequisiteAsync(prerequisite, context))
-                {
-                    result.IsValid = false;
-                    result.Errors.Add($"Prerequisite not met: {prerequisite}");
-                }
-            }
-        }
-
-        private static async Task ValidateDependenciesAsync(IRemediationAction action, ErrorContext context, ValidationResult result)
-        {
-            if (action.Dependencies?.Count == 0) return;
-
-            foreach (var dependency in action.Dependencies)
-            {
-                if (!await ValidateDependencyAsync(dependency, context))
-                {
-                    result.IsValid = false;
-                    result.Errors.Add($"Dependency not met: {dependency}");
-                }
-            }
-        }
-
-        private static void ValidateParameters(IRemediationAction action, ValidationResult result)
-        {
-            if (action.Parameters?.Count == 0) return;
-
-            foreach (var param in action.Parameters)
-            {
-                if (!ValidateParameter(param.Key, param.Value))
-                {
-                    result.IsValid = false;
-                    result.Errors.Add($"Invalid parameter: {param.Key}");
-                }
-            }
-        }
-
-        private async Task ValidateWithRulesAsync(IRemediationAction action, ValidationResult result)
-        {
-            foreach (var rule in _ruleProvider.GetRules().Where(r => r.IsEnabled))
-            {
-                try
-                {
-                    result.ValidationRules.Add(rule.Name);
-                    var ruleResult = await rule.ValidateAsync(action);
-                    if (!ruleResult.IsValid)
-                    {
-                        result.IsValid = false;
-                        result.Errors.AddRange(ruleResult.Errors);
-                    }
-                    if (ruleResult.Warnings?.Count > 0)
-                    {
-                        result.Warnings.AddRange(ruleResult.Warnings);
-                    }
-                }
-                catch (ValidationException ex)
-                {
-                    result.IsValid = false;
-                    result.Errors.Add($"Error validating rule {rule.Name}: {ex.Message}");
-                }
-                catch (Exception ex)
-                {
-                    result.IsValid = false;
-                    result.Errors.Add($"Unexpected error validating rule {rule.Name}: {ex.Message}");
-                }
-            }
-        }
-
-        private void ValidateActionState(IRemediationAction action, ValidationResult result)
-        {
-            if (!_stateChecker.IsValidState(action))
-            {
-                result.IsValid = false;
-                result.Errors.Add("Invalid action state");
-            }
-        }
-
-        private static async Task<bool> ValidatePrerequisiteAsync(string prerequisite, ErrorContext context)
-        {
-            // Implementation specific to your needs
-            return await Task.FromResult(true);
-        }
-
-        private static async Task<bool> ValidateDependencyAsync(string dependency, ErrorContext context)
-        {
-            // Implementation specific to your needs
-            return await Task.FromResult(true);
-        }
-
-        private static bool ValidateParameter(string key, object value)
-        {
-            // Implementation specific to your needs
-            return true;
-        }
-
-        private void NotifyResultHandlers(ValidationResult result)
-        {
-            foreach (var handler in _resultHandlers)
-            {
-                try
-                {
-                    handler.HandleResult(result);
-                }
-                catch (Exception ex)
-                {
-                    // Log the exception but continue processing other handlers
-                    System.Diagnostics.Debug.WriteLine($"Error in validation result handler: {ex.Message}");
-                }
-            }
-        }
-
-        public void Add(string message)
-        {
-            _validationMessages.Add(message);
-        }
-
-        public void AddRange(IEnumerable<string> messages)
-        {
-            _validationMessages.AddRange(messages);
-        }
-
-        public IReadOnlyList<string> GetValidationMessages()
-        {
-            return _validationMessages.AsReadOnly();
+            return _validationRules.AsReadOnly();
         }
     }
 } 

@@ -1,39 +1,29 @@
 namespace RuntimeErrorSage.Domain.Enums
 {
     /// <summary>
-    /// Defines the severity levels of validation operations.
+    /// Represents the severity of a validation rule.
     /// </summary>
     public enum ValidationSeverity
     {
         /// <summary>
-        /// Unknown validation severity.
+        /// The rule is informational only.
         /// </summary>
-        Unknown = 0,
+        Info,
 
         /// <summary>
-        /// Informational validation severity.
+        /// The rule generates a warning.
         /// </summary>
-        Info = 1,
+        Warning,
 
         /// <summary>
-        /// Warning validation severity.
+        /// The rule generates an error.
         /// </summary>
-        Warning = 2,
+        Error,
 
         /// <summary>
-        /// Error validation severity.
+        /// The rule generates a critical error.
         /// </summary>
-        Error = 3,
-
-        /// <summary>
-        /// Critical validation severity.
-        /// </summary>
-        Critical = 4,
-
-        /// <summary>
-        /// Fatal validation severity.
-        /// </summary>
-        Fatal = 5
+        Critical
     }
 } 
 

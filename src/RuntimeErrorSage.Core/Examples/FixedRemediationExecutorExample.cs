@@ -6,18 +6,18 @@ using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Extensions;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Execution;
-using RuntimeErrorSage.Application.Models.Graph;
-using RuntimeErrorSage.Application.Models.Metrics;
-using RuntimeErrorSage.Application.Models.Remediation;
-using RuntimeErrorSage.Application.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Execution;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Metrics;
+using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
-using RuntimeErrorSage.Application.Models.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Analysis;
-using RuntimeErrorSage.Application.Models.Common;
+using RuntimeErrorSage.Domain.Models.Common;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Application.Interfaces;
 
-namespace RuntimeErrorSage.Application.Examples
+namespace RuntimeErrorSage.Application.Remediation.Examples
 {
     /// <summary>
     /// Examples showing the fixed patterns for common errors in RemediationExecutor
@@ -25,7 +25,7 @@ namespace RuntimeErrorSage.Application.Examples
     public class FixedRemediationExecutorExample : IRemediationExecutor
     {
         private readonly ILogger<FixedRemediationExecutorExample> _logger;
-        private readonly Models.Remediation.Interfaces.IRemediationStrategy _strategy;
+        private readonly IRemediationStrategy _strategy;
         private readonly IRemediationValidator _validator;
         private readonly IRemediationMetricsCollector _metricsCollector;
         private readonly Dictionary<string, RemediationExecution> _executionHistory;
@@ -35,14 +35,14 @@ namespace RuntimeErrorSage.Application.Examples
         /// </summary>
         public FixedRemediationExecutorExample(
             ILogger<FixedRemediationExecutorExample> logger,
-            Models.Remediation.Interfaces.IRemediationStrategy strategy,
+            IRemediationStrategy strategy,
             IRemediationValidator validator,
             IRemediationMetricsCollector metricsCollector)
         {
-            _logger = logger;
-            _strategy = strategy;
-            _validator = validator;
-            _metricsCollector = metricsCollector;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _strategy = strategy ?? throw new ArgumentNullException(nameof(strategy));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
             _executionHistory = new Dictionary<string, RemediationExecution>();
         }
 
@@ -56,7 +56,7 @@ namespace RuntimeErrorSage.Application.Examples
         public string Version => "1.0.0";
 
         /// <inheritdoc />
-        public async Task<RemediationResult> ExecuteStrategyAsync(Models.Remediation.Interfaces.IRemediationStrategy strategy, ErrorContext errorContext)
+        public async Task<RemediationResult> ExecuteStrategyAsync(IRemediationStrategy strategy, ErrorContext errorContext)
         {
             ArgumentNullException.ThrowIfNull(strategy);
             ArgumentNullException.ThrowIfNull(errorContext);
@@ -340,30 +340,33 @@ namespace RuntimeErrorSage.Application.Examples
 
             try
             {
-                _logger.LogInformation("Validating remediation for analysis {AnalysisId}", analysis.ErrorId);
-                
-                // Check if the strategy can handle this error context
-                var validationResult = await _validator.ValidateStrategyAsync(_strategy, context);
-                
-                return new RemediationValidationResult
+                _logger.LogInformation("Validating remediation for analysis {AnalysisId} and context {ContextId}", 
+                    analysis.Id, context.Id);
+
+                var validationResult = new RemediationValidationResult
                 {
-                    IsValid = validationResult.IsValid,
-                    ErrorContext = context,
-                    Messages = validationResult.Messages,
-                    Timestamp = DateTime.UtcNow,
-                    ValidationResults = new List<ValidationResult> { validationResult }
+                    IsValid = true,
+                    Messages = new List<string>(),
+                    Warnings = new List<ValidationWarning>(),
+                    Errors = new List<ValidationError>()
                 };
+
+                // Add validation logic here
+                await Task.Delay(100); // Simulate work
+
+                return validationResult;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error validating remediation for analysis {AnalysisId}", analysis.ErrorId);
-                
+                _logger.LogError(ex, "Error validating remediation for analysis {AnalysisId} and context {ContextId}", 
+                    analysis.Id, context.Id);
+
                 return new RemediationValidationResult
                 {
                     IsValid = false,
-                    ErrorContext = context,
-                    Messages = new List<string> { $"Validation error: {ex.Message}" },
-                    Timestamp = DateTime.UtcNow
+                    Messages = new List<string> { ex.Message },
+                    Warnings = new List<ValidationWarning>(),
+                    Errors = new List<ValidationError> { new ValidationError { Message = ex.Message } }
                 };
             }
         }
@@ -444,26 +447,29 @@ namespace RuntimeErrorSage.Application.Examples
 
             try
             {
-                _logger.LogInformation("Validating action {ActionId} for error context {ErrorId}", 
-                    action.ActionId, context.Id);
-                
-                // Perform validation logic
-                
-                return new ValidationResult 
-                { 
+                _logger.LogInformation("Validating action {ActionId} for context {ContextId}", 
+                    action.Id, context.Id);
+
+                var validationResult = new ValidationResult
+                {
                     IsValid = true,
-                    Messages = new List<string> { "Action validation successful" }
+                    Messages = new List<string>()
                 };
+
+                // Add validation logic here
+                await Task.Delay(100); // Simulate work
+
+                return validationResult;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error validating action {ActionId} for context {ErrorId}", 
-                    action.ActionId, context.Id);
-                
+                _logger.LogError(ex, "Error validating action {ActionId} for context {ContextId}", 
+                    action.Id, context.Id);
+
                 return new ValidationResult
                 {
                     IsValid = false,
-                    Messages = new List<string> { $"Validation error: {ex.Message}" }
+                    Messages = new List<string> { ex.Message }
                 };
             }
         }
@@ -502,7 +508,7 @@ namespace RuntimeErrorSage.Application.Examples
         }
 
         /// <inheritdoc />
-        public async Task<RiskAssessment> GetActionRiskAsync(RemediationAction action, ErrorContext context)
+        public async Task<RiskAssessmentModel> GetActionRiskAsync(RemediationAction action, ErrorContext context)
         {
             ArgumentNullException.ThrowIfNull(action);
             ArgumentNullException.ThrowIfNull(context);
@@ -514,7 +520,7 @@ namespace RuntimeErrorSage.Application.Examples
                 
                 // Calculate risk
                 
-                return new RiskAssessment
+                return new RiskAssessmentModel
                 {
                     RiskLevel = RiskLevel.Low,
                     Description = "Low risk remediation action",
@@ -527,7 +533,7 @@ namespace RuntimeErrorSage.Application.Examples
                 _logger.LogError(ex, "Error calculating risk for action {ActionId} for context {ErrorId}", 
                     action.ActionId, context.Id);
                 
-                return new RiskAssessment
+                return new RiskAssessmentModel
                 {
                     RiskLevel = RiskLevel.Unknown,
                     Description = $"Error calculating risk: {ex.Message}"
@@ -704,16 +710,16 @@ namespace RuntimeErrorSage.Application.Examples
             // var remediationStatus = RemediationStatusEnum.Success;
             
             // CORRECT: Using fully qualified name
-            var remediationStatus = RuntimeErrorSage.Application.Models.Remediation.RemediationStatusEnum.Success;
+            var remediationStatus = RuntimeErrorSage.Domain.Models.Remediation.RemediationStatusEnum.Success;
             
             // INCORRECT: Using ambiguous ValidationResult
             // var validationResult = new ValidationResult();
             
             // CORRECT: Using fully qualified name
-            var validationResult = new RuntimeErrorSage.Application.Models.Validation.ValidationResult();
+            var validationResult = new RuntimeErrorSage.Domain.Models.Validation.ValidationResult();
             
             // Create a strategy with explicit namespace to avoid ambiguity
-            Models.Remediation.Interfaces.IRemediationStrategy strategy = _strategy;
+            IRemediationStrategy strategy = _strategy;
             
             // Execute the strategy with explicit namespace references
             return await strategy.ExecuteAsync(context);

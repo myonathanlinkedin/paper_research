@@ -11,9 +11,9 @@ using RuntimeErrorSage.Tests.Helpers;
 using System;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Interfaces;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Services;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 

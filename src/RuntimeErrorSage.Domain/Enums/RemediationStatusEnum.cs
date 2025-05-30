@@ -26,6 +26,11 @@ public enum RemediationStatusEnum
     Success = 3,
     
     /// <summary>
+    /// Remediation is complete (alias for Success to maintain compatibility).
+    /// </summary>
+    Completed = 3,
+    
+    /// <summary>
     /// Remediation failed.
     /// </summary>
     Failed = 4,
@@ -63,5 +68,20 @@ public enum RemediationStatusEnum
     /// <summary>
     /// Remediation validation failed.
     /// </summary>
-    ValidationFailed = 11
+    ValidationFailed = 11,
+    
+    /// <summary>
+    /// Remediation is pending.
+    /// </summary>
+    Pending = 12,
+    
+    /// <summary>
+    /// Remediation has been rolled back.
+    /// </summary>
+    RolledBack = 13,
+    
+    /// <summary>
+    /// Remediation rollback failed.
+    /// </summary>
+    RollbackFailed = 14
 } 

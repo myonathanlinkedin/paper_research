@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using RuntimeErrorSage.Application.Models.Error;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Domain.Models.Validation;
 
-namespace RuntimeErrorSage.Application.Models.Metrics
+namespace RuntimeErrorSage.Domain.Models.Metrics
 {
     /// <summary>
     /// Represents metrics for remediation impact.
@@ -126,6 +127,21 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// </summary>
         public Dictionary<string, object> AdditionalMetrics { get; set; }
 
+        private ErrorSeverity MapImpactSeverityToErrorSeverity(ImpactSeverity impactSeverity)
+        {
+            // Map ImpactSeverity to ErrorSeverity directly since they now have the same values
+            return impactSeverity switch
+            {
+                ImpactSeverity.Fatal => ErrorSeverity.Fatal,
+                ImpactSeverity.Critical => ErrorSeverity.Critical,
+                ImpactSeverity.Error => ErrorSeverity.Error,
+                ImpactSeverity.Warning => ErrorSeverity.Warning,
+                ImpactSeverity.Info => ErrorSeverity.Info,
+                ImpactSeverity.Success => ErrorSeverity.Success,
+                _ => ErrorSeverity.None
+            };
+        }
+
         /// <summary>
         /// Updates the metrics with a new remediation result.
         /// </summary>
@@ -135,7 +151,7 @@ namespace RuntimeErrorSage.Application.Models.Metrics
         /// <param name="strategyName">The name of the strategy used.</param>
         /// <param name="isSuccessful">Whether the remediation was successful.</param>
         public void UpdateMetrics(
-            ErrorAnalysisResult analysisResult,
+            ImpactErrorAnalysisResult analysisResult,
             TimeSpan remediationDuration,
             TimeSpan recoveryDuration,
             string strategyName,
@@ -148,38 +164,32 @@ namespace RuntimeErrorSage.Application.Models.Metrics
                 FailedRemediations++;
 
             // Update severity distribution
-            if (!SeverityDistribution.ContainsKey(analysisResult.Severity))
-                SeverityDistribution[analysisResult.Severity] = 0;
-            SeverityDistribution[analysisResult.Severity]++;
+            var errorSeverity = MapImpactSeverityToErrorSeverity(analysisResult.Severity);
+            if (!SeverityDistribution.ContainsKey(errorSeverity))
+                SeverityDistribution[errorSeverity] = 0;
+            SeverityDistribution[errorSeverity]++;
 
-            // Update impact distributions
-            if (analysisResult.Impact != null)
+            // Update impact distributions using analysisResult's direct properties
+            if (!ScopeDistribution.ContainsKey(analysisResult.Scope))
+                ScopeDistribution[analysisResult.Scope] = 0;
+            ScopeDistribution[analysisResult.Scope]++;
+
+            if (!ImpactSeverityDistribution.ContainsKey(analysisResult.Severity))
+                ImpactSeverityDistribution[analysisResult.Severity] = 0;
+            ImpactSeverityDistribution[analysisResult.Severity]++;
+
+            // Update average affected users
+            AverageAffectedUsers = ((AverageAffectedUsers * (TotalRemediations - 1)) + analysisResult.AffectedUsers) / TotalRemediations;
+
+            // Update average estimated recovery time
+            AverageEstimatedRecoveryTimeMinutes = ((AverageEstimatedRecoveryTimeMinutes * (TotalRemediations - 1)) + analysisResult.EstimatedRecoveryTime.TotalMinutes) / TotalRemediations;
+
+            // Update business impact distribution
+            if (!string.IsNullOrEmpty(analysisResult.BusinessImpact))
             {
-                if (!ScopeDistribution.ContainsKey(analysisResult.Impact.Scope))
-                    ScopeDistribution[analysisResult.Impact.Scope] = 0;
-                ScopeDistribution[analysisResult.Impact.Scope]++;
-
-                if (!ImpactSeverityDistribution.ContainsKey(analysisResult.Impact.Severity))
-                    ImpactSeverityDistribution[analysisResult.Impact.Severity] = 0;
-                ImpactSeverityDistribution[analysisResult.Impact.Severity]++;
-
-                // Update average affected users
-                AverageAffectedUsers = ((AverageAffectedUsers * (TotalRemediations - 1)) + analysisResult.Impact.AffectedUsers) / TotalRemediations;
-
-                // Update average estimated recovery time
-                if (analysisResult.Impact.EstimatedRecoveryTime.HasValue)
-                {
-                    AverageEstimatedRecoveryTimeMinutes = ((AverageEstimatedRecoveryTimeMinutes * (TotalRemediations - 1)) + 
-                        analysisResult.Impact.EstimatedRecoveryTime.Value.TotalMinutes) / TotalRemediations;
-                }
-
-                // Update business impact distribution
-                if (!string.IsNullOrEmpty(analysisResult.Impact.BusinessImpact))
-                {
-                    if (!BusinessImpactDistribution.ContainsKey(analysisResult.Impact.BusinessImpact))
-                        BusinessImpactDistribution[analysisResult.Impact.BusinessImpact] = 0;
-                    BusinessImpactDistribution[analysisResult.Impact.BusinessImpact]++;
-                }
+                if (!BusinessImpactDistribution.ContainsKey(analysisResult.BusinessImpact))
+                    BusinessImpactDistribution[analysisResult.BusinessImpact] = 0;
+                BusinessImpactDistribution[analysisResult.BusinessImpact]++;
             }
 
             // Update duration distributions
@@ -219,5 +229,22 @@ namespace RuntimeErrorSage.Application.Models.Metrics
                 ValidationStatusDistribution[analysisResult.ValidationStatus] = 0;
             ValidationStatusDistribution[analysisResult.ValidationStatus]++;
         }
+
+        public void UpdateValidationStatus(AnalysisValidationStatus status)
+        {
+            // ... existing code ...
+        }
+    }
+
+    public class ImpactErrorAnalysisResult
+    {
+        public ImpactLevel Impact { get; set; }
+        public AnalysisValidationStatus ValidationStatus { get; set; }
+        public string RootCause { get; set; }
+        public ImpactSeverity Severity { get; set; }
+        public ImpactScope Scope { get; set; }
+        public int AffectedUsers { get; set; }
+        public TimeSpan EstimatedRecoveryTime { get; set; }
+        public string BusinessImpact { get; set; }
     }
 } 

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RuntimeErrorSage.Application.Models.Error;
-using RuntimeErrorSage.Application.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Services;
 
@@ -19,15 +20,15 @@ public class ErrorRelationshipGraphOperations
         if (string.IsNullOrEmpty(context.ComponentId))
             return Enumerable.Empty<RelatedError>();
 
-        return graph.Nodes.Values
-            .Where(n => n.Type == GraphNodeType.Error && 
-                       n.Metadata.TryGetValue("ComponentId", out var compId) && 
+        return graph.Nodes
+            .Where(n => n.Value.Type == GraphNodeType.Error.ToString() && 
+                       n.Value.Metadata.TryGetValue("ComponentId", out var compId) && 
                        compId?.ToString() == context.ComponentId)
             .Select(n => new RelatedError
             {
-                ErrorId = n.Id,
-                RelationshipType = ErrorRelationshipType.SameComponent,
-                RelationshipStrength = 0.8,
+                ErrorId = n.Value.Id,
+                RelationshipType = ErrorRelationshipType.RelatedTo,
+                ConfidenceLevel = 0.8,
                 Timestamp = DateTime.UtcNow
             });
     }
@@ -46,15 +47,15 @@ public class ErrorRelationshipGraphOperations
             .Distinct();
 
         return dependentComponents
-            .SelectMany(componentId => graph.Nodes.Values
-                .Where(n => n.Type == GraphNodeType.Error && 
-                           n.Metadata.TryGetValue("ComponentId", out var compId) && 
+            .SelectMany(componentId => graph.Nodes
+                .Where(n => n.Value.Type == GraphNodeType.Error.ToString() && 
+                           n.Value.Metadata.TryGetValue("ComponentId", out var compId) && 
                            compId?.ToString() == componentId)
                 .Select(n => new RelatedError
                 {
-                    ErrorId = n.Id,
-                    RelationshipType = ErrorRelationshipType.Dependent,
-                    RelationshipStrength = 0.6,
+                    ErrorId = n.Value.Id,
+                    RelationshipType = ErrorRelationshipType.DependsOn,
+                    ConfidenceLevel = 0.6,
                     Timestamp = DateTime.UtcNow
                 }));
     }
@@ -67,24 +68,31 @@ public class ErrorRelationshipGraphOperations
         DependencyGraph graph,
         ErrorPatternMatcher patternMatcher)
     {
-        return graph.Nodes.Values
-            .Where(n => n.Type == GraphNodeType.Error)
-            .Where(n => n.Metadata.TryGetValue("ErrorMessage", out var errorMessage) && errorMessage != null)
+        return graph.Nodes
+            .Where(n => n.Value.Type == GraphNodeType.Error.ToString())
+            .Where(n => n.Value.Metadata.TryGetValue("Message", out var errorMessage) && errorMessage != null)
             .Where(n =>
             {
-                var nodeError = new ErrorContext
-                {
-                    ErrorId = n.Id,
-                    ErrorMessage = n.Metadata["ErrorMessage"].ToString(),
-                    ComponentId = n.Metadata.TryGetValue("ComponentId", out var compId) ? compId?.ToString() : null
-                };
+                var error = new RuntimeError(
+                    message: n.Value.Metadata["Message"].ToString(),
+                    source: n.Value.Metadata.TryGetValue("ComponentId", out var compId) ? compId?.ToString() : "Unknown",
+                    type: "Unknown",
+                    stackTrace: string.Empty
+                );
+
+                var nodeError = new ErrorContext(
+                    error: error,
+                    context: n.Value.Metadata.TryGetValue("ComponentId", out var componentId) ? componentId?.ToString() : "Unknown",
+                    timestamp: DateTime.UtcNow
+                );
+
                 return patternMatcher.HaveSimilarPatterns(context, nodeError);
             })
             .Select(n => new RelatedError
             {
-                ErrorId = n.Id,
-                RelationshipType = ErrorRelationshipType.SimilarPattern,
-                RelationshipStrength = 0.4,
+                ErrorId = n.Value.Id,
+                RelationshipType = ErrorRelationshipType.SimilarTo,
+                ConfidenceLevel = 0.4,
                 Timestamp = DateTime.UtcNow
             });
     }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Application.Extensions;
-using RuntimeErrorSage.Application.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Application.Examples
 {

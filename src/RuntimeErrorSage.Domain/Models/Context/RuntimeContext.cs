@@ -1,71 +1,51 @@
 using System;
 using System.Collections.Generic;
 
-namespace RuntimeErrorSage.Application.Models.Context
+namespace RuntimeErrorSage.Domain.Models.Context
 {
     /// <summary>
-    /// Represents the runtime context of an application.
+    /// Represents a runtime context for error analysis.
     /// </summary>
     public class RuntimeContext
     {
         /// <summary>
         /// Gets or sets the unique identifier for this context.
         /// </summary>
-        public string ContextId { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the application name.
+        /// Gets or sets the creation timestamp.
         /// </summary>
-        public string ApplicationName { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Gets or sets the environment name (e.g., Development, Staging, Production).
-        /// </summary>
-        public string Environment { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the runtime version.
-        /// </summary>
-        public string RuntimeVersion { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the host information.
-        /// </summary>
-        public string Host { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the timestamp when this context was created.
-        /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// Gets or sets additional metadata for this context.
+        /// Gets or sets the context metadata.
         /// </summary>
         public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Gets or sets the callstack information.
+        /// Gets or sets the component identifier.
         /// </summary>
-        public string Callstack { get; set; } = string.Empty;
+        public string ComponentId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the source code information.
+        /// Gets or sets the component name.
         /// </summary>
-        public string SourceCode { get; set; } = string.Empty;
+        public string ComponentName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the variable state.
+        /// Gets or sets the error message.
         /// </summary>
-        public Dictionary<string, object> Variables { get; set; } = new Dictionary<string, object>();
+        public string ErrorMessage { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the correlation ID for tracing.
+        /// Gets or sets the stack trace.
+        /// </summary>
+        public string StackTrace { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the correlation identifier.
         /// </summary>
         public string CorrelationId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the name of the runtime context provider.
-        /// </summary>
-        public string ProviderName { get; set; } = string.Empty;
     }
 } 

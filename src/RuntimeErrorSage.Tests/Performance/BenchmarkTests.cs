@@ -32,19 +32,20 @@ public class BenchmarkTests
         _mcpClient = new MCPClient(_mcpLoggerMock.Object);
         _errorAnalyzer = new ErrorAnalyzer(_analyzerLoggerMock.Object, _llmClient, _mcpClient);
 
-        _testContext = new ErrorContext
-        {
-            ServiceName = "TestService",
-            OperationName = "TestOperation",
-            Timestamp = DateTime.UtcNow,
-            CorrelationId = Guid.NewGuid().ToString(),
-            AdditionalContext = new Dictionary<string, object>
-            {
-                { "DatabaseName", "TestDB" },
-                { "FilePath", "/test/path" },
-                { "ServiceEndpoint", "http://test.service" }
-            }
-        };
+        _testContext = new ErrorContext(
+            error: new RuntimeError(
+                message: "Test error message",
+                errorType: "TestError",
+                source: "TestService",
+                stackTrace: string.Empty
+            ),
+            context: "TestService",
+            timestamp: DateTime.UtcNow
+        );
+
+        _testContext.AddMetadata("DatabaseName", "TestDB");
+        _testContext.AddMetadata("FilePath", "/test/path");
+        _testContext.AddMetadata("ServiceEndpoint", "http://test.service");
 
         _testException = new InvalidOperationException("Test error message");
     }
@@ -115,19 +116,20 @@ public class StressTests
 
         for (int i = 0; i < 1000; i++)
         {
-            _testContexts.Add(new ErrorContext
-            {
-                ServiceName = $"TestService_{i % 10}",
-                OperationName = $"TestOperation_{i % 5}",
-                Timestamp = DateTime.UtcNow.AddSeconds(-i),
-                CorrelationId = Guid.NewGuid().ToString(),
-                AdditionalContext = new Dictionary<string, object>
-                {
-                    { "DatabaseName", $"TestDB_{i % 3}" },
-                    { "FilePath", $"/test/path_{i}" },
-                    { "ServiceEndpoint", $"http://test.service_{i % 2}" }
-                }
-            });
+            _testContexts.Add(new ErrorContext(
+                error: new RuntimeError(
+                    message: $"Test error message {i}",
+                    errorType: "TestError",
+                    source: $"TestService_{i % 10}",
+                    stackTrace: string.Empty
+                ),
+                context: $"TestService_{i % 10}",
+                timestamp: DateTime.UtcNow.AddSeconds(-i)
+            ));
+
+            _testContexts[i].AddMetadata("DatabaseName", $"TestDB_{i % 3}");
+            _testContexts[i].AddMetadata("FilePath", $"/test/path_{i}");
+            _testContexts[i].AddMetadata("ServiceEndpoint", $"http://test.service_{i % 2}");
 
             _testExceptions.Add(new InvalidOperationException($"Test error message {i}"));
         }

@@ -1,43 +1,43 @@
 namespace RuntimeErrorSage.Domain.Enums;
 
 /// <summary>
-/// Defines the priority levels for validation.
+/// Defines the priority levels for validation operations.
 /// </summary>
 public enum ValidationPriority
 {
     /// <summary>
-    /// Unknown validation priority.
+    /// No priority specified.
     /// </summary>
-    Unknown = 0,
+    None = 0,
 
     /// <summary>
-    /// Low validation priority.
+    /// Lowest priority level.
     /// </summary>
-    Low = 1,
+    Lowest = 1,
 
     /// <summary>
-    /// Normal validation priority.
+    /// Low priority level.
     /// </summary>
-    Normal = 2,
+    Low = 2,
 
     /// <summary>
-    /// Medium validation priority.
+    /// Medium priority level.
     /// </summary>
     Medium = 3,
 
     /// <summary>
-    /// High validation priority.
+    /// High priority level.
     /// </summary>
     High = 4,
 
     /// <summary>
-    /// Critical validation priority.
+    /// Highest priority level.
     /// </summary>
-    Critical = 5,
+    Highest = 5,
 
     /// <summary>
-    /// Emergency validation priority.
+    /// Critical priority level.
     /// </summary>
-    Emergency = 6
+    Critical = 6
 } 
 
