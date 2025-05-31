@@ -47,5 +47,25 @@ namespace RuntimeErrorSage.Domain.Models.Context
         /// Gets or sets the correlation identifier.
         /// </summary>
         public string CorrelationId { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Gets or sets the name of the context.
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Gets or sets the error type.
+        /// </summary>
+        public string ErrorType { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Gets or sets the source of the error.
+        /// </summary>
+        public string Source { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Gets or sets the timestamp when the error occurred.
+        /// </summary>
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 } 

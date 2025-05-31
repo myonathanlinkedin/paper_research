@@ -21,7 +21,7 @@ namespace RuntimeErrorSage.Domain.Models.Graph.Factories
             return new DependencyNode
             {
                 Id = Guid.NewGuid().ToString(),
-                Label = label,
+                Name = label, // Using Name instead of Label since DependencyNode inherits from GraphNode
                 ComponentId = componentId,
                 ComponentName = componentName,
                 IsErrorSource = isErrorSource

@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Core.Graph;
 
 namespace RuntimeErrorSage.Core.Examples
 {
@@ -18,98 +21,114 @@ namespace RuntimeErrorSage.Core.Examples
             // INCORRECT: This will cause "KeyValuePair<string, GraphNode> does not contain a definition for 'Id'"
             // foreach (var node in graph.Nodes)
             // {
-            //     Console.WriteLine($"Node ID: {node.Id}");
-            //     Console.WriteLine($"Node Type: {node.NodeType}");
-            //     Console.WriteLine($"Error Probability: {node.ErrorProbability}");
+            //    string id = node.Id;  // Error: node is a KeyValuePair<string, GraphNode>
+            //    string type = node.Type.ToString();  // Error: KeyValuePair has no Type property
             // }
 
-            // CORRECT: Access the Value property of the KeyValuePair
-            foreach (var node in graph.Nodes)
+            // CORRECT: Access through Value property
+            foreach (var nodeEntry in graph.Nodes)
             {
-                Console.WriteLine($"Node ID: {node.Value.Id}");
-                Console.WriteLine($"Node Type: {node.Value.Type}");
+                var node = nodeEntry.Value;
+                string id = node.Id;
                 
-                // For properties that might not exist in GraphNode but in a derived type,
-                // use a safe approach with dictionaries
-                if (node.Value.Metadata != null && 
-                    node.Value.Metadata.TryGetValue("ErrorProbability", out var probability))
+                // Get type safely
+                string type = node.Type;
+                
+                // Or use pattern matching
+                if (node.NodeType == GraphNodeType.Service)
                 {
-                    // Check for double using proper type check instead of pattern matching
-                    if (probability is double)
-                    {
-                        double errorProb = (double)probability;
-                        Console.WriteLine($"Error Probability: {errorProb}");
-                    }
+                    Console.WriteLine($"Found service node: {id}");
+                }
+                
+                // Access other properties through Value
+                Console.WriteLine($"Node {id} has {node.Metadata?.Count ?? 0} properties");
+            }
+        }
+
+        /// <summary>
+        /// Shows correct ways to access edge properties through KeyValuePair.
+        /// </summary>
+        /// <param name="graph">The dependency graph.</param>
+        public void ShowEdgeDictionaryAccess(DependencyGraph graph)
+        {
+            // CORRECT: Use Value method for access
+            foreach (var edgeEntry in graph.Edges)
+            {
+                var edge = edgeEntry.Value();
+                
+                // Get edge data using type-specific properties
+                if (edge is DependencyEdge dependencyEdge)
+                {
+                    string sourceId = dependencyEdge.SourceId;
+                    string targetId = dependencyEdge.TargetId;
+                    double weight = dependencyEdge.Weight;
+                    Console.WriteLine($"Dependency edge from {sourceId} to {targetId} with weight {weight}");
+                }
+                else
+                {
+                    // Use extension methods for other edge types
+                    string sourceId = edge.GetSourceId();
+                    string targetId = edge.GetTargetId();
+                    Console.WriteLine($"Edge from {sourceId} to {targetId}");
+                }
+            }
+            
+            // Another correct way: use LINQ projection
+            var dependencies = graph.Edges
+                .Select(e => e.Value())
+                .Where(e => e is DependencyEdge)
+                .Cast<DependencyEdge>()
+                .ToList();
+            
+            Console.WriteLine($"Found {dependencies.Count} dependency edges");
+        }
+
+        /// <summary>
+        /// Shows how to work with impact analysis results.
+        /// </summary>
+        /// <param name="result">The impact analysis result.</param>
+        public void ShowImpactAnalysisAccess(ImpactAnalysisResult result)
+        {
+            // Correct way to access affected nodes and their impact values
+            if (result.AffectedNodesMap != null)
+            {
+                foreach (var nodeEntry in result.AffectedNodesMap)
+                {
+                    string nodeId = nodeEntry.Key;
+                    double impactProbability = nodeEntry.Value;
+                    
+                    Console.WriteLine($"Node {nodeId} has impact probability {impactProbability}");
+                }
+            }
+            
+            // Iterate over other collections - safely check for null first
+            if (result.AffectedNodes != null)
+            {
+                foreach (var nodeEntry in result.AffectedNodes)
+                {
+                    var node = nodeEntry.Value;
+                    // Use null conditional to safely access severity if it exists
+                    Console.WriteLine($"Node {node.Id} is affected");
                 }
             }
 
-            // ALTERNATIVE: Use LINQ to work with the Values directly
-            foreach (var node in graph.Nodes.Values)
+            // CORRECT: Using LINQ without implicit KeyValuePair access - check for null first
+            if (result.AffectedNodesMap != null)
             {
-                Console.WriteLine($"Node ID: {node.Id}");
-                Console.WriteLine($"Node Type: {node.Type}");
+                var criticalNodeIds = result.AffectedNodesMap
+                    .Where(n => n.Value > 0.8)
+                    .Select(n => n.Key)
+                    .ToList();
+
+                Console.WriteLine($"Found {criticalNodeIds.Count} critical node dependencies");
             }
-        }
-
-        /// <summary>
-        /// Shows incorrect vs correct ways to access GraphEdge properties through KeyValuePair.
-        /// </summary>
-        /// <param name="graph">The dependency graph.</param>
-        public void ShowGraphEdgeFixExample(DependencyGraph graph)
-        {
-            // INCORRECT: This will cause "KeyValuePair<string, GraphEdge> does not contain a definition for 'SourceId'"
-            // foreach (var edge in graph.Edges)
-            // {
-            //     Console.WriteLine($"Edge Source ID: {edge.SourceId}");
-            //     Console.WriteLine($"Edge Target ID: {edge.TargetId}");
-            // }
-
-            // CORRECT: Access the Value property of the KeyValuePair
-            foreach (var edge in graph.Edges)
-            {
-                Console.WriteLine($"Edge Source ID: {edge.Value.SourceId}");
-                Console.WriteLine($"Edge Target ID: {edge.Value.TargetId}");
-            }
-
-            // ALTERNATIVE: Use LINQ to work with the Values directly
-            foreach (var edge in graph.Edges.Values)
-            {
-                Console.WriteLine($"Edge Source ID: {edge.SourceId}");
-                Console.WriteLine($"Edge Target ID: {edge.TargetId}");
-            }
-        }
-
-        /// <summary>
-        /// Shows how to fix KeyValuePair issues when getting neighbors.
-        /// </summary>
-        /// <param name="graph">The dependency graph.</param>
-        /// <param name="nodeId">The node ID to get neighbors for.</param>
-        public void ShowGetNeighborsFixExample(DependencyGraph graph, string nodeId)
-        {
-            // Get the node's neighbors
-            var neighbors = graph.GetNeighbors(nodeId);
             
-            // Process neighbors (already a List<GraphNode>, so no KeyValuePair issues)
-            foreach (var neighbor in neighbors)
+            // Accessing specific nodes by key - safely check for null first
+            if (result.AffectedNodesMap != null && result.AffectedNodesMap.TryGetValue("key1", out var impactValue))
             {
-                Console.WriteLine($"Neighbor ID: {neighbor.Id}");
-                Console.WriteLine($"Neighbor Type: {neighbor.Type}");
-            }
-        }
-
-        /// <summary>
-        /// Shows how to fix issues when working with impact analysis results.
-        /// </summary>
-        /// <param name="result">The impact analysis result.</param>
-        public void ShowImpactAnalysisFixExample(ImpactAnalysisResult result)
-        {
-            // Process direct dependencies (already a List<DependencyNode>, so no KeyValuePair issues)
-            foreach (var dependency in result.DirectDependencies)
-            {
-                Console.WriteLine($"Dependency ID: {dependency.Id}");
-                Console.WriteLine($"Dependency Type: {dependency.NodeType}");
-                Console.WriteLine($"Error Probability: {dependency.ErrorProbability}");
+                Console.WriteLine($"Node 'key1' has impact value {impactValue}");
             }
         }
     }
 } 
+

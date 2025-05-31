@@ -25,7 +25,7 @@ namespace RuntimeErrorSage.Application.Examples
             result2.SetSuccess(true);
             
             // Option 3: Using factory methods (if the class is designed this way)
-            var successResult = RemediationResult.Success("Operation completed successfully");
+            var successResult = RemediationResult.CreateSuccessResult("Operation completed successfully");
             var failureResult = RemediationResult.Failure("Operation failed");
         }
 
@@ -46,7 +46,7 @@ namespace RuntimeErrorSage.Application.Examples
             result2.SetSuccess(true);
             
             // Option 3: Using factory methods (if the class is designed this way)
-            var successResult = RemediationActionResult.Success();
+            var successResult = RemediationActionResult.CreateSuccessResult();
             var failureResult = RemediationActionResult.Failure("Action failed");
         }
 
@@ -61,7 +61,7 @@ namespace RuntimeErrorSage.Application.Examples
             
             // CORRECT: Use the appropriate method to check success based on the class design
             // Option 1: Using a property accessor (if the class is designed this way)
-            if (result.IsSuccess)
+            if (result.IsSuccessful)
             {
                 Console.WriteLine("Remediation was successful");
             }

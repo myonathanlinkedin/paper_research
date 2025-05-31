@@ -25,6 +25,16 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         public string TargetId { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the source node.
+        /// </summary>
+        public GraphNode Source { get; set; }
+
+        /// <summary>
+        /// Gets or sets the target node.
+        /// </summary>
+        public GraphNode Target { get; set; }
+
+        /// <summary>
         /// Gets or sets the relationship type.
         /// </summary>
         public RelationshipType RelationshipType { get; set; }
@@ -53,5 +63,27 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         /// Gets or sets the edge metadata.
         /// </summary>
         public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DependencyEdge"/> class.
+        /// </summary>
+        public DependencyEdge()
+        {
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DependencyEdge"/> class.
+        /// </summary>
+        /// <param name="sourceNode">The source node.</param>
+        /// <param name="targetNode">The target node.</param>
+        /// <param name="label">The edge label.</param>
+        public DependencyEdge(GraphNode sourceNode, GraphNode targetNode, string label = "depends_on")
+        {
+            Source = sourceNode ?? throw new ArgumentNullException(nameof(sourceNode));
+            Target = targetNode ?? throw new ArgumentNullException(nameof(targetNode));
+            SourceId = sourceNode.Id;
+            TargetId = targetNode.Id;
+            Label = label;
+        }
     }
 } 

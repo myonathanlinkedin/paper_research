@@ -131,6 +131,11 @@ namespace RuntimeErrorSage.Domain.Models.Error
         public SeverityLevel SeverityLevel { get; set; }
 
         /// <summary>
+        /// Gets or sets the severity of the error.
+        /// </summary>
+        public SeverityLevel Severity { get; set; }
+
+        /// <summary>
         /// Gets or sets the environment where the error occurred.
         /// </summary>
         public string Environment { get; set; } = string.Empty;
@@ -224,6 +229,11 @@ namespace RuntimeErrorSage.Domain.Models.Error
         /// Gets or sets the component metrics.
         /// </summary>
         public Dictionary<string, Dictionary<string, double>> ComponentMetrics { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the system state.
+        /// </summary>
+        public Dictionary<string, object> SystemState { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the component dependencies.

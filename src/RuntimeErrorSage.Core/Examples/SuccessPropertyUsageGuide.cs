@@ -67,10 +67,10 @@ namespace RuntimeErrorSage.Application.Examples
         public static void UseFactoryMethods()
         {
             // CORRECT: Use static factory methods
-            var successResult = RemediationResult.Success("Operation completed successfully");
+            var successResult = RemediationResult.CreateSuccess(null, "Operation completed successfully");
             var failureResult = RemediationResult.Failure("Operation failed");
             
-            var successActionResult = RemediationActionResult.Success();
+            var successActionResult = RemediationActionResult.CreateSuccessResult();
             var failureActionResult = RemediationActionResult.Failure("Action failed");
         }
         
@@ -93,9 +93,13 @@ namespace RuntimeErrorSage.Application.Examples
                 Console.WriteLine("Operation succeeded");
             }
             
-            // INCORRECT: Cannot assign to 'Success' because it is a method group
+            // INCORRECT: Cannot invoke Success as a method - it's a property
             /*
-            result.Success() = true;  // Error: Cannot assign to 'Success' because it is a method group
+            // Error: Non-invocable member 'RemediationResult.Success' cannot be used like a method.
+            // if (result.Success())
+            // {
+            //     Console.WriteLine("Operation succeeded");
+            // }
             */
         }
         

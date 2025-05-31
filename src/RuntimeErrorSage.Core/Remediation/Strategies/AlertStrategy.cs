@@ -27,7 +27,12 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
         public string Name { get; set; } = "Alert";
         public string Version { get; } = "1.0.0";
         public bool IsEnabled { get; } = true;
-        public RemediationPriority Priority { get; set; } = RemediationPriority.High;
+        public RemediationPriority Priority { get; set; } = RemediationPriority.Medium;
+        public int? PriorityValue 
+        { 
+            get => (int)Priority; 
+            set => Priority = value.HasValue ? (RemediationPriority)value.Value : RemediationPriority.Medium;
+        }
         public RiskLevel RiskLevel { get; set; } = RiskLevel.Medium;
         public string Description { get; set; } = "Sends alerts for error conditions";
         public Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();

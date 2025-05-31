@@ -89,7 +89,11 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// <summary>
         /// Gets or sets the success status.
         /// </summary>
-        public bool Success { get; set; }
+        public bool Success 
+        { 
+            get => IsSuccessful;
+            set => IsSuccessful = value;
+        }
 
         /// <summary>
         /// Gets or sets the start time of the remediation operation.
@@ -215,6 +219,16 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// Gets or sets the stack trace.
         /// </summary>
         public string StackTrace { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the ID of the strategy that was used.
+        /// </summary>
+        public string StrategyId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the name of the strategy that was used.
+        /// </summary>
+        public string StrategyName { get; set; } = string.Empty;
 
         /// <summary>
         /// Creates a successful remediation result with a message.

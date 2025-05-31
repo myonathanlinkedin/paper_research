@@ -13,6 +13,7 @@ namespace RuntimeErrorSage.Domain.Models.Validation
     {
         private readonly List<string> _errors = new();
         private readonly List<string> _warnings = new();
+        private readonly List<ValidationMessage> _warningMessages = new();
         private readonly List<string> _validationRules = new();
         private List<string> _messages = new();
         private readonly Dictionary<string, object> _metadata = new();
@@ -32,6 +33,7 @@ namespace RuntimeErrorSage.Domain.Models.Validation
         private DateTime? _endTime;
         private string _strategyId;
         private string _strategyName;
+        private bool _isFromCache;
 
         /// <summary>
         /// Gets or sets the ID of the action that was validated.
@@ -69,6 +71,11 @@ namespace RuntimeErrorSage.Domain.Models.Validation
         /// Gets the list of validation warnings.
         /// </summary>
         public IReadOnlyList<string> Warnings => new ReadOnlyCollection<string>(_warnings);
+
+        /// <summary>
+        /// Gets the list of detailed validation warning messages.
+        /// </summary>
+        public IReadOnlyList<ValidationMessage> WarningMessages => new ReadOnlyCollection<ValidationMessage>(_warningMessages);
 
         /// <summary>
         /// Gets the list of validation rules that were applied.
@@ -191,6 +198,15 @@ namespace RuntimeErrorSage.Domain.Models.Validation
         }
 
         /// <summary>
+        /// Gets or sets whether the validation result was retrieved from cache.
+        /// </summary>
+        public bool IsFromCache
+        {
+            get => _isFromCache;
+            set => _isFromCache = value;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ValidationResult"/> class with default values.
         /// </summary>
         public ValidationResult()
@@ -284,14 +300,23 @@ namespace RuntimeErrorSage.Domain.Models.Validation
         }
 
         /// <summary>
-        /// Adds a warning to the validation result with specified message and severity.
+        /// Adds a warning message with the specified severity and code.
         /// </summary>
         /// <param name="message">The warning message.</param>
-        /// <param name="severity">The warning severity.</param>
-        public void AddWarning(string message, ValidationSeverity severity)
+        /// <param name="severity">The severity of the warning.</param>
+        /// <param name="code">The warning code.</param>
+        public void AddWarning(string message, ValidationSeverity severity, string code)
         {
-            var warning = new ValidationWarning(message, severity);
-            _warnings.Add(warning.Message);
+            var warning = new ValidationMessage
+            {
+                Message = message,
+                Severity = severity,
+                Code = code,
+                Timestamp = DateTime.UtcNow
+            };
+            
+            _warnings.Add(message);
+            _warningMessages.Add(warning);
         }
 
         /// <summary>

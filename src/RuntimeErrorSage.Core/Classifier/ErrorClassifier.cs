@@ -40,8 +40,8 @@ public class ErrorClassifier : IErrorClassifier
             {
                 Category = CategoryDetermination.DetermineCategory(analysisResult),
                 Subcategory = SubcategoryDetermination.DetermineSubcategory(analysisResult),
-                ErrorType = context.Exception?.GetType().Name ?? context.ErrorType ?? "Unknown",
-                Severity = SeverityDetermination.DetermineSeverity(analysisResult),
+                ErrorType = context.Error?.ErrorType ?? context.ErrorType ?? "Unknown",
+                Severity = ConvertToErrorSeverity(CalculateSeverity(analysisResult)),
                 Confidence = confidence
             };
         }, "Error classifying error context");
@@ -106,6 +106,55 @@ public class ErrorClassifier : IErrorClassifier
         {
             _logger.LogError(ex, errorMessage);
             throw;
+        }
+    }
+    
+    // Add a local implementation of CalculateSeverity since SeverityDetermination is missing
+    private SeverityLevel CalculateSeverity(ErrorAnalysisResult analysisResult)
+    {
+        if (analysisResult == null)
+            return SeverityLevel.Unknown;
+            
+        // Extract severity data from analysis result
+        if (analysisResult.Details != null && 
+            analysisResult.Details.TryGetValue("Severity", out var severityObj) && 
+            severityObj is string severityStr)
+        {
+            if (Enum.TryParse<SeverityLevel>(severityStr, true, out var severity))
+                return severity;
+        }
+        
+        // Check if we have an impact score in the details
+        double impactScore = 0.0;
+        if (analysisResult.Details != null && 
+            analysisResult.Details.TryGetValue("ImpactScore", out var impactObj) && 
+            impactObj is double impact)
+        {
+            impactScore = impact;
+        }
+        
+        // Default severity based on impact
+        return impactScore > 0.8 ? SeverityLevel.Critical :
+               impactScore > 0.6 ? SeverityLevel.High :
+               impactScore > 0.4 ? SeverityLevel.Medium :
+               impactScore > 0.2 ? SeverityLevel.Low :
+               SeverityLevel.Unknown;
+    }
+
+    private ErrorSeverity ConvertToErrorSeverity(SeverityLevel severity)
+    {
+        switch (severity)
+        {
+            case SeverityLevel.Critical:
+                return ErrorSeverity.Critical;
+            case SeverityLevel.High:
+                return ErrorSeverity.High;
+            case SeverityLevel.Medium:
+                return ErrorSeverity.Medium;
+            case SeverityLevel.Low:
+                return ErrorSeverity.Low;
+            default:
+                return ErrorSeverity.Unknown;
         }
     }
 } 

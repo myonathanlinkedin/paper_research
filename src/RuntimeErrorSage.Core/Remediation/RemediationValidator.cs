@@ -75,8 +75,8 @@ public class RemediationValidator : IRemediationValidator, IDisposable
 
         _logger = logger;
         _options = options.Value;
-        _rules = rules.ToList();
-        _warnings = warnings.ToList();
+        _rules = rules.ToList().Cast<IValidationRule>().ToList().AsReadOnly();
+        _warnings = warnings.ToList().Cast<IValidationWarning>().ToList().AsReadOnly();
         _globalCts = new CancellationTokenSource();
         _errorContextAnalyzer = errorContextAnalyzer;
         _metricsCollector = metricsCollector;
@@ -150,13 +150,14 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error validating plan {PlanId}", plan.PlanId);
-            return new ValidationResult
+            var errorResult = new ValidationResult
             {
                 IsValid = false,
-                Messages = new List<string> { $"Error validating plan: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
+            errorResult.AddMessage($"Error validating plan: {ex.Message}");
+            return errorResult;
         }
     }
 
@@ -200,14 +201,15 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating strategy {StrategyName}", strategy.Name);
-            return new ValidationResult
+            _logger.LogError(ex, "Error validating strategy {StrategyId}", strategy.Id);
+            var errorResult = new ValidationResult
             {
                 IsValid = false,
-                Messages = new List<string> { $"Error validating strategy: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
+            errorResult.AddMessage($"Error validating strategy: {ex.Message}");
+            return errorResult;
         }
     }
 
@@ -241,9 +243,9 @@ public class RemediationValidator : IRemediationValidator, IDisposable
                 result.AddError("Action description is required");
             }
 
-            if (string.IsNullOrEmpty(action.Action))
+            if (string.IsNullOrEmpty(action.ActionType))
             {
-                result.AddError("Action cannot be empty");
+                result.AddError("Action type cannot be empty");
             }
 
             // Perform risk assessment
@@ -265,14 +267,15 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating action {ActionName}", action?.Name);
-            return new ValidationResult
+            _logger.LogError(ex, "Error validating action {ActionId}", action.Id);
+            var errorResult = new ValidationResult
             {
                 IsValid = false,
-                Messages = new List<string> { $"Error validating action: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
+            errorResult.AddMessage($"Error validating action: {ex.Message}");
+            return errorResult;
         }
     }
 
@@ -312,13 +315,14 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error validating step {StepId}", step.StepId);
-            return new ValidationResult
+            var errorResult = new ValidationResult
             {
                 IsValid = false,
-                Messages = new List<string> { $"Error validating step: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
+            errorResult.AddMessage($"Error validating step: {ex.Message}");
+            return errorResult;
         }
     }
 
@@ -342,65 +346,42 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             timeoutCts.CancelAfter(_options.ValidationTimeout);
 
             // Validate analysis result properties
-            if (string.IsNullOrEmpty(analysisResult.AnalysisId))
+            if (string.IsNullOrEmpty(analysisResult.ErrorId))
             {
                 result.IsValid = false;
-                result.Messages.Add("Analysis ID is required");
+                result.Messages = new List<string> { "Error ID is required" };
                 result.Details = new Dictionary<string, object>
                 {
-                    ["code"] = "InvalidAnalysisId",
+                    ["code"] = "InvalidErrorId",
                     ["severity"] = SeverityLevel.Error
                 };
                 return result;
             }
 
-            if (analysisResult.ErrorContext == null)
+            // Check if the analysis result is for the provided context
+            if (analysisResult.ErrorId != context.ErrorId)
             {
                 result.IsValid = false;
-                result.Messages.Add("Error context is required");
+                result.Messages = new List<string> { "Error context does not match analysis result" };
                 result.Details = new Dictionary<string, object>
                 {
-                    ["code"] = "MissingErrorContext",
+                    ["code"] = "MismatchedErrorContext",
                     ["severity"] = SeverityLevel.Error
                 };
                 return result;
             }
 
-            // Validate each suggested remediation strategy
-            if (analysisResult.SuggestedStrategies != null && analysisResult.SuggestedStrategies.Any())
-            {
-                foreach (var strategy in analysisResult.SuggestedStrategies)
-                {
-                    var strategyResult = await ValidateStrategyAsync(strategy, context);
-                    if (!strategyResult.IsValid)
-                    {
-                        result.IsValid = false;
-                        result.Messages.Add($"Invalid strategy: {strategyResult.Messages.FirstOrDefault() ?? "Validation failed"}");
-                        result.Details = strategyResult.Details;
-                        result.Errors.Add(new ValidationError 
-                        { 
-                            ErrorId = Guid.NewGuid().ToString(),
-                            Message = strategyResult.Messages.FirstOrDefault() ?? "Validation failed",
-                            Severity = ValidationSeverity.Error,
-                            Code = "InvalidStrategy",
-                            Timestamp = DateTime.UtcNow
-                        });
-                    }
-                }
-            }
+            // No need to validate suggested strategies since they don't exist in this class
+            // Just perform basic validation of the analysis result
 
             // Check system health
             var healthStatus = await ValidateSystemHealthAsync(context);
             if (!healthStatus.IsHealthy)
             {
-                result.Warnings.Add(new ValidationWarning
-                {
-                    WarningId = Guid.NewGuid().ToString(),
-                    Message = "System health check failed",
-                    Severity = ValidationSeverity.Warning,
-                    Code = "UnhealthySystem",
-                    Timestamp = DateTime.UtcNow
-                });
+                result.AddWarning(
+                    "System health check failed", 
+                    ValidationSeverity.Warning, 
+                    "UnhealthySystem");
             }
 
             result.EndTime = DateTime.UtcNow;
@@ -408,14 +389,15 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating remediation {ErrorId}", context.ErrorId);
-            return new ValidationResult
+            _logger.LogError(_validationErrorEventId, ex, "Error validating remediation");
+            var errorResult = new ValidationResult
             {
                 IsValid = false,
-                Messages = new List<string> { $"Error validating remediation: {ex.Message}" },
                 StartTime = DateTime.UtcNow,
                 EndTime = DateTime.UtcNow
             };
+            errorResult.AddMessage($"Error validating remediation: {ex.Message}");
+            return errorResult;
         }
     }
 

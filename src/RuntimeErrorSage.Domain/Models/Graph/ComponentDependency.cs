@@ -23,6 +23,24 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         public string TargetComponentId { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the source component ID (alias for SourceComponentId).
+        /// </summary>
+        public string Source 
+        { 
+            get => SourceComponentId; 
+            set => SourceComponentId = value; 
+        }
+
+        /// <summary>
+        /// Gets or sets the target component ID (alias for TargetComponentId).
+        /// </summary>
+        public string Target 
+        { 
+            get => TargetComponentId; 
+            set => TargetComponentId = value; 
+        }
+
+        /// <summary>
         /// Gets or sets the type of dependency.
         /// </summary>
         public string DependencyType { get; set; } = string.Empty;

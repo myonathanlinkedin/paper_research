@@ -104,6 +104,29 @@ namespace RuntimeErrorSage.Domain.Models.Error
         /// <summary>
         /// Initializes a new instance of the <see cref="RuntimeError"/> class.
         /// </summary>
+        /// <param name="message">The error message.</param>
+        /// <param name="errorType">The error type.</param>
+        /// <param name="source">The error source.</param>
+        /// <param name="stackTrace">The stack trace.</param>
+        public RuntimeError(
+            string message,
+            string errorType,
+            string source,
+            string stackTrace)
+        {
+            ArgumentNullException.ThrowIfNull(message);
+            ArgumentNullException.ThrowIfNull(errorType);
+            ArgumentNullException.ThrowIfNull(source);
+
+            Message = message;
+            ErrorType = errorType;
+            Source = source;
+            StackTrace = stackTrace;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RuntimeError"/> class.
+        /// </summary>
         /// <param name="type">The error type.</param>
         /// <param name="message">The error message.</param>
         /// <param name="source">The error source.</param>

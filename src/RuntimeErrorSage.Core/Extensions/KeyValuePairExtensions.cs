@@ -45,7 +45,7 @@ namespace RuntimeErrorSage.Application.Extensions
         /// <returns>The SourceId of the GraphEdge.</returns>
         public static string GetSourceId(this KeyValuePair<string, GraphEdge> kvp)
         {
-            return kvp.Value.SourceId;
+            return kvp.Value.Source?.Id ?? string.Empty;
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace RuntimeErrorSage.Application.Extensions
         /// <returns>The TargetId of the GraphEdge.</returns>
         public static string GetTargetId(this KeyValuePair<string, GraphEdge> kvp)
         {
-            return kvp.Value.TargetId;
+            return kvp.Value.Target?.Id ?? string.Empty;
         }
 
         /// <summary>
@@ -66,13 +66,53 @@ namespace RuntimeErrorSage.Application.Extensions
         public static DependencyNode ToDependencyNode(this KeyValuePair<string, GraphNode> kvp)
         {
             var node = kvp.Value;
+            
             return new DependencyNode
             {
                 Id = node.Id,
                 Name = node.Name,
-                Type = node.Type,
-                Metadata = new Dictionary<string, object>(node.Metadata)
+                NodeType = node.NodeType,
+                // GraphNode and DependencyNode both have Dictionary<string, string> Metadata
+                Metadata = node.Metadata
             };
+        }
+
+        /// <summary>
+        /// Converts a Dictionary with string values to a Dictionary with object values.
+        /// </summary>
+        /// <param name="source">The source dictionary with string values.</param>
+        /// <returns>A new Dictionary with object values.</returns>
+        public static Dictionary<string, object> ToObjectDictionary(this Dictionary<string, string> source)
+        {
+            if (source == null)
+                return new Dictionary<string, object>();
+                
+            var result = new Dictionary<string, object>();
+            foreach (var item in source)
+            {
+                result[item.Key] = item.Value;
+            }
+            
+            return result;
+        }
+        
+        /// <summary>
+        /// Converts a Dictionary with object values to a Dictionary with string values.
+        /// </summary>
+        /// <param name="source">The source dictionary with object values.</param>
+        /// <returns>A new Dictionary with string values.</returns>
+        public static Dictionary<string, string> ToStringDictionary(this Dictionary<string, object> source)
+        {
+            if (source == null)
+                return new Dictionary<string, string>();
+                
+            var result = new Dictionary<string, string>();
+            foreach (var item in source)
+            {
+                result[item.Key] = item.Value?.ToString();
+            }
+            
+            return result;
         }
     }
 } 

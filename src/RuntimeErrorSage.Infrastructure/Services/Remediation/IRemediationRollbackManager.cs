@@ -14,6 +14,6 @@ namespace RuntimeErrorSage.Application.Services.Remediation
         /// </summary>
         /// <param name="actionId">The action identifier.</param>
         /// <returns>The rollback status.</returns>
-        Task<RollbackStatus> RollbackActionAsync(string actionId);
+        Task<RuntimeErrorSage.Domain.Enums.RollbackStatus> RollbackActionAsync(string actionId);
     }
 } 

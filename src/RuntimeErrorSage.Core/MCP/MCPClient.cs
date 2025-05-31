@@ -18,6 +18,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace RuntimeErrorSage.Core.MCP;
 
@@ -94,7 +96,8 @@ public class MCPClient : IMCPClient, IDisposable
             _connectionStatus.LastAttempt = DateTime.UtcNow;
 
             // Validate storage connection
-            if (!await ValidateConnectionAsync())
+            bool isConnectionValid = await ValidateConnectionAsync();
+            if (!isConnectionValid)
             {
                 throw new MCPException("Failed to connect to pattern storage");
             }
@@ -136,14 +139,14 @@ public class MCPClient : IMCPClient, IDisposable
 
         try
         {
-            // Store original context
-            _contextCache[context.ErrorId] = context;
-
             // Analyze the error
-            var analysisResult = await _errorAnalyzer.AnalyzeAsync(context);
+            var analysisResult = await _errorAnalyzer.AnalyzeAsync(context.Error);
 
-            // Update context with analysis results
-            context.AddAnalysisResults(analysisResult);
+            // Use the AddMetadata method to add the analysis result
+            context.AddMetadata("LatestAnalysisResult", analysisResult);
+            
+            // Cache the context
+            _contextCache[context.ErrorId] = context;
 
             // Update context history
             await UpdateContextHistoryAsync(context);
@@ -345,7 +348,7 @@ public class MCPClient : IMCPClient, IDisposable
         }
     }
 
-    private async Task ValidateConnectionAsync()
+    private async Task<bool> ValidateConnectionAsync()
     {
         try
         {
@@ -358,6 +361,8 @@ public class MCPClient : IMCPClient, IDisposable
             // This would be where we'd check connectivity to the storage
             // This is just a placeholder as ValidateConnectionAsync doesn't exist on IPatternStorage
             await Task.Delay(10);
+            
+            return true;
         }
         catch (Exception ex)
         {
@@ -370,11 +375,12 @@ public class MCPClient : IMCPClient, IDisposable
     {
         try
         {
-            // IPatternStorage.GetPatternsAsync() appears to require a parameter
-            var patterns = await _storage.GetPatternsAsync("");
+            // Fix: Add the required pattern parameter to GetPatternsAsync
+            var patterns = await _storage.GetPatternsAsync("error:*");
             foreach (var pattern in patterns)
             {
-                _contextCache[pattern.Id] = pattern.Context;
+                // Fix: Parse the string value into an ErrorContext
+                _contextCache[pattern.Key] = ParseErrorContext(pattern.Value);
             }
         }
         catch (Exception ex)
@@ -461,15 +467,123 @@ public class MCPClient : IMCPClient, IDisposable
     public async Task UpdateErrorPatternsAsync(List<ErrorPattern> patterns)
     {
         if (patterns == null) throw new ArgumentNullException(nameof(patterns));
-        await _storage.SavePatternsAsync(patterns);
+        
+        // Convert List<ErrorPattern> to Dictionary<string, string> if SavePatternsAsync requires it
+        var patternsDict = patterns.ToDictionary(p => p.Id, p => JsonSerializer.Serialize(p));
+        await _storage.SavePatternsAsync(patternsDict);
     }
 
     public async Task<List<ErrorPattern>> GetErrorPatternsAsync(string serviceName)
     {
-        var allPatterns = await _storage.GetPatternsAsync();
+        // Get patterns as dictionary
+        var patternsDict = await _storage.GetPatternsAsync("*");
+        
+        // Convert dictionary to list of ErrorPattern objects
+        var allPatterns = new List<ErrorPattern>();
+        foreach (var kvp in patternsDict)
+        {
+            try
+            {
+                var pattern = new ErrorPattern
+                {
+                    Id = kvp.Key,
+                    ServiceName = ExtractServiceName(kvp.Value),
+                    Pattern = kvp.Value
+                };
+                allPatterns.Add(pattern);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to parse pattern {PatternId}", kvp.Key);
+            }
+        }
+        
+        // Filter by service name if provided
         if (string.IsNullOrEmpty(serviceName))
             return allPatterns;
-        return allPatterns.FindAll(p => p.ServiceName == serviceName);
+            
+        return allPatterns.Where(p => p.ServiceName == serviceName).ToList();
+    }
+    
+    // Helper method to extract service name from pattern string
+    private string ExtractServiceName(string pattern)
+    {
+        // Simple implementation - in a real system, this would parse the pattern
+        if (string.IsNullOrEmpty(pattern))
+            return string.Empty;
+            
+        // Look for a service name pattern like "service:name" in the string
+        var match = Regex.Match(pattern, @"service:([^\s;]+)");
+        return match.Success ? match.Groups[1].Value : "unknown";
+    }
+
+    // Helper method to convert a string to an ErrorContext
+    private ErrorContext ParseErrorContext(string context)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(context))
+                return null;
+                
+            // Try to deserialize the context if it's JSON
+            if (context.StartsWith("{") && context.EndsWith("}"))
+            {
+                try
+                {
+                    return JsonSerializer.Deserialize<ErrorContext>(context, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+                catch (JsonException jsonEx)
+                {
+                    _logger.LogWarning(jsonEx, "Failed to deserialize error context as JSON");
+                }
+            }
+                
+            // If not JSON or JSON parsing failed, create a basic ErrorContext with minimal info
+            var errorParts = context.Split('|');
+            string errorType = errorParts.Length > 0 ? errorParts[0] : "UnknownErrorType";
+            string message = errorParts.Length > 1 ? errorParts[1] : context;
+            string source = errorParts.Length > 2 ? errorParts[2] : "MCPClient";
+            
+            return new ErrorContext(
+                new RuntimeError(
+                    message,
+                    errorType,
+                    source,
+                    null),
+                "MCPClient",
+                DateTime.UtcNow);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to parse error context string");
+            return null;
+        }
+    }
+    
+    // Helper method to convert an ErrorContext to a string
+    private string SerializeErrorContext(ErrorContext context)
+    {
+        if (context == null)
+            return null;
+            
+        try
+        {
+            // Serialize to JSON
+            return JsonSerializer.Serialize(context, new JsonSerializerOptions
+            {
+                WriteIndented = false
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to serialize error context");
+            
+            // Fallback to simple string format
+            return $"{context.ErrorType}|{context.Message}|{context.Source}";
+        }
     }
 } 
 

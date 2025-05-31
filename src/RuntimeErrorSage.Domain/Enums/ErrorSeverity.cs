@@ -53,6 +53,11 @@ namespace RuntimeErrorSage.Domain.Enums
         /// <summary>
         /// Success severity - operation completed successfully.
         /// </summary>
-        Success = 7
+        Success = 7,
+        
+        /// <summary>
+        /// Unknown severity - severity level cannot be determined.
+        /// </summary>
+        Unknown = 8
     }
 } 

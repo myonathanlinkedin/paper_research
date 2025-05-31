@@ -6,6 +6,7 @@ namespace RuntimeErrorSage.Application.LLM.Interfaces
     {
         Task<string> AnalyzeErrorAsync(string prompt);
         Task<string> GenerateRemediationAsync(object analysis);
+        Task<bool> IsModelReadyAsync();
     }
 } 
 

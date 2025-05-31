@@ -48,5 +48,10 @@ public enum AnalysisStatus
     /// <summary>
     /// Analysis has been validated.
     /// </summary>
-    Validated = 8
+    Validated = 8,
+    
+    /// <summary>
+    /// Analysis is pending.
+    /// </summary>
+    Pending = 9
 } 

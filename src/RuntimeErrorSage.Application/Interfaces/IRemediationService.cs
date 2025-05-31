@@ -116,7 +116,7 @@ namespace RuntimeErrorSage.Application.Interfaces
         /// </summary>
         /// <param name="actionId">The action identifier.</param>
         /// <returns>The rollback status.</returns>
-        Task<RuntimeErrorSage.Domain.Models.Remediation.RollbackStatus> RollbackActionAsync(string actionId);
+        Task<RuntimeErrorSage.Domain.Enums.RollbackStatus> RollbackActionAsync(string actionId);
 
         /// <summary>
         /// Gets the status of a remediation action.

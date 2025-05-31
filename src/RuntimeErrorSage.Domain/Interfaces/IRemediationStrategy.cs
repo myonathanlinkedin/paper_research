@@ -18,14 +18,19 @@ namespace RuntimeErrorSage.Domain.Interfaces
         string Id { get; }
 
         /// <summary>
-        /// Gets the name of the strategy.
+        /// Gets or sets the name of the strategy.
         /// </summary>
-        string Name { get; }
+        string Name { get; set; }
 
         /// <summary>
-        /// Gets the description of the strategy.
+        /// Gets or sets the description of the strategy.
         /// </summary>
-        string Description { get; }
+        string Description { get; set; }
+
+        /// <summary>
+        /// Gets the version of the strategy.
+        /// </summary>
+        string Version { get; }
 
         /// <summary>
         /// Gets a value indicating whether the strategy is enabled.
@@ -33,9 +38,39 @@ namespace RuntimeErrorSage.Domain.Interfaces
         bool IsEnabled { get; }
 
         /// <summary>
+        /// Gets or sets the priority of the strategy.
+        /// </summary>
+        RemediationPriority Priority { get; set; }
+
+        /// <summary>
+        /// Gets or sets the priority value as integer for interoperability.
+        /// </summary>
+        int? PriorityValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the risk level of the strategy.
         /// </summary>
         RiskLevel RiskLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parameters of the strategy.
+        /// </summary>
+        Dictionary<string, object> Parameters { get; set; }
+
+        /// <summary>
+        /// Gets the supported error types.
+        /// </summary>
+        ISet<string> SupportedErrorTypes { get; }
+
+        /// <summary>
+        /// Gets the list of remediation actions.
+        /// </summary>
+        List<RemediationAction> Actions { get; }
+
+        /// <summary>
+        /// Gets the creation timestamp.
+        /// </summary>
+        DateTime CreatedAt { get; }
 
         /// <summary>
         /// Determines whether the strategy applies to the specified error context.

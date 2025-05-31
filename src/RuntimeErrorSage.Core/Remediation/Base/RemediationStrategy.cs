@@ -8,13 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using RuntimeErrorSage.Domain.Interfaces;
 
 namespace RuntimeErrorSage.Core.Remediation.Base;
 
 /// <summary>
-/// Base class for remediation strategies.
+/// Abstract base class for remediation strategies.
 /// </summary>
-public abstract class RemediationStrategy : IRemediationStrategy
+public abstract class RemediationStrategy : RuntimeErrorSage.Application.Interfaces.IRemediationStrategy
 {
     protected readonly ILogger<RemediationStrategy> Logger;
 
@@ -44,7 +45,14 @@ public abstract class RemediationStrategy : IRemediationStrategy
     public abstract string Name { get; set; }
 
     /// <inheritdoc/>
-    public RemediationPriority Priority { get; set; }
+    public RemediationPriority Priority { get; set; } = RemediationPriority.Medium;
+
+    /// <inheritdoc/>
+    public int? PriorityValue 
+    { 
+        get => (int)Priority; 
+        set => Priority = value.HasValue ? (RemediationPriority)value.Value : RemediationPriority.Medium; 
+    }
 
     /// <inheritdoc/>
     public RiskLevel RiskLevel { get; set; } = RiskLevel.Medium;
@@ -110,13 +118,32 @@ public abstract class RemediationStrategy : IRemediationStrategy
             {
                 try
                 {
-                    var actionResult = await action.ExecuteAsync(context);
-                    result.Actions.Add(actionResult);
+                    var actionResult = await action.ExecuteAsync();
+                    // Create a RemediationActionResult from the actionResult and add it to the list
+                    if (result.Actions == null)
+                    {
+                        result.Actions = new List<RemediationActionResult>();
+                    }
+                    
+                    // Add a simple representation of the action result
+                    result.Actions.Add(new RemediationActionResult
+                    {
+                        ActionId = action.Id,
+                        Name = action.Name,
+                        Success = actionResult.IsSuccessful,
+                        Message = actionResult.Message,
+                        StartTime = actionResult.StartTime != null && actionResult.GetType().GetProperty("StartTime")?.PropertyType == typeof(DateTime?) 
+                            ? ((DateTime?)actionResult.StartTime).Value 
+                            : (DateTime)actionResult.StartTime,
+                        EndTime = actionResult.EndTime != null && actionResult.GetType().GetProperty("EndTime")?.PropertyType == typeof(DateTime?) 
+                            ? ((DateTime?)actionResult.EndTime).Value 
+                            : (DateTime)(actionResult.EndTime ?? DateTime.UtcNow)
+                    });
 
                     if (!actionResult.IsSuccessful)
                     {
                         result.Success = false;
-                        result.ErrorMessage = $"Action {action.Name} failed: {actionResult.ErrorMessage}";
+                        result.ErrorMessage = $"Action {action.Name} failed: {actionResult.Message}";
                         break;
                     }
                 }
@@ -130,7 +157,7 @@ public abstract class RemediationStrategy : IRemediationStrategy
             }
 
             result.EndTime = DateTime.UtcNow;
-            result.Success = result.Actions.All(a => a.IsSuccessful);
+            result.Success = result.Actions.All(a => a.Success);
             result.Status = result.Success ? RemediationStatusEnum.Success : RemediationStatusEnum.Failed;
 
             return result;
@@ -140,6 +167,27 @@ public abstract class RemediationStrategy : IRemediationStrategy
             Logger.LogError(ex, "Error executing strategy {StrategyName}", Name);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Executes this strategy with optional parameters.
+    /// </summary>
+    public virtual async Task<RemediationResult> ExecuteAsync(ErrorContext context, object parameters)
+    {
+        // Store parameters if provided
+        if (parameters != null)
+        {
+            if (parameters is Dictionary<string, object> paramsDict)
+            {
+                foreach (var param in paramsDict)
+                {
+                    Parameters[param.Key] = param.Value;
+                }
+            }
+        }
+        
+        // Call the main execution method
+        return await ExecuteAsync(context);
     }
 
     /// <inheritdoc/>
@@ -208,7 +256,7 @@ public abstract class RemediationStrategy : IRemediationStrategy
         {
             Level = RiskLevel.Medium,
             Description = "Default risk assessment",
-            Factors = new Dictionary<string, double>(),
+            Factors = new Dictionary<string, object>(),
             Timestamp = DateTime.UtcNow
         });
     }
@@ -231,12 +279,14 @@ public abstract class RemediationStrategy : IRemediationStrategy
     public virtual Task<RemediationPlan> CreatePlanAsync(ErrorContext context)
     {
         // Default implementation creates an empty plan
-        return Task.FromResult(new RemediationPlan
+        return Task.FromResult(new RemediationPlan(
+            Name,
+            $"Default plan for {Name} strategy",
+            new List<RemediationAction>(),
+            new Dictionary<string, object>(),
+            TimeSpan.FromMinutes(5))
         {
-            StrategyId = StrategyId,
-            StrategyName = Name,
-            ErrorContext = context,
-            Steps = new List<RemediationStep>()
+            Context = context
         });
     }
 
@@ -292,9 +342,71 @@ public abstract class RemediationStrategy : IRemediationStrategy
         {
             Name = name,
             Description = description,
-            Type = type,
+            Type = type.ToString(),
             Severity = SeverityLevel.Medium.ToRemediationActionSeverity(),
-            Status = RemediationActionStatus.Pending
+            Status = RemediationStatusEnum.Pending
         };
+    }
+}
+
+// Extension methods for RemediationStrategy
+public static class RemediationStrategyExtensions
+{
+    /// <summary>
+    /// Converts a RemediationStrategy to a Domain IRemediationStrategy
+    /// </summary>
+    public static Domain.Interfaces.IRemediationStrategy ToDomainStrategy(this RemediationStrategy strategy)
+    {
+        if (strategy == null)
+            return null;
+
+        return new DomainStrategyWrapper(strategy);
+    }
+
+    /// <summary>
+    /// Wrapper class that adapts a RemediationStrategy to a Domain IRemediationStrategy
+    /// </summary>
+    private class DomainStrategyWrapper : Domain.Interfaces.IRemediationStrategy
+    {
+        private readonly RemediationStrategy _strategy;
+
+        public DomainStrategyWrapper(RemediationStrategy strategy)
+        {
+            _strategy = strategy ?? throw new ArgumentNullException(nameof(strategy));
+        }
+
+        public string Id => _strategy.Id;
+        
+        public string Name { get => _strategy.Name; set => _strategy.Name = value; }
+        
+        public string Description { get => _strategy.Description; set => _strategy.Description = value; }
+        
+        public string Version => _strategy.Version;
+        
+        public bool IsEnabled => _strategy.IsEnabled;
+        
+        public RemediationPriority Priority { get => _strategy.Priority; set => _strategy.Priority = value; }
+        
+        public int? PriorityValue { get => _strategy.PriorityValue; set => _strategy.PriorityValue = value; }
+        
+        public RiskLevel RiskLevel { get => _strategy.RiskLevel; set => _strategy.RiskLevel = value; }
+        
+        public Dictionary<string, object> Parameters { get => _strategy.Parameters; set => _strategy.Parameters = value; }
+        
+        public ISet<string> SupportedErrorTypes => _strategy.SupportedErrorTypes;
+        
+        public List<RemediationAction> Actions => _strategy.Actions;
+        
+        public DateTime CreatedAt => _strategy.CreatedAt;
+        
+        public bool AppliesTo(ErrorContext context)
+        {
+            return _strategy.CanHandleErrorAsync(context).GetAwaiter().GetResult();
+        }
+        
+        public Task<IEnumerable<RemediationAction>> CreateActionsAsync(ErrorContext context)
+        {
+            return Task.FromResult<IEnumerable<RemediationAction>>(_strategy.Actions);
+        }
     }
 } 

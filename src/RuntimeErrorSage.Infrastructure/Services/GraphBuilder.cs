@@ -36,8 +36,12 @@ public class GraphBuilder : IGraphBuilder
                 Name = $"Dependency Graph for Error {context.ErrorId}",
                 Description = $"Dependency graph built from error context at {DateTime.UtcNow}",
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                CorrelationId = context.CorrelationId,
+                Timestamp = DateTime.UtcNow
             };
+
+            var nodesDict = new Dictionary<string, DependencyNode>();
 
             // Add nodes from component graph
             if (context.ComponentGraph != null)
@@ -45,31 +49,58 @@ public class GraphBuilder : IGraphBuilder
                 foreach (var (componentId, dependencies) in context.ComponentGraph)
                 {
                     // Add the component node
-                    var node = new GraphNode
+                    var node = new DependencyNode
                     {
                         Id = componentId,
                         Name = componentId,
+                        NodeType = GraphNodeType.Component,
                         Type = GraphNodeType.Component.ToString(),
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         Metadata = new Dictionary<string, string>()
                     };
 
-                    graph.Nodes.Add(componentId, node);
+                    graph.Nodes.Add(node);
+                    nodesDict[componentId] = node;
 
-                    // Add edges for dependencies
+                    // Create edges for dependencies (but add them later when all nodes exist)
                     foreach (var dependencyId in dependencies)
                     {
-                        var edge = new GraphEdge
+                        // We'll add the actual edges after creating all nodes
+                        if (!nodesDict.ContainsKey(dependencyId))
                         {
-                            Source = node,
-                            Target = new GraphNode { Id = dependencyId },
-                            Type = GraphEdgeType.DependsOn.ToString(),
-                            Weight = 1.0,
+                            var depNode = new DependencyNode
+                            {
+                                Id = dependencyId,
+                                Name = dependencyId,
+                                NodeType = GraphNodeType.Component,
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            };
+                            
+                            graph.Nodes.Add(depNode);
+                            nodesDict[dependencyId] = depNode;
+                        }
+                    }
+                }
+                
+                // Now create the edges
+                foreach (var (componentId, dependencies) in context.ComponentGraph)
+                {
+                    var sourceNode = nodesDict[componentId];
+                    
+                    foreach (var dependencyId in dependencies)
+                    {
+                        var targetNode = nodesDict[dependencyId];
+                        
+                        var edge = new DependencyEdge
+                        {
+                            SourceId = sourceNode.Id,
+                            TargetId = targetNode.Id,
+                            Source = sourceNode,
+                            Target = targetNode,
                             Label = "depends_on",
-                            IsDirected = true,
-                            CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow
+                            IsDirected = true
                         };
 
                         graph.Edges.Add(edge);
@@ -80,21 +111,47 @@ public class GraphBuilder : IGraphBuilder
             // Add error source node if available
             if (!string.IsNullOrEmpty(context.ErrorSource))
             {
-                var errorNode = new GraphNode
+                var errorNodeId = context.ErrorSource;
+                DependencyNode errorNode;
+                
+                if (nodesDict.ContainsKey(errorNodeId))
                 {
-                    Id = context.ErrorSource,
-                    Name = "Error Source",
-                    Type = GraphNodeType.Unknown.ToString(),
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    Metadata = new Dictionary<string, string>
+                    // Update existing node
+                    errorNode = nodesDict[errorNodeId];
+                    errorNode.IsErrorSource = true;
+                    errorNode.NodeType = GraphNodeType.Error;
+                    errorNode.Type = GraphNodeType.Error.ToString();
+                    
+                    if (errorNode.Metadata == null)
                     {
-                        { "ErrorType", context.ErrorType },
-                        { "ErrorMessage", context.Message }
+                        errorNode.Metadata = new Dictionary<string, string>();
                     }
-                };
+                    
+                    errorNode.Metadata["ErrorType"] = context.ErrorType;
+                    errorNode.Metadata["ErrorMessage"] = context.Message;
+                }
+                else
+                {
+                    // Create new error node
+                    errorNode = new DependencyNode
+                    {
+                        Id = errorNodeId,
+                        Name = "Error Source",
+                        NodeType = GraphNodeType.Error,
+                        Type = GraphNodeType.Error.ToString(),
+                        IsErrorSource = true,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        Metadata = new Dictionary<string, string>
+                        {
+                            { "ErrorType", context.ErrorType },
+                            { "ErrorMessage", context.Message }
+                        }
+                    };
 
-                graph.Nodes.Add(context.ErrorSource, errorNode);
+                    graph.Nodes.Add(errorNode);
+                    nodesDict[errorNodeId] = errorNode;
+                }
             }
 
             // Add metadata

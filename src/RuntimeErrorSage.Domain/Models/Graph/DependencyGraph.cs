@@ -21,9 +21,29 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the nodes in the graph as a dictionary.
+        /// </summary>
+        private Dictionary<string, GraphNode> NodesDict { get; set; } = new();
+
+        /// <summary>
         /// Gets or sets the nodes in the graph.
         /// </summary>
-        public Dictionary<string, GraphNode> Nodes { get; set; } = new();
+        public List<DependencyNode> Nodes { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the edges in the graph.
+        /// </summary>
+        public List<DependencyEdge> Edges { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the correlation identifier.
+        /// </summary>
+        public string CorrelationId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the timestamp when the graph was created.
+        /// </summary>
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the dependencies in the graph.
@@ -66,9 +86,9 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         public Dictionary<string, string> Metadata { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the edges in the graph.
+        /// Gets or sets the graph edges.
         /// </summary>
-        public List<GraphEdge> Edges { get; set; } = new();
+        public List<GraphEdge> GraphEdges { get; set; } = new();
 
         /// <summary>
         /// Adds a node to the graph.
@@ -79,9 +99,9 @@ namespace RuntimeErrorSage.Domain.Models.Graph
             if (node == null)
                 throw new ArgumentNullException(nameof(node));
 
-            if (!Nodes.ContainsKey(node.Id))
+            if (!NodesDict.ContainsKey(node.Id))
             {
-                Nodes.Add(node.Id, node);
+                NodesDict.Add(node.Id, node);
             }
         }
 
@@ -94,8 +114,8 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         /// <returns>The created edge.</returns>
         public GraphEdge AddEdge(string sourceNodeId, string targetNodeId, string label = "depends_on")
         {
-            var sourceNode = Nodes.Values.FirstOrDefault(n => n.Id == sourceNodeId);
-            var targetNode = Nodes.Values.FirstOrDefault(n => n.Id == targetNodeId);
+            var sourceNode = NodesDict.Values.FirstOrDefault(n => n.Id == sourceNodeId);
+            var targetNode = NodesDict.Values.FirstOrDefault(n => n.Id == targetNodeId);
 
             if (sourceNode == null)
                 throw new ArgumentException($"Source node with ID {sourceNodeId} not found.");
@@ -103,7 +123,7 @@ namespace RuntimeErrorSage.Domain.Models.Graph
                 throw new ArgumentException($"Target node with ID {targetNodeId} not found.");
 
             var edge = new GraphEdge(sourceNode, targetNode, label);
-            Edges.Add(edge);
+            GraphEdges.Add(edge);
             return edge;
         }
 
@@ -119,20 +139,20 @@ namespace RuntimeErrorSage.Domain.Models.Graph
 
             if (direction == EdgeDirection.Incoming)
             {
-                neighborIds = Edges.Where(e => e.TargetId == nodeId).Select(e => e.SourceId).ToList();
+                neighborIds = GraphEdges.Where(e => e.TargetId == nodeId).Select(e => e.SourceId).ToList();
             }
             else if (direction == EdgeDirection.Outgoing)
             {
-                neighborIds = Edges.Where(e => e.SourceId == nodeId).Select(e => e.TargetId).ToList();
+                neighborIds = GraphEdges.Where(e => e.SourceId == nodeId).Select(e => e.TargetId).ToList();
             }
             else // Both
             {
-                neighborIds = Edges.Where(e => e.SourceId == nodeId || e.TargetId == nodeId)
+                neighborIds = GraphEdges.Where(e => e.SourceId == nodeId || e.TargetId == nodeId)
                     .Select(e => e.SourceId == nodeId ? e.TargetId : e.SourceId)
                     .ToList();
             }
 
-            return Nodes.Values.Where(n => neighborIds.Contains(n.Id)).ToList();
+            return NodesDict.Values.Where(n => neighborIds.Contains(n.Id)).ToList();
         }
 
         /// <summary>
@@ -159,7 +179,7 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         private bool FindPathDFS(string currentNodeId, string targetNodeId, HashSet<string> visited, List<GraphNode> path)
         {
             visited.Add(currentNodeId);
-            var currentNode = Nodes.Values.FirstOrDefault(n => n.Id == currentNodeId);
+            var currentNode = NodesDict.Values.FirstOrDefault(n => n.Id == currentNodeId);
             if (currentNode != null)
             {
                 path.Add(currentNode);

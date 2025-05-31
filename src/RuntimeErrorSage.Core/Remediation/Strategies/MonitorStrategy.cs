@@ -24,6 +24,12 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
         private readonly IRemediationActionResultFactory _resultFactory;
         private readonly List<RemediationAction> _actions = new();
         private readonly DateTime _createdAt = DateTime.UtcNow;
+        private string _name = "Monitor Strategy";
+        private string _description = "Strategy to monitor system metrics during error conditions";
+        private RemediationPriority _priority = RemediationPriority.Low;
+        private RiskLevel _riskLevel = RiskLevel.Low;
+        private Dictionary<string, object> _parameters = new Dictionary<string, object>();
+        private ISet<string> _supportedErrorTypes = new HashSet<string> { "System.*", "Performance.*", "Resource.*" };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MonitorStrategy"/> class.
@@ -57,7 +63,11 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         /// <inheritdoc/>
-        public string Name { get; set; } = "Monitoring";
+        public string Name 
+        { 
+            get => _name; 
+            set => _name = value; 
+        }
 
         /// <inheritdoc/>
         public string Version { get; } = "1.0.0";
@@ -66,16 +76,35 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
         public bool IsEnabled { get; } = true;
 
         /// <inheritdoc/>
-        public RemediationPriority Priority { get; set; } = RemediationPriority.Low;
+        public RemediationPriority Priority 
+        { 
+            get => _priority; 
+            set => _priority = value; 
+        }
+
+        /// <inheritdoc />
+        public int? PriorityValue 
+        { 
+            get => (int)_priority; 
+            set => _priority = value.HasValue ? (RemediationPriority)value.Value : RemediationPriority.Low; 
+        }
 
         /// <inheritdoc/>
         public RiskLevel RiskLevel { get; set; } = RiskLevel.Low;
 
         /// <inheritdoc/>
-        public string Description { get; set; } = "Monitors system performance after errors";
+        public string Description 
+        { 
+            get => _description; 
+            set => _description = value; 
+        }
 
         /// <inheritdoc/>
-        public Dictionary<string, object> Parameters { get; set; }
+        public Dictionary<string, object> Parameters 
+        { 
+            get => _parameters; 
+            set => _parameters = value; 
+        }
 
         /// <inheritdoc/>
         public ISet<string> SupportedErrorTypes { get; }
@@ -98,7 +127,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             
             try
             {
-                var monitoringResult = await _monitoringService.MonitorSystemAsync(context.ApplicationId);
+                var monitoringResult = await _monitoringService.MonitorAsync(context.ServiceName);
                 
                 return new RemediationResult
                 {
@@ -196,14 +225,15 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var plan = new RemediationPlan
+            var plan = new RemediationPlan(
+                "Monitoring Plan",
+                $"Plan to monitor system health for {context.ErrorType} error",
+                new List<RemediationAction>(_actions),
+                new Dictionary<string, object>(),
+                TimeSpan.FromMinutes(5))
             {
-                PlanId = Guid.NewGuid().ToString(),
-                Name = "Monitoring Plan",
-                Description = $"Plan to monitor system health for {context.ErrorType} error",
                 Context = context,
-                CreatedAt = DateTime.UtcNow,
-                Actions = new List<RemediationAction>(_actions)
+                CreatedAt = DateTime.UtcNow
             };
 
             return Task.FromResult(plan);
@@ -237,9 +267,11 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             {
                 Level = RiskLevel.Low,
                 Description = "Monitoring operations are low risk",
-                Factors = new Dictionary<string, double>
+                Factors = new Dictionary<string, object>
                 {
-                    { "SystemPerformance", 0.1 }
+                    { "SystemInterference", 0.1 },
+                    { "PerformanceImpact", 0.2 },
+                    { "DataLoss", 0.0 }
                 },
                 Timestamp = DateTime.UtcNow
             });
@@ -277,9 +309,9 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             {
                 Name = name,
                 Description = description,
-                Type = RemediationActionType.Monitor,
+                Type = RemediationActionType.Monitor.ToString(),
                 Severity = SeverityLevel.Low.ToRemediationActionSeverity(),
-                Status = RemediationActionStatus.Pending
+                Status = RemediationStatusEnum.Pending
             };
         }
     }

@@ -146,6 +146,31 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// </summary>
         public MetricsResourceUsage EndResourceUsage { get; set; } = new MetricsResourceUsage();
 
+        /// <summary>
+        /// Gets or sets the metrics ID.
+        /// </summary>
+        public string MetricsId { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// Gets or sets the remediation ID.
+        /// </summary>
+        public string RemediationId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the start time of the remediation.
+        /// </summary>
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the end time of the remediation.
+        /// </summary>
+        public DateTime? EndTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metadata for this metrics object.
+        /// </summary>
+        public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+
         public void IncrementExecutionCount(RemediationStatusEnum status)
         {
             _totalExecutions++;

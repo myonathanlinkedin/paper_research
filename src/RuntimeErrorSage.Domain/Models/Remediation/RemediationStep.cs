@@ -5,17 +5,12 @@ using RuntimeErrorSage.Domain.Enums;
 namespace RuntimeErrorSage.Domain.Models.Remediation
 {
     /// <summary>
-    /// Represents a step in a remediation process.
+    /// Represents a single step in a remediation execution.
     /// </summary>
     public class RemediationStep
     {
         /// <summary>
-        /// Gets or sets the unique identifier for this step.
-        /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// Gets or sets the step identifier.
+        /// Gets or sets the unique identifier for the step.
         /// </summary>
         public string StepId { get; set; } = Guid.NewGuid().ToString();
 
@@ -25,58 +20,68 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the type of the step.
-        /// </summary>
-        public RemediationStepType StepType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the step (legacy).
-        /// </summary>
-        public string Type { get; set; } = string.Empty;
-
-        /// <summary>
         /// Gets or sets the description of the step.
         /// </summary>
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the order of the step.
+        /// Gets or sets the identifier of the associated action.
         /// </summary>
-        public int Order { get; set; }
+        public string ActionId { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the step is critical.
+        /// Gets or sets the type of the action being performed.
         /// </summary>
-        public bool IsCritical { get; set; }
+        public string ActionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timestamp when the step started.
+        /// </summary>
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets or sets the timestamp when the step completed.
+        /// </summary>
+        public DateTime? CompletionTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timestamp when the step completed.
+        /// Alias for CompletionTime to maintain compatibility with existing code.
+        /// </summary>
+        public DateTime? EndTime 
+        { 
+            get => CompletionTime; 
+            set => CompletionTime = value;
+        }
 
         /// <summary>
         /// Gets or sets the status of the step.
         /// </summary>
-        public RemediationStepStatus Status { get; set; }
+        public string Status { get; set; } = "Pending";
 
         /// <summary>
-        /// Gets or sets the start time of the step.
+        /// Gets or sets any additional messages related to the step.
         /// </summary>
-        public DateTime? StartTime { get; set; }
+        public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets the end time of the step.
+        /// Gets or sets additional details about the step.
         /// </summary>
-        public DateTime? EndTime { get; set; }
+        public string Details { get; set; }
 
         /// <summary>
-        /// Gets or sets the error message if the step failed.
+        /// Gets or sets error message if the step failed.
         /// </summary>
-        public string ErrorMessage { get; set; } = string.Empty;
+        public string ErrorMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the action associated with this step.
+        /// Gets or sets a value indicating whether the step can be rolled back.
         /// </summary>
-        public RemediationAction Action { get; set; }
+        public bool CanRollback { get; set; }
 
         /// <summary>
-        /// Gets or sets the parameters for this step.
+        /// Gets or sets the order of the step in the execution sequence.
         /// </summary>
-        public Dictionary<string, object> Parameters { get; set; } = new();
+        public int Order { get; set; }
     }
 } 

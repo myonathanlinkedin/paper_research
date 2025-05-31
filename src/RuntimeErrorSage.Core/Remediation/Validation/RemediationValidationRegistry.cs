@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Validation;
 using RemediationPlan = RuntimeErrorSage.Domain.Models.Remediation.RemediationPlan;
@@ -12,6 +13,7 @@ using RuntimeErrorSage.Application.Remediation.Interfaces;
 using CoreValidationResult = RuntimeErrorSage.Domain.Models.Validation.ValidationResult;
 using DataAnnotationsValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Core.Extensions;
 
 namespace RuntimeErrorSage.Core.Remediation.Validation;
 
@@ -98,7 +100,7 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
                 results.Add(result);
 
                 // Stop validation if a high-priority rule fails
-                if (!result.IsSuccessful && rule.Priority >= 4)
+                if (!result.IsSuccessful() && rule.Priority >= 4)
                 {
                     _logger.LogWarning(
                         "High-priority validation rule {Rule} failed: {Message}",
@@ -109,10 +111,10 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
             }
 
             // Convert to System.ComponentModel.DataAnnotations.ValidationResult
-            if (results.Any(r => !r.IsSuccessful))
+            if (results.Any(r => !r.IsSuccessful()))
             {
                 var errorMessages = results
-                    .Where(r => !r.IsSuccessful)
+                    .Where(r => !r.IsSuccessful())
                     .Select(r => r.Message);
                 return new DataAnnotationsValidationResult(string.Join("; ", errorMessages));
             }
@@ -135,30 +137,68 @@ public class RemediationValidationRegistry : IRemediationValidationRegistry
         RemediationPlan plan,
         ErrorContext context)
     {
-        if (!rule.IsCacheable)
+        try
         {
-            return await rule.ValidateAsync(plan, context);
+            if (!rule.IsCacheable)
+            {
+                // Create a RemediationContext with the available properties
+                var validationContext = new Domain.Models.Remediation.RemediationContext(context);
+                // Add plan as an option
+                validationContext.SetOption("Plan", plan);
+                
+                return await rule.ValidateAsync(validationContext);
+            }
+
+            var cacheKey = rule.GetCacheKey(plan, context);
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(rule.CacheDuration)
+                .SetAbsoluteExpiration(rule.CacheDuration * 2);
+
+            if (_cache.TryGetValue<CoreValidationResult>(cacheKey, out var cachedResult))
+            {
+                cachedResult.IsFromCache = true;
+                return cachedResult;
+            }
+
+            // Create a RemediationContext with the available properties
+            var remediationContext = new Domain.Models.Remediation.RemediationContext(context);
+            // Add plan as an option
+            remediationContext.SetOption("Plan", plan);
+            
+            var result = await rule.ValidateAsync(remediationContext);
+            _cache.Set(cacheKey, result, cacheOptions);
+            return result;
         }
-
-        var cacheKey = rule.GetCacheKey(plan, context);
-        var cacheOptions = new MemoryCacheEntryOptions()
-            .SetSlidingExpiration(rule.CacheDuration)
-            .SetAbsoluteExpiration(rule.CacheDuration * 2);
-
-        if (_cache.TryGetValue<CoreValidationResult>(cacheKey, out var cachedResult))
+        catch (Exception ex)
         {
-            cachedResult.IsFromCache = true;
-            return cachedResult;
+            _logger.LogError(ex, "Error validating rule {RuleName}", rule.Name);
+            return new CoreValidationResult
+            {
+                IsValid = false,
+                Message = $"Error validating rule {rule.Name}: {ex.Message}"
+            };
         }
-
-        var result = await rule.ValidateAsync(plan, context);
-        _cache.Set(cacheKey, result, cacheOptions);
-        return result;
     }
 
     public void ClearCache()
     {
-        _cache.Compact(1.0);
+        // Using Clear or evicting all items since Compact is not available
+        // Consider using a different approach if using Microsoft.Extensions.Caching.Memory version 7+
+        if (_cache is MemoryCache memoryCache)
+        {
+            memoryCache.Clear();
+        }
+        else
+        {
+            // Alternative approach - create new empty cache
+            // This is a workaround since IMemoryCache doesn't have a standard Clear method
+            foreach (var rule in _rules.Values)
+            {
+                // Try to remove known cache keys
+                var cacheKey = $"Rule_{rule.Name}";
+                _cache.Remove(cacheKey);
+            }
+        }
         _logger.LogInformation("Validation rule cache cleared");
     }
 } 

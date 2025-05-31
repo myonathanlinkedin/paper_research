@@ -8,7 +8,7 @@ using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Services;
+namespace RuntimeErrorSage.Infrastructure.Services;
 
 /// <summary>
 /// Service for analyzing the impact of errors on system components.
@@ -136,7 +136,7 @@ public class ImpactAnalyzer : IImpactAnalyzer
 
             // Calculate severity based on blast radius and node type
             result.Severity = CalculateSeverity(result.BlastRadius, ParseNodeType(node.Type)).ToImpactSeverity();
-            result.Scope = CalculateScope(result.BlastRadius);
+            result.ImpactScope = CalculateScope(result.BlastRadius);
 
             // Calculate confidence based on available data
             result.Confidence = CalculateConfidence(node, graph);
@@ -207,7 +207,8 @@ public class ImpactAnalyzer : IImpactAnalyzer
             confidence += 0.2;
 
         // Adjust confidence based on graph completeness
-        var totalPossibleEdges = graph.Nodes.Count * (graph.Nodes.Count - 1);
+        var nodesCount = graph.Nodes.ToList().Count;
+        var totalPossibleEdges = nodesCount * (nodesCount - 1);
         var actualEdges = graph.Edges.Count;
         var graphCompleteness = totalPossibleEdges > 0 ? (double)actualEdges / totalPossibleEdges : 0;
         confidence += graphCompleteness * 0.3;

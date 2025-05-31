@@ -23,6 +23,7 @@ using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using System.Diagnostics.PerformanceData;
 using System.IO;
+using System.Linq;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
@@ -191,12 +192,32 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             _logger.LogInformation(_eventIds[nameof(RecordMetricAsync)], 
                 "Recording metric {MetricName} for remediation {RemediationId}", metricName, remediationId);
 
+            // Convert value to double for the Values dictionary
+            double doubleValue = 0;
+            if (value is double d)
+                doubleValue = d;
+            else if (value is int i)
+                doubleValue = i;
+            else if (value is long l)
+                doubleValue = l;
+            else if (value is float f)
+                doubleValue = f;
+            else if (value is decimal m)
+                doubleValue = (double)m;
+            else if (value is bool b)
+                doubleValue = b ? 1 : 0;
+            else if (double.TryParse(value?.ToString(), out double parsed))
+                doubleValue = parsed;
+            
             var metrics = new RemediationMetrics
             {
                 ExecutionId = remediationId,
                 Timestamp = DateTime.UtcNow,
-                Values = new Dictionary<string, object> { [metricName] = value }
+                Values = new Dictionary<string, double> { [metricName] = doubleValue }
             };
+
+            // Store the original value in metadata for reference
+            metrics.Metadata[metricName] = value;
 
             _metricsHistory.AddOrUpdate(
                 remediationId,
@@ -569,45 +590,50 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         
         try
         {
-            // Process metrics
-            metrics["process_cpu_time"] = _currentProcess.TotalProcessorTime.TotalMilliseconds;
-            metrics["process_memory_usage"] = _currentProcess.WorkingSet64;
-            metrics["process_thread_count"] = _currentProcess.Threads.Count;
-            metrics["process_start_time"] = _currentProcess.StartTime.ToUniversalTime();
-            metrics["process_handle_count"] = _currentProcess.HandleCount;
+            // CPU usage percentage
+            var cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+            metrics["cpu.usage"] = cpuCounter.NextValue();
+            await Task.Delay(100, cancellationToken); // Wait for a more accurate reading
+            metrics["cpu.usage"] = cpuCounter.NextValue();
             
-            // System metrics
-            metrics["system_time"] = DateTime.UtcNow;
-            metrics["system_uptime"] = Environment.TickCount64 / 1000.0;
-            metrics["system_os_version"] = Environment.OSVersion.ToString();
-            metrics["system_processor_count"] = Environment.ProcessorCount;
-            metrics["system_is_64bit_os"] = Environment.Is64BitOperatingSystem;
-            metrics["system_is_64bit_process"] = Environment.Is64BitProcess;
-            
-            // Memory metrics
+            // Memory usage
+            double memoryUsage;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                metrics["memory_available"] = GetWindowsMemoryMetrics();
+                memoryUsage = GetWindowsMemoryMetrics();
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                metrics["memory_available"] = GetLinuxMemoryMetrics();
+                memoryUsage = GetLinuxMemoryMetrics();
+            }
+            else
+            {
+                memoryUsage = 0;
+            }
+            metrics["memory.usage"] = memoryUsage;
+            
+            // Disk usage
+            var drives = DriveInfo.GetDrives().Where(d => d.IsReady);
+            foreach (var drive in drives)
+            {
+                var driveName = drive.Name.Replace(":\\", "").ToLowerInvariant();
+                metrics[$"disk.{driveName}.total"] = drive.TotalSize;
+                metrics[$"disk.{driveName}.free"] = drive.AvailableFreeSpace;
+                metrics[$"disk.{driveName}.used"] = drive.TotalSize - drive.AvailableFreeSpace;
             }
             
-            // Disk metrics
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var driveInfo = new DriveInfo(Path.GetPathRoot(currentDirectory));
-            metrics["disk_total_space"] = driveInfo.TotalSize;
-            metrics["disk_available_space"] = driveInfo.AvailableFreeSpace;
-            metrics["disk_used_space"] = driveInfo.TotalSize - driveInfo.AvailableFreeSpace;
-            metrics["disk_drive_format"] = driveInfo.DriveFormat;
+            // Process info
+            metrics["process.cpu"] = _currentProcess.TotalProcessorTime.TotalMilliseconds;
+            metrics["process.memory"] = _currentProcess.WorkingSet64;
+            metrics["process.threads"] = _currentProcess.Threads.Count;
+            metrics["process.handles"] = _currentProcess.HandleCount;
             
-            await Task.CompletedTask; // Make sure the method is async
+            // System uptime
+            metrics["system.uptime"] = Environment.TickCount64 / 1000.0;
         }
         catch (Exception ex)
         {
-            _logger.LogError(_eventIds[nameof(CollectSystemMetricsAsync)], ex, 
-                "Error collecting system metrics");
+            _logger.LogError(_eventIds[nameof(CollectMetricsAsync)], ex, "Error collecting system metrics");
         }
         
         return metrics;
@@ -724,10 +750,67 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
         _disposed = true;
     }
 
-    private Dictionary<string, double> CalculateMetricTrends()
+    private Dictionary<string, object> CalculateMetricTrends()
     {
-        var trends = new Dictionary<string, double>();
-        // TODO: Implement trend calculation logic
+        var trends = new Dictionary<string, object>();
+        
+        try
+        {
+            var latestMetrics = _metricsHistory.Values
+                .SelectMany(m => m)
+                .OrderByDescending(m => m.Timestamp)
+                .Take(10)
+                .ToList();
+                
+            if (latestMetrics.Count < 2)
+            {
+                return trends;
+            }
+            
+            var commonMetrics = latestMetrics
+                .SelectMany(m => m.Values.Keys)
+                .GroupBy(k => k)
+                .Where(g => g.Count() >= 2)
+                .Select(g => g.Key)
+                .ToList();
+                
+            foreach (var metric in commonMetrics)
+            {
+                var values = latestMetrics
+                    .Where(m => m.Values.ContainsKey(metric))
+                    .OrderBy(m => m.Timestamp)
+                    .Select(m => 
+                    {
+                        if (m.Values[metric] is double d)
+                            return d;
+                        else if (m.Values[metric] is int i)
+                            return (double)i;
+                        else if (m.Values[metric] is long l)
+                            return (double)l;
+                        else
+                            return 0.0;
+                    })
+                    .ToList();
+                    
+                if (values.Count >= 2)
+                {
+                    var firstValue = values.First();
+                    var lastValue = values.Last();
+                    
+                    if (Math.Abs(firstValue) > 0.001) // Avoid division by zero
+                    {
+                        var change = (lastValue - firstValue) / firstValue;
+                        trends[metric] = change;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(_eventIds[nameof(CalculateMetricTrends)], ex, 
+                "Error calculating metric trends");
+        }
+        
         return trends;
     }
 

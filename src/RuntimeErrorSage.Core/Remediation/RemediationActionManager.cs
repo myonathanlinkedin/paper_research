@@ -47,13 +47,11 @@ namespace RuntimeErrorSage.Application.Remediation
                         action.Id, validationResult.Message);
                     
                     var actionContext = action.Context;
-                    var resultObj = new RemediationResult(actionContext)
+                    var resultObj = new RemediationResult(actionContext, RemediationStatusEnum.ValidationFailed, validationResult.Message, string.Empty)
                     {
                         IsSuccessful = false,
                         ActionId = action.Id,
                         ExecutionId = Guid.NewGuid().ToString(),
-                        Status = RemediationStatusEnum.ValidationFailed,
-                        ErrorMessage = validationResult.Message,
                         Timestamp = DateTime.UtcNow
                     };
                     
@@ -80,13 +78,11 @@ namespace RuntimeErrorSage.Application.Remediation
                     action.Id, ex.Message);
                 
                 var context = action.Context;
-                return new RemediationResult(context)
+                return new RemediationResult(context, RemediationStatusEnum.Failed, ex.Message, ex.StackTrace)
                 {
                     IsSuccessful = false,
                     ActionId = action.Id,
                     ExecutionId = Guid.NewGuid().ToString(),
-                    Status = RemediationStatusEnum.Failed,
-                    ErrorMessage = ex.Message,
                     Error = ex.ToString(),
                     Exception = ex,
                     Timestamp = DateTime.UtcNow
@@ -136,7 +132,7 @@ namespace RuntimeErrorSage.Application.Remediation
         /// </summary>
         /// <param name="actionId">The ID of the action to roll back.</param>
         /// <returns>The rollback status.</returns>
-        public async Task<Domain.Models.Remediation.RollbackStatus> RollbackActionAsync(string actionId)
+        public async Task<RuntimeErrorSage.Domain.Enums.RollbackStatus> RollbackActionAsync(string actionId)
         {
             _logger.LogInformation("Rolling back remediation action {ActionId}", actionId);
 
@@ -147,13 +143,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 if (actionResult == null)
                 {
                     _logger.LogWarning("Action {ActionId} not found for rollback", actionId);
-                    return new Domain.Models.Remediation.RollbackStatus
-                    {
-                        IsSuccessful = false,
-                        ActionId = actionId,
-                        ErrorMessage = $"Action {actionId} not found",
-                        Timestamp = DateTime.UtcNow
-                    };
+                    return RuntimeErrorSage.Domain.Enums.RollbackStatus.Failed;
                 }
 
                 // Initialize metrics
@@ -165,7 +155,7 @@ namespace RuntimeErrorSage.Application.Remediation
                 // Create a RuntimeError instance for the error context
                 var runtimeError = new RuntimeError
                 {
-                    ErrorId = Guid.NewGuid().ToString(),
+                    Id = Guid.NewGuid().ToString(),
                     Message = "Rollback operation"
                 };
 
@@ -184,28 +174,16 @@ namespace RuntimeErrorSage.Application.Remediation
                 // Update metrics
                 metrics.Complete(rollbackResult.IsSuccessful, rollbackResult.ErrorMessage);
 
-                return new Domain.Models.Remediation.RollbackStatus
-                {
-                    IsSuccessful = rollbackResult.IsSuccessful,
-                    ActionId = actionId,
-                    ErrorMessage = rollbackResult.ErrorMessage,
-                    Timestamp = DateTime.UtcNow,
-                    Exception = rollbackResult.Exception
-                };
+                return rollbackResult.IsSuccessful 
+                    ? RuntimeErrorSage.Domain.Enums.RollbackStatus.Completed 
+                    : RuntimeErrorSage.Domain.Enums.RollbackStatus.Failed;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error rolling back remediation action {ActionId}: {ErrorMessage}", 
                     actionId, ex.Message);
                 
-                return new Domain.Models.Remediation.RollbackStatus
-                {
-                    IsSuccessful = false,
-                    ErrorMessage = $"Rollback error: {ex.Message}",
-                    ActionId = actionId,
-                    Timestamp = DateTime.UtcNow,
-                    Exception = ex
-                };
+                return RuntimeErrorSage.Domain.Enums.RollbackStatus.Failed;
             }
         }
 
@@ -218,21 +196,21 @@ namespace RuntimeErrorSage.Application.Remediation
         {
             _logger.LogInformation("Getting status for remediation action {ActionId}", actionId);
 
+            // Create a RuntimeError instance for the error context
+            var runtimeError = new RuntimeError
+            {
+                Id = Guid.NewGuid().ToString(),
+                Message = "Status check"
+            };
+            
+            // Create an error context for the status check
+            var errorContext = new ErrorContext(runtimeError, "status_check", DateTime.UtcNow)
+            { 
+                ContextId = Guid.NewGuid().ToString()
+            };
+
             try
             {
-                // Create a RuntimeError instance for the error context
-                var runtimeError = new RuntimeError
-                {
-                    ErrorId = Guid.NewGuid().ToString(),
-                    Message = "Status check"
-                };
-                
-                // Create an error context for the status check
-                var errorContext = new ErrorContext(runtimeError, "status_check", DateTime.UtcNow)
-                { 
-                    ContextId = Guid.NewGuid().ToString()
-                };
-                
                 var result = await _executor.GetActionStatusAsync(actionId, errorContext);
                 return result;
             }
@@ -241,13 +219,11 @@ namespace RuntimeErrorSage.Application.Remediation
                 _logger.LogError(ex, "Error getting status for remediation action {ActionId}: {ErrorMessage}", 
                     actionId, ex.Message);
                 
-                return new RemediationResult(errorContext)
+                return new RemediationResult(errorContext, RemediationStatusEnum.Failed, $"Status retrieval error: {ex.Message}", ex.StackTrace)
                 {
                     IsSuccessful = false,
                     ActionId = actionId,
                     ExecutionId = string.Empty,
-                    Status = RemediationStatusEnum.Failed,
-                    ErrorMessage = $"Status retrieval error: {ex.Message}",
                     Error = ex.ToString(),
                     Exception = ex,
                     Timestamp = DateTime.UtcNow

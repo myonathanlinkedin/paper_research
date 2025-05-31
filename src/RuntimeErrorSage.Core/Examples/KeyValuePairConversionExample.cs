@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Application.Extensions;
 
 namespace RuntimeErrorSage.Core.Examples;
 
@@ -32,7 +34,8 @@ public static class KeyValuePairConversionExample
             var dependencyNode = new DependencyNode
             {
                 Id = graphNode.Id,
-                NodeType = graphNode.Type,
+                NodeType = graphNode.NodeType,
+                // Both GraphNode and DependencyNode use Dictionary<string, string> for Metadata
                 Metadata = graphNode.Metadata
             };
             
@@ -45,7 +48,8 @@ public static class KeyValuePairConversionExample
             .Select(kvp => new DependencyNode 
             {
                 Id = kvp.Value.Id,
-                NodeType = kvp.Value.Type,
+                NodeType = kvp.Value.NodeType,
+                // Both GraphNode and DependencyNode use Dictionary<string, string> for Metadata
                 Metadata = kvp.Value.Metadata
             })
             .ToList();
@@ -55,5 +59,23 @@ public static class KeyValuePairConversionExample
         {
             Console.WriteLine($"Node ID: {node.Id}");
         }
+    }
+    
+    /// <summary>
+    /// Converts a string-to-string dictionary to a string-to-object dictionary
+    /// </summary>
+    private static Dictionary<string, object> ConvertMetadata(Dictionary<string, string> stringMetadata)
+    {
+        var objectMetadata = new Dictionary<string, object>();
+        
+        if (stringMetadata != null)
+        {
+            foreach (var pair in stringMetadata)
+            {
+                objectMetadata[pair.Key] = pair.Value;
+            }
+        }
+        
+        return objectMetadata;
     }
 } 

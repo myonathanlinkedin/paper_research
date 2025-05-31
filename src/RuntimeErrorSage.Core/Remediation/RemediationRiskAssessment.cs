@@ -184,7 +184,7 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
             },
             ConfidenceLevel = 0.7,
             Timestamp = DateTime.UtcNow,
-            ActionId = strategy.StrategyId,
+            ActionId = strategy.Id,
             Status = AnalysisStatus.Completed,
             StartTime = DateTime.UtcNow,
             EndTime = DateTime.UtcNow
@@ -299,7 +299,8 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
         }
 
         // Use the helper to calculate risk level
-        var remediationRiskLevel = RiskAssessmentHelper.CalculateRiskLevel(action.Impact, action.ImpactScope);
+        var impactAsSeverity = (SeverityLevel)(int)action.Impact;
+        var remediationRiskLevel = RiskAssessmentHelper.CalculateRiskLevel(impactAsSeverity, action.ImpactScope);
 
         // Return the calculated risk level
         return remediationRiskLevel;
@@ -345,7 +346,14 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
         }
 
         // Add risk-based issues
-        switch (action.RiskLevel.ToRemediationRiskLevel())
+        var riskLevel = RiskLevel.Medium;
+        if (action.RiskLevel != null)
+        {
+            riskLevel = action.RiskLevel;
+        }
+        
+        var remediationRiskLevel = riskLevel.ToRemediationRiskLevel();
+        switch (remediationRiskLevel)
         {
             case RemediationRiskLevel.Critical:
                 issues.Add("Critical risk level may impact system stability");
@@ -381,7 +389,14 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
         steps.Add("Verify system state before execution");
 
         // Add risk-specific steps
-        switch (action.RiskLevel.ToRemediationRiskLevel())
+        var riskLevel = RiskLevel.Medium;
+        if (action.RiskLevel != null)
+        {
+            riskLevel = action.RiskLevel;
+        }
+        
+        var remediationRiskLevel = riskLevel.ToRemediationRiskLevel();
+        switch (remediationRiskLevel)
         {
             case RemediationRiskLevel.Critical:
                 steps.Add("Implement comprehensive rollback strategy");
@@ -408,6 +423,30 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
             {
                 steps.Add($"Validate {kvp.Key} before use");
             }
+        }
+
+        // Add error context-specific steps if available
+        if (action.ErrorContext != null)
+        {
+            // Access properties of ErrorContext directly
+            steps.Add($"Validate error context ID: {action.ErrorContext.ErrorId}");
+            
+            if (!string.IsNullOrEmpty(action.ErrorContext.ErrorType))
+            {
+                steps.Add($"Validate error type: {action.ErrorContext.ErrorType}");
+            }
+            
+            if (action.ErrorContext.Metadata?.Count > 0)
+            {
+                steps.Add("Validate error context metadata");
+            }
+        }
+
+        // Convert RiskLevel to RemediationRiskLevel using the extension method
+        if ((int)remediationRiskLevel > 2)
+        {
+            // High-risk action requires additional considerations
+            steps.Add("Prepare system backup before execution");
         }
 
         return steps;

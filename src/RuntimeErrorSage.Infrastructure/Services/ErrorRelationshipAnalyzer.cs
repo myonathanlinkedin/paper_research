@@ -256,7 +256,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
             return errors;
 
         // Find all error nodes in the same component
-        var componentErrors = graph.Nodes.Values
+        var componentErrors = graph.Nodes.ToList()
             .Where(n => n.Type == GraphNodeType.Error.ToString() && n.Metadata.TryGetValue("ComponentId", out var compId) && compId?.ToString() == context.ComponentId)
             .Select(n => new RelatedErrorModel
             {
@@ -287,7 +287,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         // Find all errors in dependent components
         foreach (var componentId in dependentComponents)
         {
-            var componentErrors = graph.Nodes.Values
+            var componentErrors = graph.Nodes.ToList()
                 .Where(n => n.Type == GraphNodeType.Error.ToString() && n.Metadata.TryGetValue("ComponentId", out var compId) && compId?.ToString() == componentId)
                 .Select(n => new RelatedErrorModel
                 {
@@ -309,7 +309,7 @@ public class ErrorRelationshipAnalyzer : IErrorRelationshipAnalyzer
         var errors = new List<RelatedErrorModel>();
 
         // Find all error nodes
-        var errorNodes = graph.Nodes.Values
+        var errorNodes = graph.Nodes.ToList()
             .Where(n => n.Type == GraphNodeType.Error.ToString())
             .ToList();
 

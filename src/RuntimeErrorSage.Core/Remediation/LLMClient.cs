@@ -354,8 +354,8 @@ namespace RuntimeErrorSage.Application.Remediation
             {
                 return new LLMSuggestion
                 {
-                    SuggestionId = string.Empty,
-                    Content = string.Empty,
+                    Id = string.Empty,
+                    Description = string.Empty,
                     Confidence = 0.0,
                     Steps = new List<string>(),
                     Metadata = new Dictionary<string, object>()
@@ -378,8 +378,8 @@ namespace RuntimeErrorSage.Application.Remediation
                 var suggestion = JsonSerializer.Deserialize<LLMSuggestion>(response, _jsonOptions);
                 return suggestion ?? new LLMSuggestion
                 {
-                    SuggestionId = string.Empty,
-                    Content = string.Empty,
+                    Id = string.Empty,
+                    Description = string.Empty,
                     Confidence = 0.0,
                     Steps = new List<string>(),
                     Metadata = new Dictionary<string, object>()
@@ -390,8 +390,8 @@ namespace RuntimeErrorSage.Application.Remediation
                 _logger.LogError(ex, "Error generating remediation suggestion");
                 return new LLMSuggestion
                 {
-                    SuggestionId = string.Empty,
-                    Content = string.Empty,
+                    Id = string.Empty,
+                    Description = string.Empty,
                     Confidence = 0.0,
                     Steps = new List<string>(),
                     Metadata = new Dictionary<string, object>()

@@ -28,7 +28,7 @@ namespace RuntimeErrorSage.Application.Examples
             var result3 = new RemediationResult(true);
             
             // CORRECT: Use the static Success factory method
-            var result4 = RemediationResult.Success("Operation completed successfully");
+            var result4 = RemediationResult.CreateSuccessResult("Operation completed successfully");
         }
         
         /// <summary>
@@ -51,7 +51,7 @@ namespace RuntimeErrorSage.Application.Examples
             var result3 = new RemediationActionResult(true);
             
             // CORRECT: Use the static Success factory method
-            var result4 = RemediationActionResult.Success();
+            var result4 = RemediationActionResult.CreateSuccessResult();
         }
         
         /// <summary>
@@ -75,7 +75,7 @@ namespace RuntimeErrorSage.Application.Examples
                 return result;
                 
                 // CORRECT ALTERNATIVE: Use static factory method
-                // return RemediationActionResult.Success();
+                // return RemediationActionResult.CreateSuccessResult();
             }
             catch (Exception ex)
             {

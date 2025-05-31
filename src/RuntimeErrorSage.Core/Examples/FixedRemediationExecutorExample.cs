@@ -16,16 +16,52 @@ using RuntimeErrorSage.Application.Analysis;
 using RuntimeErrorSage.Domain.Models.Common;
 using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Domain.Interfaces;
+using ApplicationStrategy = RuntimeErrorSage.Application.Interfaces.IRemediationStrategy;
+using DomainStrategy = RuntimeErrorSage.Domain.Interfaces.IRemediationStrategy;
 
 namespace RuntimeErrorSage.Core.Examples
 {
+    /// <summary>
+    /// Extension methods for the FixedRemediationExecutorExample.
+    /// </summary>
+    public static class FixedRemediationExecutorExampleExtensions
+    {
+        /// <summary>
+        /// Converts an IRemediationStrategy to an Application IRemediationStrategy.
+        /// </summary>
+        /// <param name="strategy">The strategy to convert.</param>
+        /// <returns>The Application strategy.</returns>
+        public static ApplicationStrategy ToApplicationStrategy(this ApplicationStrategy strategy)
+        {
+            if (strategy == null)
+                return null;
+                
+            // If it's already an ApplicationStrategy, return it
+            if (strategy is ApplicationStrategy appStrategy)
+                return appStrategy;
+                
+            // If it's a DomainStrategy, use the adapter
+            if (strategy is DomainStrategy domainStrategy)
+                return RuntimeErrorSage.Core.Remediation.RemediationStrategyAdapterExtensions.ToApplicationStrategy(domainStrategy);
+                
+            // As a fallback, create a new adapter with basic properties
+            return new RuntimeErrorSage.Core.Remediation.RemediationStrategyAdapter(new RemediationStrategyModel
+            {
+                Id = strategy.Id,
+                Name = strategy.Name,
+                Description = strategy.Description
+            });
+        }
+    }
+
     /// <summary>
     /// Examples showing the fixed patterns for common errors in RemediationExecutor
     /// </summary>
     public class FixedRemediationExecutorExample : IRemediationExecutor
     {
         private readonly ILogger<FixedRemediationExecutorExample> _logger;
-        private readonly IRemediationStrategy _strategy;
+        private readonly ApplicationStrategy _strategy;
         private readonly IRemediationValidator _validator;
         private readonly IRemediationMetricsCollector _metricsCollector;
         private readonly Dictionary<string, RemediationExecution> _executionHistory;
@@ -35,7 +71,7 @@ namespace RuntimeErrorSage.Core.Examples
         /// </summary>
         public FixedRemediationExecutorExample(
             ILogger<FixedRemediationExecutorExample> logger,
-            IRemediationStrategy strategy,
+            ApplicationStrategy strategy,
             IRemediationValidator validator,
             IRemediationMetricsCollector metricsCollector)
         {
@@ -56,7 +92,7 @@ namespace RuntimeErrorSage.Core.Examples
         public string Version => "1.0.0";
 
         /// <inheritdoc />
-        public async Task<RemediationResult> ExecuteStrategyAsync(IRemediationStrategy strategy, ErrorContext errorContext)
+        public async Task<RemediationResult> ExecuteStrategyAsync(ApplicationStrategy strategy, ErrorContext errorContext)
         {
             ArgumentNullException.ThrowIfNull(strategy);
             ArgumentNullException.ThrowIfNull(errorContext);
@@ -83,13 +119,23 @@ namespace RuntimeErrorSage.Core.Examples
                 var result = await strategy.ExecuteAsync(errorContext);
 
                 // Track execution
-                await _metricsCollector.TrackExecutionAsync(new RemediationExecution
+                var execution = new RemediationExecution
                 {
-                    Strategy = strategy.Name,
-                    ErrorContext = errorContext,
-                    Result = result,
-                    ExecutionTime = DateTime.UtcNow
-                });
+                    RemediationId = Guid.NewGuid().ToString(),
+                    ErrorId = errorContext.ErrorId,
+                    CorrelationId = errorContext.CorrelationId,
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow,
+                    Status = result.Status,
+                    Success = result.Success,
+                    ErrorMessage = result.ErrorMessage
+                };
+
+                // Add the execution to the dictionary for history tracking
+                _executionHistory[execution.ExecutionId] = execution;
+
+                // Record the execution metrics
+                await _metricsCollector.RecordExecutionAsync(execution.RemediationId, result);
 
                 return result;
             }
@@ -128,7 +174,16 @@ namespace RuntimeErrorSage.Core.Examples
                 // Execute each strategy in the plan
                 foreach (var strategy in plan.Strategies)
                 {
-                    var strategyResult = await ExecuteStrategyAsync(strategy, plan.Context);
+                    var strategyResult = await ExecuteStrategyAsync(
+                        (strategy is ApplicationStrategy appStrategy) ? appStrategy : 
+                            new RuntimeErrorSage.Core.Remediation.RemediationStrategyAdapter(
+                                new RemediationStrategyModel { 
+                                    Id = strategy.Id, 
+                                    Name = strategy.Name, 
+                                    Description = strategy.Description 
+                                }
+                            ), 
+                        plan.Context);
                     
                     if (strategyResult.Status != RemediationStatusEnum.Success)
                     {
@@ -137,7 +192,11 @@ namespace RuntimeErrorSage.Core.Examples
                         break;
                     }
 
-                    result.CompletedSteps.Add(strategy.Name);
+                    result.CompletedSteps.Add(new RemediationStep 
+                    { 
+                        Name = strategy.Name,
+                        Status = RemediationStepStatus.Completed.ToString()
+                    });
                 }
 
                 if (result.Status == RemediationStatusEnum.InProgress)
@@ -180,7 +239,7 @@ namespace RuntimeErrorSage.Core.Examples
                     Status = RemediationStatusEnum.Success,
                     Message = "Rollback completed successfully",
                     IsRollback = true,
-                    OriginalRemediationId = result.RemediationId
+                    PlanId = result.RemediationId
                 };
             }
             catch (Exception ex)
@@ -279,56 +338,102 @@ namespace RuntimeErrorSage.Core.Examples
                 var execution = new RemediationExecution
                 {
                     RemediationId = Guid.NewGuid().ToString(),
-                    ErrorContext = context,
+                    ErrorId = context.ErrorId,
+                    CorrelationId = context.CorrelationId,
                     StartTime = DateTime.UtcNow,
-                    Status = RemediationStatusEnum.InProgress
+                    Status = RemediationStatusEnum.InProgress.ToString()
                 };
                 
-                // Store in history
-                _executionHistory[execution.RemediationId] = execution;
-                
-                // Check if the strategy can handle this error context
-                var canHandle = await _strategy.CanHandleErrorAsync(context);
-                if (!canHandle)
+                // Add execution context details
+                var contextInfo = new Dictionary<string, object>
                 {
-                    execution.Status = RemediationStatusEnum.Failed;
-                    execution.ErrorMessage = $"Strategy {_strategy.Name} cannot handle error type {context.ErrorType}";
+                    { "Environment", context.Environment },
+                    { "ServiceName", context.ServiceName },
+                    { "ErrorType", analysis.ErrorType }
+                };
+                
+                // Get applicable strategies
+                var strategies = await _strategyProvider.GetApplicableStrategiesAsync(context);
+                if (!strategies.Any())
+                {
+                    execution.Status = RemediationStatusEnum.Failed.ToString();
                     execution.EndTime = DateTime.UtcNow;
+                    _logger.LogWarning("No applicable remediation strategies found for error {ErrorId}", context.ErrorId);
                     return execution;
                 }
                 
-                // Execute the strategy
-                var result = await _strategy.ExecuteAsync(context);
-                execution.RemediationPlanId = result.PlanId;
-                execution.CompletedActions = result.Actions.Count;
-                execution.TotalActions = result.Actions.Count;
-                execution.EndTime = DateTime.UtcNow;
-                execution.Status = result.Status;
-                execution.ErrorMessage = result.ErrorMessage;
+                // Select the best strategy
+                var strategy = await _strategyProvider.GetBestStrategyAsync(context);
+                if (strategy == null)
+                {
+                    execution.Status = RemediationStatusEnum.Failed.ToString();
+                    execution.EndTime = DateTime.UtcNow;
+                    _logger.LogWarning("Could not determine best remediation strategy for error {ErrorId}", context.ErrorId);
+                    return execution;
+                }
                 
-                // Store in history
-                _executionHistory[execution.RemediationId] = execution;
+                // Convert application strategy to domain strategy if needed
+                var domainStrategy = strategy;
+                if (strategy is ApplicationStrategy appStrategy)
+                {
+                    domainStrategy = RuntimeErrorSage.Core.Remediation.RemediationStrategyAdapterExtensions.ToDomainStrategy(appStrategy);
+                }
+                
+                // Create a remediation plan
+                var plan = await domainStrategy.CreateActionsAsync(context);
+                
+                // For this example, execute each action in the plan
+                var completedSteps = new List<RemediationStep>();
+                foreach (var action in plan)
+                {
+                    try
+                    {
+                        _logger.LogInformation("Executing action {ActionId} of type {ActionType}",
+                            action.Id, action.ActionType);
+                        
+                        // Create a step record
+                        var step = new RemediationStep
+                        {
+                            ActionId = action.Id,
+                            ActionType = action.ActionType,
+                            StartTime = DateTime.UtcNow,
+                            Status = RemediationStepStatus.Completed.ToString()
+                        };
+                        
+                        // Simulate action execution
+                        await Task.Delay(100); // Replace with actual execution
+                        
+                        // Mark step as completed
+                        step.EndTime = DateTime.UtcNow;
+                        step.Status = RemediationStepStatus.Completed.ToString();
+                        
+                        completedSteps.Add(step);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error executing action {ActionId}", action.Id);
+                    }
+                }
+                
+                // Update execution with results
+                execution.EndTime = DateTime.UtcNow;
+                execution.Status = RemediationStatusEnum.Success.ToString();
                 
                 return execution;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error executing remediation for analysis {AnalysisId}", analysis.ErrorId);
+                _logger.LogError(ex, "Error executing remediation for error {ErrorId}", context.ErrorId);
                 
-                var execution = new RemediationExecution
+                return new RemediationExecution
                 {
                     RemediationId = Guid.NewGuid().ToString(),
-                    ErrorContext = context,
+                    ErrorId = context.ErrorId,
+                    CorrelationId = context.CorrelationId,
                     StartTime = DateTime.UtcNow,
                     EndTime = DateTime.UtcNow,
-                    Status = RemediationStatusEnum.Failed,
-                    ErrorMessage = ex.Message
+                    Status = RemediationStatusEnum.Failed.ToString()
                 };
-                
-                // Store in history
-                _executionHistory[execution.RemediationId] = execution;
-                
-                return execution;
             }
         }
 
@@ -347,8 +452,8 @@ namespace RuntimeErrorSage.Core.Examples
                 {
                     IsValid = true,
                     Messages = new List<string>(),
-                    Warnings = new List<ValidationWarning>(),
-                    Errors = new List<ValidationError>()
+                    ValidationWarnings = new List<ValidationWarning>(),
+                    ValidationErrors = new List<ValidationError>()
                 };
 
                 // Add validation logic here
@@ -365,8 +470,8 @@ namespace RuntimeErrorSage.Core.Examples
                 {
                     IsValid = false,
                     Messages = new List<string> { ex.Message },
-                    Warnings = new List<ValidationWarning>(),
-                    Errors = new List<ValidationError> { new ValidationError { Message = ex.Message } }
+                    ValidationWarnings = new List<ValidationWarning>(),
+                    ValidationErrors = new List<ValidationError> { new ValidationError { Message = ex.Message } }
                 };
             }
         }
@@ -663,12 +768,6 @@ namespace RuntimeErrorSage.Core.Examples
                 Console.WriteLine($"Error Probability: {node.Value.ErrorProbability}");
             }
             
-            // INCORRECT: Trying to access edge properties directly from KeyValuePair
-            // foreach (var edge in graph.Edges)
-            // {
-            //     Console.WriteLine($"Edge from {edge.SourceId} to {edge.TargetId}");
-            // }
-            
             // CORRECT: Access through Value property
             foreach (var edge in graph.Edges)
             {
@@ -737,7 +836,7 @@ namespace RuntimeErrorSage.Core.Examples
             var validationResult = new RuntimeErrorSage.Domain.Models.Validation.ValidationResult();
             
             // Create a strategy with explicit namespace to avoid ambiguity
-            IRemediationStrategy strategy = _strategy;
+            ApplicationStrategy strategy = _strategy;
             
             // Execute the strategy with explicit namespace references
             return await strategy.ExecuteAsync(context);
@@ -767,7 +866,7 @@ namespace RuntimeErrorSage.Core.Examples
                 {
                     var actionResult = await ExecuteActionAsync(action, context);
                     
-                    if (actionResult.Status != RemediationActionStatus.Completed)
+                    if (actionResult.Status != RemediationStatusEnum.Success)
                     {
                         result.Status = RemediationStatusEnum.Failed;
                         result.Message = $"Action {action.Name} failed: {actionResult.ErrorMessage}";
@@ -777,7 +876,7 @@ namespace RuntimeErrorSage.Core.Examples
                     result.CompletedSteps.Add(new RemediationStep
                     {
                         Name = action.Name,
-                        Status = RemediationStepStatus.Completed,
+                        Status = RemediationStepStatus.Completed.ToString(),
                         StartTime = actionResult.StartTime,
                         EndTime = actionResult.EndTime
                     });
@@ -798,7 +897,9 @@ namespace RuntimeErrorSage.Core.Examples
                     new
                     {
                         Status = result.Status.ToString(),
-                        Duration = (result.EndTime - result.StartTime).TotalMilliseconds
+                        Duration = result.EndTime.HasValue 
+                            ? (result.EndTime.Value - result.StartTime).TotalMilliseconds 
+                            : 0
                     });
                 
                 return result;

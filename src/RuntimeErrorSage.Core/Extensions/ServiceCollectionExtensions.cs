@@ -36,10 +36,10 @@ namespace RuntimeErrorSage.Application.Extensions
             }
 
             // Configure Redis storage
-            services.Configure<RedisPatternStorageOptions>(configuration.GetSection("RuntimeErrorSage:Redis"));
+            services.Configure<Application.Options.RedisPatternStorageOptions>(configuration.GetSection("RuntimeErrorSage:Redis"));
             services.AddSingleton<IConnectionMultiplexer>(sp =>
             {
-                var options = sp.GetRequiredService<IOptions<RedisPatternStorageOptions>>();
+                var options = sp.GetRequiredService<IOptions<Application.Options.RedisPatternStorageOptions>>();
                 return ConnectionMultiplexer.Connect(options.Value.ConnectionString);
             });
 
@@ -61,12 +61,12 @@ namespace RuntimeErrorSage.Application.Extensions
             // Register core services
             services.AddSingleton<IErrorAnalyzer, ErrorAnalyzer>();
             services.AddSingleton<IPatternStorage, RedisPatternStorage>();
-            services.AddSingleton<IMCPClient, MCPClient>();
-            services.AddSingleton<IRemediationMetricsCollector, RemediationMetricsCollector>();
+            services.AddSingleton<IMCPClient, RuntimeErrorSage.Core.MCP.MCPClient>();
+            services.AddSingleton<IRemediationMetricsCollector, RuntimeErrorSage.Core.Remediation.RemediationMetricsCollector>();
             services.AddSingleton<IRemediationValidator, RemediationValidator>();
             services.AddSingleton<IRemediationTracker, RemediationTracker>();
-            services.AddSingleton<IRemediationExecutor, RemediationExecutor>();
-            services.AddSingleton<IRuntimeErrorSageService, RuntimeErrorSageService>();
+            services.AddSingleton<IRemediationExecutor, RuntimeErrorSage.Core.Examples.FixedRemediationExecutorExample>();
+            services.AddSingleton<IRuntimeErrorSageService, RuntimeErrorSage.Infrastructure.Services.RuntimeErrorSageService>();
 
             // Register health checks
             services.AddHealthChecks()

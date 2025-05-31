@@ -11,6 +11,7 @@ using RuntimeErrorSage.Application.Remediation.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace RuntimeErrorSage.Domain.Models.Qwen;
 
@@ -244,6 +245,17 @@ public class QwenModelIntegration : ILLMClient
         // This is a placeholder for the actual implementation
         await Task.Delay(100); // Simulate API call
         
+        // Convert string suggestions to LLMSuggestion objects
+        var stringSuggestions = new List<string> { "Sample suggestion" };
+        var llmSuggestions = stringSuggestions.Select(s => new LLMSuggestion { 
+            Action = s,
+            Description = s,
+            Priority = RemediationPriority.Medium,
+            Confidence = 0.7,
+            ErrorId = context.ErrorId,
+            CorrelationId = context.CorrelationId
+        }).ToList();
+        
         return new LLMAnalysisResult
         {
             CorrelationId = context.CorrelationId,
@@ -252,7 +264,7 @@ public class QwenModelIntegration : ILLMClient
             Timestamp = DateTime.UtcNow,
             Status = AnalysisStatus.Completed,
             RootCause = "Sample root cause",
-            Suggestions = new List<string> { "Sample suggestion" },
+            Suggestions = llmSuggestions,
             Confidence = 0.85,
             Severity = ErrorSeverity.Error
         };

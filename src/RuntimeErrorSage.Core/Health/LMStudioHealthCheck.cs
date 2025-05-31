@@ -45,9 +45,12 @@ namespace RuntimeErrorSage.Application.Health
                 var isReady = await _llmClient.IsModelReadyAsync();
                 if (!isReady)
                 {
-                    return HealthCheckResult.Unhealthy(
+                    var data = _dataFactory.CreateModelInfo(_options.ModelId, _options.BaseUrl);
+                    return new HealthCheckResult(
+                        Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
                         "LM Studio model is not ready",
-                        _dataFactory.CreateModelInfo(_options.ModelId, _options.BaseUrl));
+                        null, 
+                        data);
                 }
 
                 // Perform a simple test analysis
@@ -56,21 +59,29 @@ namespace RuntimeErrorSage.Application.Health
 
                 if (string.IsNullOrWhiteSpace(response))
                 {
-                    return HealthCheckResult.Degraded(
+                    var data = _dataFactory.CreateModelInfo(_options.ModelId, _options.BaseUrl);
+                    return new HealthCheckResult(
+                        Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Degraded,
                         "LM Studio returned empty response",
-                        _dataFactory.CreateModelInfo(_options.ModelId, _options.BaseUrl));
+                        null,
+                        data);
                 }
 
-                return HealthCheckResult.Healthy(
+                var healthData = _dataFactory.CreateModelInfoWithResponse(_options.ModelId, _options.BaseUrl, response.Length);
+                return new HealthCheckResult(
+                    Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy,
                     "LM Studio is healthy",
-                    _dataFactory.CreateModelInfoWithResponse(_options.ModelId, _options.BaseUrl, response.Length));
+                    null,
+                    healthData);
             }
             catch (Exception ex)
             {
-                return HealthCheckResult.Unhealthy(
+                var errorData = _dataFactory.CreateModelInfoWithError(_options.ModelId, _options.BaseUrl, ex.Message);
+                return new HealthCheckResult(
+                    Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
                     "LM Studio health check failed",
                     ex,
-                    _dataFactory.CreateModelInfoWithError(_options.ModelId, _options.BaseUrl, ex.Message));
+                    errorData);
             }
         }
     }

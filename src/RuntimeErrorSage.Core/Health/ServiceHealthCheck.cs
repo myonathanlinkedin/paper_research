@@ -13,6 +13,42 @@ using RuntimeErrorSage.Application.Health.Models;
 
 namespace RuntimeErrorSage.Application.Health;
 
+/// <summary>
+/// Represents a health status report
+/// </summary>
+public class HealthStatus
+{
+    /// <summary>
+    /// Gets or sets the service name
+    /// </summary>
+    public string ServiceName { get; set; }
+    
+    /// <summary>
+    /// Gets or sets whether the service is healthy
+    /// </summary>
+    public bool IsHealthy { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the health score (0-1)
+    /// </summary>
+    public double HealthScore { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the metrics
+    /// </summary>
+    public Dictionary<string, double> Metrics { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the prediction
+    /// </summary>
+    public HealthPrediction Prediction { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the timestamp
+    /// </summary>
+    public DateTime Timestamp { get; set; }
+}
+
 public class ServiceHealthCheck : IHealthCheck, IDisposable
 {
     private readonly ILogger<ServiceHealthCheck> _logger;
@@ -79,7 +115,7 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
         {
             foreach (var check in customChecks)
             {
-                _customHealthChecks[check.Name] = check;
+                _customHealthChecks[check.Name] = (IHealthCheckProvider)check;
             }
         }
     }
@@ -177,7 +213,7 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
         }
     }
 
-    public async Task<RuntimeErrorSage.Domain.Models.Health.HealthStatus> GetServiceHealthAsync(string serviceName)
+    public async Task<HealthStatus> GetServiceHealthAsync(string serviceName)
     {
         try
         {
@@ -189,7 +225,7 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
             var serviceStatus = _serviceStatus.GetValueOrDefault(serviceName);
             var isHealthy = serviceStatus?.IsHealthy ?? false;
 
-            return new RuntimeErrorSage.Domain.Models.Health.HealthStatus
+            return new HealthStatus
             {
                 ServiceName = serviceName,
                 IsHealthy = isHealthy && healthScore >= _options.HealthScoreThreshold,
@@ -250,7 +286,8 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
 
             if (response.IsSuccessStatusCode)
             {
-                var serviceMetrics = await response.Content.ReadFromJsonAsync<Dictionary<string, double>>();
+                var stream = await response.Content.ReadAsStreamAsync();
+                var serviceMetrics = await JsonSerializer.DeserializeAsync<Dictionary<string, double>>(stream, _jsonOptions);
                 if (serviceMetrics != null)
                 {
                     foreach (var metric in serviceMetrics)
@@ -504,14 +541,17 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
         _logger.LogInformation("Running service health checks");
 
         var componentResults = new Dictionary<string, HealthReportEntry>();
-        var overallStatus = HealthStatusEnum.Healthy;
+        var overallStatus = Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy;
 
         foreach (var customCheck in _customChecks)
         {
             try
             {
                 var isHealthy = await customCheck.CheckHealthAsync();
-                var status = isHealthy ? HealthStatusEnum.Healthy : HealthStatusEnum.Unhealthy;
+                var status = isHealthy ? 
+                    Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy : 
+                    Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy;
+                    
                 componentResults[customCheck.Name] = new HealthReportEntry(
                     status,
                     $"{customCheck.Name} is {(isHealthy ? "healthy" : "unhealthy")}",
@@ -519,21 +559,21 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
                     null, // TODO: Add exception if any
                     null);
 
-                if (status == HealthStatusEnum.Unhealthy)
+                if (status == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy)
                 {
-                    overallStatus = HealthStatusEnum.Unhealthy;
+                    overallStatus = Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error running custom health check: {Name}", customCheck.Name);
                 componentResults[customCheck.Name] = new HealthReportEntry(
-                    HealthStatusEnum.Unhealthy,
+                    Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
                     $"Error running {customCheck.Name}: {ex.Message}",
                     TimeSpan.Zero, // TODO: Measure duration
                     ex,
                     null);
-                overallStatus = HealthStatusEnum.Unhealthy;
+                overallStatus = Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy;
             }
         }
 

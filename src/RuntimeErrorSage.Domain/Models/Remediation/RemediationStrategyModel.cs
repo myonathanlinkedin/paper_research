@@ -49,7 +49,12 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// <summary>
         /// Gets or sets the strategy priority (lower is higher priority).
         /// </summary>
-        public int Priority { get; set; }
+        public RemediationPriority Priority { get; set; } = RemediationPriority.Medium;
+
+        /// <summary>
+        /// Gets or sets the priority value as integer for interoperability.
+        /// </summary>
+        public int? PriorityValue { get; set; }
 
         /// <summary>
         /// Gets or sets the risk level of the strategy.

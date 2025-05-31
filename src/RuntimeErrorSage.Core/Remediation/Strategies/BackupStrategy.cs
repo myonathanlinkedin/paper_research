@@ -71,6 +71,13 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
         public RemediationPriority Priority { get; set; } = RemediationPriority.Medium;
 
         /// <inheritdoc/>
+        public int? PriorityValue 
+        { 
+            get => (int)Priority; 
+            set => Priority = value.HasValue ? (RemediationPriority)value.Value : RemediationPriority.Medium;
+        }
+
+        /// <inheritdoc/>
         public RiskLevel RiskLevel { get; set; } = RiskLevel.Low;
 
         /// <inheritdoc/>
@@ -100,7 +107,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             
             try
             {
-                var backupResult = await _backupService.CreateBackupAsync(context.ApplicationId);
+                var backupResult = await _backupService.CreateBackupAsync(context.ServiceName);
                 
                 return new RemediationResult
                 {
@@ -197,14 +204,15 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var plan = new RemediationPlan
+            var plan = new RemediationPlan(
+                "Backup Plan",
+                "Plan to create a system backup",
+                new List<RemediationAction>(_actions),
+                new Dictionary<string, object>(),
+                TimeSpan.FromMinutes(5))
             {
-                PlanId = Guid.NewGuid().ToString(),
-                Name = "Backup Plan",
-                Description = "Plan to create a system backup",
                 Context = context,
-                CreatedAt = DateTime.UtcNow,
-                Actions = new List<RemediationAction>(_actions)
+                CreatedAt = DateTime.UtcNow
             };
 
             return Task.FromResult(plan);
@@ -238,7 +246,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             {
                 Level = RiskLevel.Low,
                 Description = "Backup operations are low risk",
-                Factors = new Dictionary<string, double>
+                Factors = new Dictionary<string, object>
                 {
                     { "DataLoss", 0.1 },
                     { "SystemPerformance", 0.2 }
@@ -279,9 +287,9 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             {
                 Name = name,
                 Description = description,
-                Type = RemediationActionType.Backup,
+                Type = RemediationActionType.Backup.ToString(),
                 Severity = SeverityLevel.Low.ToRemediationActionSeverity(),
-                Status = RemediationActionStatus.Pending
+                Status = RemediationStatusEnum.Pending
             };
         }
     }

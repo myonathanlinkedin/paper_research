@@ -45,32 +45,65 @@ namespace RuntimeErrorSage.Core.Remediation
                 var analysis = await _errorContextAnalyzer.AnalyzeContextAsync(context);
                 var strategies = await _registry.GetStrategiesForErrorAsync(context);
 
+                // Create a new ErrorAnalysisResult from the RemediationAnalysis
+                var errorAnalysisResult = new Domain.Models.Error.ErrorAnalysisResult
+                {
+                    ErrorId = context.ErrorId,
+                    CorrelationId = context.CorrelationId,
+                    Timestamp = DateTime.UtcNow,
+                    Status = Domain.Enums.AnalysisStatus.Completed,
+                    ErrorType = context.ErrorType,
+                    Context = context,
+                    Message = "Analysis completed successfully"
+                };
+
                 var statusInfo = new Domain.Models.Common.RemediationStatusInfo
                 {
-                    Status = RemediationStatusEnum.Created,
+                    Status = RemediationStatusEnum.Pending,
                     Message = "Remediation plan created",
                     LastUpdated = DateTime.UtcNow
                 };
 
-                var rollbackPlan = new RemediationPlan
+                var rollbackPlan = new RemediationPlan(
+                    name: "Rollback Plan",
+                    description: $"Rollback plan for error {context.ErrorId}",
+                    actions: new List<RemediationAction>(),
+                    parameters: new Dictionary<string, object>(),
+                    estimatedDuration: TimeSpan.FromMinutes(5))
                 {
                     PlanId = Guid.NewGuid().ToString(),
                     Context = context,
                     CreatedAt = DateTime.UtcNow,
-                    Status = RemediationStatusEnum.Created,
-                    StatusInfo = statusInfo,
+                    Status = RemediationStatusEnum.Pending,
+                    StatusInfo = statusInfo.Message,
                     RollbackPlan = null
                 };
 
-                return new RemediationPlan
+                // Convert application strategies to domain strategies
+                var domainStrategies = strategies
+                    .Select(s => new RuntimeErrorSage.Domain.Models.Remediation.RemediationStrategyModel
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        Description = s.Description
+                    })
+                    .Cast<RuntimeErrorSage.Domain.Interfaces.IRemediationStrategy>()
+                    .ToList();
+
+                return new RemediationPlan(
+                    name: $"Remediation for {context.ErrorType}",
+                    description: $"Automated remediation plan for error {context.ErrorId}",
+                    actions: new List<RemediationAction>(),
+                    parameters: new Dictionary<string, object>(),
+                    estimatedDuration: TimeSpan.FromMinutes(10))
                 {
                     PlanId = Guid.NewGuid().ToString(),
-                    Analysis = analysis,
+                    Analysis = errorAnalysisResult,
                     Context = context,
-                    Strategies = strategies.ToList(),
+                    Strategies = domainStrategies,
                     CreatedAt = DateTime.UtcNow,
-                    Status = RemediationStatusEnum.Created,
-                    StatusInfo = statusInfo,
+                    Status = RemediationStatusEnum.Pending,
+                    StatusInfo = statusInfo.Message,
                     RollbackPlan = rollbackPlan
                 };
             }
@@ -128,14 +161,14 @@ namespace RuntimeErrorSage.Core.Remediation
                     statusInfo.History.Add(new Domain.Models.Common.StatusHistoryEntry
                     {
                         Status = plan.Status,
-                        Message = plan.StatusInfo.Message,
-                        Timestamp = plan.StatusInfo.LastUpdated
+                        Message = plan.StatusInfo,
+                        Timestamp = DateTime.UtcNow // Can't use LastUpdated since it's a string
                     });
                 }
 
                 // Update the plan with new status info
                 plan.Status = status;
-                plan.StatusInfo = statusInfo;
+                plan.StatusInfo = statusInfo.Message;
                 plan.Description = conclusion;
 
                 _logger.LogInformation(

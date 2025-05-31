@@ -32,7 +32,26 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// <summary>
         /// Gets or sets whether the action was successful.
         /// </summary>
-        public bool Success { get; set; }
+        public bool Success 
+        { 
+            get => IsSuccessful;
+            set => IsSuccessful = value;
+        }
+
+        /// <summary>
+        /// Gets or sets whether the action was successful (backing property).
+        /// </summary>
+        public bool IsSuccessful { get; set; }
+
+        /// <summary>
+        /// Gets or sets the start time of the action execution.
+        /// </summary>
+        public DateTime StartTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end time of the action execution.
+        /// </summary>
+        public DateTime EndTime { get; set; }
 
         /// <summary>
         /// Gets or sets the error message if the action failed.

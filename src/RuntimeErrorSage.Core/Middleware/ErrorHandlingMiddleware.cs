@@ -11,6 +11,7 @@ using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Application.MCP.Interfaces;
 using RuntimeErrorSage.Application.Runtime.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Application.Extensions;
 
 namespace RuntimeErrorSage.Application.Middleware;
 
@@ -145,29 +146,36 @@ public class ErrorHandlingMiddleware
     private async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
         var correlationId = Guid.NewGuid().ToString();
-        var errorContext = new ErrorContext
+        var runtimeError = ex != null ? new RuntimeError(ex.Message, ex.GetType().Name, ex.StackTrace) : null;
+        
+        var errorContext = new ErrorContext(
+            runtimeError,
+            context.Request.Path,
+            DateTime.UtcNow)
         {
             ServiceName = "UnknownService", // TODO: Get service name from config/context
             OperationName = context.Request.Path,
             CorrelationId = correlationId,
-            Timestamp = DateTime.UtcNow,
-            Exception = ex,
-            AdditionalContext = new Dictionary<string, object>
+            AdditionalContext = new Dictionary<string, string>
             {
                 { "HttpMethod", context.Request.Method },
-                { "RequestPath", context.Request.Path }
+                { "RequestPath", context.Request.Path.ToString() }
                 // Add more relevant context here
-            },
-            Severity = DetermineSeverity(ex),
-            UserId = context.User?.Identity?.Name, // Get authenticated user ID
-            Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            }
         };
+        
+        // Set severity
+        errorContext.Severity = DetermineSeverity(ex);
+        
+        // Set environment and user
+        errorContext.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown";
+        errorContext.ContextData["UserId"] = context.User?.Identity?.Name ?? "Anonymous";
 
         // Analyze the error using RuntimeErrorSageService
         var analysisResult = await _RuntimeErrorSageService.ProcessExceptionAsync(ex, errorContext);
 
         // Optionally attempt automated remediation (within paper scope for simple cases)
-        RemediationResult? remediationResult = null;
+        Domain.Models.Remediation.RemediationResult? remediationResult = null;
         if (analysisResult.SuggestedActions.Any() && analysisResult.Confidence > 0.7) // Example condition for auto-remediation
         {
             remediationResult = await _RuntimeErrorSageService.ApplyRemediationAsync(analysisResult);
@@ -189,7 +197,7 @@ public class ErrorHandlingMiddleware
             Message = "An internal server error occurred.",
             Type = ex?.GetType().Name ?? "Unknown",
             Severity = DetermineSeverity(ex),
-            Analysis = analysisResult.Summary,
+            Analysis = analysisResult.RootCause ?? "Unknown",
             Remediation = remediationResult?.Status.ToString(),
             Timestamp = DateTime.UtcNow
         };
@@ -220,33 +228,30 @@ public class ErrorHandlingMiddleware
     {
         try
         {
-            var metrics = new Dictionary<string, object>
-            {
-                ["request.path"] = context.Request.Path,
-                ["request.method"] = context.Request.Method,
-                ["request.status"] = context.Response.StatusCode,
-                ["request.timestamp"] = DateTime.UtcNow
-            };
+            var remediationId = Guid.NewGuid().ToString(); // Generate a unique ID for this request
+            
+            // Record each metric individually using RecordMetricAsync
+            await _metricsCollector.RecordMetricAsync(remediationId, "request.path", context.Request.Path.ToString());
+            await _metricsCollector.RecordMetricAsync(remediationId, "request.method", context.Request.Method);
+            await _metricsCollector.RecordMetricAsync(remediationId, "request.status", context.Response.StatusCode);
+            await _metricsCollector.RecordMetricAsync(remediationId, "request.timestamp", DateTime.UtcNow);
 
             if (duration.HasValue)
             {
-                metrics["request.duration"] = duration.Value.TotalMilliseconds;
+                await _metricsCollector.RecordMetricAsync(remediationId, "request.duration", duration.Value.TotalMilliseconds);
             }
 
             if (errorContext != null)
             {
-                metrics["error.type"] = errorContext.ErrorType;
-                metrics["error.severity"] = errorContext.Severity;
-                metrics["error.timestamp"] = errorContext.Timestamp;
+                await _metricsCollector.RecordMetricAsync(remediationId, "error.type", errorContext.ErrorType);
+                await _metricsCollector.RecordMetricAsync(remediationId, "error.severity", errorContext.SeverityLevel.ToString());
+                await _metricsCollector.RecordMetricAsync(remediationId, "error.timestamp", errorContext.Timestamp);
 
-                if (errorContext.Analysis != null)
+                if (errorContext.AnalysisResult != null)
                 {
-                    metrics["error.analysis"] = errorContext.Analysis.Summary;
-                    metrics["error.remediation"] = errorContext.Analysis.RemediationPlan?.Summary;
+                    await _metricsCollector.RecordMetricAsync(remediationId, "error.analysis", errorContext.AnalysisResult.RootCause ?? "Unknown");
                 }
             }
-
-            await _metricsCollector.RecordMetricsAsync(metrics);
         }
         catch (Exception ex)
         {

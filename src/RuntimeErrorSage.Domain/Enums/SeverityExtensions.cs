@@ -87,18 +87,21 @@ public static class SeverityExtensions
     }
 
     /// <summary>
-    /// Converts a SeverityLevel to ImpactSeverity.
+    /// Converts a SeverityLevel to an ImpactSeverity.
     /// </summary>
+    /// <param name="severity">The severity level to convert.</param>
+    /// <returns>The equivalent ImpactSeverity.</returns>
     public static ImpactSeverity ToImpactSeverity(this SeverityLevel severity)
     {
         return severity switch
         {
             SeverityLevel.Critical => ImpactSeverity.Critical,
-            SeverityLevel.High => ImpactSeverity.Error,
-            SeverityLevel.Medium => ImpactSeverity.Warning,
-            SeverityLevel.Low => ImpactSeverity.Info,
-            SeverityLevel.Info => ImpactSeverity.Success,
-            _ => ImpactSeverity.None
+            SeverityLevel.High => ImpactSeverity.High,
+            SeverityLevel.Medium => ImpactSeverity.Medium,
+            SeverityLevel.Low => ImpactSeverity.Low,
+            SeverityLevel.None => ImpactSeverity.None,
+            SeverityLevel.Info => ImpactSeverity.Info,
+            _ => ImpactSeverity.Unknown
         };
     }
 
@@ -147,6 +150,7 @@ public static class SeverityExtensions
             ImpactLevel.High => SeverityLevel.High,
             ImpactLevel.Medium => SeverityLevel.Medium,
             ImpactLevel.Low => SeverityLevel.Low,
+            ImpactLevel.None => SeverityLevel.None,
             _ => SeverityLevel.Unknown
         };
     }

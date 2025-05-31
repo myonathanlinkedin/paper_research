@@ -12,7 +12,7 @@ using RuntimeErrorSage.Application.Services.Interfaces;
 using RuntimeErrorSage.Application.Graph.Interfaces;
 using RuntimeErrorSage.Domain.Models;
 
-namespace RuntimeErrorSage.Application.Services;
+namespace RuntimeErrorSage.Infrastructure.Services;
 
 /// <summary>
 /// Service for analyzing error contexts using graph-based analysis.

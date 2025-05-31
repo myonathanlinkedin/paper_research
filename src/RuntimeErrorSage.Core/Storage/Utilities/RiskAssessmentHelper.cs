@@ -177,11 +177,6 @@ namespace RuntimeErrorSage.Core.Storage.Utilities
                 confidence += 10.0;
             }
             
-            if (action.ValidationResults?.Count > 0)
-            {
-                confidence += 15.0;
-            }
-            
             if (action.Context != null)
             {
                 confidence += 15.0;

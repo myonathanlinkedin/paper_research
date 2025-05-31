@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Interfaces;
 
@@ -21,10 +24,10 @@ public static class RemediationActionConversionExample
         */
         
         // CORRECT: Check type and cast
-        if (actions.Any() && actions.First() is RemediationAction action)
+        if (actions.Any() && actions.First() is RemediationAction remediationAction)
         {
             // Now use the action...
-            Console.WriteLine($"Action ID: {action.ActionId}");
+            Console.WriteLine($"Action ID: {remediationAction.ActionId}");
         }
         
         // ALTERNATIVE: Use LINQ to filter and cast
@@ -33,9 +36,9 @@ public static class RemediationActionConversionExample
             .ToList();
         
         // Now you have a list of RemediationAction objects
-        foreach (var action in remediationActions)
+        foreach (var remediation in remediationActions)
         {
-            Console.WriteLine($"Action ID: {action.ActionId}");
+            Console.WriteLine($"Action ID: {remediation.ActionId}");
         }
     }
 } 

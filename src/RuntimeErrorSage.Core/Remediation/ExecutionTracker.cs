@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using RuntimeErrorSage.Domain.Models.Execution;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Application.Remediation
 {
@@ -14,7 +15,7 @@ namespace RuntimeErrorSage.Application.Remediation
             {
                 CorrelationId = remediationId,
                 StartTime = DateTime.UtcNow,
-                Status = RemediationExecutionStatus.Unknown
+                Status = RemediationStatusEnum.Unknown
             });
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Core.Graph;
 
 namespace RuntimeErrorSage.Application.Examples
 {
@@ -29,41 +30,40 @@ namespace RuntimeErrorSage.Application.Examples
             }
             
             // ALTERNATIVE: Use the dictionary's Values collection directly
-            foreach (var nodeValue in graph.Nodes.Values)
+            foreach (var nodeValue in graph.Nodes.Values())
             {
                 Console.WriteLine($"Node ID: {nodeValue.Id}");
                 Console.WriteLine($"Node Type: {nodeValue.Type}");
             }
             
-            // ALTERNATIVE: Use deconstruction to get key and value separately
-            foreach (var (key, nodeValue) in graph.Nodes)
+            // ALTERNATIVE: Access using KeyValuePair explicitly
+            foreach (var nodePair in graph.Nodes)
             {
+                var key = nodePair.Key;
+                var nodeValue = nodePair.Value;
                 Console.WriteLine($"Key: {key}, Node ID: {nodeValue.Id}");
             }
         }
         
         /// <summary>
-        /// Shows correct vs incorrect ways to access GraphEdge properties from a Dictionary KeyValuePair
+        /// Shows correct vs incorrect ways to access GraphEdge properties
         /// </summary>
         /// <param name="graph">The dependency graph</param>
         public void ShowEdgeDictionaryAccess(DependencyGraph graph)
         {
-            // INCORRECT: This causes "'KeyValuePair<string, GraphEdge>' does not contain a definition for 'SourceId'"
+            // INCORRECT: Trying to access properties directly on GraphEdge
             // foreach (var edge in graph.Edges)
             // {
             //     Console.WriteLine($"Edge source: {edge.SourceId}, target: {edge.TargetId}");
             // }
             
-            // CORRECT: Access the Value property of the KeyValuePair
+            // CORRECT: Access the properties correctly
             foreach (var edge in graph.Edges)
             {
-                Console.WriteLine($"Edge source: {edge.Value.SourceId}, target: {edge.Value.TargetId}");
-            }
-            
-            // ALTERNATIVE: Use the dictionary's Values collection directly
-            foreach (var edgeValue in graph.Edges.Values)
-            {
-                Console.WriteLine($"Edge source: {edgeValue.SourceId}, target: {edgeValue.TargetId}");
+                // GraphEdge objects have Source and Target properties
+                var source = edge.Source?.Id ?? "";
+                var target = edge.Target?.Id ?? "";
+                Console.WriteLine($"Edge source: {source}, target: {target}");
             }
         }
         
@@ -81,10 +81,13 @@ namespace RuntimeErrorSage.Application.Examples
                 
                 // Access metadata if available
                 if (dependency.Metadata != null && 
-                    dependency.Metadata.TryGetValue("ErrorProbability", out var probability) &&
-                    probability is double errorProb)
+                    dependency.Metadata.TryGetValue("ErrorProbability", out var probability))
                 {
-                    Console.WriteLine($"Error probability: {errorProb}");
+                    // Handle string value from metadata
+                    if (double.TryParse(probability.ToString(), out double errorProb))
+                    {
+                        Console.WriteLine($"Error probability: {errorProb}");
+                    }
                 }
             }
             
@@ -95,7 +98,9 @@ namespace RuntimeErrorSage.Application.Examples
             // CORRECT: Use the properties that actually exist on ImpactAnalysisResult
             Console.WriteLine($"Component ID: {result.ComponentId}");
             Console.WriteLine($"Severity: {result.Severity}");
-            Console.WriteLine($"Scope: {result.Scope}");
+            // Verify what properties actually exist on ImpactAnalysisResult
+            // Console.WriteLine($"Scope: {result.Scope}");
+            Console.WriteLine($"Impact Score: {result.TotalImpactScore}");
         }
     }
 } 

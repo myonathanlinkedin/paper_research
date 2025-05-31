@@ -6,8 +6,9 @@ using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Domain.Enums;
 using System.Linq;
+using RuntimeErrorSage.Application.Services.Interfaces;
 
-namespace RuntimeErrorSage.Application.Services.Graph
+namespace RuntimeErrorSage.Infrastructure.Services.Graph
 {
     /// <summary>
     /// Analyzes the graph for remediation purposes.

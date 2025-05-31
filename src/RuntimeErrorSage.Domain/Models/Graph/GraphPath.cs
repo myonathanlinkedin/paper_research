@@ -39,6 +39,11 @@ public class GraphPath
     public int Length => Nodes.Count > 0 ? Nodes.Count - 1 : 0;
 
     /// <summary>
+    /// Gets or sets whether the path forms a cycle.
+    /// </summary>
+    public bool IsCycle { get; set; }
+
+    /// <summary>
     /// Gets or sets the creation time of the path.
     /// </summary>
     public DateTime CreationTime { get; set; } = DateTime.UtcNow;

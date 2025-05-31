@@ -17,7 +17,7 @@ public class ImpactAnalysisResult
     /// <summary>
     /// Gets or sets the error ID that triggered the analysis.
     /// </summary>
-    public string ErrorId { get; set; }
+    public string ErrorId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the affected component ID.
@@ -42,7 +42,7 @@ public class ImpactAnalysisResult
     /// <summary>
     /// Gets or sets the impact scope.
     /// </summary>
-    public ImpactScope Scope { get; set; }
+    public Domain.Enums.ImpactScope ImpactScope { get; set; }
 
     /// <summary>
     /// Gets or sets the confidence level (0.0 to 1.0).
@@ -125,13 +125,38 @@ public class ImpactAnalysisResult
     public Dictionary<string, object> ImpactMetrics { get; set; } = new Dictionary<string, object>();
 
     /// <summary>
+    /// Gets or sets the correlation identifier.
+    /// </summary>
+    public string CorrelationId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the affected services.
+    /// </summary>
+    public List<string> AffectedServices { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Gets or sets the estimated recovery time.
+    /// </summary>
+    public TimeSpan? EstimatedRecoveryTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the analysis is valid.
+    /// </summary>
+    public bool IsValid { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the error message if the analysis is not valid.
+    /// </summary>
+    public string ErrorMessage { get; set; } = string.Empty;
+
+    /// <summary>
     /// Adds a new impact metric to the analysis result.
     /// </summary>
     /// <param name="name">The name of the metric.</param>
     /// <param name="value">The value of the metric.</param>
     public void AddImpactMetric(string name, double value)
     {
-        Metadata[name] = value;
+        ImpactMetrics[name] = value;
     }
 
     /// <summary>

@@ -321,8 +321,8 @@ namespace RuntimeErrorSage.Application.Remediation
             try
             {
                 var strategies = _strategies.Values
-                    .Where(s => s.Priority >= minPriority)
-                    .OrderByDescending(s => s.Priority)
+                    .Where(s => (int)s.Priority >= minPriority)
+                    .OrderByDescending(s => (int)s.Priority)
                     .ToList();
 
                 _logger.LogDebug("Retrieved {Count} strategies with priority >= {MinPriority}", strategies.Count, minPriority);

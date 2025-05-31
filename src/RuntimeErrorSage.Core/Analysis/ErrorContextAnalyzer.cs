@@ -240,17 +240,21 @@ namespace RuntimeErrorSage.Core.Analysis
             try
             {
                 _logger.LogInformation("Analyzing error context graph for {ContextId}", context.ContextId);
+                
+                // Add stopwatch to measure execution time
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
                 // Create sample analysis result
                 var result = new Domain.Models.Analysis.GraphAnalysisResult
                 {
-                    ErrorId = context.ErrorId,
-                    CorrelationId = context.CorrelationId,
-                    AffectedComponents = new List<string> { context.ComponentId },
-                    ErrorProbability = 0.75,
                     IsValid = true,
                     Timestamp = DateTime.UtcNow
                 };
+
+                result.Id = context.ErrorId;
+                result.ComponentId = context.ComponentId ?? "Unknown";
+                stopwatch.Stop();
+                result.Metrics.ExecutionTimeMs = stopwatch.ElapsedMilliseconds;
 
                 await Task.Delay(10); // Simulate async work
                 return result;
@@ -323,13 +327,11 @@ namespace RuntimeErrorSage.Core.Analysis
                 // Create sample impact analysis
                 var result = new Domain.Models.Analysis.ImpactAnalysisResult
                 {
-                    ErrorId = context.ErrorId,
-                    CorrelationId = context.CorrelationId,
-                    ImpactScope = ImpactScope.Component,
-                    AffectedServices = new List<string> { context.ServiceName },
-                    EstimatedRecoveryTime = TimeSpan.FromMinutes(15),
-                    IsValid = true,
-                    Timestamp = DateTime.UtcNow
+                    Id = context.ErrorId,
+                    Timestamp = DateTime.UtcNow,
+                    DirectlyAffectedComponents = new List<string> { context.ServiceName },
+                    Severity = Domain.Models.Analysis.ImpactSeverity.Medium,
+                    Scope = Domain.Models.Analysis.ImpactScope.Local
                 };
 
                 await Task.Delay(10); // Simulate async work
@@ -340,8 +342,10 @@ namespace RuntimeErrorSage.Core.Analysis
                 _logger.LogError(ex, "Error analyzing impact for {ContextId}", context.ContextId);
                 return new Domain.Models.Analysis.ImpactAnalysisResult
                 {
-                    IsValid = false,
-                    ErrorMessage = ex.Message
+                    Id = context.ErrorId,
+                    Timestamp = DateTime.UtcNow,
+                    Severity = Domain.Models.Analysis.ImpactSeverity.Low,
+                    Scope = Domain.Models.Analysis.ImpactScope.Isolated
                 };
             }
         }

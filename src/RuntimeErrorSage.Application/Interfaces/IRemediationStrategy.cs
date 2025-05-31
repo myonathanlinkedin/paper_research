@@ -43,6 +43,11 @@ namespace RuntimeErrorSage.Application.Interfaces
         RemediationPriority Priority { get; }
 
         /// <summary>
+        /// Gets or sets the priority value as integer for interoperability.
+        /// </summary>
+        int? PriorityValue { get; set; }
+
+        /// <summary>
         /// Gets the risk level of the strategy.
         /// </summary>
         RiskLevel RiskLevel { get; set; }

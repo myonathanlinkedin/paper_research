@@ -16,24 +16,27 @@ namespace RuntimeErrorSage.Application.Examples
         /// <param name="result">The remediation action result.</param>
         public void ShowTimeSpanExtensionsExample(RemediationActionResult result)
         {
+            // Add the missing Duration property since it's needed for this example
+            TimeSpan? duration = result.EndTime - result.StartTime;
+            
             // INCORRECT: This might cause null reference exceptions
             // double durationMs = result.Duration?.TotalMilliseconds ?? 0;
             
             // CORRECT: Use the extension method
-            double durationMs = result.Duration.GetTotalMilliseconds();
+            double durationMs = duration.GetTotalMilliseconds();
             Console.WriteLine($"Duration in milliseconds: {durationMs}");
             
             // Other extension methods available
-            double durationSec = result.Duration.GetTotalSeconds();
+            double durationSec = duration.GetTotalSeconds();
             Console.WriteLine($"Duration in seconds: {durationSec}");
             
-            double durationMin = result.Duration.GetTotalMinutes();
+            double durationMin = duration.GetTotalMinutes();
             Console.WriteLine($"Duration in minutes: {durationMin}");
             
-            double durationHours = result.Duration.GetTotalHours();
+            double durationHours = duration.GetTotalHours();
             Console.WriteLine($"Duration in hours: {durationHours}");
             
-            double durationDays = result.Duration.GetTotalDays();
+            double durationDays = duration.GetTotalDays();
             Console.WriteLine($"Duration in days: {durationDays}");
         }
 
