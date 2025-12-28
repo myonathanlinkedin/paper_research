@@ -212,6 +212,7 @@ solid_report.txt
 # PowerShell files
 *.ps1
 !analyze_code.ps1
+!setup_docs_submodule.ps1
 
 # Temporary and generated files
 *.tmp
