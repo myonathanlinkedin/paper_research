@@ -26,7 +26,7 @@ namespace RuntimeErrorSage.Contracts.Interfaces
         /// <summary>
         /// Gets the remediation history.
         /// </summary>
-        List<object> History { get; }
+        IReadOnlyList<object> History { get; }
 
         /// <summary>
         /// Gets the context data.

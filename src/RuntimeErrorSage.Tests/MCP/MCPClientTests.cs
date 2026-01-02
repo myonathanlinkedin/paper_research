@@ -5,13 +5,18 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
-using RuntimeErrorSage.Application.MCP;
 using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Core.MCP;
+using RuntimeErrorSage.Application.Options;
 using RuntimeErrorSage.Domain.Models.Context;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.MCP;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
+using RuntimeErrorSage.Domain.Models.Common;
 using RuntimeErrorSage.Application.Storage.Interfaces;
+using RuntimeErrorSage.Domain.Enums;
 using Xunit;
+using MCPClientOptions = RuntimeErrorSage.Application.Options.MCPClientOptions;
 
 namespace RuntimeErrorSage.Application.Tests.MCP
 {
@@ -30,11 +35,13 @@ namespace RuntimeErrorSage.Application.Tests.MCP
             _storageMock = new Mock<IPatternStorage>();
             _errorAnalyzerMock = new Mock<IErrorAnalyzer>();
 
-            _optionsMock.Setup(x => x.Value).Returns(new MCPClientOptions());
+            var coreOptions = new RuntimeErrorSage.Core.MCP.MCPClientOptions();
+            var coreOptionsMock = new Mock<IOptions<RuntimeErrorSage.Core.MCP.MCPClientOptions>>();
+            coreOptionsMock.Setup(x => x.Value).Returns(coreOptions);
 
             _client = new MCPClient(
                 _loggerMock.Object,
-                _optionsMock.Object,
+                coreOptionsMock.Object,
                 _storageMock.Object,
                 _errorAnalyzerMock.Object);
         }
@@ -71,8 +78,15 @@ namespace RuntimeErrorSage.Application.Tests.MCP
                 timestamp: DateTime.UtcNow
             );
 
+            var errorAnalysis = new ErrorAnalysis(
+                errorType: "RuntimeError",
+                rootCause: "Test root cause",
+                confidence: 0.8,
+                remediationSteps: new[] { "Step 1", "Step 2" }
+            );
+            
             _errorAnalyzerMock.Setup(x => x.AnalyzeContextAsync(It.IsAny<ErrorContext>()))
-                .ReturnsAsync(new Dictionary<string, object>());
+                .ReturnsAsync(errorAnalysis);
 
             // Act
             var result = await _client.AnalyzeErrorAsync(context);
@@ -90,8 +104,8 @@ namespace RuntimeErrorSage.Application.Tests.MCP
             var contextId = "test-context-1";
             var range = new TimeRange
             {
-                Start = DateTime.UtcNow.AddHours(-1),
-                End = DateTime.UtcNow
+                StartTime = DateTime.UtcNow.AddHours(-1),
+                EndTime = DateTime.UtcNow
             };
 
             // Act

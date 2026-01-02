@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using RuntimeErrorSage.Examples.Models;
 using RuntimeErrorSage.Examples.Models.Responses;
+using RuntimeErrorSage.Examples.Models.Responses.Enums;
 using RuntimeErrorSage.Examples.Exceptions;
 using RuntimeErrorSage.Examples.Services.Interfaces;
 

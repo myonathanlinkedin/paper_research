@@ -4,7 +4,7 @@ using System.Linq;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Error;
 
-namespace RuntimeErrorSage.Application.Services;
+namespace RuntimeErrorSage.Infrastructure.Services;
 
 /// <summary>
 /// Provides core functionality for analyzing relationships between errors.

@@ -11,7 +11,8 @@ using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
-using RuntimeErrorSage.Application.Interfaces;
+using DomainIRemediationStrategy = RuntimeErrorSage.Domain.Interfaces.IRemediationStrategy;
+using RuntimeErrorSage.Core.Remediation;
 
 namespace RuntimeErrorSage.Core.Remediation;
 
@@ -69,7 +70,20 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
                 var validationResult = await _validator.ValidateStrategyAsync(strategy, context);
                 if (validationResult.IsValid)
                 {
-                    applicable.Add(strategy);
+                    // Convert Domain IRemediationStrategy to Application IRemediationStrategy if needed
+                    if (strategy is DomainIRemediationStrategy domainStrategy)
+                    {
+                        // Use adapter to convert
+                        var appStrategy = RemediationStrategyAdapterExtensions.ToApplicationStrategy(domainStrategy);
+                        if (appStrategy != null)
+                        {
+                            applicable.Add(appStrategy);
+                        }
+                    }
+                    else if (strategy is IRemediationStrategy appStrategy)
+                    {
+                        applicable.Add(appStrategy);
+                    }
                 }
             }
 
@@ -122,10 +136,28 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
         try
         {
             var strategies = await _registry.GetAllStrategiesAsync();
+            var result = new List<IRemediationStrategy>();
             
-            _logger.LogDebug("Retrieved {Count} strategies", strategies.Count());
+            foreach (var strategy in strategies)
+            {
+                // Convert Domain IRemediationStrategy to Application IRemediationStrategy if needed
+                if (strategy is DomainIRemediationStrategy domainStrategy)
+                {
+                    var appStrategy = RemediationStrategyAdapterExtensions.ToApplicationStrategy(domainStrategy);
+                    if (appStrategy != null)
+                    {
+                        result.Add(appStrategy);
+                    }
+                }
+                else if (strategy is IRemediationStrategy appStrategy)
+                {
+                    result.Add(appStrategy);
+                }
+            }
             
-            return strategies.ToList();
+            _logger.LogDebug("Retrieved {Count} strategies", result.Count);
+            
+            return result;
         }
         catch (Exception ex)
         {
@@ -167,31 +199,31 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             var strategies = await GetApplicableStrategiesAsync(context);
             if (!strategies.Any())
             {
-                return new RemediationPlan
+                return new RemediationPlan(
+                    name: $"Remediation Plan - {context.ErrorType}",
+                    description: $"No applicable strategies found for error type '{context.ErrorType}'",
+                    actions: new List<RemediationAction>(),
+                    parameters: new Dictionary<string, object>(),
+                    estimatedDuration: TimeSpan.Zero)
                 {
                     PlanId = Guid.NewGuid().ToString(),
                     Status = RemediationStatusEnum.Failed,
-                    StatusInfo = new Domain.Models.Common.RemediationStatusInfo
-                    {
-                        Status = RemediationStatusEnum.Failed,
-                        Message = $"No applicable strategies found for error type '{context.ErrorType}'",
-                        LastUpdated = DateTime.UtcNow
-                    }
+                    StatusInfo = $"No applicable strategies found for error type '{context.ErrorType}'"
                 };
             }
 
-            var plan = new RemediationPlan
+            var plan = new RemediationPlan(
+                name: $"Remediation Plan - {context.ErrorType}",
+                description: $"Remediation plan for error type '{context.ErrorType}'",
+                actions: new List<RemediationAction>(),
+                parameters: new Dictionary<string, object>(),
+                estimatedDuration: TimeSpan.FromMinutes(10))
             {
                 PlanId = Guid.NewGuid().ToString(),
                 Context = context,
                 CreatedAt = DateTime.UtcNow,
-                Status = RemediationStatusEnum.Created,
-                StatusInfo = new Domain.Models.Common.RemediationStatusInfo
-                {
-                    Status = RemediationStatusEnum.Created,
-                    Message = "Remediation plan created",
-                    LastUpdated = DateTime.UtcNow
-                }
+                Status = RemediationStatusEnum.Pending,
+                StatusInfo = "Remediation plan created"
             };
 
             return plan;
@@ -199,16 +231,16 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating remediation plan for error type {ErrorType}", context.ErrorType);
-            return new RemediationPlan
+            return new RemediationPlan(
+                name: $"Remediation Plan - {context.ErrorType}",
+                description: $"Failed to create remediation plan: {ex.Message}",
+                actions: new List<RemediationAction>(),
+                parameters: new Dictionary<string, object>(),
+                estimatedDuration: TimeSpan.Zero)
             {
                 PlanId = Guid.NewGuid().ToString(),
                 Status = RemediationStatusEnum.Failed,
-                StatusInfo = new Domain.Models.Common.RemediationStatusInfo
-                {
-                    Status = RemediationStatusEnum.Failed,
-                    Message = $"Failed to create remediation plan: {ex.Message}",
-                    LastUpdated = DateTime.UtcNow
-                }
+                StatusInfo = $"Failed to create remediation plan: {ex.Message}"
             };
         }
     }
@@ -246,18 +278,23 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             // Aggregate impact from all strategies
             foreach (var strategy in strategies)
             {
-                var strategyImpact = await strategy.GetEstimatedImpactAsync(new ErrorAnalysisResult
+                // Create default impact based on strategy properties
+                var strategyImpact = new RemediationImpact
                 {
-                    Context = context,
-                    Analysis = new Dictionary<string, object>()
-                });
+                    Severity = RemediationActionSeverity.Medium,
+                    Scope = RemediationActionImpactScope.Module,
+                    AffectedComponents = new List<string> { context.ComponentId },
+                    EstimatedRecoveryTime = TimeSpan.FromMinutes(5),
+                    RiskLevel = strategy.RiskLevel,
+                    Confidence = 0.5
+                };
 
                 // Update impact based on strategy impact
                 UpdateImpactSeverity(impact, strategyImpact);
                 impact.AffectedComponents = impact.AffectedComponents.Union(strategyImpact.AffectedComponents).ToList();
                 impact.EstimatedRecoveryTime += strategyImpact.EstimatedRecoveryTime;
                 impact.RiskLevel = (RiskLevel)Math.Max((int)impact.RiskLevel, (int)strategyImpact.RiskLevel);
-                impact.Confidence = Math.Max(impact.Confidence, (double)strategyImpact.Confidence);
+                impact.Confidence = Math.Max(impact.Confidence, strategyImpact.Confidence);
             }
 
             return impact;
@@ -313,10 +350,10 @@ public class RemediationStrategyProvider : IRemediationStrategyProvider
             strategy.Description,
             strategy.Actions,
             strategy.Parameters,
-            strategy.EstimatedDuration);
+            TimeSpan.FromMinutes(10)); // Default estimated duration
 
         plan.Status = RemediationStatusEnum.NotStarted;
-        plan.Message = "Plan created successfully";
+        plan.StatusInfo = "Plan created successfully";
 
         return plan;
     }

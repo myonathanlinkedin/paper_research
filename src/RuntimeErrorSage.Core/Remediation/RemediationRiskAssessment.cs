@@ -337,9 +337,9 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
         }
 
         // Add issues based on context
-        if (action.Context?.Count > 0)
+        if (action.Context != null && action.Context.Metadata?.Count > 0)
         {
-            if (action.Context.Count > 5)
+            if (action.Context.Metadata.Count > 5)
             {
                 issues.Add("Complex context may lead to unexpected side effects");
             }
@@ -417,9 +417,9 @@ public class RemediationRiskAssessment : IRemediationRiskAssessment
         }
 
         // Add context-specific steps
-        if (action.Context?.Count > 0)
+        if (action.Context != null && action.Context.Metadata?.Count > 0)
         {
-            foreach (var kvp in action.Context)
+            foreach (var kvp in action.Context.Metadata)
             {
                 steps.Add($"Validate {kvp.Key} before use");
             }

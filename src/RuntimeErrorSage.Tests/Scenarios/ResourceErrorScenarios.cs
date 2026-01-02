@@ -1,8 +1,11 @@
 using Xunit;
 using FluentAssertions;
-using RuntimeErrorSage.Application.Analysis;
-using RuntimeErrorSage.Application.Remediation;
-using RuntimeErrorSage.Application.MCP;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Infrastructure.Services;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Error;
 using Moq;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Tests.Helpers;
@@ -19,7 +22,9 @@ public class ResourceErrorScenarios
     {
         _mcpClientMock = TestHelper.CreateMCPClientMock();
         _remediationExecutorMock = TestHelper.CreateRemediationExecutorMock();
-        _service = new RuntimeErrorSageService(_mcpClientMock.Object, _remediationExecutorMock.Object);
+        _service = TestHelper.CreateRuntimeErrorSageService(
+            mcpClientMock: _mcpClientMock,
+            remediationExecutorMock: _remediationExecutorMock);
     }
 
     [Theory]
@@ -63,7 +68,7 @@ public class ResourceErrorScenarios
         result.RemediationPlan.Strategies.Should().NotBeEmpty();
 
         _mcpClientMock.Verify(x => x.PublishContextAsync(It.IsAny<ErrorContext>()), Times.Once);
-        _remediationExecutorMock.Verify(x => x.ExecuteRemediationAsync(It.IsAny<RemediationPlan>()), Times.Once);
+        _remediationExecutorMock.Verify(x => x.ExecuteRemediationAsync(It.IsAny<RemediationPlan>(), It.IsAny<ErrorContext>()), Times.Once);
     }
 
     [Fact]
@@ -74,7 +79,7 @@ public class ResourceErrorScenarios
         {
             { "ProcessId", 1234 },
             { "ProcessName", "app.exe" },
-            { "MemoryUsage", 1024 * 1024 * 1024 * 2 }, // 2 GB
+            { "MemoryUsage", unchecked(1024L * 1024 * 1024 * 2) }, // 2 GB
             { "MemoryLimit", 1024 * 1024 * 1024 }, // 1 GB
             { "CPUUsage", 95.5 },
             { "ThreadCount", 100 },
@@ -82,7 +87,7 @@ public class ResourceErrorScenarios
             { "GCPressure", "High" },
             { "MemoryPressure", "Critical" },
             { "SystemMemoryAvailable", 1024 * 1024 * 512 }, // 512 MB
-            { "SystemMemoryTotal", 1024 * 1024 * 1024 * 8 }, // 8 GB
+            { "SystemMemoryTotal", unchecked(1024L * 1024 * 1024 * 8) }, // 8 GB
             { "SystemMemoryUsed", 1024 * 1024 * 1024 * 7.5 } // 7.5 GB
         };
 
@@ -90,7 +95,7 @@ public class ResourceErrorScenarios
             "MemoryExhausted",
             "The process has exhausted available memory",
             "Resource",
-            additionalContext);
+            additionalContext.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString() ?? string.Empty));
 
         // Act
         var result = await _service.AnalyzeErrorAsync(errorContext);
@@ -106,6 +111,6 @@ public class ResourceErrorScenarios
             s.Name == "ResourceCleanup");
 
         _mcpClientMock.Verify(x => x.PublishContextAsync(It.IsAny<ErrorContext>()), Times.Once);
-        _remediationExecutorMock.Verify(x => x.ExecuteRemediationAsync(It.IsAny<RemediationPlan>()), Times.Once);
+        _remediationExecutorMock.Verify(x => x.ExecuteRemediationAsync(It.IsAny<RemediationPlan>(), It.IsAny<ErrorContext>()), Times.Once);
     }
 } 

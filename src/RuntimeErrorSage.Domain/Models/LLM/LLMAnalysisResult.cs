@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Domain.Models.LLM;
 
@@ -23,6 +24,11 @@ public class LLMAnalysisResult
     /// Gets or sets the correlation identifier for tracking the analysis.
     /// </summary>
     public string CorrelationId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the error identifier.
+    /// </summary>
+    public string ErrorId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the status of the analysis.
@@ -68,4 +74,14 @@ public class LLMAnalysisResult
     /// Gets or sets the timestamp when the analysis result was created.
     /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-} 
+
+    /// <summary>
+    /// Gets or sets the suggested remediation actions.
+    /// </summary>
+    public List<RemediationAction> SuggestedActions { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the contextual insights from the analysis.
+    /// </summary>
+    public Dictionary<string, string> ContextualInsights { get; set; } = new();
+}

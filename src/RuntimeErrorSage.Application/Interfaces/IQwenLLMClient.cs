@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Models.Context;
 using RuntimeErrorSage.Domain.Models.LLM;
+using RuntimeErrorSage.Domain.Models.Error;
 
 namespace RuntimeErrorSage.Application.LLM.Interfaces
 {
@@ -77,5 +78,12 @@ namespace RuntimeErrorSage.Application.LLM.Interfaces
         /// <param name="context">The context to analyze</param>
         /// <returns>The analysis result</returns>
         Task<LLMAnalysisResult> AnalyzeContextAsync(RuntimeContext context);
+
+        /// <summary>
+        /// Analyzes an error using the LLM
+        /// </summary>
+        /// <param name="context">The error context</param>
+        /// <returns>The analysis result</returns>
+        Task<LLMAnalysisResult> AnalyzeErrorAsync(RuntimeErrorSage.Domain.Models.Error.ErrorContext context);
     }
 } 

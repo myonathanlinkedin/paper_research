@@ -1,23 +1,67 @@
-using RuntimeErrorSage.Application.Analysis;
-using RuntimeErrorSage.Application.Remediation;
-using RuntimeErrorSage.Application.MCP;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Application.Runtime.Interfaces;
+using RuntimeErrorSage.Application.Services.Interfaces;
+using RuntimeErrorSage.Application.LLM.Interfaces;
+using RuntimeErrorSage.Application.Graph.Interfaces;
+using RuntimeErrorSage.Application.Protocols;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Application.MCP.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Execution;
 using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Infrastructure.Services;
+using Microsoft.Extensions.Logging;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 
 namespace RuntimeErrorSage.Tests.Helpers;
 
 public static class TestHelper
 {
+    public static RuntimeErrorSageService CreateRuntimeErrorSageService(
+        Mock<IMCPClient> mcpClientMock = null,
+        Mock<IRemediationExecutor> remediationExecutorMock = null,
+        Mock<IValidationRegistry> validationRegistryMock = null,
+        Mock<IQwenLLMClient> llmClientMock = null)
+    {
+        var loggerMock = new Mock<ILogger<RuntimeErrorSageService>>();
+        var errorAnalysisServiceMock = new Mock<IErrorAnalysisService>();
+        var remediationServiceMock = new Mock<IRemediationService>();
+        var contextEnrichmentServiceMock = new Mock<IContextEnrichmentService>();
+        var validationRegistry = validationRegistryMock?.Object ?? new Mock<IValidationRegistry>().Object;
+        var errorContextAnalyzerMock = new Mock<IErrorContextAnalyzer>();
+        var remediationAnalyzerMock = new Mock<IRemediationAnalyzer>();
+        var remediationValidatorMock = new Mock<IRemediationValidator>();
+        var metricsCollectorMock = new Mock<IRemediationMetricsCollector>();
+        var mcp = new Mock<IModelContextProtocol>().Object;
+        var llmClient = llmClientMock?.Object ?? new Mock<IQwenLLMClient>().Object;
+        var errorAnalyzerMock = new Mock<IErrorAnalyzer>();
+        var graphAnalyzerMock = new Mock<IDependencyGraphAnalyzer>();
+        var modelContextMock = new Mock<IModelContextProtocol>();
+
+        return new RuntimeErrorSageService(
+            loggerMock.Object,
+            errorAnalysisServiceMock.Object,
+            remediationServiceMock.Object,
+            contextEnrichmentServiceMock.Object,
+            validationRegistry,
+            errorContextAnalyzerMock.Object,
+            remediationAnalyzerMock.Object,
+            remediationValidatorMock.Object,
+            metricsCollectorMock.Object,
+            mcp,
+            llmClient,
+            errorAnalyzerMock.Object,
+            graphAnalyzerMock.Object,
+            modelContextMock.Object);
+    }
     public static Mock<IMCPClient> CreateMCPClientMock()
     {
         var mock = new Mock<IMCPClient>();
@@ -29,8 +73,8 @@ public static class TestHelper
     public static Mock<IRemediationExecutor> CreateRemediationExecutorMock()
     {
         var mock = new Mock<IRemediationExecutor>();
-        mock.Setup(x => x.ExecuteRemediationAsync(It.IsAny<ErrorAnalysisResult>(), It.IsAny<ErrorContext>()))
-            .ReturnsAsync(new RemediationExecution { Success = true });
+        mock.Setup(x => x.ExecuteRemediationAsync(It.IsAny<RemediationPlan>(), It.IsAny<ErrorContext>()))
+            .ReturnsAsync(new RemediationResult { Success = true, Status = RemediationStatusEnum.Success });
         return mock;
     }
 
@@ -69,6 +113,12 @@ public static class TestHelper
         IEnumerable<IRemediationStrategy> strategies)
     {
         var context = CreateErrorContext(errorType, "Test error", "Test source");
+        
+        // Convert Application.IRemediationStrategy to Domain.IRemediationStrategy using adapter
+        var domainStrategies = strategies
+            .Select(s => RuntimeErrorSage.Core.Remediation.RemediationStrategyAdapterExtensions.ToDomainStrategy(s))
+            .ToList();
+            
         return new RemediationPlan(
             name: "Test plan",
             description: "Test description",
@@ -77,7 +127,7 @@ public static class TestHelper
             estimatedDuration: TimeSpan.FromMinutes(5))
         {
             Context = context,
-            Strategies = strategies.ToList(),
+            Strategies = domainStrategies,
             Status = RemediationStatusEnum.Pending
         };
     }
@@ -90,10 +140,10 @@ public static class TestHelper
         var mock = new Mock<IRemediationStrategy>();
         mock.Setup(x => x.Name).Returns(name);
         mock.Setup(x => x.Description).Returns(description);
-        mock.Setup(x => x.GetPriorityAsync(It.IsAny<ErrorContext>()))
-            .ReturnsAsync(priority);
+        mock.Setup(x => x.Priority).Returns((RemediationPriority)priority);
         mock.Setup(x => x.CreatedAt).Returns(DateTime.UtcNow);
-        mock.Setup(x => x.Status).Returns(RemediationStatusEnum.NotStarted);
+        // Note: Application.IRemediationStrategy does not have GetPriorityAsync or Status
+        // These are only in Domain.IRemediationStrategy
         return mock;
     }
 
@@ -120,9 +170,16 @@ public static class TestHelper
         var result = new ValidationResult
         {
             IsValid = isSuccessful,
-            Metadata = details ?? new Dictionary<string, object>(),
             Timestamp = DateTime.UtcNow
         };
+        
+        if (details != null)
+        {
+            foreach (var kvp in details)
+            {
+                result.AddMetadata(kvp.Key, kvp.Value);
+            }
+        }
         
         if (!string.IsNullOrEmpty(message))
         {

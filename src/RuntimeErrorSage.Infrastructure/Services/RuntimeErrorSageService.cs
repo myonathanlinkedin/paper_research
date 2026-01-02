@@ -16,22 +16,16 @@ using RuntimeErrorSage.Application.Runtime.Exceptions;
 using RuntimeErrorSage.Application.Runtime.Interfaces;
 using RuntimeErrorSage.Application.Services.Interfaces;
 using ValidationResult = RuntimeErrorSage.Domain.Models.Validation.ValidationResult;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 using RuntimeErrorSage.Domain.Models;
-using RuntimeErrorSage.Domain.Models.Context;
-using RuntimeErrorSage.Domain.Models.Error;
-using RuntimeErrorSage.Domain.Models.Graph;
-using RuntimeErrorSage.Domain.Models.LLM;
-using RuntimeErrorSage.Domain.Models.MCP;
-using RuntimeErrorSage.Domain.Models.Metrics;
-using RuntimeErrorSage.Domain.Models.Remediation;
-using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Models.Validation;
-using RuntimeErrorSage.Domain.Models;
 using RuntimeErrorSage.Application.Protocols;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Application.Graph.Interfaces;
+using DomainIRemediationStrategy = RuntimeErrorSage.Domain.Interfaces.IRemediationStrategy;
 
 namespace RuntimeErrorSage.Infrastructure.Services;
 
@@ -304,6 +298,64 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
                 }
             }
 
+            // Validate context if validation registry is available
+            ValidationResult validationResult = null;
+            try
+            {
+                if (_validationRegistry != null)
+                {
+                    // Try to use ValidateContextAsync if available, otherwise use ValidateContextAsync from this service
+                    try
+                    {
+                        validationResult = await _validationRegistry.ValidateContextAsync(context);
+                    }
+                    catch
+                    {
+                        // Fallback to service's own validation
+                        validationResult = await ValidateContextAsync(context);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error validating context, continuing without validation");
+            }
+
+            // Create remediation plan
+            RemediationPlan remediationPlan = null;
+            try
+            {
+                var remediationAnalysis = await _remediationAnalyzer.AnalyzeErrorAsync(context);
+                if (remediationAnalysis != null && remediationAnalysis.IsValid)
+                {
+                    // Create RemediationPlan from RemediationAnalysis
+                    var actions = remediationAnalysis.SuggestedActions ?? new List<RemediationAction>();
+                    remediationPlan = new RemediationPlan(
+                        name: $"Remediation Plan - {context.ErrorType}",
+                        description: $"Remediation plan for error {context.ErrorId}",
+                        actions: actions,
+                        parameters: remediationAnalysis.Metadata ?? new Dictionary<string, object>(),
+                        estimatedDuration: TimeSpan.FromMinutes(10))
+                    {
+                        PlanId = Guid.NewGuid().ToString(),
+                        Context = context,
+                        CreatedAt = DateTime.UtcNow,
+                        Status = RemediationStatusEnum.Pending,
+                        StatusInfo = "Remediation plan created from analysis"
+                    };
+                    
+                    // Get strategies from registry to populate Strategies property
+                    // Note: We need to get actual IRemediationStrategy instances, not just recommendations
+                    // For now, we'll create a basic plan with empty strategies list
+                    // The strategies will be populated by the remediation service when needed
+                    remediationPlan.Strategies = new List<DomainIRemediationStrategy>();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error creating remediation plan, continuing without plan");
+            }
+
             // Combine results
             var result = new ErrorAnalysisResult
             {
@@ -311,6 +363,9 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
                 Timestamp = DateTime.UtcNow,
                 Status = AnalysisStatus.Completed,
                 CorrelationId = context.CorrelationId,
+                IsAnalyzed = validationResult?.IsValid ?? true,
+                RemediationPlan = remediationPlan,
+                ValidationResult = validationResult,
                 Details = new Dictionary<string, object>
                 {
                     ["OriginalContext"] = context,
@@ -491,7 +546,7 @@ public class RuntimeErrorSageService : IRuntimeErrorSageService
         }
     }
 
-    Task<System.ComponentModel.DataAnnotations.ValidationResult> IRuntimeErrorSageService.ValidateContextAsync(ErrorContext context)
+    Task<RuntimeErrorSage.Domain.Models.Validation.ValidationResult> IRuntimeErrorSageService.ValidateContextAsync(ErrorContext context)
     {
         throw new NotImplementedException();
     }

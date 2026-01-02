@@ -65,5 +65,11 @@ namespace RuntimeErrorSage.Application.Storage.Interfaces
         /// </summary>
         /// <returns>A task containing the count of patterns</returns>
         Task<long> GetPatternCountAsync();
+
+        /// <summary>
+        /// Validates the connection to the storage
+        /// </summary>
+        /// <returns>A task containing true if the connection is valid, false otherwise</returns>
+        Task<bool> ValidateConnectionAsync();
     }
 } 

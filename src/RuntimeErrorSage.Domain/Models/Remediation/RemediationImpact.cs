@@ -88,5 +88,10 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         /// Gets or sets the correlation ID for tracking.
         /// </summary>
         public string CorrelationId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the duration of the remediation impact.
+        /// </summary>
+        public TimeSpan Duration { get; set; }
     }
 } 

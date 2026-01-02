@@ -73,102 +73,102 @@ namespace RuntimeErrorSage.Domain.Models.Error
         /// <summary>
         /// Gets or sets the database operation type.
         /// </summary>
-        public string OperationType { get; set; } = string.Empty;
+        public new string OperationType { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database operation start time.
         /// </summary>
-        public DateTime OperationStartTime { get; set; } = DateTime.UtcNow;
+        public new DateTime OperationStartTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the database operation duration.
         /// </summary>
-        public TimeSpan OperationDuration { get; set; }
+        public new TimeSpan OperationDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the database operation status.
         /// </summary>
-        public string OperationStatus { get; set; } = string.Empty;
+        public new string OperationStatus { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database operation result.
         /// </summary>
-        public string OperationResult { get; set; } = string.Empty;
+        public new string OperationResult { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database operation target.
         /// </summary>
-        public string OperationTarget { get; set; } = string.Empty;
+        public new string OperationTarget { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database operation metrics.
         /// </summary>
-        public Dictionary<string, double> OperationMetrics { get; set; } = new Dictionary<string, double>();
+        public new Dictionary<string, double> OperationMetrics { get; set; } = new Dictionary<string, double>();
 
         /// <summary>
         /// Gets or sets the database operation dependencies.
         /// </summary>
-        public List<string> OperationDependencies { get; set; } = new List<string>();
+        public new List<string> OperationDependencies { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the database operation tags.
         /// </summary>
-        public List<string> OperationTags { get; set; } = new List<string>();
+        public new List<string> OperationTags { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the database service calls.
         /// </summary>
-        public List<ServiceCall> ServiceCalls { get; set; } = new List<ServiceCall>();
+        public new List<ServiceCall> ServiceCalls { get; set; } = new List<ServiceCall>();
 
         /// <summary>
         /// Gets or sets the database data flows.
         /// </summary>
-        public List<DataFlow> DataFlows { get; set; } = new List<DataFlow>();
+        public new List<DataFlow> DataFlows { get; set; } = new List<DataFlow>();
 
         /// <summary>
         /// Gets or sets the database component metrics.
         /// </summary>
-        public Dictionary<string, Dictionary<string, double>> ComponentMetrics { get; set; } = new Dictionary<string, Dictionary<string, double>>();
+        public new Dictionary<string, Dictionary<string, double>> ComponentMetrics { get; set; } = new Dictionary<string, Dictionary<string, double>>();
 
         /// <summary>
         /// Gets or sets the database component dependencies.
         /// </summary>
-        public List<ComponentDependency> ComponentDependencies { get; set; } = new List<ComponentDependency>();
+        public new List<ComponentDependency> ComponentDependencies { get; set; } = new List<ComponentDependency>();
 
         /// <summary>
         /// Gets or sets the database context data.
         /// </summary>
-        public Dictionary<string, object> ContextData { get; set; } = new Dictionary<string, object>();
+        public new Dictionary<string, object> ContextData { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets or sets the database inner error.
         /// </summary>
-        public DatabaseErrorContext? InnerError { get; set; }
+        public new DatabaseErrorContext? InnerError { get; set; }
 
         /// <summary>
         /// Gets or sets the database service name.
         /// </summary>
-        public string ServiceName { get; set; } = string.Empty;
+        public new string ServiceName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database context.
         /// </summary>
-        public string Context { get; set; } = string.Empty;
+        public new string Context { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets whether the database error is actionable.
         /// </summary>
-        public bool IsActionable { get; set; }
+        public new bool IsActionable { get; set; }
 
         /// <summary>
         /// Gets or sets whether the database error is transient.
         /// </summary>
-        public bool IsTransient { get; set; }
+        public new bool IsTransient { get; set; }
 
         /// <summary>
         /// Gets or sets whether the database error is resolved.
         /// </summary>
-        public bool IsResolved { get; set; }
+        public new bool IsResolved { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DatabaseErrorContext"/> class.

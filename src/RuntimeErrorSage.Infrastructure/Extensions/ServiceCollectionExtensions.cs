@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,9 +18,16 @@ using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Runtime.Interfaces;
 using RuntimeErrorSage.Application.Storage;
 using RuntimeErrorSage.Application.Storage.Interfaces;
+using RuntimeErrorSage.Core.MCP;
+using RuntimeErrorSage.Core.Remediation;
+using RuntimeErrorSage.Core.Examples;
+using RuntimeErrorSage.Core.Analysis;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Infrastructure.Services;
 using StackExchange.Redis;
 
-namespace RuntimeErrorSage.Application.Extensions
+namespace RuntimeErrorSage.Infrastructure.Extensions
 {
     public static class ServiceCollectionExtensions
     {
@@ -60,13 +68,44 @@ namespace RuntimeErrorSage.Application.Extensions
 
             // Register core services
             services.AddSingleton<IErrorAnalyzer, ErrorAnalyzer>();
+            services.AddSingleton<IErrorContextAnalyzer, ErrorContextAnalyzer>();
             services.AddSingleton<IPatternStorage, RedisPatternStorage>();
-            services.AddSingleton<IMCPClient, RuntimeErrorSage.Core.MCP.MCPClient>();
-            services.AddSingleton<IRemediationMetricsCollector, RuntimeErrorSage.Core.Remediation.RemediationMetricsCollector>();
+            services.AddSingleton<IMCPClient, MCPClient>();
+            services.AddSingleton<IRemediationMetricsCollector, RemediationMetricsCollector>();
             services.AddSingleton<IRemediationValidator, RemediationValidator>();
             services.AddSingleton<IRemediationTracker, RemediationTracker>();
-            services.AddSingleton<IRemediationExecutor, RuntimeErrorSage.Core.Examples.FixedRemediationExecutorExample>();
-            services.AddSingleton<IRuntimeErrorSageService, RuntimeErrorSage.Infrastructure.Services.RuntimeErrorSageService>();
+            
+            // Register RemediationStrategyProvider (needed by FixedRemediationExecutorExample)
+            services.AddSingleton<IRemediationStrategyProvider, RemediationStrategyProvider>();
+            services.AddSingleton<IRemediationRegistry, Core.Remediation.RemediationRegistry>();
+            
+            // Register FixedRemediationExecutorExample with a default strategy
+            services.AddSingleton<IRemediationExecutor>(sp =>
+            {
+                var logger = sp.GetRequiredService<ILogger<FixedRemediationExecutorExample>>();
+                var validator = sp.GetRequiredService<IRemediationValidator>();
+                var metricsCollector = sp.GetRequiredService<IRemediationMetricsCollector>();
+                var strategyProvider = sp.GetRequiredService<IRemediationStrategyProvider>();
+                
+                // Create a default strategy for the example executor
+                var defaultStrategyModel = new Domain.Models.Remediation.RemediationStrategyModel
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Default Example Strategy",
+                    Description = "Default strategy for FixedRemediationExecutorExample",
+                    Priority = Domain.Enums.RemediationPriority.Medium
+                };
+                var defaultStrategy = new RemediationStrategyAdapter(defaultStrategyModel);
+                
+                return new FixedRemediationExecutorExample(
+                    logger,
+                    defaultStrategy,
+                    validator,
+                    metricsCollector,
+                    strategyProvider);
+            });
+            
+            services.AddSingleton<IRuntimeErrorSageService, RuntimeErrorSageService>();
 
             // Register health checks
             services.AddHealthChecks()
@@ -76,5 +115,8 @@ namespace RuntimeErrorSage.Application.Extensions
             return services;
         }
     }
-} 
+}
+
+
+
 

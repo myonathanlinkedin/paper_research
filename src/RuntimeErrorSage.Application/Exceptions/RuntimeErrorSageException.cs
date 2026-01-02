@@ -9,8 +9,8 @@ namespace RuntimeErrorSage.Application.Runtime.Exceptions;
 [Serializable]
 public class RuntimeErrorSageException : Exception
 {
-    public string ErrorCode { get; }
-    public object Details { get; }
+    public string? ErrorCode { get; }
+    public object? Details { get; }
     public RuntimeErrorSageException() : base() { }
     public RuntimeErrorSageException(string message) : base(message) { }
     public RuntimeErrorSageException(string message, string errorCode) : base(message) { ErrorCode = errorCode; }

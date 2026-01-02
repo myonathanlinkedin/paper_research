@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Domain.Models.Error;
 
@@ -129,6 +130,35 @@ public class ErrorAnalysis
     /// Gets the remediation steps.
     /// </summary>
     public IReadOnlyList<string> RemediationSteps { get; }
+
+    /// <summary>
+    /// Gets or sets a summary of the error analysis.
+    /// </summary>
+    public string Summary { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the suggested remediation actions.
+    /// </summary>
+    public List<RemediationAction> SuggestedActions { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the primary remediation action.
+    /// </summary>
+    public RemediationAction RemediationAction { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error message (alias for Message).
+    /// </summary>
+    public string ErrorMessage
+    {
+        get => Message;
+        set => Message = value;
+    }
+
+    /// <summary>
+    /// Gets or sets contextual insights about the error.
+    /// </summary>
+    public Dictionary<string, string> ContextualInsights { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ErrorAnalysis"/> class.

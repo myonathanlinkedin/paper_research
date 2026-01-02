@@ -5,6 +5,7 @@ using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.MCP;
 using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.LLM;
 using ContextHistory = RuntimeErrorSage.Domain.Models.Context.ContextHistory;
 using TimeRange = RuntimeErrorSage.Domain.Models.Common.TimeRange;
 using MCPConnectionStatus = RuntimeErrorSage.Domain.Models.MCP.MCPConnectionStatus;
@@ -40,6 +41,13 @@ namespace RuntimeErrorSage.Application.MCP.Interfaces
         /// Analyzes an error context.
         /// </summary>
         Task<ErrorContext> AnalyzeErrorAsync(ErrorContext context);
+
+        /// <summary>
+        /// Analyzes an error context and returns LLM analysis result.
+        /// </summary>
+        /// <param name="context">The error context to analyze.</param>
+        /// <returns>The LLM analysis result.</returns>
+        Task<LLMAnalysisResult> AnalyzeContextAsync(ErrorContext context);
 
         /// <summary>
         /// Gets the context history for a given time range.

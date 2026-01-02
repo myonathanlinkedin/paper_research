@@ -150,6 +150,16 @@ public class ImpactAnalysisResult
     public string ErrorMessage { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the impact level.
+    /// </summary>
+    public ImpactLevel ImpactLevel { get; set; } = ImpactLevel.Medium;
+
+    /// <summary>
+    /// Gets or sets the list of affected components.
+    /// </summary>
+    public List<string> AffectedComponents { get; set; } = new List<string>();
+
+    /// <summary>
     /// Adds a new impact metric to the analysis result.
     /// </summary>
     /// <param name="name">The name of the metric.</param>

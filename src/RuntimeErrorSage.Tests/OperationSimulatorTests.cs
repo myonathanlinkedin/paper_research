@@ -7,6 +7,7 @@ using RuntimeErrorSage.Examples.Models;
 using RuntimeErrorSage.Examples.Services;
 using RuntimeErrorSage.Examples.Exceptions;
 using RuntimeErrorSage.Examples.Models.Responses;
+using RuntimeErrorSage.Examples.Models.Responses.Enums;
 
 namespace RuntimeErrorSage.Tests;
 
@@ -15,9 +16,14 @@ public class OperationSimulatorTests
     private readonly OperationSimulator _simulator;
     private readonly Random _random;
 
+    private readonly Mock<RuntimeErrorSage.Examples.Services.Interfaces.IContextDataFactory> _contextFactoryMock;
+    private readonly Mock<RuntimeErrorSage.Examples.Services.Interfaces.IKeyValueDataFactory> _keyValueFactoryMock;
+
     public OperationSimulatorTests()
     {
-        _simulator = new OperationSimulator();
+        _contextFactoryMock = new Mock<RuntimeErrorSage.Examples.Services.Interfaces.IContextDataFactory>();
+        _keyValueFactoryMock = new Mock<RuntimeErrorSage.Examples.Services.Interfaces.IKeyValueDataFactory>();
+        _simulator = new OperationSimulator(_contextFactoryMock.Object, _keyValueFactoryMock.Object);
         _random = new Random();
     }
 

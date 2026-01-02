@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Metrics;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Tests.TestSuite.Models;
+using ErrorScenario = RuntimeErrorSage.Tests.TestSuite.Models.ErrorScenario;
+using PerformanceMetric = RuntimeErrorSage.Tests.TestSuite.Models.PerformanceMetric;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
 
@@ -93,12 +97,23 @@ public class TestSuiteValidator
             }
         }
 
-        return new ValidationResult
+        var result = new ValidationResult
         {
-            IsValid = errors.Count == 0,
-            Errors = errors,
-            Warnings = warnings
+            IsValid = errors.Count == 0
         };
+        
+        // Add errors and warnings using methods since properties are read-only
+        foreach (var error in errors)
+        {
+            result.AddError(error);
+        }
+        
+        foreach (var warning in warnings)
+        {
+            result.AddWarning(warning);
+        }
+        
+        return result;
     }
 
     /// <summary>

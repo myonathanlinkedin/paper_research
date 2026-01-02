@@ -1,5 +1,6 @@
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Tests.TestSuite.Models;
+using PerformanceMetrics = RuntimeErrorSage.Tests.TestSuite.Models.PerformanceMetrics;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
 

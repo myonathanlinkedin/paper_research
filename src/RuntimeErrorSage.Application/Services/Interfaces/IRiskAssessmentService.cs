@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Models;
 using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Interfaces;
 
 namespace RuntimeErrorSage.Application.Services.Interfaces;
@@ -45,4 +46,11 @@ public interface IRiskAssessmentService
     /// <param name="id">The assessment ID.</param>
     /// <returns>True if the assessment was deleted, false otherwise.</returns>
     Task<bool> DeleteAssessmentAsync(string id);
+
+    /// <summary>
+    /// Calculates the risk level for a remediation action.
+    /// </summary>
+    /// <param name="action">The remediation action.</param>
+    /// <returns>The calculated risk level.</returns>
+    RemediationRiskLevel CalculateRiskLevel(RemediationAction action);
 } 

@@ -7,6 +7,9 @@ using RuntimeErrorSage.Application.MCP.Interfaces;
 using RuntimeErrorSage.Domain.Models.Common;
 using RuntimeErrorSage.Domain.Models.Context;
 using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.LLM;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Interfaces;
 using RuntimeErrorSage.Application.Storage.Interfaces;
 using ConnectionState = RuntimeErrorSage.Domain.Enums.ConnectionState;
 using ContextHistory = RuntimeErrorSage.Domain.Models.Context.ContextHistory;
@@ -152,6 +155,48 @@ public class MCPClient : IMCPClient, IDisposable
             await UpdateContextHistoryAsync(context);
 
             return context;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error analyzing context {ContextId}", context.ErrorId);
+            throw new MCPException("Failed to analyze error context", ex);
+        }
+    }
+
+    /// <summary>
+    /// Analyzes an error context and returns LLM analysis result.
+    /// </summary>
+    /// <param name="context">The error context to analyze.</param>
+    /// <returns>The LLM analysis result.</returns>
+    public async Task<LLMAnalysisResult> AnalyzeContextAsync(ErrorContext context)
+    {
+        if (!IsConnected)
+        {
+            throw new InvalidOperationException("MCP client is not connected");
+        }
+
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        try
+        {
+            // Use error analyzer to analyze context - returns ErrorAnalysis
+            var errorAnalysis = await _errorAnalyzer.AnalyzeContextAsync(context);
+            
+            // Convert ErrorAnalysis to LLMAnalysisResult
+            return new LLMAnalysisResult
+            {
+                CorrelationId = context.CorrelationId,
+                ErrorId = context.ErrorId,
+                RootCause = errorAnalysis.RootCause ?? string.Empty,
+                Confidence = errorAnalysis.Confidence,
+                Severity = errorAnalysis.Severity,
+                Timestamp = DateTime.UtcNow,
+                Status = AnalysisStatus.Completed,
+                SuggestedActions = errorAnalysis.SuggestedActions ?? new List<RemediationAction>()
+            };
         }
         catch (Exception ex)
         {
@@ -468,9 +513,12 @@ public class MCPClient : IMCPClient, IDisposable
     {
         if (patterns == null) throw new ArgumentNullException(nameof(patterns));
         
-        // Convert List<ErrorPattern> to Dictionary<string, string> if SavePatternsAsync requires it
-        var patternsDict = patterns.ToDictionary(p => p.Id, p => JsonSerializer.Serialize(p));
-        await _storage.SavePatternsAsync(patternsDict);
+        // Store each pattern individually using StorePatternAsync
+        foreach (var pattern in patterns)
+        {
+            var patternJson = JsonSerializer.Serialize(pattern);
+            await _storage.StorePatternAsync(pattern.Id, patternJson);
+        }
     }
 
     public async Task<List<ErrorPattern>> GetErrorPatternsAsync(string serviceName)
@@ -488,7 +536,7 @@ public class MCPClient : IMCPClient, IDisposable
                 {
                     Id = kvp.Key,
                     ServiceName = ExtractServiceName(kvp.Value),
-                    Pattern = kvp.Value
+                    PatternMetadata = new Dictionary<string, object> { { "Pattern", kvp.Value } }
                 };
                 allPatterns.Add(pattern);
             }

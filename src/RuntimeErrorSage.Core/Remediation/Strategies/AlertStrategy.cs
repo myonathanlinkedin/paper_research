@@ -171,11 +171,14 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var plan = new RemediationPlan
+            var plan = new RemediationPlan(
+                name: "Alert Notification Plan",
+                description: $"Plan to send alerts for {context.ErrorType} error",
+                actions: new List<RemediationAction>(),
+                parameters: new Dictionary<string, object>(),
+                estimatedDuration: TimeSpan.FromMinutes(5))
             {
                 PlanId = Guid.NewGuid().ToString(),
-                Name = "Alert Notification Plan",
-                Description = $"Plan to send alerts for {context.ErrorType} error",
                 Context = context,
                 CreatedAt = DateTime.UtcNow,
                 Actions = new List<RemediationAction>(_actions)
@@ -203,7 +206,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
         {
             try
             {
-                var request = new LLM.LLMRequest
+                var request = new RuntimeErrorSage.Domain.Models.LLM.LLMRequest
                 {
                     Query = "Generate alert for error",
                     Context = $"Error: {errorContext.ErrorType}, Component: {errorContext.ComponentId}, Severity: {severity}"
@@ -314,7 +317,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 if (!await ValidateConfigurationAsync())
                 {
                     result.IsValid = false;
-                    result.Errors.Add("Strategy configuration is invalid");
+                    result.AddError("Strategy configuration is invalid");
                     result.Severity = ValidationSeverity.Error;
                     return result;
                 }
@@ -322,7 +325,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
                 if (!await CanApplyAsync(context))
                 {
                     result.IsValid = false;
-                    result.Errors.Add($"Error type '{context.ErrorType}' is not supported by this strategy");
+                    result.AddError($"Error type '{context.ErrorType}' is not supported by this strategy");
                     result.Severity = ValidationSeverity.Error;
                 }
 
@@ -331,7 +334,7 @@ namespace RuntimeErrorSage.Core.Remediation.Strategies
             catch (Exception ex)
             {
                 result.IsValid = false;
-                result.Errors.Add($"Validation failed: {ex.Message}");
+                result.AddError($"Validation failed: {ex.Message}");
                 result.Severity = ValidationSeverity.Error;
                 _logger.LogError(ex, "Error validating alert strategy for context {ErrorId}", context.ErrorId);
                 return result;

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RuntimeErrorSage.Examples.Models;
+using RuntimeErrorSage.Examples.Services.Interfaces;
 
 namespace RuntimeErrorSage.Examples.Services;
 

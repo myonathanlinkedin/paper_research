@@ -109,57 +109,57 @@ namespace RuntimeErrorSage.Domain.Models.Error
         /// <summary>
         /// Gets or sets the service calls.
         /// </summary>
-        public List<ServiceCall> ServiceCalls { get; set; } = new List<ServiceCall>();
+        public new List<ServiceCall> ServiceCalls { get; set; } = new List<ServiceCall>();
 
         /// <summary>
         /// Gets or sets the data flows.
         /// </summary>
-        public List<DataFlow> DataFlows { get; set; } = new List<DataFlow>();
+        public new List<DataFlow> DataFlows { get; set; } = new List<DataFlow>();
 
         /// <summary>
         /// Gets or sets the component metrics.
         /// </summary>
-        public Dictionary<string, Dictionary<string, double>> ComponentMetrics { get; set; } = new Dictionary<string, Dictionary<string, double>>();
+        public new Dictionary<string, Dictionary<string, double>> ComponentMetrics { get; set; } = new Dictionary<string, Dictionary<string, double>>();
 
         /// <summary>
         /// Gets or sets the component dependencies.
         /// </summary>
-        public List<ComponentDependency> ComponentDependencies { get; set; } = new List<ComponentDependency>();
+        public new List<ComponentDependency> ComponentDependencies { get; set; } = new List<ComponentDependency>();
 
         /// <summary>
         /// Gets or sets the context data.
         /// </summary>
-        public Dictionary<string, object> ContextData { get; set; } = new Dictionary<string, object>();
+        public new Dictionary<string, object> ContextData { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets or sets the inner error.
         /// </summary>
-        public HttpErrorContext? InnerError { get; set; }
+        public new HttpErrorContext? InnerError { get; set; }
 
         /// <summary>
         /// Gets or sets the service name.
         /// </summary>
-        public string ServiceName { get; set; } = string.Empty;
+        public new string ServiceName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the context.
         /// </summary>
-        public string Context { get; set; } = string.Empty;
+        public new string Context { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets whether the error is actionable.
         /// </summary>
-        public bool IsActionable { get; set; }
+        public new bool IsActionable { get; set; }
 
         /// <summary>
         /// Gets or sets whether the error is transient.
         /// </summary>
-        public bool IsTransient { get; set; }
+        public new bool IsTransient { get; set; }
 
         /// <summary>
         /// Gets or sets whether the error is resolved.
         /// </summary>
-        public bool IsResolved { get; set; }
+        public new bool IsResolved { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpErrorContext"/> class.

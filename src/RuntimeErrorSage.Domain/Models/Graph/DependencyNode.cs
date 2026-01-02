@@ -36,12 +36,12 @@ namespace RuntimeErrorSage.Domain.Models.Graph
         /// <summary>
         /// Gets or sets the dependencies.
         /// </summary>
-        public List<DependencyNode> Dependencies { get; set; } = new();
+        public new List<DependencyNode> Dependencies { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the dependents.
         /// </summary>
-        public List<DependencyNode> Dependents { get; set; } = new();
+        public new List<DependencyNode> Dependents { get; set; } = new();
         
         /// <summary>
         /// Gets the key for the node (alias for Id).

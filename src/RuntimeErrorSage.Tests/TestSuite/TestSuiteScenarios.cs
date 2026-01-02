@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Metrics;
+using RuntimeErrorSage.Tests.TestSuite.Models;
+using ErrorScenario = RuntimeErrorSage.Tests.TestSuite.Models.ErrorScenario;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
 

@@ -4,7 +4,9 @@ using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Graph;
-using RuntimeErrorSage.Domain.Models.Analysis;
+using RuntimeErrorSage.Domain.Models.Analysis; // For GraphAnalysisResult, etc.
+using RuntimeErrorSage.Domain.Models.Remediation;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 
 namespace RuntimeErrorSage.Application.Interfaces;
 

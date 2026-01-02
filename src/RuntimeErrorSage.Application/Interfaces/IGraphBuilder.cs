@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Graph;
 
-namespace RuntimeErrorSage.Application.Services.Interfaces;
+namespace RuntimeErrorSage.Application.Interfaces;
 
 /// <summary>
 /// Service for building dependency graphs from error contexts.

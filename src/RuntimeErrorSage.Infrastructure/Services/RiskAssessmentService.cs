@@ -9,6 +9,7 @@ using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Core.Remediation;
 
 namespace RuntimeErrorSage.Infrastructure.Services;
 
@@ -83,6 +84,7 @@ public class RiskAssessmentService : IRiskAssessmentService
         {
             assessmentModel.Status = Domain.Enums.AnalysisStatus.Failed;
             assessmentModel.Notes = $"Risk assessment failed: {ex.Message}";
+            // Warnings is a settable property in RiskAssessmentModel, so this is OK
             assessmentModel.Warnings = new List<string> { $"Error during assessment: {ex.Message}" };
         }
         finally
@@ -109,6 +111,25 @@ public class RiskAssessmentService : IRiskAssessmentService
         };
 
         return await Task.FromResult(assessment);
+    }
+
+    /// <summary>
+    /// Calculates the risk level for a remediation action.
+    /// </summary>
+    /// <param name="action">The remediation action.</param>
+    /// <returns>The calculated risk level.</returns>
+    public RemediationRiskLevel CalculateRiskLevel(RemediationAction action)
+    {
+        if (action == null)
+        {
+            return RemediationRiskLevel.None;
+        }
+
+        // Convert action's Impact to SeverityLevel
+        var severityLevel = action.Impact.ToSeverityLevel();
+        
+        // Use RiskAssessmentHelper to calculate risk level
+        return RiskAssessmentHelper.CalculateRiskLevel(severityLevel, action.ImpactScope);
     }
 
     private double CalculateConfidence(RemediationAction action)

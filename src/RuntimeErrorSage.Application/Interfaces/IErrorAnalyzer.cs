@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.LLM;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Graph;
 
 namespace RuntimeErrorSage.Application.Analysis.Interfaces;
 
@@ -45,4 +47,25 @@ public interface IErrorAnalyzer
     /// <param name="llmAnalysis">The LLM analysis to enrich</param>
     /// <returns>The enriched analysis</returns>
     Task<LLMAnalysisResult> EnrichLLMAnalysisAsync(LLMAnalysisResult llmAnalysis);
+
+    /// <summary>
+    /// Analyzes remediation options for an error
+    /// </summary>
+    /// <param name="errorContext">The error context</param>
+    /// <returns>The remediation analysis</returns>
+    Task<RuntimeErrorSage.Domain.Models.Remediation.RemediationAnalysis> AnalyzeRemediationAsync(ErrorContext errorContext);
+
+    /// <summary>
+    /// Analyzes the impact of an error
+    /// </summary>
+    /// <param name="errorContext">The error context</param>
+    /// <returns>The impact analysis result</returns>
+    Task<RuntimeErrorSage.Domain.Models.Graph.ImpactAnalysisResult> AnalyzeImpactAsync(ErrorContext errorContext);
+
+    /// <summary>
+    /// Analyzes the dependency graph for an error
+    /// </summary>
+    /// <param name="errorContext">The error context</param>
+    /// <returns>The graph analysis result</returns>
+    Task<RuntimeErrorSage.Domain.Models.Graph.GraphAnalysisResult> AnalyzeGraphAsync(ErrorContext errorContext);
 } 

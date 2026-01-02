@@ -10,7 +10,7 @@ public class RemediationExecutionException : Exception
     /// <summary>
     /// Gets the remediation ID associated with this exception.
     /// </summary>
-    public string RemediationId { get; }
+    public string RemediationId { get; } = string.Empty;
 
     /// <summary>
     /// Gets the step ID where the failure occurred, if any.
@@ -20,7 +20,7 @@ public class RemediationExecutionException : Exception
     /// <summary>
     /// Gets the error code associated with this exception.
     /// </summary>
-    public string ErrorCode { get; }
+    public string ErrorCode { get; } = string.Empty;
 
     /// <summary>
     /// Initializes a new instance of the RemediationExecutionException class.

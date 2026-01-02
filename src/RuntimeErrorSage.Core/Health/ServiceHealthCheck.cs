@@ -404,12 +404,18 @@ public class ServiceHealthCheck : IHealthCheck, IDisposable
             // Predict future health score
             var prediction = PredictFutureHealthScore(trends, currentMetrics);
 
+            // Convert MetricTrend dictionary to double dictionary for HealthPrediction
+            var trendsDouble = trends.ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.CurrentValue // Extract the current value from MetricTrend
+            );
+
             return new HealthPrediction
             {
                 PredictedHealthScore = prediction,
                 TimeToUnhealthy = CalculateTimeToUnhealthy(trends, currentMetrics),
                 Confidence = CalculatePredictionConfidence(trends),
-                Trends = trends
+                Trends = trendsDouble
             };
         }
         catch (Exception ex)

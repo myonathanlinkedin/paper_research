@@ -9,6 +9,7 @@ using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Models.Common;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 
 namespace RuntimeErrorSage.Core.Remediation
 {

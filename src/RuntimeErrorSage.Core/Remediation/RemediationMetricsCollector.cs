@@ -468,7 +468,7 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             {
                 ExecutionId = Guid.NewGuid().ToString(),
                 Timestamp = DateTime.UtcNow,
-                Values = new Dictionary<string, object>(),
+                Values = new Dictionary<string, double>(),
                 Labels = new Dictionary<string, string>()
             };
 
@@ -493,19 +493,8 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                     }
                     else
                     {
-                        // Aggregate values based on type
-                        if (value is double doubleValue)
-                        {
-                            result.Values[key] = ((double)result.Values[key] + doubleValue) / 2;
-                        }
-                        else if (value is long longValue)
-                        {
-                            result.Values[key] = ((long)result.Values[key] + longValue) / 2;
-                        }
-                        else
-                        {
-                            result.Values[key] = value;
-                        }
+                        // Aggregate values - both are already double
+                        result.Values[key] = (result.Values[key] + value) / 2;
                     }
                 }
 
@@ -572,8 +561,12 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                 }
             }
 
-            //TODO: Implement additional validation logic as needed
-            // result.Warnings = warnings;
+            // Add warnings to result using AddWarning method
+            foreach (var warning in warnings)
+            {
+                result.AddWarning(warning.Message, warning.Severity, warning.Code ?? "WARNING");
+            }
+            
             return result;
         }
         catch (Exception ex)
@@ -705,10 +698,10 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
             {
                 ["error_type"] = context.ErrorType,
                 ["error_severity"] = context.Severity.ToString(),
-                ["error_message"] = context.Exception?.Message,
-                ["error_source"] = context.Exception?.Source,
-                ["error_stack_trace"] = context.Exception?.StackTrace,
-                ["error_inner_exception"] = context.Exception?.InnerException?.Message
+                ["error_message"] = context.Error?.Message ?? context.Message,
+                ["error_source"] = context.Error?.Source ?? context.Source,
+                ["error_stack_trace"] = context.Error?.StackTrace ?? context.StackTrace,
+                ["error_inner_exception"] = null // ErrorContext doesn't have InnerException directly
             };
 
             if (context is DatabaseErrorContext dbContext)
@@ -781,14 +774,16 @@ public sealed class RemediationMetricsCollector : IRemediationMetricsCollector, 
                     .OrderBy(m => m.Timestamp)
                     .Select(m => 
                     {
-                        if (m.Values[metric] is double d)
-                            return d;
-                        else if (m.Values[metric] is int i)
-                            return (double)i;
-                        else if (m.Values[metric] is long l)
-                            return (double)l;
-                        else
+                        var value = m.Values[metric];
+                        // Convert to double using Convert.ToDouble which handles all numeric types
+                        try
+                        {
+                            return Convert.ToDouble(value);
+                        }
+                        catch
+                        {
                             return 0.0;
+                        }
                     })
                     .ToList();
                     

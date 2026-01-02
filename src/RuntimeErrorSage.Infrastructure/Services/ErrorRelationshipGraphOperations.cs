@@ -5,7 +5,7 @@ using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Domain.Enums;
 
-namespace RuntimeErrorSage.Application.Services;
+namespace RuntimeErrorSage.Infrastructure.Services;
 
 /// <summary>
 /// Provides functionality for graph operations related to error relationships.

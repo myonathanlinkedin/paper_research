@@ -11,7 +11,7 @@ using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 
-namespace RuntimeErrorSage.Application.Remediation
+namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
     /// Registry for managing remediation strategies and actions.

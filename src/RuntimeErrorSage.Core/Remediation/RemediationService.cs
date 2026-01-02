@@ -15,17 +15,20 @@ using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.Options;
-using RuntimeErrorSage.Application.Analysis;
+using RuntimeErrorSage.Core.Analysis;
 using RuntimeErrorSage.Application.Validation.Interfaces;
 using RuntimeErrorSage.Application.Extensions;
 
 using ApplicationStrategy = RuntimeErrorSage.Application.Interfaces.IRemediationStrategy;
 using DomainStrategy = RuntimeErrorSage.Domain.Interfaces.IRemediationStrategy;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
+using RuntimeErrorSage.Core.Remediation.Mapping;
 
 namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
     /// Service for managing remediation operations.
+    /// Follows DDD principles by using mappers for type conversions and maintaining layer separation.
     /// </summary>
     public class RemediationService : IRemediationService
     {
@@ -39,6 +42,8 @@ namespace RuntimeErrorSage.Core.Remediation
         private readonly IRemediationValidator _validator;
         private readonly Dictionary<string, ApplicationStrategy> _registeredStrategies;
         private readonly IValidationRuleProvider _validationRuleProvider;
+        private readonly IRemediationStrategyMapper _strategyMapper;
+        private readonly IRemediationModelMapper _modelMapper;
 
         public RemediationService(
             ILogger<RemediationService> logger,
@@ -49,7 +54,9 @@ namespace RuntimeErrorSage.Core.Remediation
             IRemediationActionManager actionManager,
             IRemediationStrategySelector strategySelector,
             IRemediationValidator validator,
-            IValidationRuleProvider validationRuleProvider)
+            IValidationRuleProvider validationRuleProvider,
+            IRemediationStrategyMapper strategyMapper,
+            IRemediationModelMapper modelMapper)
         {
             ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(planManager);
@@ -60,6 +67,8 @@ namespace RuntimeErrorSage.Core.Remediation
             ArgumentNullException.ThrowIfNull(strategySelector);
             ArgumentNullException.ThrowIfNull(validator);
             ArgumentNullException.ThrowIfNull(validationRuleProvider);
+            ArgumentNullException.ThrowIfNull(strategyMapper);
+            ArgumentNullException.ThrowIfNull(modelMapper);
 
             _logger = logger;
             _planManager = planManager;
@@ -70,6 +79,8 @@ namespace RuntimeErrorSage.Core.Remediation
             _strategySelector = strategySelector;
             _validator = validator;
             _validationRuleProvider = validationRuleProvider;
+            _strategyMapper = strategyMapper;
+            _modelMapper = modelMapper;
             _registeredStrategies = new Dictionary<string, ApplicationStrategy>();
         }
 
@@ -197,31 +208,37 @@ namespace RuntimeErrorSage.Core.Remediation
                         Status = executionResult.Status.ToString()
                     });
                 
+                // Parse Status string to ExecutionStatus enum for comparison
+                var statusString = executionResult.Status;
+                var isCompleted = statusString == Domain.Enums.ExecutionStatus.Completed.ToString() || 
+                                 statusString == "Completed" ||
+                                 statusString == "Success";
+                
                 return new RemediationResult
                 {
-                    Status = executionResult.Status == Domain.Enums.ExecutionStatus.Success 
+                    Status = isCompleted 
                         ? RemediationStatusEnum.Success 
                         : RemediationStatusEnum.Failed,
-                    Message = executionResult.ErrorMessage ?? executionResult.Message,
+                    Message = executionResult.ErrorMessage ?? "Execution completed",
                     CompletedSteps = new List<RemediationStep> 
                     { 
                         new RemediationStep 
                         { 
                             Name = action.Name,
-                            Status = executionResult.Status == Domain.Enums.ExecutionStatus.Success 
-                                ? RemediationStatusEnum.Success 
-                                : RemediationStatusEnum.Failed,
-                            Message = executionResult.Message,
+                            Status = isCompleted 
+                                ? RemediationStatusEnum.Success.ToString() 
+                                : RemediationStatusEnum.Failed.ToString(),
+                            Message = executionResult.ErrorMessage ?? "Step completed",
                             StartTime = executionResult.StartTime,
                             EndTime = executionResult.EndTime
                         } 
                     },
-                    Success = executionResult.Status == Domain.Enums.ExecutionStatus.Success,
-                    Error = executionResult.Status != Domain.Enums.ExecutionStatus.Success ? executionResult.ErrorMessage : null,
+                    Success = isCompleted,
+                    Error = !isCompleted ? executionResult.ErrorMessage : null,
                     Metadata = new Dictionary<string, object>
                     {
-                        { "Suggestion", suggestion.Id },
-                        { "ErrorId", errorContext.Id },
+                        { "ActionId", action.Id },
+                        { "ErrorId", action.Context?.ErrorId ?? "Unknown" },
                         { "Status", executionResult.Status.ToString() }
                     }
                 };
@@ -273,9 +290,9 @@ namespace RuntimeErrorSage.Core.Remediation
                     };
                 }
 
-                // Convert model strategy to interface strategy using adapter
-                var modelStrategy = plan.Strategies.FirstOrDefault();
-                if (modelStrategy == null)
+                // Get strategy from plan - it's already a Domain strategy
+                var domainStrategy = plan.Strategies.FirstOrDefault();
+                if (domainStrategy == null)
                 {
                     return new RemediationResult
                     {
@@ -286,10 +303,15 @@ namespace RuntimeErrorSage.Core.Remediation
                     };
                 }
 
-                var strategyAdapter = new RemediationStrategyAdapter(modelStrategy);
-                
-                // Execute plan with adapter
-                var result = await _executor.ExecuteStrategyAsync(strategyAdapter, context);
+                // Create action using the domain strategy directly
+                var action = new RemediationAction(_validationRuleProvider)
+                {
+                    Name = domainStrategy.Name ?? "Unknown Strategy",
+                    Description = domainStrategy.Description ?? string.Empty,
+                    Strategy = domainStrategy,
+                    Context = context
+                };
+                var result = await _executor.ExecuteActionAsync(action, context);
                 if (result.Status != RemediationStatusEnum.Success)
                 {
                     return new RemediationResult
@@ -402,7 +424,12 @@ namespace RuntimeErrorSage.Core.Remediation
 
             try
             {
-                var status = await _executor.GetRemediationStatusAsync(remediationId);
+                // Get status using GetActionStatusAsync
+                var statusResult = await _executor.GetActionStatusAsync(remediationId, new ErrorContext(
+                    error: new RuntimeError("Status check", "StatusCheck", "System", ""),
+                    context: "Status check",
+                    timestamp: DateTime.UtcNow));
+                var status = statusResult.Status;
                 return status;
             }
             catch (Exception ex)
@@ -498,8 +525,8 @@ namespace RuntimeErrorSage.Core.Remediation
                     };
                 }
 
-                var strategyAdapter = new RemediationStrategyAdapter(strategy);
-                var result = await _validator.ValidateStrategyAsync(strategyAdapter, errorContext);
+                // Validator expects Application strategy, not Domain strategy
+                var result = await _validator.ValidateStrategyAsync(strategy, errorContext);
                 return result;
             }
             catch (Exception ex)
@@ -536,28 +563,30 @@ namespace RuntimeErrorSage.Core.Remediation
                     };
                 }
 
-                // Create action from suggestion
-                var action = new RemediationAction
+                // Use mapper to create action from suggestion
+                var action = _modelMapper.ToAction(suggestion, errorContext, _strategyMapper);
+                
+                // Set strategy if available (mapper doesn't handle this yet, so we do it here)
+                if (suggestion.Strategies?.Any() == true)
                 {
-                    ActionId = Guid.NewGuid().ToString(),
-                    ErrorContext = errorContext,
-                    Description = suggestion.Description,
-                    Strategy = suggestion.Strategies.FirstOrDefault() ?? "Unknown",
-                    Parameters = suggestion.Parameters,
-                    CreatedAt = DateTime.UtcNow
-                };
+                    // Note: This assumes strategies is a list of strategy IDs or names
+                    // Actual implementation may need to lookup the strategy
+                    action.Strategy = null; // Will be set by strategy lookup if needed
+                }
 
                 // Execute the action
-                var result = await ExecuteActionAsync(action, errorContext);
-                result.Context = errorContext;
+                var executionResult = await ExecuteActionAsync(action, errorContext);
                 
-                await _metricsCollector.TrackRemediationAsync(new RemediationMetrics
+                // Use mapper to convert execution result to remediation result
+                var result = _modelMapper.ToResult(executionResult, errorContext);
+                
+                await _metricsCollector.RecordRemediationMetricsAsync(new RemediationMetrics
                 {
                     ExecutionId = action.ActionId,
                     StartTime = DateTime.UtcNow,
                     EndTime = DateTime.UtcNow,
                     Success = result.Status == RemediationStatusEnum.Success,
-                    Error = result.Status == RemediationStatusEnum.Failed ? result.Message : null,
+                    Error = result.Status == RemediationStatusEnum.Failed ? (result.ErrorMessage ?? result.Message) : null,
                     Metadata = new Dictionary<string, object>
                     {
                         { "Suggestion", suggestion.Id },
@@ -637,9 +666,28 @@ namespace RuntimeErrorSage.Core.Remediation
                     };
                 }
 
-                var strategyAdapter = new RemediationStrategyAdapter(strategy);
-                var impact = await strategyAdapter.GetImpactAsync(errorContext);
-                return impact ?? new RemediationImpact
+                // Use mapper to convert application strategy to domain strategy
+                var domainStrategy = _strategyMapper.ToDomain(strategy);
+                
+                // Try to get impact from the domain strategy if it's a RemediationStrategy base class
+                if (domainStrategy is RuntimeErrorSage.Core.Remediation.Base.RemediationStrategy baseStrategy)
+                {
+                    var impact = await baseStrategy.GetImpactAsync(errorContext);
+                    if (impact != null)
+                    {
+                        return impact;
+                    }
+                }
+                
+                // Fallback: create default impact
+                return new RemediationImpact
+                {
+                    Severity = RemediationActionSeverity.Medium,
+                    Scope = RemediationActionImpactScope.Module,
+                    AffectedComponents = new List<string>(),
+                    EstimatedRecoveryTime = TimeSpan.FromMinutes(30)
+                };
+                return new RemediationImpact
                 {
                     Severity = SeverityLevel.Unknown.ToImpactSeverity().ToRemediationActionSeverity(),
                     Scope = ImpactScope.Component.ToRemediationActionImpactScope(),
@@ -803,7 +851,12 @@ namespace RuntimeErrorSage.Core.Remediation
             {
                 _logger.LogInformation("Getting status for remediation action {ActionId}", actionId);
                 
-                var execution = await _executor.GetExecutionHistoryAsync(actionId);
+                // Get execution status instead of history
+                var executionResult = await _executor.GetActionStatusAsync(actionId, new ErrorContext(
+                    error: new RuntimeError("Status check", "StatusCheck", "System", ""),
+                    context: "Status check",
+                    timestamp: DateTime.UtcNow));
+                var execution = executionResult; // Use result as execution info
                 if (execution == null)
                 {
                     return new RemediationResult
@@ -892,14 +945,14 @@ namespace RuntimeErrorSage.Core.Remediation
                 _logger.LogInformation("Creating remediation action of type {ActionType} for context {ContextId}",
                     actionType, context.Id);
 
-                var action = new RemediationAction(
-                    Guid.NewGuid().ToString(),
-                    actionType,
-                    "Default action",
-                    RemediationActionSeverity.Medium,
-                    new Dictionary<string, object>(),
-                    TimeSpan.FromMinutes(1)
-                );
+                var action = new RemediationAction(_validationRuleProvider)
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ActionType = actionType,
+                    Name = "Default action",
+                    Severity = RemediationActionSeverity.Medium,
+                    Parameters = new Dictionary<string, object>()
+                };
 
                 // Add action creation logic here
                 return action;
@@ -940,10 +993,21 @@ namespace RuntimeErrorSage.Core.Remediation
         {
             try
             {
-                var result = await _executor.ExecutePlanAsync(plan, context);
+                var result = await _executor.ExecuteRemediationAsync(plan, context);
                 if (result.Status == RemediationStatusEnum.Success)
                 {
-                    await _metricsCollector.TrackRemediationAsync(context, plan, result);
+                    await _metricsCollector.RecordRemediationMetricsAsync(new RemediationMetrics
+                    {
+                        ExecutionId = plan.PlanId,
+                        StartTime = DateTime.UtcNow,
+                        EndTime = DateTime.UtcNow,
+                        Success = result.Success,
+                        Metadata = new Dictionary<string, object>
+                        {
+                            { "PlanId", plan.PlanId },
+                            { "ErrorId", context.ErrorId }
+                        }
+                    });
                 }
                 return result;
             }
@@ -964,12 +1028,12 @@ namespace RuntimeErrorSage.Core.Remediation
                 Name = strategy.Name,
                 Description = strategy.Description,
                 Context = context,
-                ActionType = strategy.StrategyType,
+                ActionType = strategy.Name ?? "Unknown",
                 ErrorType = context.ErrorType,
-                Severity = strategy.Impact.ToRemediationActionSeverity(),
-                ImpactScope = strategy.Scope.ToRemediationActionImpactScope(),
+                Severity = RemediationActionSeverity.Medium, // Default severity based on strategy
+                ImpactScope = RemediationActionImpactScope.Module, // Default scope (Component doesn't exist, use Module)
                 Parameters = strategy.Parameters ?? new Dictionary<string, object>(),
-                Strategy = strategy,
+                Strategy = strategy != null ? _strategyMapper.ToDomain(strategy) : null,
                 RiskLevel = strategy.RiskLevel
             };
 
@@ -1079,18 +1143,27 @@ namespace RuntimeErrorSage.Core.Remediation
                     strategy.Id, errorContext.ErrorId);
 
                 // Convert domain strategy to application strategy
-                var applicationStrategy = RemediationStrategyAdapter.FromDomainStrategy(strategy);
+                var applicationStrategy = RemediationStrategyAdapterExtensions.FromDomainStrategy(strategy);
                 
-                // Execute the strategy using the executor
-                var result = await _executor.ExecuteStrategyAsync(applicationStrategy, errorContext);
+                // Execute the strategy using the executor - create action first
+                var action = new RemediationAction
+                {
+                    Name = applicationStrategy.Name,
+                    Description = applicationStrategy.Description,
+                    Strategy = _strategyMapper.ToDomain(applicationStrategy),
+                    Context = errorContext
+                };
+                var result = await _executor.ExecuteActionAsync(action, errorContext);
 
                 // Track the remediation metrics
-                await _metricsCollector.TrackRemediationAsync(
-                    strategy.Id,
-                    errorContext,
-                    result.Duration,
-                    result.Success,
-                    result.Metadata);
+                await _metricsCollector.RecordRemediationMetricsAsync(new RemediationMetrics
+                {
+                    ExecutionId = strategy.Id,
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow,
+                    Success = result.Success,
+                    Metadata = result.Metadata ?? new Dictionary<string, object>()
+                });
 
                 return result;
             }

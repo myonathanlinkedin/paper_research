@@ -453,7 +453,7 @@ public class ErrorAnalyzer : IErrorAnalyzer
             PatternMetadata = new Dictionary<string, object>
             {
                 { "LLM_Explanation", llmExplanation },
-                { "LLM_RootCauses", rootCause }
+                { "LLM_RootCauses", rootCause ?? string.Empty }
             },
             IsActive = true,
             Notes = rootCause ?? ""
@@ -504,6 +504,75 @@ public class ErrorAnalyzer : IErrorAnalyzer
         llmAnalysis.Metadata["EnrichmentTimestamp"] = DateTime.UtcNow;
 
         return llmAnalysis;
+    }
+
+    /// <summary>
+    /// Analyzes remediation options for an error
+    /// </summary>
+    /// <param name="errorContext">The error context</param>
+    /// <returns>The remediation analysis</returns>
+    public async Task<RemediationAnalysis> AnalyzeRemediationAsync(ErrorContext errorContext)
+    {
+        if (errorContext == null)
+            throw new ArgumentNullException(nameof(errorContext));
+
+        // Use error context analyzer to get remediation analysis
+        var llmAnalysis = await _mcpClient.AnalyzeContextAsync(errorContext);
+        
+        // Convert LLMAnalysisResult to RemediationAnalysis
+        var suggestedActions = llmAnalysis.SuggestedActions ?? new List<RemediationAction>();
+        
+        return new RemediationAnalysis
+        {
+            ErrorContext = errorContext,
+            SuggestedActions = suggestedActions,
+            Confidence = llmAnalysis.Confidence,
+            Timestamp = DateTime.UtcNow,
+            AnalysisId = Guid.NewGuid().ToString()
+        };
+    }
+
+    /// <summary>
+    /// Analyzes the impact of an error
+    /// </summary>
+    /// <param name="errorContext">The error context</param>
+    /// <returns>The impact analysis result</returns>
+    public async Task<RuntimeErrorSage.Domain.Models.Graph.ImpactAnalysisResult> AnalyzeImpactAsync(ErrorContext errorContext)
+    {
+        if (errorContext == null)
+            throw new ArgumentNullException(nameof(errorContext));
+
+        // Analyze impact using graph analysis
+        var graphAnalysis = await AnalyzeGraphAsync(errorContext);
+        
+        return new RuntimeErrorSage.Domain.Models.Graph.ImpactAnalysisResult
+        {
+            AffectedComponents = graphAnalysis.AffectedComponents ?? new List<string>(),
+            ImpactLevel = RuntimeErrorSage.Domain.Enums.ImpactLevel.Medium,
+            EstimatedRecoveryTime = TimeSpan.FromMinutes(5),
+            Timestamp = DateTime.UtcNow
+        };
+    }
+
+    /// <summary>
+    /// Analyzes the dependency graph for an error
+    /// </summary>
+    /// <param name="errorContext">The error context</param>
+    /// <returns>The graph analysis result</returns>
+    public async Task<RuntimeErrorSage.Domain.Models.Graph.GraphAnalysisResult> AnalyzeGraphAsync(ErrorContext errorContext)
+    {
+        if (errorContext == null)
+            throw new ArgumentNullException(nameof(errorContext));
+
+        // Use MCP client to analyze graph
+        var analysis = await _mcpClient.AnalyzeContextAsync(errorContext);
+        
+        return new RuntimeErrorSage.Domain.Models.Graph.GraphAnalysisResult
+        {
+            AffectedComponents = analysis.SuggestedActions?.Select(a => a.Name).ToList() ?? new List<string>(),
+            DependencyGraph = errorContext.DependencyGraph,
+            Timestamp = DateTime.UtcNow
+        };
     }
 } 
 

@@ -287,6 +287,25 @@ public class RedisPatternStorage : IPatternStorage
         }
     }
 
+    /// <summary>
+    /// Validates the connection to Redis storage
+    /// </summary>
+    /// <returns>True if the connection is valid, false otherwise</returns>
+    public async Task<bool> ValidateConnectionAsync()
+    {
+        try
+        {
+            var db = _redis.GetDatabase();
+            await db.PingAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating Redis connection");
+            return false;
+        }
+    }
+
     public void Dispose()
     {
         Dispose(true);

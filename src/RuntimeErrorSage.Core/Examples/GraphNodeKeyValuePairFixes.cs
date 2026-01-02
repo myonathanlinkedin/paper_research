@@ -46,38 +46,23 @@ namespace RuntimeErrorSage.Core.Examples
         }
 
         /// <summary>
-        /// Shows correct ways to access edge properties through KeyValuePair.
+        /// Shows correct ways to access edge properties.
         /// </summary>
         /// <param name="graph">The dependency graph.</param>
         public void ShowEdgeDictionaryAccess(DependencyGraph graph)
         {
-            // CORRECT: Use Value method for access
-            foreach (var edgeEntry in graph.Edges)
+            // CORRECT: graph.Edges is List<DependencyEdge>, so access directly
+            foreach (var edge in graph.Edges)
             {
-                var edge = edgeEntry.Value();
-                
-                // Get edge data using type-specific properties
-                if (edge is DependencyEdge dependencyEdge)
-                {
-                    string sourceId = dependencyEdge.SourceId;
-                    string targetId = dependencyEdge.TargetId;
-                    double weight = dependencyEdge.Weight;
-                    Console.WriteLine($"Dependency edge from {sourceId} to {targetId} with weight {weight}");
-                }
-                else
-                {
-                    // Use extension methods for other edge types
-                    string sourceId = edge.GetSourceId();
-                    string targetId = edge.GetTargetId();
-                    Console.WriteLine($"Edge from {sourceId} to {targetId}");
-                }
+                string sourceId = edge.SourceId;
+                string targetId = edge.TargetId;
+                double weight = edge.Weight;
+                Console.WriteLine($"Dependency edge from {sourceId} to {targetId} with weight {weight}");
             }
             
             // Another correct way: use LINQ projection
             var dependencies = graph.Edges
-                .Select(e => e.Value())
-                .Where(e => e is DependencyEdge)
-                .Cast<DependencyEdge>()
+                .Where(e => e != null)
                 .ToList();
             
             Console.WriteLine($"Found {dependencies.Count} dependency edges");

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Models.Error;
 
-namespace RuntimeErrorSage.Application.Services.Interfaces;
+namespace RuntimeErrorSage.Application.Interfaces;
 
 /// <summary>
 /// Service for enriching error contexts with additional runtime information.

@@ -5,7 +5,6 @@ using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Interfaces;
-using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Application.Interfaces
 {

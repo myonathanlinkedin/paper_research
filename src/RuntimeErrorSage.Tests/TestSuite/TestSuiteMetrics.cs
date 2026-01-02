@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Metrics;
+using RuntimeErrorSage.Tests.TestSuite.Models;
+using PerformanceMetric = RuntimeErrorSage.Tests.TestSuite.Models.PerformanceMetric;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
 

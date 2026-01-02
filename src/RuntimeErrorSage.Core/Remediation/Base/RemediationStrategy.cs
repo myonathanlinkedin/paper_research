@@ -73,7 +73,7 @@ public abstract class RemediationStrategy : RuntimeErrorSage.Application.Interfa
     public DateTime CreatedAt { get; protected set; }
 
     /// <inheritdoc/>
-    public RemediationStatusEnum Status { get; protected set; }
+    public RemediationStatusEnum Status { get; set; }
 
     /// <inheritdoc/>
     public virtual string Version { get; } = "1.0.0";
@@ -249,6 +249,12 @@ public abstract class RemediationStrategy : RuntimeErrorSage.Application.Interfa
     }
 
     /// <inheritdoc/>
+    public virtual Task<RemediationPriority> GetPriorityAsync()
+    {
+        return Task.FromResult(Priority);
+    }
+
+    /// <inheritdoc/>
     public virtual Task<RiskAssessmentModel> GetRiskAsync(ErrorContext context)
     {
         // Default implementation returns a medium risk
@@ -398,6 +404,13 @@ public static class RemediationStrategyExtensions
         public List<RemediationAction> Actions => _strategy.Actions;
         
         public DateTime CreatedAt => _strategy.CreatedAt;
+        
+        public RemediationStatusEnum Status { get => _strategy.Status; set => _strategy.Status = value; }
+        
+        public Task<RemediationPriority> GetPriorityAsync()
+        {
+            return _strategy.GetPriorityAsync();
+        }
         
         public bool AppliesTo(ErrorContext context)
         {

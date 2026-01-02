@@ -42,7 +42,7 @@ namespace RuntimeErrorSage.Contracts.Interfaces
         /// <summary>
         /// Gets the strategy parameters.
         /// </summary>
-        Dictionary<string, object> Parameters { get; set; }
+        IReadOnlyDictionary<string, object> Parameters { get; }
 
         /// <summary>
         /// Gets the supported error types.

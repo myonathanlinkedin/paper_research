@@ -1,5 +1,6 @@
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Tests.TestSuite.Models;
+using System.Net.Sockets;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
 

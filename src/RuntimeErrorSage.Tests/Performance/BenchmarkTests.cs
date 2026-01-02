@@ -1,10 +1,16 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
+using RuntimeErrorSage.Application.LLM.Interfaces;
+using RuntimeErrorSage.Application.LLM.Options;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.LLM;
-using RuntimeErrorSage.Application.MCP;
 using RuntimeErrorSage.Application.Analysis;
+using RuntimeErrorSage.Core.MCP;
+using RuntimeErrorSage.Domain.Models.Error;
 
 namespace RuntimeErrorSage.Tests.Performance;
 
@@ -28,9 +34,17 @@ public class BenchmarkTests
         _analyzerLoggerMock = new Mock<ILogger<ErrorAnalyzer>>();
         _httpClientMock = new Mock<HttpClient>();
 
-        _llmClient = new LMStudioClient(_httpClientMock.Object, _llmLoggerMock.Object);
-        _mcpClient = new MCPClient(_mcpLoggerMock.Object);
-        _errorAnalyzer = new ErrorAnalyzer(_analyzerLoggerMock.Object, _llmClient, _mcpClient);
+        var optionsMock = new Mock<IOptions<LMStudioOptions>>();
+        optionsMock.Setup(x => x.Value).Returns(new LMStudioOptions { BaseUrl = "http://localhost:1234" });
+        _llmClient = new LMStudioClient(_httpClientMock.Object, optionsMock.Object, _llmLoggerMock.Object);
+        var coreOptions = new RuntimeErrorSage.Core.MCP.MCPClientOptions();
+        var coreOptionsMock = new Mock<IOptions<RuntimeErrorSage.Core.MCP.MCPClientOptions>>();
+        coreOptionsMock.Setup(x => x.Value).Returns(coreOptions);
+        var storageMock = new Mock<RuntimeErrorSage.Application.Storage.Interfaces.IPatternStorage>();
+        var errorAnalyzerMock = new Mock<RuntimeErrorSage.Application.Analysis.Interfaces.IErrorAnalyzer>();
+        _mcpClient = new MCPClient(_mcpLoggerMock.Object, coreOptionsMock.Object, storageMock.Object, errorAnalyzerMock.Object);
+        var llmServiceMock = new Mock<RuntimeErrorSage.Application.LLM.ILLMService>();
+        _errorAnalyzer = new ErrorAnalyzer(_analyzerLoggerMock.Object, _llmClient, _mcpClient, llmServiceMock.Object);
 
         _testContext = new ErrorContext(
             error: new RuntimeError(
@@ -60,7 +74,7 @@ public class BenchmarkTests
     public async Task RemediationGenerationBenchmark()
     {
         var analysis = await _errorAnalyzer.AnalyzeErrorAsync(_testException, _testContext);
-        await _errorAnalyzer.GenerateRemediationAsync(analysis);
+        await _errorAnalyzer.AnalyzeRemediationAsync(_testContext);
     }
 
     [Benchmark]
@@ -81,7 +95,7 @@ public class BenchmarkTests
         // Simulate end-to-end error handling
         var analysis = await _errorAnalyzer.AnalyzeErrorAsync(_testException, _testContext);
         await _mcpClient.PublishContextAsync(_testContext);
-        var remediation = await _errorAnalyzer.GenerateRemediationAsync(analysis);
+        var remediation = await _errorAnalyzer.AnalyzeRemediationAsync(_testContext);
         await _mcpClient.GetErrorPatternsAsync(_testContext.ServiceName);
     }
 }
@@ -106,9 +120,17 @@ public class StressTests
         _analyzerLoggerMock = new Mock<ILogger<ErrorAnalyzer>>();
         _httpClientMock = new Mock<HttpClient>();
 
-        _llmClient = new LMStudioClient(_httpClientMock.Object, _llmLoggerMock.Object);
-        _mcpClient = new MCPClient(_mcpLoggerMock.Object);
-        _errorAnalyzer = new ErrorAnalyzer(_analyzerLoggerMock.Object, _llmClient, _mcpClient);
+        var optionsMock = new Mock<IOptions<LMStudioOptions>>();
+        optionsMock.Setup(x => x.Value).Returns(new LMStudioOptions { BaseUrl = "http://localhost:1234" });
+        _llmClient = new LMStudioClient(_httpClientMock.Object, optionsMock.Object, _llmLoggerMock.Object);
+        var coreOptions = new RuntimeErrorSage.Core.MCP.MCPClientOptions();
+        var coreOptionsMock = new Mock<IOptions<RuntimeErrorSage.Core.MCP.MCPClientOptions>>();
+        coreOptionsMock.Setup(x => x.Value).Returns(coreOptions);
+        var storageMock = new Mock<RuntimeErrorSage.Application.Storage.Interfaces.IPatternStorage>();
+        var errorAnalyzerMock = new Mock<RuntimeErrorSage.Application.Analysis.Interfaces.IErrorAnalyzer>();
+        _mcpClient = new MCPClient(_mcpLoggerMock.Object, coreOptionsMock.Object, storageMock.Object, errorAnalyzerMock.Object);
+        var llmServiceMock = new Mock<RuntimeErrorSage.Application.LLM.ILLMService>();
+        _errorAnalyzer = new ErrorAnalyzer(_analyzerLoggerMock.Object, _llmClient, _mcpClient, llmServiceMock.Object);
 
         // Generate test data
         _testContexts = new List<ErrorContext>();
@@ -185,7 +207,7 @@ public class StressTests
             {
                 var analysis = await _errorAnalyzer.AnalyzeErrorAsync(_testExceptions[i], _testContexts[i]);
                 await _mcpClient.PublishContextAsync(_testContexts[i]);
-                var remediation = await _errorAnalyzer.GenerateRemediationAsync(analysis);
+                var remediation = await _errorAnalyzer.AnalyzeRemediationAsync(_testContexts[i]);
                 await _mcpClient.GetErrorPatternsAsync(_testContexts[i].ServiceName);
             }));
         }
@@ -197,11 +219,11 @@ public static class BenchmarkRunner
 {
     public static void RunBenchmarks()
     {
-        var summary = BenchmarkRunner.Run<BenchmarkTests>();
+        var summary = BenchmarkDotNet.Running.BenchmarkRunner.Run<BenchmarkTests>();
         Console.WriteLine("Performance Benchmarks:");
         Console.WriteLine(summary);
 
-        var stressSummary = BenchmarkRunner.Run<StressTests>();
+        var stressSummary = BenchmarkDotNet.Running.BenchmarkRunner.Run<StressTests>();
         Console.WriteLine("\nStress Test Results:");
         Console.WriteLine(stressSummary);
     }

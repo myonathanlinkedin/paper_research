@@ -8,7 +8,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
+using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Application.LLM;
+using RuntimeErrorSage.Application.LLM.Options;
+using RuntimeErrorSage.Application.Options;
+using RuntimeErrorSage.Application.Exceptions;
+using RuntimeErrorSage.Domain.Models.LLM;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Tests.LLM
 {
@@ -74,7 +80,7 @@ namespace RuntimeErrorSage.Tests.LLM
                 {
                     Data = new List<ModelInfo>
                     {
-                        new ModelInfo { Id = "test-model", Status = "loading" }
+                        new ModelInfo { Id = "test-model", Status = ModelStatus.Loading }
                     }
                 }));
 
@@ -94,7 +100,7 @@ namespace RuntimeErrorSage.Tests.LLM
                 {
                     Data = new List<ModelInfo>
                     {
-                        new ModelInfo { Id = "test-model", Status = "ready" }
+                        new ModelInfo { Id = "test-model", Status = ModelStatus.Available }
                     }
                 }));
 
@@ -116,7 +122,7 @@ namespace RuntimeErrorSage.Tests.LLM
                 {
                     Data = new List<ModelInfo>
                     {
-                        new ModelInfo { Id = "test-model", Status = "loading" }
+                        new ModelInfo { Id = "test-model", Status = ModelStatus.Loading }
                     }
                 }));
 

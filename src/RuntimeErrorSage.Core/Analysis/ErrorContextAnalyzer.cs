@@ -1,12 +1,15 @@
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Domain.Models.Error;
-using RuntimeErrorSage.Domain.Models.Analysis;
+using RuntimeErrorSage.Domain.Models.Analysis; // For GraphAnalysisResult, etc.
+using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Domain.Models.Graph;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Graph.Factories;
 using RuntimeErrorSage.Domain.Models.Error.Factories;
@@ -90,8 +93,8 @@ namespace RuntimeErrorSage.Core.Analysis
                 var rootCause = await GetRootCauseAsync(context);
 
                 // Create remediation suggestions based on analysis
-                var suggestions = _collectionFactory.CreateList<Domain.Models.Remediation.RemediationSuggestion>();
-                suggestions.Add(new Domain.Models.Remediation.RemediationSuggestion
+                var suggestions = _collectionFactory.CreateList<RemediationSuggestion>();
+                suggestions.Add(new RemediationSuggestion
                 {
                     Title = "Restart affected component",
                     Description = "Restart the component where the error occurred.",
@@ -101,17 +104,36 @@ namespace RuntimeErrorSage.Core.Analysis
                     ExpectedOutcome = "Component restored to working state."
                 });
 
-                // Create analysis result
+                // Convert suggestions to actions
+                var suggestedActions = suggestions.Select(s => new RemediationAction
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = s.Title ?? "Remediation Action",
+                    Description = s.Description ?? string.Empty,
+                    ActionType = s.StrategyName ?? "Unknown",
+                    Priority = s.Priority,
+                    Status = RemediationActionStatus.Pending.ToRemediationStatusEnum()
+                }).ToList();
+
+                // Create analysis result using Remediation.RemediationAnalysis
                 var analysis = new RemediationAnalysis
                 {
-                    Context = context,
-                    RelatedErrors = relatedErrors,
-                    DependencyGraph = dependencyGraph,
-                    RootCause = rootCause,
-                    Suggestions = suggestions,
-                    ConfidenceLevel = 0.7,
-                    CorrelationId = context.CorrelationId
+                    ErrorContext = context,
+                    SuggestedActions = suggestedActions,
+                    Confidence = 0.7,
+                    Timestamp = DateTime.UtcNow,
+                    AnalysisId = Guid.NewGuid().ToString()
                 };
+
+                // Store additional data in metadata
+                if (analysis.Metadata == null)
+                {
+                    analysis.Metadata = new Dictionary<string, object>();
+                }
+                analysis.Metadata["CorrelationId"] = context.CorrelationId;
+                analysis.Metadata["RelatedErrorsCount"] = relatedErrors?.Count ?? 0;
+                analysis.Metadata["HasDependencyGraph"] = dependencyGraph != null;
+                analysis.Metadata["HasRootCause"] = rootCause != null;
 
                 return analysis;
             }

@@ -2,8 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
-using RuntimeErrorSage.Core.Models.Error;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Examples.Models;
 
 namespace RuntimeErrorSage.Examples.Controllers
@@ -33,12 +33,12 @@ namespace RuntimeErrorSage.Examples.Controllers
                     context.ServiceName,
                     context.CorrelationId);
 
-                var result = await _errorAnalyzer.AnalyzeErrorAsync(context);
+                var result = await _errorAnalyzer.AnalyzeContextAsync(context);
 
                 _logger.LogInformation(
-                    "Error analysis completed with confidence {Confidence} and accuracy {Accuracy}",
+                    "Error analysis completed with confidence {Confidence} for error type {ErrorType}",
                     result.Confidence,
-                    result.Accuracy);
+                    result.ErrorType);
 
                 return Ok(result);
             }
@@ -54,7 +54,7 @@ namespace RuntimeErrorSage.Examples.Controllers
         }
 
         [HttpPost("analyze-database")]
-        public async Task<IActionResult> AnalyzeDatabaseError([FromBody] DatabaseErrorContext context)
+        public async Task<IActionResult> AnalyzeDatabaseError([FromBody] Models.DatabaseErrorContext context)
         {
             try
             {
@@ -75,7 +75,7 @@ namespace RuntimeErrorSage.Examples.Controllers
                 errorContext.AddMetadata("Database", context.DatabaseName);
                 errorContext.AddMetadata("Query", context.Query);
 
-                var result = await _errorAnalyzer.AnalyzeErrorAsync(errorContext);
+                var result = await _errorAnalyzer.AnalyzeContextAsync(errorContext);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -90,7 +90,7 @@ namespace RuntimeErrorSage.Examples.Controllers
         }
 
         [HttpPost("analyze-http")]
-        public async Task<IActionResult> AnalyzeHttpError([FromBody] HttpErrorContext context)
+        public async Task<IActionResult> AnalyzeHttpError([FromBody] Models.HttpErrorContext context)
         {
             try
             {
@@ -112,7 +112,7 @@ namespace RuntimeErrorSage.Examples.Controllers
                 errorContext.AddMetadata("StatusCode", context.StatusCode);
                 errorContext.AddMetadata("ResponseContent", context.ResponseBody);
 
-                var result = await _errorAnalyzer.AnalyzeErrorAsync(errorContext);
+                var result = await _errorAnalyzer.AnalyzeContextAsync(errorContext);
                 return Ok(result);
             }
             catch (Exception ex)

@@ -12,8 +12,9 @@ using RuntimeErrorSage.Application.MCP.Interfaces;
 using RuntimeErrorSage.Application.Runtime.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Extensions;
+using RuntimeErrorSage.Application.Middleware;
 
-namespace RuntimeErrorSage.Application.Middleware;
+namespace RuntimeErrorSage.Core.Middleware;
 
 /// <summary>
 /// Middleware for handling errors in the application.

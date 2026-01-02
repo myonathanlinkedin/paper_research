@@ -1,12 +1,21 @@
 using Xunit;
 using FluentAssertions;
-using RuntimeErrorSage.Application.Analysis;
-using RuntimeErrorSage.Application.Remediation;
-using RuntimeErrorSage.Application.MCP;
-using RuntimeErrorSage.Application.LLM;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Application.LLM.Interfaces;
+using RuntimeErrorSage.Application.Exceptions;
+using RuntimeErrorSage.Infrastructure.Services;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Enums;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
+using RuntimeErrorSage.Domain.Models.LLM;
+using RuntimeErrorSage.Core.Extensions;
 using Moq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using RuntimeErrorSage.Tests.Helpers;
 
 namespace RuntimeErrorSage.Tests.Scenarios;
@@ -23,10 +32,10 @@ public class LLMIntegrationTests
         _mcpClientMock = TestHelper.CreateMCPClientMock();
         _remediationExecutorMock = TestHelper.CreateRemediationExecutorMock();
         _llmClientMock = new Mock<IQwenLLMClient>();
-        _service = new RuntimeErrorSageService(
-            _mcpClientMock.Object, 
-            _remediationExecutorMock.Object,
-            llmClient: _llmClientMock.Object);
+        _service = TestHelper.CreateRuntimeErrorSageService(
+            mcpClientMock: _mcpClientMock,
+            remediationExecutorMock: _remediationExecutorMock,
+            llmClientMock: _llmClientMock);
     }
 
     [Fact]
@@ -42,59 +51,45 @@ public class LLMIntegrationTests
                 { "ConnectionString", "Server=localhost;Database=testdb" },
                 { "RetryCount", 3 },
                 { "Timeout", 30000 }
-            });
+            }.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString() ?? string.Empty));
 
-        var llmResponse = new LLMResponse
+        var llmAnalysisResult = new LLMAnalysisResult
         {
-            Analysis = new ErrorAnalysis
+            RootCause = "Network connectivity issues between application and database server",
+            Confidence = 0.85,
+            SuggestedActions = new List<RemediationAction>
             {
-                RootCause = "Network connectivity issues between application and database server",
-                Confidence = 0.85,
-                SuggestedActions = new[]
+                new RemediationAction
                 {
-                    "Check network connectivity",
-                    "Verify database server is running",
-                    "Validate connection string",
-                    "Implement connection retry with exponential backoff"
+                    Name = "Check network connectivity",
+                    Description = "Check network connectivity"
                 },
-                ContextualInsights = new Dictionary<string, string>
+                new RemediationAction
                 {
-                    { "NetworkLatency", "High latency detected in network path" },
-                    { "ServerLoad", "Database server showing high CPU usage" },
-                    { "ConnectionPool", "Connection pool near capacity" }
+                    Name = "Verify database server is running",
+                    Description = "Verify database server is running"
+                },
+                new RemediationAction
+                {
+                    Name = "Validate connection string",
+                    Description = "Validate connection string"
+                },
+                new RemediationAction
+                {
+                    Name = "Implement connection retry with exponential backoff",
+                    Description = "Implement connection retry with exponential backoff"
                 }
             },
-            RemediationSuggestions = new[]
+            ContextualInsights = new Dictionary<string, string>
             {
-                new RemediationSuggestion
-                {
-                    Action = "ImplementCircuitBreaker",
-                    Priority = 1,
-                    Description = "Add circuit breaker pattern to prevent cascading failures",
-                    ImplementationSteps = new[]
-                    {
-                        "Configure circuit breaker thresholds",
-                        "Add fallback mechanism",
-                        "Implement health checks"
-                    }
-                },
-                new RemediationSuggestion
-                {
-                    Action = "OptimizeConnectionPool",
-                    Priority = 2,
-                    Description = "Optimize database connection pool settings",
-                    ImplementationSteps = new[]
-                    {
-                        "Adjust pool size based on load",
-                        "Implement connection timeout",
-                        "Add connection validation"
-                    }
-                }
+                { "NetworkLatency", "High latency detected in network path" },
+                { "ServerLoad", "Database server showing high CPU usage" },
+                { "ConnectionPool", "Connection pool near capacity" }
             }
         };
 
         _llmClientMock.Setup(x => x.AnalyzeErrorAsync(It.IsAny<ErrorContext>()))
-            .ReturnsAsync(llmResponse);
+            .ReturnsAsync(llmAnalysisResult);
 
         // Act
         var result = await _service.AnalyzeErrorAsync(errorContext);
@@ -128,7 +123,7 @@ public class LLMIntegrationTests
                 { "Timeout", 30000 },
                 { "Model", "Qwen-2.5-7B-Instruct-1M" },
                 { "RequestId", "req-123456" }
-            });
+            }.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString() ?? string.Empty));
 
         _llmClientMock.Setup(x => x.AnalyzeErrorAsync(It.IsAny<ErrorContext>()))
             .ThrowsAsync(new LLMTimeoutException("LLM analysis timed out after 30 seconds"));
@@ -160,7 +155,7 @@ public class LLMIntegrationTests
                 { "Model", "Qwen-2.5-7B-Instruct-1M" },
                 { "RequestId", "req-123456" },
                 { "ErrorDetails", "Model inference failed" }
-            });
+            }.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString() ?? string.Empty));
 
         _llmClientMock.Setup(x => x.AnalyzeErrorAsync(It.IsAny<ErrorContext>()))
             .ThrowsAsync(new LLMException("Model inference failed"));
@@ -199,73 +194,51 @@ public class LLMIntegrationTests
                         { "ErrorRate", 0.15 }
                     }
                 }
-            });
+            }.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString() ?? string.Empty));
 
-        var llmResponse = new LLMResponse
+        var llmAnalysisResult = new LLMAnalysisResult
         {
-            Analysis = new ErrorAnalysis
+            RootCause = "Database connection pool exhaustion leading to cascading service failures",
+            Confidence = 0.92,
+            SuggestedActions = new List<RemediationAction>
             {
-                RootCause = "Database connection pool exhaustion leading to cascading service failures",
-                Confidence = 0.92,
-                SuggestedActions = new[]
+                new RemediationAction
                 {
-                    "Implement circuit breaker pattern",
-                    "Optimize database connection pool",
-                    "Add service isolation",
-                    "Implement graceful degradation",
-                    "Add monitoring and alerting"
+                    Name = "Implement circuit breaker pattern",
+                    Description = "Implement circuit breaker pattern"
                 },
-                ContextualInsights = new Dictionary<string, string>
+                new RemediationAction
                 {
-                    { "SystemLoad", "High system load detected" },
-                    { "ResourceContention", "Database connection pool exhausted" },
-                    { "ServiceDependencies", "Tight coupling between services" },
-                    { "ErrorPropagation", "Errors cascading through service chain" }
+                    Name = "Optimize database connection pool",
+                    Description = "Optimize database connection pool"
+                },
+                new RemediationAction
+                {
+                    Name = "Add service isolation",
+                    Description = "Add service isolation"
+                },
+                new RemediationAction
+                {
+                    Name = "Implement graceful degradation",
+                    Description = "Implement graceful degradation"
+                },
+                new RemediationAction
+                {
+                    Name = "Add monitoring and alerting",
+                    Description = "Add monitoring and alerting"
                 }
             },
-            RemediationSuggestions = new[]
+            ContextualInsights = new Dictionary<string, string>
             {
-                new RemediationSuggestion
-                {
-                    Action = "ImplementCircuitBreaker",
-                    Priority = 1,
-                    Description = "Add circuit breaker to prevent cascading failures",
-                    ImplementationSteps = new[]
-                    {
-                        "Configure circuit breaker thresholds",
-                        "Add fallback mechanisms",
-                        "Implement health checks"
-                    }
-                },
-                new RemediationSuggestion
-                {
-                    Action = "OptimizeConnectionPool",
-                    Priority = 2,
-                    Description = "Optimize database connection pool settings",
-                    ImplementationSteps = new[]
-                    {
-                        "Adjust pool size",
-                        "Add connection timeout",
-                        "Implement connection validation"
-                    }
-                },
-                new RemediationSuggestion
-                {
-                    Action = "ServiceIsolation",
-                    Priority = 3,
-                    Description = "Implement service isolation patterns",
-                    ImplementationSteps = new[]
-                    {
-                        "Add bulkhead pattern",
-                        "Implement timeouts",
-                        "Add retry policies"
-                    }
-                }
+                { "SystemLoad", "High system load detected" },
+                { "ResourceContention", "Database connection pool exhausted" },
+                { "ServiceDependencies", "Tight coupling between services" },
+                { "ErrorPropagation", "Errors cascading through service chain" }
             }
         };
 
         _llmClientMock.Setup(x => x.AnalyzeErrorAsync(It.IsAny<ErrorContext>()))
-            .ReturnsAsync(llmResponse);
+            .ReturnsAsync(llmAnalysisResult);
 
         // Act
         var result = await _service.AnalyzeErrorAsync(errorContext);

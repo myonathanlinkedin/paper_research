@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Domain.Models.LLM
 {
@@ -35,5 +36,15 @@ namespace RuntimeErrorSage.Domain.Models.LLM
         public string Response { get; set; } = string.Empty;
         public bool IsSuccessful { get; set; }
         public string ErrorMessage { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the remediation suggestions from the LLM response.
+        /// </summary>
+        public List<RemediationSuggestion> RemediationSuggestions { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the analysis from the LLM response.
+        /// </summary>
+        public LLMAnalysisResult Analysis { get; set; }
     }
 } 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Domain.Models.Graph;
 
@@ -48,4 +49,19 @@ public class GraphAnalysis
     /// Gets or sets the metrics associated with the analysis.
     /// </summary>
     public Dictionary<string, double> Metrics { get; set; } = new Dictionary<string, double>();
+
+    /// <summary>
+    /// Gets or sets the list of nodes in the graph.
+    /// </summary>
+    public List<GraphNode> Nodes { get; set; } = new List<GraphNode>();
+
+    /// <summary>
+    /// Gets or sets the list of edges in the graph.
+    /// </summary>
+    public List<GraphEdge> Edges { get; set; } = new List<GraphEdge>();
+
+    /// <summary>
+    /// Gets or sets the impact analysis.
+    /// </summary>
+    public ImpactAnalysis ImpactAnalysis { get; set; }
 } 

@@ -1,9 +1,17 @@
 using Xunit;
 using FluentAssertions;
-using RuntimeErrorSage.Application.Analysis;
-using RuntimeErrorSage.Application.Remediation;
-using RuntimeErrorSage.Application.MCP;
-using RuntimeErrorSage.Application.Validation;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Application.Validation.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Application.Exceptions;
+using RuntimeErrorSage.Infrastructure.Services;
+using RuntimeErrorSage.Application.Runtime.Interfaces;
+using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 using Moq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -23,10 +31,10 @@ public class ValidationRegistryTests
         _mcpClientMock = TestHelper.CreateMCPClientMock();
         _remediationExecutorMock = TestHelper.CreateRemediationExecutorMock();
         _validationRegistryMock = new Mock<IValidationRegistry>();
-        _service = new RuntimeErrorSageService(
-            _mcpClientMock.Object, 
-            _remediationExecutorMock.Object,
-            validationRegistry: _validationRegistryMock.Object);
+        _service = TestHelper.CreateRuntimeErrorSageService(
+            mcpClientMock: _mcpClientMock,
+            remediationExecutorMock: _remediationExecutorMock,
+            validationRegistryMock: _validationRegistryMock);
     }
 
     [Fact]
@@ -37,24 +45,21 @@ public class ValidationRegistryTests
             "DatabaseConnectionError",
             "Failed to connect to database",
             "Database",
-            new Dictionary<string, object>
+            new Dictionary<string, string>
             {
                 { "ConnectionString", "Server=localhost;Database=testdb" },
-                { "RetryCount", 3 },
-                { "Timeout", 30000 }
+                { "RetryCount", "3" },
+                { "Timeout", "30000" }
             });
 
         var validationResult = new ValidationResult
         {
             IsValid = true,
-            Messages = new List<string> { "Context validation successful" },
-            Metadata = new Dictionary<string, object>
-            {
-                { "ValidationTime", 100 },
-                { "ContextSize", 1024 },
-                { "RequiredFields", new[] { "ErrorType", "ErrorMessage", "Source", "Timestamp" } }
-            }
+            Messages = new List<string> { "Context validation successful" }
         };
+        validationResult.AddMetadata("ValidationTime", 100);
+        validationResult.AddMetadata("ContextSize", 1024);
+        validationResult.AddMetadata("RequiredFields", new[] { "ErrorType", "ErrorMessage", "Source", "Timestamp" });
 
         _validationRegistryMock.Setup(x => x.ValidateContextAsync(It.IsAny<ErrorContext>()))
             .ReturnsAsync(validationResult);
@@ -81,22 +86,19 @@ public class ValidationRegistryTests
             "InvalidErrorContext",
             "Missing required fields",
             "Validation",
-            new Dictionary<string, object>
+            new Dictionary<string, string>
             {
-                { "MissingFields", new[] { "Timestamp", "Source" } }
+                { "MissingFields", "Timestamp,Source" }
             });
 
         var validationResult = new ValidationResult
         {
             IsValid = false,
-            Messages = new List<string> { "Context validation failed: Missing required fields" },
-            Metadata = new Dictionary<string, object>
-            {
-                { "MissingFields", new[] { "Timestamp", "Source" } },
-                { "ValidationTime", 100 },
-                { "ContextSize", 512 }
-            }
+            Messages = new List<string> { "Context validation failed: Missing required fields" }
         };
+        validationResult.AddMetadata("MissingFields", new[] { "Timestamp", "Source" });
+        validationResult.AddMetadata("ValidationTime", 100);
+        validationResult.AddMetadata("ContextSize", 512);
 
         _validationRegistryMock.Setup(x => x.ValidateContextAsync(It.IsAny<ErrorContext>()))
             .ReturnsAsync(validationResult);
@@ -125,10 +127,10 @@ public class ValidationRegistryTests
             "ValidationTimeout",
             "Context validation timed out",
             "Validation",
-            new Dictionary<string, object>
+            new Dictionary<string, string>
             {
-                { "Timeout", 30000 },
-                { "RetryCount", 3 }
+                { "Timeout", "30000" },
+                { "RetryCount", "3" }
             });
 
         _validationRegistryMock.Setup(x => x.ValidateContextAsync(It.IsAny<ErrorContext>()))
@@ -156,7 +158,7 @@ public class ValidationRegistryTests
             "ValidationError",
             "Validation service unavailable",
             "Validation",
-            new Dictionary<string, object>
+            new Dictionary<string, string>
             {
                 { "ErrorCode", "VAL-503" },
                 { "ErrorMessage", "Service unavailable" }
@@ -188,24 +190,21 @@ public class ValidationRegistryTests
             "CustomValidationError",
             "Custom validation rule violation",
             "Validation",
-            new Dictionary<string, object>
+            new Dictionary<string, string>
             {
                 { "CustomRule", "PasswordPolicy" },
-                { "Violations", new[] { "Password too short", "Missing special character" } }
+                { "Violations", "Password too short,Missing special character" }
             });
 
         var validationResult = new ValidationResult
         {
             IsValid = false,
-            Messages = new List<string> { "Custom validation rule violation: Password policy not met" },
-            Metadata = new Dictionary<string, object>
-            {
-                { "Rule", "PasswordPolicy" },
-                { "Violations", new[] { "Password too short", "Missing special character" } },
-                { "ValidationTime", 150 },
-                { "ContextSize", 768 }
-            }
+            Messages = new List<string> { "Custom validation rule violation: Password policy not met" }
         };
+        validationResult.AddMetadata("Rule", "PasswordPolicy");
+        validationResult.AddMetadata("Violations", new[] { "Password too short", "Missing special character" });
+        validationResult.AddMetadata("ValidationTime", 150);
+        validationResult.AddMetadata("ContextSize", 768);
 
         _validationRegistryMock.Setup(x => x.ValidateContextAsync(It.IsAny<ErrorContext>()))
             .ReturnsAsync(validationResult);
@@ -234,24 +233,21 @@ public class ValidationRegistryTests
             "CachedValidation",
             "Using cached validation result",
             "Validation",
-            new Dictionary<string, object>
+            new Dictionary<string, string>
             {
                 { "CacheKey", "ctx-123456" },
-                { "CacheTimestamp", DateTime.UtcNow.AddMinutes(-5) }
+                { "CacheTimestamp", DateTime.UtcNow.AddMinutes(-5).ToString("O") }
             });
 
         var validationResult = new ValidationResult
         {
             IsValid = true,
-            Messages = new List<string> { "Using cached validation result" },
-            Metadata = new Dictionary<string, object>
-            {
-                { "CacheKey", "ctx-123456" },
-                { "CacheTimestamp", DateTime.UtcNow.AddMinutes(-5) },
-                { "ValidationTime", 50 },
-                { "IsFromCache", true }
-            }
+            Messages = new List<string> { "Using cached validation result" }
         };
+        validationResult.AddMetadata("CacheKey", "ctx-123456");
+        validationResult.AddMetadata("CacheTimestamp", DateTime.UtcNow.AddMinutes(-5));
+        validationResult.AddMetadata("ValidationTime", 50);
+        validationResult.AddMetadata("IsFromCache", true);
 
         _validationRegistryMock.Setup(x => x.ValidateContextAsync(It.IsAny<ErrorContext>()))
             .ReturnsAsync(validationResult);

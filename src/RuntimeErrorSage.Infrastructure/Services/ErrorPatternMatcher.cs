@@ -1,7 +1,7 @@
 using System;
 using RuntimeErrorSage.Domain.Models.Error;
 
-namespace RuntimeErrorSage.Application.Services;
+namespace RuntimeErrorSage.Infrastructure.Services;
 
 /// <summary>
 /// Provides functionality for matching and comparing error patterns.

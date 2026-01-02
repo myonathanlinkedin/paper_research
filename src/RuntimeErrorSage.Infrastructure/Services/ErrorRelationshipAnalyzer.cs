@@ -9,7 +9,7 @@ using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Graph;
 using RelatedErrorModel = RuntimeErrorSage.Domain.Models.Error.RelatedError;
 
-namespace RuntimeErrorSage.Application.Services;
+namespace RuntimeErrorSage.Infrastructure.Services;
 
 /// <summary>
 /// Service for analyzing relationships between errors.

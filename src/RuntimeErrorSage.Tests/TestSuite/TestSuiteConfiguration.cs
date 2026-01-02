@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Metrics;
+using RuntimeErrorSage.Tests.TestSuite.Models;
+using ErrorScenario = RuntimeErrorSage.Tests.TestSuite.Models.ErrorScenario;
+using PerformanceMetric = RuntimeErrorSage.Tests.TestSuite.Models.PerformanceMetric;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
 

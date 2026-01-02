@@ -73,4 +73,19 @@ public class ErrorPattern
     /// Gets or sets additional notes about this pattern.
     /// </summary>
     public string Notes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type of this pattern.
+    /// </summary>
+    public string PatternType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets when this pattern was last observed.
+    /// </summary>
+    public DateTime LastOccurrence { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets or sets the confidence level of this pattern (0-1).
+    /// </summary>
+    public double Confidence { get; set; } = 0.0;
 } 

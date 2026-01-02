@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RuntimeErrorSage.Application.Exceptions;
 using RuntimeErrorSage.Application.MCP.Interfaces;
 using RuntimeErrorSage.Application.Options;
 using RuntimeErrorSage.Application.Pattern.Interfaces;
@@ -10,7 +9,7 @@ using RuntimeErrorSage.Core.Storage.Utilities;
 using RuntimeErrorSage.Domain.Interfaces;
 using RuntimeErrorSage.Domain.Models.Error;
 
-namespace RuntimeErrorSage.Application.Analysis
+namespace RuntimeErrorSage.Core.Analysis
 {
     /// <summary>
     /// Implements pattern recognition for error analysis.
@@ -59,7 +58,7 @@ namespace RuntimeErrorSage.Application.Analysis
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error initializing pattern recognition");
-                throw new PatternRecognitionException("Failed to initialize pattern recognition", ex);
+                throw new RuntimeErrorSage.Application.Exceptions.PatternRecognitionException("Failed to initialize pattern recognition", ex);
             }
         }
 
@@ -81,7 +80,7 @@ namespace RuntimeErrorSage.Application.Analysis
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error detecting patterns");
-                throw new PatternRecognitionException("Failed to detect patterns", ex);
+                throw new RuntimeErrorSage.Application.Exceptions.PatternRecognitionException("Failed to detect patterns", ex);
             }
         }
 
@@ -100,7 +99,7 @@ namespace RuntimeErrorSage.Application.Analysis
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error finding matching pattern");
-                throw new PatternRecognitionException("Failed to find matching pattern", ex);
+                throw new RuntimeErrorSage.Application.Exceptions.PatternRecognitionException("Failed to find matching pattern", ex);
             }
         }
 

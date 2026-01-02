@@ -8,7 +8,11 @@ using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Remediation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Core.Remediation;
+using RuntimeErrorSage.Application.LLM.Interfaces;
 using Xunit;
+using RemediationSuggestion = RuntimeErrorSage.Domain.Models.Remediation.RemediationSuggestion;
+using RemediationPlan = RuntimeErrorSage.Domain.Models.Remediation.RemediationPlan;
 
 namespace RuntimeErrorSage.Tests.Scenarios;
 
@@ -36,14 +40,15 @@ public class RemediationAnalyzerTests
         _registryMock = new Mock<IRemediationRegistry>();
         _llmClientMock = new Mock<IQwenLLMClient>();
 
+        var llmClientAdapter = new Mock<RuntimeErrorSage.Application.LLM.Interfaces.ILLMClient>();
         _analyzer = new RemediationAnalyzer(
             _loggerMock.Object,
             _errorContextAnalyzerMock.Object,
-            _strategyProviderMock.Object,
-            _validatorMock.Object,
-            _metricsCollectorMock.Object,
             _registryMock.Object,
-            _llmClientMock.Object);
+            _validatorMock.Object,
+            _strategyProviderMock.Object,
+            _metricsCollectorMock.Object,
+            llmClientAdapter.Object);
     }
 
     // ... existing code ...

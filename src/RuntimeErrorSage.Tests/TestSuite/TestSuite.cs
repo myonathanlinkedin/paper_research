@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Moq;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Runtime.Interfaces;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
@@ -19,7 +24,10 @@ public class TestSuite
         _errorAnalyzer = errorAnalyzer;
         _scenarioRunner = new TestScenarioRunner(errorAnalyzer);
         _performanceRunner = new PerformanceTestRunner(errorAnalyzer);
-        _baselineComparison = new BaselineComparisonTests(errorAnalyzer);
+        var runtimeService = new Moq.Mock<RuntimeErrorSage.Application.Runtime.Interfaces.IRuntimeErrorSageService>().Object;
+        var standardizedScenarios = new Moq.Mock<StandardizedErrorScenarios>(runtimeService).Object;
+        var realWorldScenarios = new Moq.Mock<RealWorldErrorCases>(runtimeService).Object;
+        _baselineComparison = new BaselineComparisonTests(runtimeService, standardizedScenarios, realWorldScenarios, errorAnalyzer);
         _scenarios = new List<TestScenario>();
     }
 

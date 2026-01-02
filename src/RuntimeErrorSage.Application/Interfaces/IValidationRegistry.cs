@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Models.Validation;
+using RuntimeErrorSage.Domain.Models.Error;
 
 namespace RuntimeErrorSage.Application.Interfaces
 {
@@ -51,5 +52,12 @@ namespace RuntimeErrorSage.Application.Interfaces
         /// <param name="validationType">The type of validation.</param>
         /// <returns>True if a validator exists, false otherwise.</returns>
         Task<bool> HasValidatorAsync(string validationType);
+
+        /// <summary>
+        /// Validates an error context.
+        /// </summary>
+        /// <param name="context">The error context to validate.</param>
+        /// <returns>The validation result.</returns>
+        Task<ValidationResult> ValidateContextAsync(ErrorContext context);
     }
 } 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Domain.Models.LLM;
 
@@ -77,4 +78,18 @@ public class ModelInfo
     /// Gets or sets any additional metadata about the model.
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the unique identifier of the model (alias for ModelId).
+    /// </summary>
+    public string Id
+    {
+        get => ModelId;
+        set => ModelId = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the status of the model.
+    /// </summary>
+    public ModelStatus Status { get; set; } = ModelStatus.Available;
 } 

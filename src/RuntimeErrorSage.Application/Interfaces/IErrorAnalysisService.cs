@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Models.Error;
 
-namespace RuntimeErrorSage.Application.Services.Interfaces;
+namespace RuntimeErrorSage.Application.Interfaces;
 
 /// <summary>
 /// Service for analyzing exceptions and error contexts.

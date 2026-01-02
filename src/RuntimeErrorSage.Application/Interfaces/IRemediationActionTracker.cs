@@ -56,6 +56,6 @@ namespace RuntimeErrorSage.Application.Interfaces
         /// <param name="isSuccessful">Whether the action was successful.</param>
         /// <param name="message">Optional message providing details about the completion.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task TrackActionCompletionAsync(string actionId, bool isSuccessful, string message = null);
+        Task TrackActionCompletionAsync(string actionId, bool isSuccessful, string? message = null);
     }
 } 

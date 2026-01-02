@@ -1,8 +1,11 @@
 using Xunit;
 using FluentAssertions;
-using RuntimeErrorSage.Application.Analysis;
-using RuntimeErrorSage.Application.Remediation;
-using RuntimeErrorSage.Application.MCP;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.Remediation.Interfaces;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Infrastructure.Services;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Domain.Models.Error;
 using Moq;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Tests.Helpers;
@@ -19,7 +22,9 @@ public class HttpClientErrorScenarios
     {
         _mcpClientMock = TestHelper.CreateMCPClientMock();
         _remediationExecutorMock = TestHelper.CreateRemediationExecutorMock();
-        _service = new RuntimeErrorSageService(_mcpClientMock.Object, _remediationExecutorMock.Object);
+        _service = TestHelper.CreateRuntimeErrorSageService(
+            mcpClientMock: _mcpClientMock,
+            remediationExecutorMock: _remediationExecutorMock);
     }
 
     [Theory]
@@ -63,7 +68,7 @@ public class HttpClientErrorScenarios
         result.RemediationPlan.Strategies.Should().NotBeEmpty();
 
         _mcpClientMock.Verify(x => x.PublishContextAsync(It.IsAny<ErrorContext>()), Times.Once);
-        _remediationExecutorMock.Verify(x => x.ExecuteRemediationAsync(It.IsAny<RemediationPlan>()), Times.Once);
+        _remediationExecutorMock.Verify(x => x.ExecuteRemediationAsync(It.IsAny<RemediationPlan>(), It.IsAny<ErrorContext>()), Times.Once);
     }
 
     [Fact]
@@ -92,7 +97,7 @@ public class HttpClientErrorScenarios
             "ConnectionTimeout",
             "The HTTP request timed out after 30 seconds",
             "HttpClient",
-            additionalContext);
+            additionalContext.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString() ?? string.Empty));
 
         // Act
         var result = await _service.AnalyzeErrorAsync(errorContext);
@@ -108,6 +113,6 @@ public class HttpClientErrorScenarios
             s.Name == "ProxyFallback");
 
         _mcpClientMock.Verify(x => x.PublishContextAsync(It.IsAny<ErrorContext>()), Times.Once);
-        _remediationExecutorMock.Verify(x => x.ExecuteRemediationAsync(It.IsAny<RemediationPlan>()), Times.Once);
+        _remediationExecutorMock.Verify(x => x.ExecuteRemediationAsync(It.IsAny<RemediationPlan>(), It.IsAny<ErrorContext>()), Times.Once);
     }
 } 

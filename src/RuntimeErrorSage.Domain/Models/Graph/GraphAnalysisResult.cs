@@ -122,4 +122,18 @@ public class GraphAnalysisResult
     /// Gets or sets the analysis insights.
     /// </summary>
     public GraphInsights Insights { get; set; }
+
+    /// <summary>
+    /// Gets or sets the impact analysis (alias for ImpactResults).
+    /// </summary>
+    public List<ImpactAnalysisResult> ImpactAnalysis
+    {
+        get => ImpactResults;
+        set => ImpactResults = value ?? new List<ImpactAnalysisResult>();
+    }
+
+    /// <summary>
+    /// Gets or sets the list of affected components.
+    /// </summary>
+    public List<string> AffectedComponents { get; set; } = new List<string>();
 }

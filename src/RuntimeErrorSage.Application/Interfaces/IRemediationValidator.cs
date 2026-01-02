@@ -55,10 +55,10 @@ public interface IRemediationValidator
     /// <summary>
     /// Validates a remediation step.
     /// </summary>
-    /// <param name="step">The remediation step to validate.</param>
+    /// <param name="remediationStep">The remediation step to validate.</param>
     /// <param name="context">The error context.</param>
     /// <returns>The validation result.</returns>
-    Task<Domain.Models.Validation.ValidationResult> ValidateStepAsync(RemediationStep step, ErrorContext context);
+    Task<Domain.Models.Validation.ValidationResult> ValidateStepAsync(RemediationStep remediationStep, ErrorContext context);
 
     /// <summary>
     /// Validates a remediation operation.

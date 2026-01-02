@@ -3,6 +3,7 @@ using System.Linq;
 using Xunit;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Core.Storage.Utilities;
+using RuntimeErrorSage.Core.Remediation;
 
 namespace RuntimeErrorSage.Tests.TestSuite.Utilities
 {
@@ -44,11 +45,8 @@ namespace RuntimeErrorSage.Tests.TestSuite.Utilities
             RemediationActionImpactScope impactScope,
             RemediationRiskLevel expectedRiskLevel)
         {
-            // Arrange
-            var helper = new RiskAssessmentHelper();
-
             // Act
-            var result = helper.CalculateRiskLevel(severity, impactScope);
+            var result = RiskAssessmentHelper.CalculateRiskLevel(severity, impactScope);
 
             // Assert
             Assert.Equal(expectedRiskLevel, result);

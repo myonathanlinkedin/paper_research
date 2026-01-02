@@ -297,7 +297,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
                 Description = strategy.Description,
                 CreatedDate = DateTime.UtcNow,
                 LastModifiedDate = DateTime.UtcNow,
-                SupportedErrorTypes = strategy.SupportedErrorTypes,
+                SupportedErrorTypes = strategy.SupportedErrorTypes.ToList(),
                 IsEnabled = true,
                 Priority = (int)strategy.Priority
             };
@@ -345,7 +345,7 @@ public class RemediationStrategyRegistry : IRemediationStrategyRegistry, IRemedi
         var applicableStrategies = new List<IRemediationStrategy>();
         foreach (var strategy in _strategies.Values)
         {
-            if (await strategy.CanApplyAsync(context))
+            if (await strategy.CanHandleAsync(context))
             {
                 applicableStrategies.Add(strategy);
             }

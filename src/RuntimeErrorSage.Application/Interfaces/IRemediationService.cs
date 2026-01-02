@@ -6,7 +6,6 @@ using RuntimeErrorSage.Domain.Models.Metrics;
 using RuntimeErrorSage.Domain.Models.Common;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Validation;
-using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.Options;
 
 namespace RuntimeErrorSage.Application.Interfaces

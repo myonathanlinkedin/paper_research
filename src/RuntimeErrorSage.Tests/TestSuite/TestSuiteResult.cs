@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Metrics;
+using RuntimeErrorSage.Tests.TestSuite.Models;
+using ErrorScenario = RuntimeErrorSage.Tests.TestSuite.Models.ErrorScenario;
+using PerformanceMetric = RuntimeErrorSage.Tests.TestSuite.Models.PerformanceMetric;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
 
@@ -15,6 +18,11 @@ public class TestSuiteResult
     private readonly List<PerformanceMetric> _metrics;
     private readonly Dictionary<string, object> _metadata;
 
+    private DateTime _startTime;
+    private DateTime _endTime;
+    private bool _passed;
+    private string _errorMessage;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TestSuiteResult"/> class.
     /// </summary>
@@ -23,6 +31,55 @@ public class TestSuiteResult
         _scenarios = new List<ErrorScenario>();
         _metrics = new List<PerformanceMetric>();
         _metadata = new Dictionary<string, object>();
+        _startTime = DateTime.UtcNow;
+        _passed = false;
+    }
+
+    /// <summary>
+    /// Gets or sets the start time.
+    /// </summary>
+    public DateTime StartTime
+    {
+        get => _startTime;
+        set => _startTime = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the end time.
+    /// </summary>
+    public DateTime EndTime
+    {
+        get => _endTime;
+        set => _endTime = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the error message.
+    /// </summary>
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set => _errorMessage = value;
+    }
+
+    /// <summary>
+    /// Sets the result as passed.
+    /// </summary>
+    public void SetPassed()
+    {
+        _passed = true;
+        _endTime = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Sets the result as failed.
+    /// </summary>
+    /// <param name="errorMessage">The error message.</param>
+    public void SetFailed(string errorMessage)
+    {
+        _passed = false;
+        _errorMessage = errorMessage;
+        _endTime = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -43,7 +100,7 @@ public class TestSuiteResult
     /// <summary>
     /// Gets a value indicating whether the test suite passed.
     /// </summary>
-    public bool Passed => _scenarios.All(s => s.Analysis?.IsValid ?? false);
+    public bool Passed => _passed || _scenarios.All(s => s.Analysis?.IsValid ?? false);
 
     /// <summary>
     /// Gets the duration.

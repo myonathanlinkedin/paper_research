@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using RuntimeErrorSage.Domain.Interfaces;
-
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Graph;
+using RuntimeErrorSage.Domain.Models.Remediation;
 
 namespace RuntimeErrorSage.Domain.Models.Error;
 
@@ -186,4 +187,72 @@ public class ErrorAnalysisResult
     /// Gets or sets additional metadata.
     /// </summary>
     public Dictionary<string, object> Metadata { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets whether the analysis has been analyzed.
+    /// </summary>
+    public bool IsAnalyzed { get; set; }
+
+    /// <summary>
+    /// Gets or sets the remediation plan.
+    /// </summary>
+    public RuntimeErrorSage.Domain.Models.Remediation.RemediationPlan RemediationPlan { get; set; }
+
+    /// <summary>
+    /// Gets or sets the graph analysis result.
+    /// </summary>
+    public RuntimeErrorSage.Domain.Models.Graph.GraphAnalysisResult GraphAnalysis { get; set; }
+
+    /// <summary>
+    /// Gets or sets the LLM analysis result.
+    /// </summary>
+    public RuntimeErrorSage.Domain.Models.LLM.LLMAnalysisResult LLMAnalysis { get; set; }
+
+    /// <summary>
+    /// Gets or sets the validation result.
+    /// </summary>
+    public RuntimeErrorSage.Domain.Models.Validation.ValidationResult ValidationResult { get; set; }
+
+    /// <summary>
+    /// Gets or sets the remediation steps (derived from SuggestedActions).
+    /// </summary>
+    public List<string> RemediationSteps
+    {
+        get => SuggestedActions?.Select(a => a.Description ?? string.Empty).ToList() ?? new List<string>();
+        set
+        {
+            // Convert string list to IRemediationAction list
+            if (value != null)
+            {
+                SuggestedActions = value.Select(step => new RemediationAction
+                {
+                    Description = step,
+                    Id = Guid.NewGuid().ToString(),
+                    Name = step
+                }).ToList<IRemediationAction>();
+            }
+            else
+            {
+                SuggestedActions = new List<IRemediationAction>();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the error (alias for accessing error from context).
+    /// </summary>
+    public RuntimeError Error
+    {
+        get => null; // Error is accessed via context
+        set { } // Error is set via context
+    }
+
+    /// <summary>
+    /// Gets or sets additional context (alias for Metadata or Details).
+    /// </summary>
+    public Dictionary<string, object> AdditionalContext
+    {
+        get => Metadata ?? new Dictionary<string, object>();
+        set => Metadata = value ?? new Dictionary<string, object>();
+    }
 } 

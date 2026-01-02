@@ -240,6 +240,7 @@ solid_report.txt
 # IDE specific
 .idea/
 .vscode/
+.cursorignore
 *.sublime-workspace
 *.sublime-project
 .project

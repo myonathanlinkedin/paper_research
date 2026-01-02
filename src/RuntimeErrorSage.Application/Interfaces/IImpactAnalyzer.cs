@@ -2,9 +2,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Graph;
-using RuntimeErrorSage.Domain.Models.Analysis;
+using RuntimeErrorSage.Domain.Models.Analysis; // For GraphAnalysisResult, RemediationAnalysis, etc.
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 
-namespace RuntimeErrorSage.Application.Services.Interfaces;
+namespace RuntimeErrorSage.Application.Interfaces;
 
 /// <summary>
 /// Service for analyzing the impact of errors on system components.

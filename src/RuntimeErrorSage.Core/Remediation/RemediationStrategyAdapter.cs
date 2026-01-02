@@ -144,6 +144,13 @@ namespace RuntimeErrorSage.Core.Remediation
         }
         
         public DateTime CreatedAt => DateTime.UtcNow;
+        
+        public RemediationStatusEnum Status { get; set; } = RemediationStatusEnum.NotStarted;
+        
+        public Task<RemediationPriority> GetPriorityAsync()
+        {
+            return Task.FromResult(Priority);
+        }
     }
 
     /// <summary>

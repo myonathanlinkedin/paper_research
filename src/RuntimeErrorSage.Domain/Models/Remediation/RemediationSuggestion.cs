@@ -142,6 +142,16 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
         public Dictionary<string, object> Metadata { get; set; } = new();
 
         /// <summary>
+        /// Gets or sets the implementation steps for this suggestion.
+        /// </summary>
+        public List<string> ImplementationSteps { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the action associated with this suggestion.
+        /// </summary>
+        public RemediationAction Action { get; set; }
+
+        /// <summary>
         /// Creates a suggestion from a strategy.
         /// </summary>
         /// <param name="strategy">The strategy.</param>

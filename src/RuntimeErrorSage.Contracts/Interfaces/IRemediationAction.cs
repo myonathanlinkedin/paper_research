@@ -55,14 +55,14 @@ namespace RuntimeErrorSage.Contracts.Interfaces
         bool CanRollback { get; set; }
 
         /// <summary>
-        /// Gets or sets the parameters for the action.
+        /// Gets the parameters for the action.
         /// </summary>
-        Dictionary<string, object> Parameters { get; set; }
+        IReadOnlyDictionary<string, object> Parameters { get; }
 
         /// <summary>
-        /// Gets or sets the validation rules.
+        /// Gets the validation rules.
         /// </summary>
-        List<string> ValidationRules { get; set; }
+        IReadOnlyList<string> ValidationRules { get; }
 
         /// <summary>
         /// Gets or sets the error type this action addresses.

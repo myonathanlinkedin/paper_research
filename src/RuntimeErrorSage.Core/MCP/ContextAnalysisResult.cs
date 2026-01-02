@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Domain.Models.Analysis;
 using RuntimeErrorSage.Domain.Models.Remediation;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
+using RemediationSuggestion = RuntimeErrorSage.Domain.Models.Remediation.RemediationSuggestion;
 
 namespace RuntimeErrorSage.Core.MCP
 {

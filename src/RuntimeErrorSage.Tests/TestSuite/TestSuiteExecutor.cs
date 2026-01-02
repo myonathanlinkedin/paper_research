@@ -1,8 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Analysis; // For GraphAnalysisResult, RemediationAnalysis, etc.
 using RuntimeErrorSage.Domain.Models.Metrics;
+using RuntimeErrorSage.Tests.TestSuite.Models;
+using ErrorScenario = RuntimeErrorSage.Tests.TestSuite.Models.ErrorScenario;
+using PerformanceMetric = RuntimeErrorSage.Tests.TestSuite.Models.PerformanceMetric;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 
 namespace RuntimeErrorSage.Tests.TestSuite;
 
@@ -101,7 +108,32 @@ public class TestSuiteExecutor
             timestamp: DateTime.UtcNow
         );
 
-        var analysis = await _errorAnalyzer.AnalyzeErrorAsync(context).ConfigureAwait(false);
+        var exception = new Exception(scenario.ErrorMessage ?? "Test error");
+        var analysisResult = await _errorAnalyzer.AnalyzeErrorAsync(exception, context).ConfigureAwait(false);
+        
+        // Convert ErrorAnalysisResult to ErrorAnalysis if needed
+        ErrorAnalysis analysis = null;
+        if (analysisResult != null)
+        {
+            var rootCause = analysisResult.RootCause ?? analysisResult.RootCauses?.FirstOrDefault() ?? "Unknown root cause";
+            var confidence = analysisResult.Confidence > 0 ? analysisResult.Confidence : 0.5;
+            var remediationSteps = analysisResult.SuggestedActions?.Select(a => a.Description ?? "Remediation step").ToList() 
+                ?? new List<string> { "No remediation steps available" };
+            
+            analysis = new ErrorAnalysis(
+                errorType: analysisResult.ErrorType ?? "Unknown",
+                rootCause: rootCause,
+                confidence: confidence,
+                remediationSteps: remediationSteps
+            )
+            {
+                ErrorId = analysisResult.ErrorId,
+                ErrorType = analysisResult.ErrorType ?? "Unknown",
+                Status = analysisResult.Status,
+                Message = analysisResult.Message ?? scenario.ErrorMessage ?? "Test error"
+            };
+        }
+        
         scenario.Analysis = analysis;
 
         return scenario;
@@ -125,8 +157,18 @@ public class TestSuiteExecutor
         var endTime = DateTime.UtcNow;
         var endMemory = GC.GetTotalMemory(false);
 
-        metric.Duration = endTime - startTime;
-        metric.MemoryUsage = endMemory - startMemory;
+        var durationMs = (endTime - startTime).TotalMilliseconds;
+        var memoryUsage = endMemory - startMemory;
+        
+        // Create a new PerformanceMetric with updated values since properties are read-only
+        return new PerformanceMetric(
+            name: metric.Name,
+            durationMs: durationMs,
+            memoryUsage: memoryUsage,
+            cpuUsage: metric.CpuUsage,
+            passed: metric.Passed,
+            errorMessage: metric.ErrorMessage
+        );
 
         return metric;
     }

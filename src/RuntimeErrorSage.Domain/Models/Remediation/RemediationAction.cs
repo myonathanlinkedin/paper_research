@@ -329,6 +329,43 @@ namespace RuntimeErrorSage.Domain.Models.Remediation
                 CorrelationId = Id
             };
         }
+
+        /// <summary>
+        /// Gets or sets the warnings for this action.
+        /// </summary>
+        public List<string> Warnings { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the timeout in seconds for this action.
+        /// </summary>
+        public int TimeoutSeconds
+        {
+            get => _core.ExecutionTimeoutMs / 1000;
+            set => _core.ExecutionTimeoutMs = value * 1000;
+        }
+
+        /// <summary>
+        /// Gets or sets the retry delay in seconds for this action.
+        /// </summary>
+        public int RetryDelaySeconds
+        {
+            get => _core.RetryDelayMs / 1000;
+            set => _core.RetryDelayMs = value * 1000;
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum number of retries for this action.
+        /// </summary>
+        public int MaxRetries
+        {
+            get => _core.RetryCount;
+            set => _core.RetryCount = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the confirmation message for this action.
+        /// </summary>
+        public string ConfirmationMessage { get; set; } = string.Empty;
     }
 } 
 

@@ -7,6 +7,7 @@ using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Validation;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Domain.Models.MCP;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ public class ModelContextProtocol
         {
             ContextId = context.Id,
             Timestamp = DateTime.UtcNow,
-            ErrorAnalysis = new Domain.Models.Analysis.ErrorAnalysisResult 
+            ErrorAnalysis = new RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult
             {
                 Id = context.Id
             },

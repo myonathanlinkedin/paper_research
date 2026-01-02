@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Analysis; // For GraphAnalysisResult, RemediationAnalysis, etc.
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 
 namespace RuntimeErrorSage.Tests.TestSuite.Models;
 
@@ -46,29 +49,44 @@ public class ErrorScenario
     }
 
     /// <summary>
-    /// Gets the name.
+    /// Gets or sets the unique identifier.
     /// </summary>
-    public string Name { get; }
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Gets the error type.
+    /// Gets or sets the name.
     /// </summary>
-    public string ErrorType { get; }
+    public string Name { get; set; }
 
     /// <summary>
-    /// Gets the source.
+    /// Gets or sets the error type.
     /// </summary>
-    public string Source { get; }
+    public string ErrorType { get; set; }
 
     /// <summary>
-    /// Gets the error.
+    /// Gets or sets the source.
     /// </summary>
-    public RuntimeError Error { get; }
+    public string Source { get; set; }
 
     /// <summary>
-    /// Gets the analysis.
+    /// Gets or sets the error.
     /// </summary>
-    public ErrorAnalysis Analysis { get; }
+    public RuntimeError Error { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error message.
+    /// </summary>
+    public string ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stack trace.
+    /// </summary>
+    public string StackTrace { get; set; }
+
+    /// <summary>
+    /// Gets or sets the analysis.
+    /// </summary>
+    public ErrorAnalysis Analysis { get; set; }
 
     /// <summary>
     /// Gets the metadata.
@@ -116,6 +134,33 @@ public class ErrorScenario
             return default;
 
         return value is T typedValue ? typedValue : default;
+    }
+
+    /// <summary>
+    /// Executes the scenario asynchronously.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public async Task<Exception> ExecuteAsync()
+    {
+        // Default implementation - throws the error from the Error property
+        if (Error != null)
+        {
+            return await Task.FromException<Exception>(new Exception(Error.Message));
+        }
+        return await Task.FromException<Exception>(new InvalidOperationException("No error defined in scenario"));
+    }
+
+    /// <summary>
+    /// Executes the scenario synchronously.
+    /// </summary>
+    /// <returns>The exception that was thrown.</returns>
+    public Exception Execute()
+    {
+        if (Error != null)
+        {
+            throw new Exception(Error.Message);
+        }
+        throw new InvalidOperationException("No error defined in scenario");
     }
 
     /// <summary>

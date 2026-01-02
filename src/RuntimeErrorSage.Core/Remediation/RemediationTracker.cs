@@ -9,9 +9,10 @@ using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Execution;
 using RuntimeErrorSage.Domain.Models.Metrics;
 using RuntimeErrorSage.Domain.Models.Remediation;
+using RuntimeErrorSage.Core.Remediation;
 using RuntimeErrorSage.Application.Remediation;
 
-namespace RuntimeErrorSage.Application.Remediation;
+namespace RuntimeErrorSage.Core.Remediation;
 
 /// <summary>
 /// Tracks remediation execution status and history.

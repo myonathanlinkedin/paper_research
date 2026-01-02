@@ -3,12 +3,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RuntimeErrorSage.Core.Extensions;
+using RuntimeErrorSage.Infrastructure.Extensions;
 using RuntimeErrorSage.Examples.Models;
 using RuntimeErrorSage.Examples.Services;
 using RuntimeErrorSage.Examples.Exceptions;
 using RuntimeErrorSage.Examples.Models.Responses;
-using RuntimeErrorSage.Core.Analysis.Interfaces;
+using RuntimeErrorSage.Examples.Models.Responses.Enums;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,14 +98,29 @@ app.MapPost("/analyze-error", async (ErrorContext context, IErrorAnalyzer analyz
 {
     try
     {
-        var result = await analyzer.AnalyzeErrorAsync(context);
+        var result = await analyzer.AnalyzeContextAsync(context);
         return Results.Ok(result);
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.Problem(
+            title: "Invalid request",
+            detail: ex.Message,
+            statusCode: 400);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.Problem(
+            title: "Analysis failed",
+            detail: ex.Message,
+            statusCode: 500);
     }
     catch (Exception ex)
     {
+        // Log unexpected exceptions and return generic error
         return Results.Problem(
-            title: "Error analysis failed",
-            detail: ex.Message,
+            title: "An unexpected error occurred",
+            detail: "Error analysis failed. Please try again later.",
             statusCode: 500);
     }
 });

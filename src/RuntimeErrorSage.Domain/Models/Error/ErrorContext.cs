@@ -116,6 +116,15 @@ namespace RuntimeErrorSage.Domain.Models.Error
         public string Message { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the error message (alias for Message).
+        /// </summary>
+        public string ErrorMessage
+        {
+            get => Message;
+            set => Message = value;
+        }
+
+        /// <summary>
         /// Gets or sets the error type.
         /// </summary>
         public string ErrorType { get; set; } = string.Empty;

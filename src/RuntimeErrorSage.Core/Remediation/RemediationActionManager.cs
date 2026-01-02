@@ -10,7 +10,7 @@ using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Models.Metrics;
 
-namespace RuntimeErrorSage.Application.Remediation
+namespace RuntimeErrorSage.Core.Remediation
 {
     public class RemediationActionManager : IRemediationActionManager
     {

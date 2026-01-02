@@ -258,7 +258,7 @@ namespace RuntimeErrorSage.Core.Remediation
             }
 
             // Check if it's a data flow
-            if (context.DataFlows.Any(flow => flow.Source == source && flow.Target == target))
+            if (context.DataFlows.Any(flow => flow.Source == source && flow.Destination == target))
             {
                 return RelationshipType.DataFlow;
             }

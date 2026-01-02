@@ -50,14 +50,28 @@ public class PerformanceMetric
     public string Name { get; }
 
     /// <summary>
-    /// Gets the duration in milliseconds.
+    /// Gets or sets the duration in milliseconds.
     /// </summary>
-    public double DurationMs { get; }
+    public double DurationMs { get; set; }
 
     /// <summary>
-    /// Gets the memory usage in bytes.
+    /// Gets or sets the memory usage in bytes.
     /// </summary>
-    public long MemoryUsage { get; }
+    public long MemoryUsage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the duration as TimeSpan.
+    /// </summary>
+    public TimeSpan Duration { get; set; }
+
+    /// <summary>
+    /// Executes the metric operation (for testing purposes).
+    /// </summary>
+    public Task ExecuteAsync()
+    {
+        // Default implementation - can be overridden in derived classes
+        return Task.CompletedTask;
+    }
 
     /// <summary>
     /// Gets the CPU usage percentage.

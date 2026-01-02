@@ -9,6 +9,7 @@ using RuntimeErrorSage.Application.Remediation.Interfaces;
 using System.Collections.Concurrent;
 using IRemediationValidator = RuntimeErrorSage.Application.Remediation.Interfaces.IRemediationValidator;
 using ValidationResult = RuntimeErrorSage.Domain.Models.Validation.ValidationResult;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Models.Graph;
 using System;
@@ -21,8 +22,10 @@ using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Validation.Interfaces;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.Interfaces;
+using RuntimeErrorSage.Application.Remediation;
+using RemediationValidatorOptions = RuntimeErrorSage.Application.Remediation.RemediationValidatorOptions;
 
-namespace RuntimeErrorSage.Application.Remediation;
+namespace RuntimeErrorSage.Core.Remediation;
 
 /// <summary>
 /// Validates remediation actions and strategies.
@@ -255,10 +258,10 @@ public class RemediationValidator : IRemediationValidator, IDisposable
 
             if (riskLevel == RemediationRiskLevel.High || riskLevel == RemediationRiskLevel.Critical)
             {
-                result.AddWarning($"Action has {riskLevel} risk level", ValidationSeverity.Warning);
+                result.AddWarning($"Action has {riskLevel} risk level", ValidationSeverity.Warning, "HIGH_RISK");
                 foreach (var issue in potentialIssues)
                 {
-                    result.AddWarning($"Potential issue: {issue}", ValidationSeverity.Warning);
+                    result.AddWarning($"Potential issue: {issue}", ValidationSeverity.Warning, "POTENTIAL_ISSUE");
                 }
             }
 
@@ -280,9 +283,9 @@ public class RemediationValidator : IRemediationValidator, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<ValidationResult> ValidateStepAsync(RemediationStep step, ErrorContext context)
+    public async Task<ValidationResult> ValidateStepAsync(RemediationStep remediationStep, ErrorContext context)
     {
-        ArgumentNullException.ThrowIfNull(step);
+        ArgumentNullException.ThrowIfNull(remediationStep);
         ArgumentNullException.ThrowIfNull(context);
         ThrowIfDisposed();
 
@@ -299,12 +302,12 @@ public class RemediationValidator : IRemediationValidator, IDisposable
             timeoutCts.CancelAfter(_options.ValidationTimeout);
 
             // Validate step properties
-            if (string.IsNullOrEmpty(step.Name))
+            if (string.IsNullOrEmpty(remediationStep.Name))
             {
                 result.AddError("Step name is required");
             }
 
-            if (string.IsNullOrEmpty(step.Description))
+            if (string.IsNullOrEmpty(remediationStep.Description))
             {
                 result.AddError("Step description is required");
             }
@@ -314,7 +317,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating step {StepId}", step.StepId);
+            _logger.LogError(ex, "Error validating step {StepId}", remediationStep.StepId);
             var errorResult = new ValidationResult
             {
                 IsValid = false,
@@ -453,10 +456,22 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         var metrics = new Dictionary<string, double>();
         try
         {
-            var systemMetrics = await _metricsCollector.CollectSystemMetricsAsync(context, cancellationToken);
+            var systemMetrics = await _metricsCollector.CollectMetricsAsync(context);
             foreach (var metric in systemMetrics)
             {
-                metrics[metric.Key] = metric.Value;
+                // Convert object to double
+                if (metric.Value is double d)
+                    metrics[metric.Key] = d;
+                else if (metric.Value is int i)
+                    metrics[metric.Key] = (double)i;
+                else if (metric.Value is long l)
+                    metrics[metric.Key] = (double)l;
+                else if (metric.Value is float f)
+                    metrics[metric.Key] = (double)f;
+                else if (metric.Value is decimal dec)
+                    metrics[metric.Key] = (double)dec;
+                else
+                    metrics[metric.Key] = 0.0;
             }
         }
         catch (Exception ex)
@@ -516,7 +531,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         else if (stackTraceDepth > 5) riskFactors.Add(1);
 
         // Analyze context complexity
-        var contextComplexity = action.Context?.Count ?? 0;
+        var contextComplexity = action.Context?.Metadata?.Count ?? 0;
         if (contextComplexity > 10) riskFactors.Add(2);
         else if (contextComplexity > 5) riskFactors.Add(1);
 
@@ -547,7 +562,7 @@ public class RemediationValidator : IRemediationValidator, IDisposable
 
     private void AddValidationWarning(ValidationResult result, string message, SeverityLevel severity)
     {
-        result.AddWarning(message, severity.ToValidationSeverity());
+        result.AddWarning(message, severity.ToValidationSeverity(), $"WARN_{Guid.NewGuid().ToString().Substring(0, 8)}");
     }
 
     private void AddValidationError(ValidationResult result, string message, SeverityLevel severity)
@@ -567,7 +582,8 @@ public class RemediationValidator : IRemediationValidator, IDisposable
         }
 
         // Check for potential issues
-        foreach (var issue in action.PotentialIssues)
+        var potentialIssues = GeneratePotentialIssues(action);
+        foreach (var issue in potentialIssues)
         {
             AddValidationWarning(result, $"Potential issue: {issue}", SeverityLevel.Medium);
         }

@@ -264,4 +264,32 @@ public static class SeverityExtensions
             _ => ImpactScope.None
         };
     }
+
+    /// <summary>
+    /// Converts a RemediationActionSeverity to ImpactLevel.
+    /// </summary>
+    /// <param name="severity">The remediation action severity to convert.</param>
+    /// <returns>The corresponding ImpactLevel.</returns>
+    public static ImpactLevel ToImpactLevel(this RemediationActionSeverity severity)
+    {
+        return severity switch
+        {
+            RemediationActionSeverity.Critical => ImpactLevel.Critical,
+            RemediationActionSeverity.High => ImpactLevel.High,
+            RemediationActionSeverity.Medium => ImpactLevel.Medium,
+            RemediationActionSeverity.Low => ImpactLevel.Low,
+            RemediationActionSeverity.None => ImpactLevel.None,
+            _ => ImpactLevel.None
+        };
+    }
+
+    /// <summary>
+    /// Converts a RemediationActionStatus to RemediationStatusEnum.
+    /// </summary>
+    /// <param name="status">The remediation action status to convert.</param>
+    /// <returns>The corresponding RemediationStatusEnum.</returns>
+    public static RemediationStatusEnum ToRemediationStatusEnum(this RemediationActionStatus status)
+    {
+        return (RemediationStatusEnum)(int)status;
+    }
 } 

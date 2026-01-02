@@ -4,9 +4,10 @@ using Moq;
 using RuntimeErrorSage.Application.Analysis;
 using RuntimeErrorSage.Application.MCP.Interfaces;
 using RuntimeErrorSage.Domain.Models.Error;
-using RuntimeErrorSage.Domain.Models.Interfaces;
+using RuntimeErrorSage.Domain.Interfaces;
 using RuntimeErrorSage.Application.Options;
 using RuntimeErrorSage.Application.Storage.Interfaces;
+using RuntimeErrorSage.Core.Analysis;
 using Xunit;
 
 namespace RuntimeErrorSage.Tests.Analysis
@@ -38,10 +39,11 @@ namespace RuntimeErrorSage.Tests.Analysis
                 EnableCrossServicePatterns = true
             };
 
+            var runtimeErrorSageOptions = new RuntimeErrorSageOptions();
             _patternRecognition = new PatternRecognition(
                 _loggerMock.Object,
                 _mcpClientMock.Object,
-                Options.Create(_options),
+                Options.Create(runtimeErrorSageOptions),
                 _modelMock.Object,
                 _storageMock.Object);
         }
@@ -74,7 +76,7 @@ namespace RuntimeErrorSage.Tests.Analysis
                 .ThrowsAsync(new Exception("Test error"));
 
             // Act & Assert
-            await Assert.ThrowsAsync<PatternRecognitionException>(
+            await Assert.ThrowsAsync<RuntimeErrorSage.Application.Exceptions.PatternRecognitionException>(
                 () => _patternRecognition.InitializeAsync());
         }
 
@@ -209,7 +211,7 @@ namespace RuntimeErrorSage.Tests.Analysis
                 .ThrowsAsync(new Exception("Test error"));
 
             // Act & Assert
-            await Assert.ThrowsAsync<PatternRecognitionException>(
+            await Assert.ThrowsAsync<RuntimeErrorSage.Application.Exceptions.PatternRecognitionException>(
                 () => _patternRecognition.DetectPatternsAsync(contexts, _options.ServiceName));
         }
 

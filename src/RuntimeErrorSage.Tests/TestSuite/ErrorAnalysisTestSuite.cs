@@ -1,14 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Application.LLM.Interfaces;
+using RuntimeErrorSage.Application.LLM.Options;
 using RuntimeErrorSage.Application.Analysis;
 using RuntimeErrorSage.Application.LLM;
-using Moq;
 using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Analysis; // For GraphAnalysisResult, RemediationAnalysis, etc.
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 using RuntimeErrorSage.Tests.TestSuite.Enums;
-using RuntimeErrorSage.Application.Analysis.Interfaces;
+using RuntimeErrorSage.Domain.Enums;
+using PerformanceMetric = RuntimeErrorSage.Tests.TestSuite.Models.PerformanceMetric;
 
 namespace RuntimeErrorSage.Tests.TestSuite
 {
@@ -19,25 +25,31 @@ namespace RuntimeErrorSage.Tests.TestSuite
     {
         private readonly ILMStudioClient _llmClient;
         private readonly IErrorAnalyzer _errorAnalyzer;
-        private readonly Dictionary<string, ErrorScenario> _standardScenarios;
-        private readonly Dictionary<string, ErrorScenario> _realWorldScenarios;
-        private readonly List<ErrorScenario> _scenarios;
+        private readonly Dictionary<string, ErrorAnalysisScenario> _standardScenarios;
+        private readonly Dictionary<string, ErrorAnalysisScenario> _realWorldScenarios;
+        private readonly List<ErrorAnalysisScenario> _scenarios;
         private readonly List<PerformanceMetric> _metrics;
 
         public ErrorAnalysisTestSuite()
         {
-            _llmClient = new LMStudioClient(new LMStudioOptions
+            var httpClient = new System.Net.Http.HttpClient();
+            var options = Microsoft.Extensions.Options.Options.Create(new LMStudioOptions
             {
-                ApiEndpoint = "http://127.0.0.1:1234/v1",
-                ModelName = "qwen2.5-7b-instruct-1m",
+                BaseUrl = "http://127.0.0.1:1234",
+                ModelId = "qwen2.5-7b-instruct-1m",
                 Temperature = 0.7f,
                 MaxTokens = 4096
             });
+            var logger = new Moq.Mock<Microsoft.Extensions.Logging.ILogger<LMStudioClient>>().Object;
+            _llmClient = new LMStudioClient(httpClient, options, logger);
 
-            _errorAnalyzer = new ErrorAnalyzer(_llmClient);
+            var llmService = new Moq.Mock<RuntimeErrorSage.Application.LLM.ILLMService>().Object;
+            var mcpClient = new Moq.Mock<RuntimeErrorSage.Application.MCP.Interfaces.IMCPClient>().Object;
+            var errorAnalyzerLogger = new Moq.Mock<Microsoft.Extensions.Logging.ILogger<RuntimeErrorSage.Application.Analysis.ErrorAnalyzer>>().Object;
+            _errorAnalyzer = new RuntimeErrorSage.Application.Analysis.ErrorAnalyzer(errorAnalyzerLogger, _llmClient, mcpClient, llmService);
             _standardScenarios = InitializeStandardScenarios();
             _realWorldScenarios = InitializeRealWorldScenarios();
-            _scenarios = new List<ErrorScenario>();
+            _scenarios = new List<ErrorAnalysisScenario>();
             _metrics = new List<PerformanceMetric>();
         }
 
@@ -46,7 +58,8 @@ namespace RuntimeErrorSage.Tests.TestSuite
         {
             foreach (var scenario in _standardScenarios.Values.Where(s => s.Type == ErrorType.Database))
             {
-                var result = await _errorAnalyzer.AnalyzeErrorAsync(scenario.Context);
+                var exception = new Exception(scenario.Context?.Message ?? "Test error");
+                var result = await _errorAnalyzer.AnalyzeErrorAsync(exception, scenario.Context);
                 Assert.NotNull(result);
                 Assert.True(result.Accuracy >= 0.8, $"Accuracy below threshold for {scenario.Name}");
                 Assert.True(result.Latency <= 500, $"Latency too high for {scenario.Name}");
@@ -58,7 +71,8 @@ namespace RuntimeErrorSage.Tests.TestSuite
         {
             foreach (var scenario in _standardScenarios.Values.Where(s => s.Type == ErrorType.FileSystem))
             {
-                var result = await _errorAnalyzer.AnalyzeErrorAsync(scenario.Context);
+                var exception = new Exception(scenario.Context?.Message ?? "Test error");
+                var result = await _errorAnalyzer.AnalyzeErrorAsync(exception, scenario.Context);
                 Assert.NotNull(result);
                 Assert.True(result.Accuracy >= 0.8, $"Accuracy below threshold for {scenario.Name}");
                 Assert.True(result.Latency <= 500, $"Latency too high for {scenario.Name}");
@@ -70,7 +84,8 @@ namespace RuntimeErrorSage.Tests.TestSuite
         {
             foreach (var scenario in _standardScenarios.Values.Where(s => s.Type == ErrorType.HttpClient))
             {
-                var result = await _errorAnalyzer.AnalyzeErrorAsync(scenario.Context);
+                var exception = new Exception(scenario.Context?.Message ?? "Test error");
+                var result = await _errorAnalyzer.AnalyzeErrorAsync(exception, scenario.Context);
                 Assert.NotNull(result);
                 Assert.True(result.Accuracy >= 0.8, $"Accuracy below threshold for {scenario.Name}");
                 Assert.True(result.Latency <= 500, $"Latency too high for {scenario.Name}");
@@ -82,7 +97,8 @@ namespace RuntimeErrorSage.Tests.TestSuite
         {
             foreach (var scenario in _standardScenarios.Values.Where(s => s.Type == ErrorType.Resource))
             {
-                var result = await _errorAnalyzer.AnalyzeErrorAsync(scenario.Context);
+                var exception = new Exception(scenario.Context?.Message ?? "Test error");
+                var result = await _errorAnalyzer.AnalyzeErrorAsync(exception, scenario.Context);
                 Assert.NotNull(result);
                 Assert.True(result.Accuracy >= 0.8, $"Accuracy below threshold for {scenario.Name}");
                 Assert.True(result.Latency <= 500, $"Latency too high for {scenario.Name}");
@@ -94,7 +110,8 @@ namespace RuntimeErrorSage.Tests.TestSuite
         {
             foreach (var scenario in _realWorldScenarios.Values)
             {
-                var result = await _errorAnalyzer.AnalyzeErrorAsync(scenario.Context);
+                var exception = new Exception(scenario.Context?.Message ?? "Test error");
+                var result = await _errorAnalyzer.AnalyzeErrorAsync(exception, scenario.Context);
                 Assert.NotNull(result);
                 Assert.True(result.Accuracy >= 0.7, $"Accuracy below threshold for {scenario.Name}");
                 Assert.True(result.Latency <= 500, $"Latency too high for {scenario.Name}");
@@ -109,21 +126,23 @@ namespace RuntimeErrorSage.Tests.TestSuite
             foreach (var scenario in _standardScenarios.Values)
             {
                 var startTime = DateTime.UtcNow;
-                var result = await _errorAnalyzer.AnalyzeErrorAsync(scenario.Context);
+                var exception = new Exception(scenario.Context?.Message ?? "Test error");
+                var result = await _errorAnalyzer.AnalyzeErrorAsync(exception, scenario.Context);
                 var endTime = DateTime.UtcNow;
 
-                metrics.Add(new PerformanceMetric
-                {
-                    ScenarioName = scenario.Name,
-                    Latency = (endTime - startTime).TotalMilliseconds,
-                    MemoryUsage = result.MemoryUsage,
-                    CpuUsage = result.CpuUsage
-                });
+                var duration = (endTime - startTime).TotalMilliseconds;
+                metrics.Add(new PerformanceMetric(
+                    name: scenario.Name,
+                    durationMs: duration,
+                    memoryUsage: (long)result.MemoryUsage,
+                    cpuUsage: result.CpuUsage,
+                    passed: true
+                ));
             }
 
             // Analyze metrics
-            var avgLatency = metrics.Average(m => m.Latency);
-            var maxLatency = metrics.Max(m => m.Latency);
+            var avgLatency = metrics.Average(m => m.DurationMs);
+            var maxLatency = metrics.Max(m => m.DurationMs);
             var avgMemory = metrics.Average(m => m.MemoryUsage);
             var maxMemory = metrics.Max(m => m.MemoryUsage);
             var avgCpu = metrics.Average(m => m.CpuUsage);
@@ -178,20 +197,20 @@ namespace RuntimeErrorSage.Tests.TestSuite
                 var result = await _errorAnalyzer.AnalyzeRemediationAsync(scenario.Context);
                 Assert.NotNull(result);
                 Assert.True(result.IsValid);
-                Assert.NotNull(result.Suggestions);
-                Assert.True(result.Suggestions.Count > 0);
-                foreach (var suggestion in result.Suggestions)
+                Assert.NotNull(result.SuggestedActions);
+                Assert.True(result.SuggestedActions.Count > 0);
+                foreach (var action in result.SuggestedActions)
                 {
-                    Assert.NotNull(suggestion.Description);
-                    Assert.NotNull(suggestion.Implementation);
-                    Assert.True(suggestion.Confidence >= 0.0 && suggestion.Confidence <= 1.0);
+                    Assert.NotNull(action.Description);
+                    Assert.NotNull(action.Name);
+                    Assert.NotNull(action.Id);
                 }
             }
         }
 
-        private Dictionary<string, ErrorScenario> InitializeStandardScenarios()
+        private Dictionary<string, ErrorAnalysisScenario> InitializeStandardScenarios()
         {
-            var scenarios = new Dictionary<string, ErrorScenario>();
+            var scenarios = new Dictionary<string, ErrorAnalysisScenario>();
 
             // Database Scenarios
             AddDatabaseScenarios(scenarios);
@@ -208,19 +227,26 @@ namespace RuntimeErrorSage.Tests.TestSuite
             return scenarios;
         }
 
-        private Dictionary<string, ErrorScenario> InitializeRealWorldScenarios()
+        private Dictionary<string, ErrorAnalysisScenario> InitializeRealWorldScenarios()
         {
-            var scenarios = new Dictionary<string, ErrorScenario>();
+            var scenarios = new Dictionary<string, ErrorAnalysisScenario>();
 
             // Database Scenarios
-            scenarios.Add("db_connection_pool", new ErrorScenario
+            scenarios.Add("db_connection_pool", new ErrorAnalysisScenario
             {
                 Name = "Connection Pool Exhaustion",
                 Type = ErrorType.Database,
-                Context = new ErrorContext
+                Context = new ErrorContext(
+                    error: new RuntimeError(
+                        message: "Connection pool exhausted",
+                        errorType: "DatabaseConnectionError",
+                        source: "DatabaseService",
+                        stackTrace: "..."
+                    ),
+                    context: "DatabaseService",
+                    timestamp: DateTime.UtcNow
+                )
                 {
-                    Exception = new SqlException("Connection pool exhausted"),
-                    StackTrace = "...",
                     AdditionalContext = new Dictionary<string, string>
                     {
                         { "ConnectionCount", "100" },
@@ -235,9 +261,9 @@ namespace RuntimeErrorSage.Tests.TestSuite
             return scenarios;
         }
 
-        private void AddDatabaseScenarios(Dictionary<string, ErrorScenario> scenarios)
+        private void AddDatabaseScenarios(Dictionary<string, ErrorAnalysisScenario> scenarios)
         {
-            scenarios.Add("DB_CONN_001", new ErrorScenario
+            scenarios.Add("DB_CONN_001", new ErrorAnalysisScenario
             {
                 Name = "Database Connection Error",
                 Type = ErrorType.Database,
@@ -258,7 +284,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
                 }
             });
 
-            scenarios.Add("DB_QUERY_001", new ErrorScenario
+            scenarios.Add("DB_QUERY_001", new ErrorAnalysisScenario
             {
                 Name = "Database Query Error",
                 Type = ErrorType.Database,
@@ -280,9 +306,9 @@ namespace RuntimeErrorSage.Tests.TestSuite
             });
         }
 
-        private void AddFileSystemScenarios(Dictionary<string, ErrorScenario> scenarios)
+        private void AddFileSystemScenarios(Dictionary<string, ErrorAnalysisScenario> scenarios)
         {
-            scenarios.Add("FS_READ_001", new ErrorScenario
+            scenarios.Add("FS_READ_001", new ErrorAnalysisScenario
             {
                 Name = "File Read Error",
                 Type = ErrorType.FileSystem,
@@ -303,7 +329,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
                 }
             });
 
-            scenarios.Add("FS_WRITE_001", new ErrorScenario
+            scenarios.Add("FS_WRITE_001", new ErrorAnalysisScenario
             {
                 Name = "File Write Error",
                 Type = ErrorType.FileSystem,
@@ -325,9 +351,9 @@ namespace RuntimeErrorSage.Tests.TestSuite
             });
         }
 
-        private void AddHttpClientScenarios(Dictionary<string, ErrorScenario> scenarios)
+        private void AddHttpClientScenarios(Dictionary<string, ErrorAnalysisScenario> scenarios)
         {
-            scenarios.Add("HTTP_CONN_001", new ErrorScenario
+            scenarios.Add("HTTP_CONN_001", new ErrorAnalysisScenario
             {
                 Name = "HTTP Connection Error",
                 Type = ErrorType.HttpClient,
@@ -348,7 +374,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
                 }
             });
 
-            scenarios.Add("HTTP_REQ_001", new ErrorScenario
+            scenarios.Add("HTTP_REQ_001", new ErrorAnalysisScenario
             {
                 Name = "HTTP Request Error",
                 Type = ErrorType.HttpClient,
@@ -370,9 +396,9 @@ namespace RuntimeErrorSage.Tests.TestSuite
             });
         }
 
-        private void AddResourceScenarios(Dictionary<string, ErrorScenario> scenarios)
+        private void AddResourceScenarios(Dictionary<string, ErrorAnalysisScenario> scenarios)
         {
-            scenarios.Add("RES_MEM_001", new ErrorScenario
+            scenarios.Add("RES_MEM_001", new ErrorAnalysisScenario
             {
                 Name = "Memory Error",
                 Type = ErrorType.Resource,
@@ -393,7 +419,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
                 }
             });
 
-            scenarios.Add("RES_CPU_001", new ErrorScenario
+            scenarios.Add("RES_CPU_001", new ErrorAnalysisScenario
             {
                 Name = "CPU Error",
                 Type = ErrorType.Resource,
@@ -420,20 +446,17 @@ namespace RuntimeErrorSage.Tests.TestSuite
             foreach (var scenario in _scenarios)
             {
                 var startTime = DateTime.UtcNow;
-                var result = await _errorAnalyzer.AnalyzeErrorAsync(scenario.Context);
+                var exception = new Exception(scenario.Context?.Message ?? "Test error");
+                var result = await _errorAnalyzer.AnalyzeErrorAsync(exception, scenario.Context);
                 var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
-                _metrics.Add(new PerformanceMetric
-                {
-                    Name = $"AnalysisDuration_{scenario.Id}",
-                    Value = duration,
-                    Unit = "ms",
-                    Metadata = new Dictionary<string, object>
-                    {
-                        { "ScenarioId", scenario.Id },
-                        { "ScenarioName", scenario.Name }
-                    }
-                });
+                _metrics.Add(new PerformanceMetric(
+                    name: $"AnalysisDuration_{scenario.Id}",
+                    durationMs: duration,
+                    memoryUsage: 0,
+                    cpuUsage: 0,
+                    passed: true
+                ));
 
                 Assert.Equal(scenario.ExpectedResult.Severity, result.Severity);
                 Assert.Equal(scenario.ExpectedResult.CanAutoRemediate, result.CanAutoRemediate);
@@ -441,7 +464,7 @@ namespace RuntimeErrorSage.Tests.TestSuite
             }
         }
 
-        public void AddScenario(ErrorScenario scenario)
+        public void AddScenario(ErrorAnalysisScenario scenario)
         {
             _scenarios.Add(scenario);
         }
@@ -452,8 +475,9 @@ namespace RuntimeErrorSage.Tests.TestSuite
         }
     }
 
-    public class ErrorScenario
+    public class ErrorAnalysisScenario
     {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
         public ErrorType Type { get; set; }
         public ErrorContext Context { get; set; }
@@ -468,16 +492,5 @@ namespace RuntimeErrorSage.Tests.TestSuite
         Resource
     }
 
-    public class PerformanceMetric
-    {
-        public string ScenarioName { get; set; }
-        public double Latency { get; set; }
-        public long MemoryUsage { get; set; }
-        public double CpuUsage { get; set; }
-        public string Name { get; set; }
-        public double Value { get; set; }
-        public string Unit { get; set; }
-        public Dictionary<string, object> Metadata { get; set; }
-    }
 } 
 

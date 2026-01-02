@@ -1,19 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using RuntimeErrorSage.Domain.Enums;
-using RuntimeErrorSage.Domain.Models.Execution;
-using RuntimeErrorSage.Domain.Models.Remediation;
-using RuntimeErrorSage.Domain.Models.Metrics;
-
-
-// TODO: Remove this stub and use the correct MetricsResult type when available
-public class MetricsResult {
-    public bool IsSuccess { get; set; }
-    public string Error { get; set; }
-    public DateTime Timestamp { get; set; }
-    public Dictionary<string, object> Metrics { get; set; }
-}
 
 namespace RuntimeErrorSage.Domain.Models.Metrics
 {

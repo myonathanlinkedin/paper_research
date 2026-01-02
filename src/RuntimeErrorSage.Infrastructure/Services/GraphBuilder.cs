@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Domain.Models.Graph;
-using RuntimeErrorSage.Application.Services.Interfaces;
+using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RuntimeErrorSage.Application.Services;
+namespace RuntimeErrorSage.Infrastructure.Services;
 
 /// <summary>
 /// Service for building dependency graphs from error contexts.

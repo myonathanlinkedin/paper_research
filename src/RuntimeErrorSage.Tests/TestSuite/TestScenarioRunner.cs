@@ -1,3 +1,4 @@
+using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Domain.Models.Error;
 using RuntimeErrorSage.Tests.TestSuite.Models;
 
@@ -54,7 +55,16 @@ public class TestScenarioRunner
                 timestamp: DateTime.UtcNow
             );
 
-            var analysis = await _errorAnalyzer.AnalyzeErrorAsync(context);
+            var exception = new Exception(scenario.ExpectedErrorMessage);
+            var analysisResult = await _errorAnalyzer.AnalyzeErrorAsync(exception, context);
+            
+            // Convert ErrorAnalysisResult to ErrorAnalysis for validation
+            var analysis = new ErrorAnalysis(
+                errorType: analysisResult.ErrorType ?? "Unknown",
+                rootCause: analysisResult.RootCause ?? "Unknown",
+                confidence: analysisResult.Confidence,
+                remediationSteps: analysisResult.SuggestedActions?.Select(a => a.Description ?? "").ToList() ?? new List<string>()
+            );
             
             result.Passed = ValidateResults(analysis, scenario);
             result.ErrorAnalysis = analysis;
@@ -89,7 +99,10 @@ public class TestScenarioRunner
 
         var errorTypeMatch = analysis.ErrorType == scenario.ExpectedErrorType;
         var errorMessageMatch = analysis.ErrorMessage.Contains(scenario.ExpectedErrorMessage);
-        var remediationMatch = analysis.RemediationAction == scenario.ExpectedRemediation;
+        // Compare RemediationAction description or name with expected remediation string
+        var remediationMatch = analysis.RemediationAction != null && 
+            (analysis.RemediationAction.Description?.Contains(scenario.ExpectedRemediation) == true ||
+             analysis.RemediationAction.Name?.Contains(scenario.ExpectedRemediation) == true);
 
         return errorTypeMatch && errorMessageMatch && remediationMatch;
     }

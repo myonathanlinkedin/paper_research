@@ -3,8 +3,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
+using RuntimeErrorSage.Application.Analysis.Interfaces;
 using RuntimeErrorSage.Application.Analysis;
-using RuntimeErrorSage.Application.LLM;
+using RuntimeErrorSage.Application.LLM.Interfaces;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Application.Exceptions;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.LLM;
 
 namespace RuntimeErrorSage.Tests.Analysis
 {
@@ -18,7 +23,9 @@ namespace RuntimeErrorSage.Tests.Analysis
         {
             _llmClientMock = new Mock<ILMStudioClient>();
             _loggerMock = new Mock<ILogger<ErrorAnalyzer>>();
-            _analyzer = new ErrorAnalyzer(_llmClientMock.Object);
+            var mcpClientMock = new Mock<IMCPClient>();
+            var llmServiceMock = new Mock<RuntimeErrorSage.Application.LLM.ILLMService>();
+            _analyzer = new ErrorAnalyzer(_loggerMock.Object, _llmClientMock.Object, mcpClientMock.Object, llmServiceMock.Object);
         }
 
         [Fact]
@@ -48,7 +55,8 @@ Step 2: Second remediation step";
                 .ReturnsAsync(llmResponse);
 
             // Act
-            var result = await _analyzer.AnalyzeErrorAsync(context);
+            var exception = new Exception("Test error");
+            var result = await _analyzer.AnalyzeErrorAsync(exception, context);
 
             // Assert
             Assert.NotNull(result);
@@ -93,7 +101,8 @@ Step 3: Check network connectivity";
                 .ReturnsAsync(llmResponse);
 
             // Act
-            var result = await _analyzer.AnalyzeErrorAsync(context);
+            var exception = new Exception("Test error");
+            var result = await _analyzer.AnalyzeErrorAsync(exception, context);
 
             // Assert
             Assert.NotNull(result);
@@ -135,7 +144,8 @@ Step 3: Test with different parameters";
                 .ReturnsAsync(llmResponse);
 
             // Act
-            var result = await _analyzer.AnalyzeErrorAsync(context);
+            var exception = new Exception("Test error");
+            var result = await _analyzer.AnalyzeErrorAsync(exception, context);
 
             // Assert
             Assert.NotNull(result);
@@ -168,7 +178,8 @@ Step 3: Test with different parameters";
                 .ThrowsAsync(new LMStudioException("LLM error"));
 
             // Act
-            var result = await _analyzer.AnalyzeErrorAsync(context);
+            var exception = new Exception("Test error");
+            var result = await _analyzer.AnalyzeErrorAsync(exception, context);
 
             // Assert
             Assert.NotNull(result);
@@ -203,7 +214,8 @@ Step 3: Test with different parameters";
                 .ReturnsAsync(llmResponse);
 
             // Act
-            var result = await _analyzer.AnalyzeErrorAsync(context);
+            var exception = new Exception("Test error");
+            var result = await _analyzer.AnalyzeErrorAsync(exception, context);
 
             // Assert
             Assert.NotNull(result);

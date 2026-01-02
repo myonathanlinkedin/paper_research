@@ -13,10 +13,10 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
-    <PackageReference Include="System.Text.Json" Version="8.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="StackExchange.Redis" Version="2.7.17" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.0" />
@@ -29,7 +29,6 @@
   <ItemGroup>
     <ProjectReference Include="..\RuntimeErrorSage.Application\RuntimeErrorSage.Application.csproj" />
     <ProjectReference Include="..\RuntimeErrorSage.Domain\RuntimeErrorSage.Domain.csproj" />
-    <ProjectReference Include="..\RuntimeErrorSage.Infrastructure\RuntimeErrorSage.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

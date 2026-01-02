@@ -4,9 +4,14 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using RuntimeErrorSage.Application.LLM;
+using RuntimeErrorSage.Application.LLM.Interfaces;
+using RuntimeErrorSage.Application.LLM.Options;
 using RuntimeErrorSage.Application.Health;
+using RuntimeErrorSage.Application.Options;
+using RuntimeErrorSage.Application.Exceptions;
 using RuntimeErrorSage.Domain.Enums;
+using RuntimeErrorSage.Domain.Models.LLM;
+using RuntimeErrorSage.Application.Health.Interfaces;
 
 namespace RuntimeErrorSage.Tests.Health
 {
@@ -34,10 +39,12 @@ namespace RuntimeErrorSage.Tests.Health
                 EnableErrorAnalysis = true
             });
 
+            var dataFactoryMock = new Mock<RuntimeErrorSage.Application.Health.IHealthCheckDataFactory>();
             _healthCheck = new LMStudioHealthCheck(
                 _llmClientMock.Object,
                 _optionsMock.Object,
-                _RuntimeErrorSageOptionsMock.Object);
+                _RuntimeErrorSageOptionsMock.Object,
+                dataFactoryMock.Object);
         }
 
         [Fact]
@@ -53,7 +60,7 @@ namespace RuntimeErrorSage.Tests.Health
             var result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
 
             // Assert
-            Assert.Equal(HealthStatusEnum.Healthy, result.Status);
+            Assert.Equal(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy, result.Status);
             Assert.Equal("LM Studio integration is disabled", result.Description);
         }
 
@@ -73,7 +80,7 @@ namespace RuntimeErrorSage.Tests.Health
             var result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
 
             // Assert
-            Assert.Equal(HealthStatusEnum.Healthy, result.Status);
+            Assert.Equal(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy, result.Status);
             Assert.Contains("LM Studio is healthy", result.Description);
             Assert.Contains("test-model", result.Data["ModelId"].ToString());
             Assert.Contains("http://localhost:1234", result.Data["BaseUrl"].ToString());
@@ -92,7 +99,7 @@ namespace RuntimeErrorSage.Tests.Health
             var result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
 
             // Assert
-            Assert.Equal(HealthStatusEnum.Unhealthy, result.Status);
+            Assert.Equal(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy, result.Status);
             Assert.Contains("LM Studio model is not ready", result.Description);
             Assert.Contains("test-model", result.Data["ModelId"].ToString());
             Assert.Contains("http://localhost:1234", result.Data["BaseUrl"].ToString());
@@ -114,7 +121,7 @@ namespace RuntimeErrorSage.Tests.Health
             var result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
 
             // Assert
-            Assert.Equal(HealthStatusEnum.Degraded, result.Status);
+            Assert.Equal(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Degraded, result.Status);
             Assert.Contains("LM Studio returned empty response", result.Description);
             Assert.Contains("test-model", result.Data["ModelId"].ToString());
             Assert.Contains("http://localhost:1234", result.Data["BaseUrl"].ToString());
@@ -132,77 +139,13 @@ namespace RuntimeErrorSage.Tests.Health
             var result = await _healthCheck.CheckHealthAsync(new HealthCheckContext());
 
             // Assert
-            Assert.Equal(HealthStatusEnum.Unhealthy, result.Status);
+            Assert.Equal(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy, result.Status);
             Assert.Contains("LM Studio health check failed", result.Description);
             Assert.Contains("Test error", result.Data["Error"].ToString());
             Assert.Contains("test-model", result.Data["ModelId"].ToString());
             Assert.Contains("http://localhost:1234", result.Data["BaseUrl"].ToString());
         }
 
-        [Fact]
-        public async Task CheckHealthAsync_WhenServiceIsHealthy_ReturnsHealthyStatus()
-        {
-            // Arrange
-            var healthCheck = new LMStudioHealthCheck();
-            
-            // Act
-            var result = await healthCheck.CheckHealthAsync();
-            
-            // Assert
-            Assert.Equal(HealthStatusEnum.Healthy, result.Status);
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_WhenServiceIsDegraded_ReturnsDegradedStatus()
-        {
-            // Arrange
-            var healthCheck = new LMStudioHealthCheck();
-            
-            // Act
-            var result = await healthCheck.CheckHealthAsync();
-            
-            // Assert
-            Assert.Equal(HealthStatusEnum.Healthy, result.Status);
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_WhenServiceIsUnhealthy_ReturnsUnhealthyStatus()
-        {
-            // Arrange
-            var healthCheck = new LMStudioHealthCheck();
-            
-            // Act
-            var result = await healthCheck.CheckHealthAsync();
-            
-            // Assert
-            Assert.Equal(HealthStatusEnum.Unhealthy, result.Status);
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_WhenServiceIsDegraded_ReturnsDegradedStatus()
-        {
-            // Arrange
-            var healthCheck = new LMStudioHealthCheck();
-            
-            // Act
-            var result = await healthCheck.CheckHealthAsync();
-            
-            // Assert
-            Assert.Equal(HealthStatusEnum.Degraded, result.Status);
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_WhenServiceIsUnhealthy_ReturnsUnhealthyStatus()
-        {
-            // Arrange
-            var healthCheck = new LMStudioHealthCheck();
-            
-            // Act
-            var result = await healthCheck.CheckHealthAsync();
-            
-            // Assert
-            Assert.Equal(HealthStatusEnum.Unhealthy, result.Status);
-        }
     }
 } 
 

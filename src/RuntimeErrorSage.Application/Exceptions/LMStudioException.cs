@@ -10,17 +10,17 @@ public class LMStudioException : Exception
     /// <summary>
     /// Gets or sets the operation that caused the error.
     /// </summary>
-    public string Operation { get; }
+    public string Operation { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the error code.
     /// </summary>
-    public string ErrorCode { get; }
+    public string ErrorCode { get; } = string.Empty;
 
     /// <summary>
     /// Gets or sets additional details about the error.
     /// </summary>
-    public string Details { get; }
+    public string Details { get; } = string.Empty;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LMStudioException"/> class.

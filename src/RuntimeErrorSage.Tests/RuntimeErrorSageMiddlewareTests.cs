@@ -9,10 +9,16 @@ using RuntimeErrorSage.Middleware;
 using FluentAssertions;
 using RuntimeErrorSage.Application.Analysis;
 using RuntimeErrorSage.Application.Remediation;
-using RuntimeErrorSage.Application.MCP;
-using RuntimeErrorSage.Application.LLM;
+using RuntimeErrorSage.Application.MCP.Interfaces;
+using RuntimeErrorSage.Application.LLM.Interfaces;
 using RuntimeErrorSage.Application.Validation;
 using RuntimeErrorSage.Application.Graph;
+using RuntimeErrorSage.Application.Runtime.Interfaces;
+using RuntimeErrorSage.Domain.Models.Error;
+using RuntimeErrorSage.Domain.Models.Remediation;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
+using RuntimeErrorSage.Core.Remediation.Base;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Tests
 {
@@ -44,12 +50,14 @@ namespace RuntimeErrorSage.Tests
             var analysisResult = new ErrorAnalysisResult
             {
                 IsAnalyzed = true,
-                RemediationPlan = new RemediationPlan
+                RemediationPlan = new RemediationPlan(
+                    name: "Test Remediation Plan",
+                    description: "Test plan for middleware",
+                    actions: new List<RemediationAction>(),
+                    parameters: new Dictionary<string, object>(),
+                    estimatedDuration: TimeSpan.FromMinutes(5))
                 {
-                    Strategies = new List<RemediationStrategy>
-                    {
-                        new() { Name = "TestStrategy", Status = RemediationStrategyStatus.Created }
-                    }
+                    Strategies = new List<RuntimeErrorSage.Domain.Interfaces.IRemediationStrategy>()
                 }
             };
 
@@ -65,7 +73,7 @@ namespace RuntimeErrorSage.Tests
                 c.Source == "Middleware" &&
                 c.AdditionalContext["RequestPath"].ToString() == "/api/test" &&
                 c.AdditionalContext["RequestMethod"].ToString() == "GET" &&
-                (int)c.AdditionalContext["StatusCode"] == 500)), Times.Once);
+                c.AdditionalContext["StatusCode"].ToString() == "500")), Times.Once);
 
             _serviceMock.Verify(x => x.RemediateErrorAsync(It.IsAny<ErrorContext>()), Times.Once);
         }

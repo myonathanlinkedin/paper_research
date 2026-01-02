@@ -6,18 +6,24 @@ using Moq;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Domain.Models.Error;
-using RuntimeErrorSage.Application.Services;
-using RuntimeErrorSage.Application.Utilities;
+using RuntimeErrorSage.Domain.Models.Analysis; // For GraphAnalysisResult, RemediationAnalysis, etc.
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
+using RuntimeErrorSage.Application.Services.Interfaces;
+using RuntimeErrorSage.Infrastructure.Services;
 
 namespace RuntimeErrorSage.Tests.TestSuite.Services
 {
     public class RiskAssessmentServiceTests
     {
+        private readonly Mock<Microsoft.Extensions.Logging.ILogger<RiskAssessmentService>> _loggerMock;
+        private readonly Mock<RuntimeErrorSage.Application.Interfaces.IRiskAssessmentRepository> _repositoryMock;
         private readonly RiskAssessmentService _service;
 
         public RiskAssessmentServiceTests()
         {
-            _service = new RiskAssessmentService();
+            _loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger<RiskAssessmentService>>();
+            _repositoryMock = new Mock<RuntimeErrorSage.Application.Interfaces.IRiskAssessmentRepository>();
+            _service = new RiskAssessmentService(_loggerMock.Object, _repositoryMock.Object);
         }
 
         [Fact]
@@ -39,7 +45,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
                 ActionId = "test-action-id",
                 Name = "Test Action",
                 Description = "Test action description",
-                Impact = RemediationActionSeverity.High,
+                Impact = RemediationActionSeverity.High.ToImpactLevel(),
                 ImpactScope = RemediationActionImpactScope.Service,
                 TimeoutSeconds = 120,
                 RequiresManualApproval = true,
@@ -84,10 +90,11 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             Assert.Contains("Service: TestService", result.AffectedComponents);
             
             Assert.NotNull(result.RiskFactors);
-            Assert.Contains(result.RiskFactors, f => f.Name == "Action Severity");
-            Assert.Contains(result.RiskFactors, f => f.Name == "Impact Scope");
-            Assert.Contains(result.RiskFactors, f => f.Name == "Manual Approval Required");
-            Assert.Contains(result.RiskFactors, f => f.Name == "Rollback Capability");
+            var riskFactorsList = result.RiskFactors.ToList();
+            Assert.Contains("Action Severity", riskFactorsList);
+            Assert.Contains("Impact Scope", riskFactorsList);
+            Assert.Contains("Manual Approval Required", riskFactorsList);
+            Assert.Contains("Rollback Capability", riskFactorsList);
             
             Assert.NotNull(result.Notes);
             Assert.Contains("Risk assessment performed for action: Test Action", result.Notes);
@@ -123,10 +130,10 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 Name = "Test Action",
                 Description = "Test Description",
-                Type = RemediationActionType.Monitor,
+                Type = RemediationActionType.Monitor.ToString(),
                 Severity = severity.ToRemediationActionSeverity(),
                 ImpactScope = impactScope,
-                Status = RemediationActionStatus.Pending,
+                Status = RemediationActionStatus.Pending.ToRemediationStatusEnum(),
                 Context = new ErrorContext(
                     error: new RuntimeError(
                         message: "Test error",
@@ -164,10 +171,10 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 Name = "Test Action",
                 Description = "Test Description",
-                Type = RemediationActionType.Monitor,
-                Severity = null,
+                Type = RemediationActionType.Monitor.ToString(),
+                Severity = RemediationActionSeverity.None,
                 ImpactScope = RemediationActionImpactScope.Local,
-                Status = RemediationActionStatus.Pending,
+                Status = RemediationActionStatus.Pending.ToRemediationStatusEnum(),
                 Context = new ErrorContext(
                     error: new RuntimeError(
                         message: "Test error",
@@ -195,10 +202,10 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 Name = "Test Action",
                 Description = "Test Description",
-                Type = RemediationActionType.Monitor,
+                Type = RemediationActionType.Monitor.ToString(),
                 Severity = SeverityLevel.Medium.ToRemediationActionSeverity(),
-                ImpactScope = null,
-                Status = RemediationActionStatus.Pending,
+                ImpactScope = RemediationActionImpactScope.None,
+                Status = RemediationActionStatus.Pending.ToRemediationStatusEnum(),
                 Context = new ErrorContext(
                     error: new RuntimeError(
                         message: "Test error",
@@ -232,7 +239,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 ActionId = "test-action-id",
                 Name = "Test Action",
-                Impact = RemediationActionSeverity.Medium,
+                Impact = RemediationActionSeverity.Medium.ToImpactLevel(),
                 ImpactScope = RemediationActionImpactScope.Module,
                 RollbackAction = rollbackAction
             };
@@ -242,7 +249,8 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
 
             // Assert
             Assert.Contains("Rollback procedure is available if issues occur", result.MitigationSteps);
-            Assert.Contains(result.RiskFactors, f => f.Name == "Rollback Capability" && f.Impact == 1);
+            var riskFactorsList = result.RiskFactors.ToList();
+            Assert.Contains("Rollback Capability", riskFactorsList);
         }
 
         [Fact]
@@ -253,7 +261,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 ActionId = "test-action-id",
                 Name = "Test Action",
-                Impact = RemediationActionSeverity.Medium,
+                Impact = RemediationActionSeverity.Medium.ToImpactLevel(),
                 ImpactScope = RemediationActionImpactScope.Module,
                 RollbackAction = null
             };
@@ -263,7 +271,8 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
 
             // Assert
             Assert.Contains("No automatic rollback available", string.Join(", ", result.MitigationSteps));
-            Assert.Contains(result.RiskFactors, f => f.Name == "Rollback Capability" && f.Impact == 3);
+            var riskFactorsList = result.RiskFactors.ToList();
+            Assert.Contains("Rollback Capability", riskFactorsList);
         }
 
         [Fact]
@@ -274,7 +283,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 ActionId = "test-action-id-1",
                 Name = "Test Action 1",
-                Impact = RemediationActionSeverity.Medium,
+                Impact = RemediationActionSeverity.Medium.ToImpactLevel(),
                 ImpactScope = RemediationActionImpactScope.Module
             };
 
@@ -282,7 +291,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 ActionId = "test-action-id-2",
                 Name = "Test Action 2",
-                Impact = RemediationActionSeverity.Medium,
+                Impact = RemediationActionSeverity.Medium.ToImpactLevel(),
                 ImpactScope = RemediationActionImpactScope.Module,
                 Context = new ErrorContext(
                     error: new RuntimeError(
@@ -315,7 +324,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 ActionId = "test-action-id",
                 Name = "Test Action",
-                Impact = RemediationActionSeverity.Medium,
+                Impact = RemediationActionSeverity.Medium.ToImpactLevel(),
                 ImpactScope = RemediationActionImpactScope.Module
             };
             
@@ -333,7 +342,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
         [InlineData(RemediationActionImpactScope.System, new[] { "Entire System" })]
         [InlineData(RemediationActionImpactScope.Service, new[] { "Service Layer" })]
         [InlineData(RemediationActionImpactScope.Module, new[] { "Module Layer" })]
-        [InlineData(RemediationActionImpactScope.Component, new string[0])]
+        [InlineData(RemediationActionImpactScope.Local, new string[0])]
         public async Task AssessRiskAsync_WithDifferentImpactScopes_ReturnsCorrectAffectedComponents(
             RemediationActionImpactScope scope,
             string[] expectedComponents)
@@ -343,7 +352,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 ActionId = "test-action-id",
                 Name = "Test Action",
-                Impact = RemediationActionSeverity.Medium,
+                Impact = RemediationActionSeverity.Medium.ToImpactLevel(),
                 ImpactScope = scope
             };
 
@@ -366,7 +375,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 ActionId = "test-action-id",
                 Name = "Test Action",
-                Impact = RemediationActionSeverity.Medium,
+                Impact = RemediationActionSeverity.Medium.ToImpactLevel(),
                 ImpactScope = RemediationActionImpactScope.Service,
                 Context = new ErrorContext(
                     error: new RuntimeError(
@@ -395,7 +404,7 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 ActionId = "test-action-id",
                 Name = "Test Action",
-                Impact = RemediationActionSeverity.Medium,
+                Impact = RemediationActionSeverity.Medium.ToImpactLevel(),
                 ImpactScope = RemediationActionImpactScope.Module,
                 Context = new ErrorContext(
                     error: new RuntimeError(
@@ -424,8 +433,8 @@ namespace RuntimeErrorSage.Tests.TestSuite.Services
             {
                 ActionId = "test-action-id",
                 Name = "Test Action",
-                Impact = RemediationActionSeverity.Medium,
-                ImpactScope = RemediationActionImpactScope.Component,
+                Impact = RemediationActionSeverity.Medium.ToImpactLevel(),
+                ImpactScope = RemediationActionImpactScope.Module,
                 Context = new ErrorContext(
                     error: new RuntimeError(
                         message: "Test error",

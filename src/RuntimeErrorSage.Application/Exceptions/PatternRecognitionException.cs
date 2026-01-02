@@ -78,9 +78,18 @@ namespace RuntimeErrorSage.Application.Exceptions
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data.</param>
         /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
+        #pragma warning disable SYSLIB0051 // Type or member is obsolete
         protected PatternRecognitionException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
+        #pragma warning restore SYSLIB0051 // Type or member is obsolete
     }
-} 
+}
+
+
+
+
+
+
+

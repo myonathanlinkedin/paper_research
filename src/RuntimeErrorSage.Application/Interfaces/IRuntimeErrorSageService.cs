@@ -9,9 +9,9 @@ using RuntimeErrorSage.Application.MCP;
 using RuntimeErrorSage.Application.LLM;
 using RuntimeErrorSage.Application.Validation;
 using RuntimeErrorSage.Application.Graph;
-using System.ComponentModel.DataAnnotations;
 using RuntimeErrorSage.Domain.Models.Graph;
 using RuntimeErrorSage.Domain.Models.LLM;
+using ValidationResult = RuntimeErrorSage.Domain.Models.Validation.ValidationResult;
 
 namespace RuntimeErrorSage.Application.Runtime.Interfaces
 {
@@ -73,7 +73,7 @@ namespace RuntimeErrorSage.Application.Runtime.Interfaces
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        Task<ValidationResult> ValidateContextAsync(ErrorContext context);
+        Task<RuntimeErrorSage.Domain.Models.Validation.ValidationResult> ValidateContextAsync(ErrorContext context);
 
         /// <summary>
         /// Analyzes the context graph to generate a graph analysis result. 

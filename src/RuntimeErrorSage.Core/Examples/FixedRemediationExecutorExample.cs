@@ -19,6 +19,7 @@ using RuntimeErrorSage.Application.Interfaces;
 using RuntimeErrorSage.Domain.Interfaces;
 using ApplicationStrategy = RuntimeErrorSage.Application.Interfaces.IRemediationStrategy;
 using DomainStrategy = RuntimeErrorSage.Domain.Interfaces.IRemediationStrategy;
+using RuntimeErrorSage.Core.Remediation;
 
 namespace RuntimeErrorSage.Core.Examples
 {
@@ -64,6 +65,7 @@ namespace RuntimeErrorSage.Core.Examples
         private readonly ApplicationStrategy _strategy;
         private readonly IRemediationValidator _validator;
         private readonly IRemediationMetricsCollector _metricsCollector;
+        private readonly IRemediationStrategyProvider _strategyProvider;
         private readonly Dictionary<string, RemediationExecution> _executionHistory;
         
         /// <summary>
@@ -73,12 +75,14 @@ namespace RuntimeErrorSage.Core.Examples
             ILogger<FixedRemediationExecutorExample> logger,
             ApplicationStrategy strategy,
             IRemediationValidator validator,
-            IRemediationMetricsCollector metricsCollector)
+            IRemediationMetricsCollector metricsCollector,
+            IRemediationStrategyProvider strategyProvider)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _strategy = strategy ?? throw new ArgumentNullException(nameof(strategy));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
             _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
+            _strategyProvider = strategyProvider ?? throw new ArgumentNullException(nameof(strategyProvider));
             _executionHistory = new Dictionary<string, RemediationExecution>();
         }
 
@@ -341,7 +345,7 @@ namespace RuntimeErrorSage.Core.Examples
                     ErrorId = context.ErrorId,
                     CorrelationId = context.CorrelationId,
                     StartTime = DateTime.UtcNow,
-                    Status = RemediationStatusEnum.InProgress.ToString()
+                    Status = RemediationStatusEnum.InProgress
                 };
                 
                 // Add execution context details
@@ -353,10 +357,10 @@ namespace RuntimeErrorSage.Core.Examples
                 };
                 
                 // Get applicable strategies
-                var strategies = await _strategyProvider.GetApplicableStrategiesAsync(context);
+                var strategies = await _strategyProvider.GetStrategiesAsync(context);
                 if (!strategies.Any())
                 {
-                    execution.Status = RemediationStatusEnum.Failed.ToString();
+                    execution.Status = RemediationStatusEnum.Failed;
                     execution.EndTime = DateTime.UtcNow;
                     _logger.LogWarning("No applicable remediation strategies found for error {ErrorId}", context.ErrorId);
                     return execution;
@@ -366,25 +370,41 @@ namespace RuntimeErrorSage.Core.Examples
                 var strategy = await _strategyProvider.GetBestStrategyAsync(context);
                 if (strategy == null)
                 {
-                    execution.Status = RemediationStatusEnum.Failed.ToString();
+                    execution.Status = RemediationStatusEnum.Failed;
                     execution.EndTime = DateTime.UtcNow;
                     _logger.LogWarning("Could not determine best remediation strategy for error {ErrorId}", context.ErrorId);
                     return execution;
                 }
                 
                 // Convert application strategy to domain strategy if needed
-                var domainStrategy = strategy;
+                DomainStrategy domainStrategy;
                 if (strategy is ApplicationStrategy appStrategy)
                 {
-                    domainStrategy = RuntimeErrorSage.Core.Remediation.RemediationStrategyAdapterExtensions.ToDomainStrategy(appStrategy);
+                    domainStrategy = RemediationStrategyAdapterExtensions.ToDomainStrategy(appStrategy);
+                }
+                else if (strategy is DomainStrategy domStrategy)
+                {
+                    domainStrategy = domStrategy;
+                }
+                else
+                {
+                    // Fallback: try to convert via adapter
+                    if (strategy is ApplicationStrategy appStr)
+                    {
+                        domainStrategy = RemediationStrategyAdapterExtensions.ToDomainStrategy(appStr);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Cannot convert strategy type {strategy?.GetType().Name} to Domain strategy");
+                    }
                 }
                 
                 // Create a remediation plan
-                var plan = await domainStrategy.CreateActionsAsync(context);
+                var actions = await domainStrategy.CreateActionsAsync(context);
                 
                 // For this example, execute each action in the plan
                 var completedSteps = new List<RemediationStep>();
-                foreach (var action in plan)
+                foreach (var action in actions)
                 {
                     try
                     {
@@ -417,7 +437,7 @@ namespace RuntimeErrorSage.Core.Examples
                 
                 // Update execution with results
                 execution.EndTime = DateTime.UtcNow;
-                execution.Status = RemediationStatusEnum.Success.ToString();
+                    execution.Status = RemediationStatusEnum.Success;
                 
                 return execution;
             }
@@ -432,7 +452,7 @@ namespace RuntimeErrorSage.Core.Examples
                     CorrelationId = context.CorrelationId,
                     StartTime = DateTime.UtcNow,
                     EndTime = DateTime.UtcNow,
-                    Status = RemediationStatusEnum.Failed.ToString()
+                    Status = RemediationStatusEnum.Failed
                 };
             }
         }
@@ -452,8 +472,7 @@ namespace RuntimeErrorSage.Core.Examples
                 {
                     IsValid = true,
                     Messages = new List<string>(),
-                    ValidationWarnings = new List<ValidationWarning>(),
-                    ValidationErrors = new List<ValidationError>()
+                    Errors = new List<string>()
                 };
 
                 // Add validation logic here
@@ -470,8 +489,7 @@ namespace RuntimeErrorSage.Core.Examples
                 {
                     IsValid = false,
                     Messages = new List<string> { ex.Message },
-                    ValidationWarnings = new List<ValidationWarning>(),
-                    ValidationErrors = new List<ValidationError> { new ValidationError { Message = ex.Message } }
+                    Errors = new List<string> { ex.Message }
                 };
             }
         }
@@ -676,7 +694,16 @@ namespace RuntimeErrorSage.Core.Examples
                 // Get the previous execution
                 if (_executionHistory.TryGetValue(remediationId, out var execution))
                 {
-                    return await RollbackAsync(execution.Result);
+                    // Create a RemediationResult from execution
+                    var result = new RemediationResult
+                    {
+                        Status = execution.Status,
+                        ErrorMessage = execution.ErrorMessage,
+                        Context = null, // Execution doesn't have context directly
+                        StartTime = execution.StartTime,
+                        EndTime = execution.EndTime
+                    };
+                    return await RollbackAsync(result);
                 }
                 
                 return new RemediationResult
@@ -706,27 +733,21 @@ namespace RuntimeErrorSage.Core.Examples
             {
                 PlanId = plan.PlanId,
                 StartTime = DateTime.UtcNow,
-                // INCORRECT: Don't use Success in initializer
-                // Success = true
-                
-                // CORRECT: Use IsSuccessful in initializer
                 IsSuccessful = true
             };
             
             foreach (var action in plan.Actions)
             {
-                var actionResult = await ExecuteActionAsync(action, plan.Context);
+                var executionResult = await ExecuteActionAsync(action, plan.Context);
+                // Convert RemediationResult to RemediationActionResult
+                var actionResult = new RemediationActionResult
+                {
+                    ActionId = action.Id,
+                    Success = executionResult.Status == RemediationStatusEnum.Success,
+                    ErrorMessage = executionResult.ErrorMessage
+                };
                 result.Actions.Add(actionResult);
                 
-                // INCORRECT: Don't use Success property
-                // if (!actionResult.Success)
-                // {
-                //     result.Success = false;
-                //     result.ErrorMessage = actionResult.ErrorMessage;
-                //     break;
-                // }
-                
-                // CORRECT: Use IsSuccessful property
                 if (!actionResult.IsSuccessful)
                 {
                     result.IsSuccessful = false;
@@ -737,10 +758,6 @@ namespace RuntimeErrorSage.Core.Examples
             
             result.EndTime = DateTime.UtcNow;
             
-            // INCORRECT: TimeSpan? doesn't have TotalMilliseconds directly
-            // result.Duration = (result.EndTime - result.StartTime).TotalMilliseconds;
-            
-            // CORRECT: Use nullable conditional operator
             result.Duration = result.EndTime.HasValue 
                 ? (result.EndTime.Value - result.StartTime)
                 : TimeSpan.Zero;
@@ -754,13 +771,6 @@ namespace RuntimeErrorSage.Core.Examples
         /// </summary>
         public void FixedKeyValuePairExample(DependencyGraph graph)
         {
-            // INCORRECT: Trying to access node properties directly from KeyValuePair
-            // foreach (var node in graph.Nodes)
-            // {
-            //     Console.WriteLine($"Node ID: {node.Id}");
-            // }
-            
-            // CORRECT: Access through Value property
             foreach (var node in graph.Nodes)
             {
                 Console.WriteLine($"Node ID: {node.Value.Id}");
@@ -768,10 +778,9 @@ namespace RuntimeErrorSage.Core.Examples
                 Console.WriteLine($"Error Probability: {node.Value.ErrorProbability}");
             }
             
-            // CORRECT: Access through Value property
             foreach (var edge in graph.Edges)
             {
-                Console.WriteLine($"Edge from {edge.Value.SourceId} to {edge.Value.TargetId}");
+                Console.WriteLine($"Edge from {edge.SourceId} to {edge.TargetId}");
             }
         }
         
@@ -780,15 +789,10 @@ namespace RuntimeErrorSage.Core.Examples
         /// </summary>
         public void FixedTimeSpanNullableExample(List<RemediationExecution> executions)
         {
-            // INCORRECT: Using nullable TimeSpan's TotalMilliseconds directly
-            // var avgDuration = executions.Average(e => e.DurationSeconds);
-            
-            // CORRECT: Filter out nulls and then use Value
             var avgDuration1 = executions
                 .Where(e => e.DurationSeconds.HasValue)
                 .Average(e => e.DurationSeconds.Value);
             
-            // CORRECT: Use extension method
             var avgDuration2 = executions
                 .Select(e => {
                     TimeSpan? duration = e.EndTime.HasValue ? e.EndTime.Value - e.StartTime : null;
@@ -796,11 +800,6 @@ namespace RuntimeErrorSage.Core.Examples
                 })
                 .Average();
             
-            // INCORRECT: Using nullable TimeSpan in calculations directly
-            // TimeSpan? totalDuration = executions.Sum(e => e.EndTime - e.StartTime);
-            // var avgMs = totalDuration.TotalMilliseconds / executions.Count;
-            
-            // CORRECT: Handle each nullable value individually
             double totalMs = 0;
             foreach (var execution in executions)
             {
@@ -817,22 +816,8 @@ namespace RuntimeErrorSage.Core.Examples
         /// </summary>
         public async Task<RemediationResult> FixedAmbiguousReferencesExample(ErrorContext context)
         {
-            // INCORRECT: Using ambiguous AnalysisStatus
-            // var analysisStatus = AnalysisStatus.Completed;
-            
-            // CORRECT: Using fully qualified name
             var analysisStatus = AnalysisStatus.Completed;
-            
-            // INCORRECT: Using ambiguous RemediationStatusEnum
-            // var remediationStatus = RemediationStatusEnum.Success;
-            
-            // CORRECT: Using fully qualified name
-            var remediationStatus = RuntimeErrorSage.Domain.Models.Remediation.RemediationStatusEnum.Success;
-            
-            // INCORRECT: Using ambiguous ValidationResult
-            // var validationResult = new ValidationResult();
-            
-            // CORRECT: Using fully qualified name
+            var remediationStatus = RuntimeErrorSage.Domain.Enums.RemediationStatusEnum.Success;
             var validationResult = new RuntimeErrorSage.Domain.Models.Validation.ValidationResult();
             
             // Create a strategy with explicit namespace to avoid ambiguity
@@ -998,7 +983,7 @@ namespace RuntimeErrorSage.Core.Examples
                 if (_executionHistory.TryGetValue(actionId, out var execution))
                 {
                     status = execution.Status;
-                    message = execution.Message;
+                    message = execution.ErrorMessage ?? execution.Error ?? "Status retrieved";
                 }
                 
                 return new RemediationResult

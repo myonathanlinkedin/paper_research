@@ -12,8 +12,9 @@ using RuntimeErrorSage.Domain.Models.Remediation;
 using RuntimeErrorSage.Application.Remediation.Interfaces;
 using RuntimeErrorSage.Domain.Enums;
 using RuntimeErrorSage.Application.Analysis.Interfaces;
+using ErrorAnalysisResult = RuntimeErrorSage.Domain.Models.Error.ErrorAnalysisResult;
 
-namespace RuntimeErrorSage.Application.Remediation
+namespace RuntimeErrorSage.Core.Remediation
 {
     /// <summary>
     /// Analyzes errors and determines appropriate remediation actions.
@@ -112,29 +113,32 @@ namespace RuntimeErrorSage.Application.Remediation
                     return CreateInvalidAnalysis($"Context validation failed: {string.Join(", ", validationResult.Errors)}");
                 }
 
-                // Analyze context graph
-                var graphAnalysis = await _errorContextAnalyzer.AnalyzeContextAsync(context);
+                // Analyze context - this returns RemediationAnalysis from Domain.Models.Remediation namespace
+                var errorAnalysis = await _errorContextAnalyzer.AnalyzeContextAsync(context);
                 
-                // Check if graph analysis was successful
-                bool isGraphValid = true; // Default to true if we can't determine validity
-                
-                // Check graphAnalysis validity using a different approach if Status is not available
-                if (graphAnalysis == null)
-                {
-                    isGraphValid = false;
-                }
+                // Check if analysis was successful - Remediation.RemediationAnalysis has IsValid and SuggestedActions
+                bool isGraphValid = errorAnalysis != null && errorAnalysis.IsValid &&
+                    (errorAnalysis.SuggestedActions?.Any() == true || errorAnalysis.GraphAnalysis != null);
                 
                 if (!isGraphValid)
                 {
                     return CreateInvalidAnalysis("Graph analysis failed");
                 }
 
+                // Create GraphAnalysis from the error analysis data
+                var graphAnalysis = new GraphAnalysis
+                {
+                    IsValid = true,
+                    Timestamp = DateTime.UtcNow,
+                    CorrelationId = context.CorrelationId,
+                    ComponentHealth = new Dictionary<string, double>()
+                };
+
                 // Analyze with LLM
                 var llmAnalysis = await _llmClient.AnalyzeContextAsync(context);
                 
                 // Check if LLM analysis was successful
-                bool isLlmValid = true; // Default to true if we can't determine validity
-                // Use whatever property is available to determine if LLM analysis was successful
+                bool isLlmValid = llmAnalysis != null;
                 
                 if (!isLlmValid)
                 {
@@ -153,19 +157,13 @@ namespace RuntimeErrorSage.Application.Remediation
                 {
                     IsValid = true,
                     ErrorContext = context,
-                    // Create a separate GraphAnalysis instance instead of direct assignment
-                    GraphAnalysis = new GraphAnalysis 
-                    { 
-                        // Use whatever properties are available in graphAnalysis
-                        Timestamp = graphAnalysis.Timestamp,
-                        CorrelationId = graphAnalysis.CorrelationId
-                    },
+                    GraphAnalysis = graphAnalysis,
                     LLMAnalysis = llmAnalysis,
                     ApplicableStrategies = strategies
                         .Select(s => new StrategyRecommendation
                         {
                             StrategyName = s.Name,
-                            Priority = s.Priority,
+                            Priority = (int)s.Priority,
                             Confidence = CalculateStrategyConfidence(s, graphAnalysis, llmAnalysis),
                             Reasoning = GenerateStrategyReasoning(s, graphAnalysis, llmAnalysis)
                         })

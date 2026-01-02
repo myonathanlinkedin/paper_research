@@ -13,14 +13,11 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RuntimeErrorSage.Application\RuntimeErrorSage.Application.csproj" />
     <ProjectReference Include="..\RuntimeErrorSage.Core\RuntimeErrorSage.API.Core.csproj" />
-    <ProjectReference Include="..\RuntimeErrorSage.Domain\RuntimeErrorSage.Domain.csproj" />
-    <ProjectReference Include="..\RuntimeErrorSage.Infrastructure\RuntimeErrorSage.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

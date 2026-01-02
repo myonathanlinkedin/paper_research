@@ -73,6 +73,17 @@ namespace RuntimeErrorSage.Domain.Interfaces
         DateTime CreatedAt { get; }
 
         /// <summary>
+        /// Gets or sets the status of the strategy.
+        /// </summary>
+        RemediationStatusEnum Status { get; set; }
+
+        /// <summary>
+        /// Gets the priority of the strategy asynchronously.
+        /// </summary>
+        /// <returns>The priority of the strategy.</returns>
+        Task<RemediationPriority> GetPriorityAsync();
+
+        /// <summary>
         /// Determines whether the strategy applies to the specified error context.
         /// </summary>
         /// <param name="errorContext">The error context.</param>

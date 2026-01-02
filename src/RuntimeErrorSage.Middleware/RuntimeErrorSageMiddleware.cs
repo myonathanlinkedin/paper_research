@@ -1,10 +1,11 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
-using RuntimeErrorSage.Domain.Models.Error;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RuntimeErrorSage.Application.Runtime.Interfaces;
-using RuntimeErrorSage.Core.Runtime.Interfaces;
+using RuntimeErrorSage.Core.Extensions;
+using RuntimeErrorSage.Domain.Enums;
 
 namespace RuntimeErrorSage.Middleware
 {
@@ -39,27 +40,20 @@ namespace RuntimeErrorSage.Middleware
             }
             catch (Exception ex)
             {
-                var error = new RuntimeError(
-                    message: ex.Message,
-                    errorType: ex.GetType().Name,
-                    source: "Middleware",
-                    stackTrace: ex.StackTrace ?? string.Empty
+                var errorContext = ErrorContextExtensions.CreateFromException(
+                    ex,
+                    "Middleware",
+                    context.Request.Path,
+                    context.Request.Method,
+                    context.Response.StatusCode
                 );
-
-                var errorContext = new ErrorContext(
-                    error: error,
-                    context: "Middleware",
-                    timestamp: DateTime.UtcNow
-                );
-
-                errorContext.AddMetadata("RequestPath", context.Request.Path);
-                errorContext.AddMetadata("RequestMethod", context.Request.Method);
-                errorContext.AddMetadata("StatusCode", context.Response.StatusCode);
 
                 try
                 {
                     var result = await _service.AnalyzeErrorAsync(errorContext);
-                    if (result.IsAnalyzed && result.RemediationPlan?.Strategies?.Any() == true)
+                    // Check if analysis is complete and has suggested actions for remediation
+                    if (result.IsComplete && result.Status == AnalysisStatus.Completed && 
+                        (result.SuggestedActions?.Any() == true || result.CanAutoRemediate))
                     {
                         await _service.RemediateErrorAsync(errorContext);
                     }
