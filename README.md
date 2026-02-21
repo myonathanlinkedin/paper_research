@@ -46,9 +46,6 @@ dotnet build
 # Run tests
 dotnet test
 ```
-
-For detailed setup instructions, see the [Installation Guide](docs/installation/setup.md).
-
 ## Documentation
 
 > **Note**: The documentation is stored in a private repository as a Git submodule. To access the documentation, you need:
