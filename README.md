@@ -6,15 +6,6 @@
 
 RuntimeErrorSage is a .NET middleware system that enhances application reliability through intelligent runtime error analysis and remediation using local Large Language Models (LLMs). This implementation is based on the research paper described in `paper/main.tex`.
 
-## Quick Start
-
-- 📖 [Documentation](docs/README.md) - Complete documentation
-- 🚀 [Getting Started](docs/getting-started/overview.md) - Introduction and overview
-- 🏗️ [Architecture](docs/architecture/overview.md) - System architecture
-- 📋 [Installation](docs/installation/setup.md) - Setup guide
-- 🔬 [Research Contributions](docs/research/contributions.md) - Key research contributions
-- 📊 [Evaluation Results](docs/evaluation/results.md) - Performance metrics
-
 ## Overview
 
 RuntimeErrorSage introduces a novel approach to runtime error handling by combining:
