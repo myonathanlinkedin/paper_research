@@ -64,15 +64,6 @@ For detailed setup instructions, see the [Installation Guide](docs/installation/
 > git clone --recurse-submodules https://github.com/myonathanlinkedin/paper_research.git
 > ```
 
-Comprehensive documentation is available in the [`docs/`](docs/) folder:
-
-- [Getting Started](docs/getting-started/overview.md)
-- [Architecture](docs/architecture/)
-- [Features](docs/features/overview.md)
-- [Research](docs/research/contributions.md)
-- [Evaluation](docs/evaluation/results.md)
-- [Installation](docs/installation/)
-
 ## License
 
 This project is licensed under the Apache License 2.0. See [LICENSE](LICENSE) and [docs/license.md](docs/license.md) for details.
