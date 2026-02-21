@@ -61,5 +61,3 @@ This project is licensed under the Apache License 2.0. See [LICENSE](LICENSE) an
 - Qwen team for the LLM model
 - LM Studio for the model serving infrastructure
 - .NET team for the runtime environment
-
-See [docs/acknowledgments.md](docs/acknowledgments.md) for more information.
